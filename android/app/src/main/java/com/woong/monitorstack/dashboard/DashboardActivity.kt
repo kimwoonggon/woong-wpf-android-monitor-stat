@@ -9,6 +9,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
@@ -16,6 +20,7 @@ import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 class DashboardActivity : AppCompatActivity() {
     private lateinit var viewModel: DashboardViewModel
     private val sessionAdapter = SessionsAdapter()
+    private val chartMapper = DashboardChartMapper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +84,29 @@ class DashboardActivity : AppCompatActivity() {
             View.GONE
         }
         sessionAdapter.submit(state.recentSessions)
+        renderCharts(binding, state.chartData)
+    }
+
+    private fun renderCharts(binding: ActivityDashboardBinding, chartData: DashboardChartData) {
+        val chartEntries = chartMapper.map(chartData)
+        if (chartEntries.activityEntries.isEmpty()) {
+            binding.activityLineChart.clear()
+        } else {
+            binding.activityLineChart.data = LineData(
+                LineDataSet(chartEntries.activityEntries, "Activity")
+            )
+        }
+
+        if (chartEntries.appEntries.isEmpty()) {
+            binding.appUsageBarChart.clear()
+        } else {
+            binding.appUsageBarChart.data = BarData(
+                BarDataSet(chartEntries.appEntries, "Apps")
+            )
+        }
+
+        binding.activityLineChart.invalidate()
+        binding.appUsageBarChart.invalidate()
     }
 
     private fun formatDuration(durationMs: Long): String {

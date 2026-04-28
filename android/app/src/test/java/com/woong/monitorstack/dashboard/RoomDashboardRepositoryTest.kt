@@ -58,6 +58,10 @@ class RoomDashboardRepositoryTest {
         assertEquals("com.android.chrome", snapshot.recentSessions.first().packageName)
         assertEquals("11:00", snapshot.recentSessions.first().startedAtLocalText)
         assertEquals("15m", snapshot.recentSessions.first().durationText)
+        assertEquals(30 * 60_000L, snapshot.chartData.hourlyActivity.single { it.hourOfDay == 9 }.durationMs)
+        assertEquals(15 * 60_000L, snapshot.chartData.hourlyActivity.single { it.hourOfDay == 11 }.durationMs)
+        assertEquals("com.android.chrome", snapshot.chartData.appUsage.single().label)
+        assertEquals(45 * 60_000L, snapshot.chartData.appUsage.single().durationMs)
     }
 
     private fun session(

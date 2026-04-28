@@ -10,7 +10,8 @@ data class DashboardSnapshot(
     val totalActiveMs: Long,
     val topAppPackageName: String?,
     val idleMs: Long,
-    val recentSessions: List<DashboardSessionRow>
+    val recentSessions: List<DashboardSessionRow>,
+    val chartData: DashboardChartData = DashboardChartData()
 )
 
 data class DashboardUiState(
@@ -18,5 +19,6 @@ data class DashboardUiState(
     val totalActiveMs: Long = 0,
     val topAppPackageName: String? = null,
     val idleMs: Long = 0,
-    val recentSessions: List<DashboardSessionRow> = emptyList()
+    val recentSessions: List<DashboardSessionRow> = emptyList(),
+    val chartData: DashboardChartData = DashboardChartData()
 )

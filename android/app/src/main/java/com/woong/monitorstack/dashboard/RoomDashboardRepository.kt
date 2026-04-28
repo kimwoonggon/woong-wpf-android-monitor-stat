@@ -25,7 +25,8 @@ class RoomDashboardRepository(
             totalActiveMs = activeSessions.sumOf { it.durationMs },
             topAppPackageName = activeSessions.topPackageName(),
             idleMs = sessions.filter { it.isIdle }.sumOf { it.durationMs },
-            recentSessions = sessions.toRecentRows()
+            recentSessions = sessions.toRecentRows(),
+            chartData = activeSessions.toChartData()
         )
     }
 
@@ -61,6 +62,34 @@ class RoomDashboardRepository(
                     durationText = formatDuration(session.durationMs)
                 )
             }
+    }
+
+    private fun List<FocusSessionEntity>.toChartData(): DashboardChartData {
+        return DashboardChartData(
+            hourlyActivity = groupBy { session ->
+                Instant.ofEpochMilli(session.startedAtUtcMillis)
+                    .atZone(timezoneId)
+                    .hour
+            }
+                .map { entry ->
+                    DashboardActivityBucket(
+                        hourOfDay = entry.key,
+                        durationMs = entry.value.sumOf { it.durationMs }
+                    )
+                }
+                .sortedBy { it.hourOfDay },
+            appUsage = groupBy { it.packageName }
+                .map { entry ->
+                    DashboardUsageSlice(
+                        label = entry.key,
+                        durationMs = entry.value.sumOf { it.durationMs }
+                    )
+                }
+                .sortedWith(
+                    compareByDescending<DashboardUsageSlice> { it.durationMs }
+                        .thenBy { it.label }
+                )
+        )
     }
 
     private fun formatDuration(durationMs: Long): String {

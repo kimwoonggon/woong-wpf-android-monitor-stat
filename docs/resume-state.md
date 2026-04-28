@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android SettingsActivity shell.
+Milestone 9 Android chart data aggregation and completion.
 
 ## Completed
 
@@ -226,6 +226,11 @@ Milestone 9 Android SettingsActivity shell.
   sync defaults.
 - Added Espresso smoke test for SettingsActivity privacy/sync defaults and
   verified the androidTest APK compiles.
+- Extended dashboard snapshots and ViewModel state with chart data.
+- Added Room-backed active-only chart aggregation for hourly activity and app
+  usage.
+- Bound non-empty chart data into DashboardActivity MPAndroidChart line/bar
+  views.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -237,9 +242,8 @@ Milestone 9 Android SettingsActivity shell.
 
 ## Next Highest Priority
 
-Continue Milestone 9 Android XML Dashboard MVP:
+Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Add real chart data aggregation beyond no-data placeholders.
-2. Add dashboard-to-sessions/settings navigation if needed.
-3. Commit and push Milestone 9 completion when remaining chart/data checks are
-   healthy.
+1. Define Android sync outbox.
+2. Implement Retrofit/OkHttp sync client.
+3. Add sync worker tests before implementation.

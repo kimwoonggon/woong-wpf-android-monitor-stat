@@ -230,12 +230,13 @@ the finished slice is committed and pushed.
 - [x] Add Room-backed dashboard aggregation.
 - [x] Bind DashboardActivity to Room-backed dashboard data.
 - [x] Add MPAndroidChart dependency and chart mapper.
+- [x] Add real chart data aggregation beyond no-data placeholders.
 - [x] Test DashboardActivity display with Espresso.
 - [x] Test today/yesterday/recent 7 days filters.
 - [x] Test empty state.
 - [x] Test usage access guidance.
 - [x] Test SettingsActivity privacy and sync defaults.
-- [ ] Commit and push Milestone 9.
+- [x] Commit and push Milestone 9.
 
 ## Milestone 10: Android Sync + Morning Summary
 
