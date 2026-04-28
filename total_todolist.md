@@ -229,6 +229,7 @@ the finished slice is committed and pushed.
 - [x] Test ViewModel state updates.
 - [x] Add Room-backed dashboard aggregation.
 - [x] Bind DashboardActivity to Room-backed dashboard data.
+- [x] Add MPAndroidChart dependency and chart mapper.
 - [x] Test DashboardActivity display with Espresso.
 - [ ] Test today/yesterday/recent 7 days filters.
 - [x] Test empty state.

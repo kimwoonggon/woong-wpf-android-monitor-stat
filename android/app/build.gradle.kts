@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.retrofit.moshi)
     implementation(libs.moshi)
     implementation(libs.okhttp)
+    implementation(libs.mpandroidchart)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.room.testing)

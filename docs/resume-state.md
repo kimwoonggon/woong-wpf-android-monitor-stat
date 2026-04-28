@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android SessionsActivity shell.
+Milestone 9 Android MPAndroidChart mapper.
 
 ## Completed
 
@@ -210,6 +210,13 @@ Milestone 9 Android SessionsActivity shell.
   empty-state text.
 - Added Espresso smoke test for SessionsActivity and verified the androidTest
   APK compiles.
+- Checked installed `find-skills` guidance and ran
+  `npx skills find android chart mpandroidchart`; no Android-specific
+  MPAndroidChart skill was selected.
+- Verified MPAndroidChart `v3.1.0` from the official GitHub release page and
+  added JitPack repository/dependency configuration.
+- Added `DashboardChartMapper` and chart data models that convert durations to
+  minute-based MPAndroidChart `Entry`, `BarEntry`, and `PieEntry` values.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -223,6 +230,7 @@ Milestone 9 Android SessionsActivity shell.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add MPAndroidChart dependency decision and chart placeholders/data binding.
+1. Add MPAndroidChart views to DashboardActivity and bind placeholder chart
+   data.
 2. Add today/yesterday/recent 7 days filter click assertions.
 3. Create SettingsActivity or SettingsFragment.
