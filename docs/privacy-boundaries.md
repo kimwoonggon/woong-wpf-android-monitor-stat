@@ -48,6 +48,8 @@ usage data. They must stay under ignored artifact folders.
 - Sync must be opt-in.
 - Android sync defaults to off and workers must suppress uploads until the
   persisted opt-in setting is enabled.
+- Android app backup is disabled for the MVP app so local Room usage metadata
+  is not copied into device backup flows.
 - Browser URL capture must be opt-in beyond generic browser app duration.
 - Full URL capture must be separate from domain-only capture.
 - Raw events need retention limits and must avoid sensitive content.

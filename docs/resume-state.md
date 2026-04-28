@@ -4,9 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Android collection-to-outbox slice. UsageStats-derived Android
-focus sessions now enqueue `focus_session` sync outbox rows with
-`android_usage_stats` source payloads after local Room persistence.
+Milestone 26 Android backup hardening slice. The Android manifest now disables
+app backup so local Room usage metadata and sync outbox rows stay local unless
+the user explicitly opts into server sync.
 
 ## Completed
 
@@ -712,12 +712,21 @@ focus sessions now enqueue `focus_session` sync outbox rows with
 - Verified `.NET` coverage generation with `scripts/test-coverage.ps1`;
   current overall line coverage is 92.4%, Domain 89.3%, Windows 92.5%,
   Windows.Presentation 97.6%, Windows.App 79.9%, and Server 96.3%.
+- Added `AndroidManifestPrivacyTest` to enforce
+  `android:allowBackup="false"` for local usage metadata.
+- Updated `AndroidManifest.xml` to disable app backup.
+- Documented Android local metadata backup hardening in
+  `docs/privacy-boundaries.md` and `docs/hardening.md`.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
 
 ## Next Highest Priority
 
 Continue Milestone 26 Android usage restoration with TDD: WorkManager
-scheduling only when allowed/visible, Android backup hardening for local usage
-metadata, and Room-backed SessionsActivity data. The WPF browser connection
+scheduling only when allowed/visible, Room-backed SessionsActivity data, and
+DailySummaryActivity repository/client loading. The WPF browser connection
 status UI and cramped lower dashboard layout remain deferred per the latest
 priority decision because non-UI tracking/schema correctness is more important
 right now. Physical Android resource measurement remains blocked until a device

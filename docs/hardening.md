@@ -47,6 +47,12 @@ MVP policy:
 - Retention deletes must be explicit scheduled maintenance, not hidden
   collection behavior.
 
+## Android Local Metadata Backup
+
+The Android manifest sets `android:allowBackup="false"` for MVP. Local Room
+usage metadata and sync outbox rows should stay local unless the user explicitly
+opts into server sync.
+
 ## Android Notification Permission
 
 `POST_NOTIFICATIONS` is declared so the morning summary worker can eventually

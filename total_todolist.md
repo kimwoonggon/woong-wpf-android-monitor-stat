@@ -519,14 +519,16 @@ milestones below are finished.
 - [ ] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
 - [x] Enqueue sync outbox rows when UsageStats sessions are collected.
 - [x] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
-- [ ] Review and disable/constrain `android:allowBackup` for local usage metadata.
+- [x] Review and disable/constrain `android:allowBackup` for local usage metadata.
 - [ ] Make SessionsActivity display real Room-backed sessions.
 - [ ] Make DailySummaryActivity load previous-day summary through repository/client rather than intent extras only.
 - [ ] Add Android 13+ notification permission UX before morning summary notifications.
 - [x] Run Android unit tests and debug build for Android sync opt-in slice.
 - [x] Run Android unit tests and debug build for Android collection outbox slice.
+- [x] Run Android unit tests and debug build for Android backup hardening slice.
 - [x] Run .NET regression tests and coverage report for Android usage restoration slices; current .NET line coverage is 92.4%.
 - [x] Commit and push Android sync opt-in enforcement slice.
+- [x] Commit and push Android backup hardening slice.
 - [ ] Commit and push Android usage restoration slice.
 
 ## Milestone 27: Android UI Screenshot And Device Automation
