@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android DashboardActivity data binding and empty state.
+Milestone 9 Android Dashboard usage-access guidance.
 
 ## Completed
 
@@ -204,6 +204,8 @@ Milestone 9 Android DashboardActivity data binding and empty state.
 - Added visible value fields for active time, top app, and idle time.
 - Added empty recent-session state text and covered it from the Espresso smoke
   surface.
+- Added explicit Usage Access guidance text and covered it from the Espresso
+  smoke surface.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -217,6 +219,6 @@ Milestone 9 Android DashboardActivity data binding and empty state.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add explicit usage-access guidance assertion.
-2. Add SessionsActivity or SessionsFragment.
-3. Add MPAndroidChart dependency decision and chart placeholders/data binding.
+1. Add SessionsActivity or SessionsFragment.
+2. Add MPAndroidChart dependency decision and chart placeholders/data binding.
+3. Add today/yesterday/recent 7 days filter click assertions.

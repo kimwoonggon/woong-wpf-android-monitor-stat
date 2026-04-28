@@ -232,7 +232,7 @@ the finished slice is committed and pushed.
 - [x] Test DashboardActivity display with Espresso.
 - [ ] Test today/yesterday/recent 7 days filters.
 - [x] Test empty state.
-- [ ] Test usage access guidance.
+- [x] Test usage access guidance.
 - [ ] Commit and push Milestone 9.
 
 ## Milestone 10: Android Sync + Morning Summary

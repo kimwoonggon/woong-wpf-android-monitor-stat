@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Woong Monitor</string>
     <string name="usage_access_settings">Usage Access</string>
+    <string name="usage_access_guidance">Usage access is required to calculate app statistics.</string>
     <string name="dashboard_title">Dashboard</string>
     <string name="filter_today">Today</string>
     <string name="filter_yesterday">Yesterday</string>

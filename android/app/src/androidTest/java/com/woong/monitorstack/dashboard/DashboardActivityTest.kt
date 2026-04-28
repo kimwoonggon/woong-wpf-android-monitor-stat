@@ -27,6 +27,8 @@ class DashboardActivityTest {
         onView(withId(R.id.topAppText)).check(matches(isDisplayed()))
         onView(withId(R.id.idleCard)).check(matches(isDisplayed()))
         onView(withId(R.id.idleText)).check(matches(isDisplayed()))
+        onView(withId(R.id.usageAccessGuidanceText))
+            .check(matches(withText(R.string.usage_access_guidance)))
         onView(withId(R.id.usageAccessSettingsButton)).check(matches(isDisplayed()))
         onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
         onView(withId(R.id.recentSessionsList)).check(matches(isDisplayed()))
