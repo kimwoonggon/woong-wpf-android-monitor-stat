@@ -1,0 +1,18 @@
+# .NET
+bin/
+obj/
+TestResults/
+
+# Local CLI/cache directories used inside the Codex sandbox
+.appdata/
+.dotnet/
+.msbuild/
+.nuget/
+.downloads/
+
+# Diagnostics
+artifacts/logs/
+
+# IDE
+.vs/
+.vscode/
