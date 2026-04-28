@@ -212,6 +212,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <CheckBox Content="Collection visible"
@@ -227,6 +228,12 @@
                                        Text="{Binding Settings.SyncModeLabel}"
                                        Foreground="#5A6472"
                                        FontSize="13" />
+                            <TextBlock Grid.Row="3"
+                                       Margin="0,8,0,0"
+                                       Text="{Binding Settings.SyncStatusLabel}"
+                                       Foreground="#8A4B00"
+                                       FontSize="13"
+                                       TextWrapping="Wrap" />
                         </Grid>
                     </TabItem>
                 </TabControl>

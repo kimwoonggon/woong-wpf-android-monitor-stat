@@ -301,6 +301,8 @@ Milestone 12 DB migration and retention review.
 - Added `docs/hardening.md` with DB migration review notes, server/local DB
   separation reminders, required idempotency indexes, raw event retention
   policy, and Android notification permission follow-up.
+- Added Windows Settings sync failure status in the dashboard presentation
+  model and WPF Settings tab.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -316,6 +318,6 @@ Milestone 12 DB migration and retention review.
 
 Continue Milestone 12 Hardening & Release Candidate:
 
-1. Add sync failure UI and clearer permission guidance.
+1. Add Android sync failure UI and clearer permission guidance.
 2. Run full RC validation matrix.
 3. Complete README and release checklist.

@@ -13,4 +13,16 @@ public sealed class DashboardSettingsViewModelTests
         Assert.False(viewModel.IsSyncEnabled);
         Assert.Equal("Local only", viewModel.SyncModeLabel);
     }
+
+    [Fact]
+    public void ReportSyncFailure_ShowsVisibleRetryableStatus()
+    {
+        var viewModel = new DashboardSettingsViewModel();
+        viewModel.IsSyncEnabled = true;
+
+        viewModel.ReportSyncFailure("server unavailable");
+
+        Assert.True(viewModel.HasSyncFailure);
+        Assert.Equal("Sync failed: server unavailable", viewModel.SyncStatusLabel);
+    }
 }
