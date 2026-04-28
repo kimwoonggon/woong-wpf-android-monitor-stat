@@ -3,14 +3,48 @@ package com.woong.monitorstack.summary
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.woong.monitorstack.databinding.ActivityDailySummaryBinding
+import java.time.ZoneId
 
 class DailySummaryActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityDailySummaryBinding
+    private val loader = DailySummaryActivityLoader()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = ActivityDailySummaryBinding.inflate(layoutInflater)
+        binding = ActivityDailySummaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         render(binding, readStateFromIntent())
+        readLoadRequestFromIntent()?.let { request ->
+            loadFromRepository(request)
+        }
+    }
+
+    private fun readLoadRequestFromIntent(): DailySummaryActivityLoadRequest? {
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+        val baseUrl = intent.getStringExtra(EXTRA_BASE_URL)
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+        val timezoneId = intent.getStringExtra(EXTRA_TIMEZONE_ID)
+            ?.takeIf { it.isNotBlank() }
+            ?: ZoneId.systemDefault().id
+
+        return DailySummaryActivityLoadRequest(
+            userId = userId,
+            baseUrl = baseUrl,
+            timezoneId = timezoneId
+        )
+    }
+
+    private fun loadFromRepository(request: DailySummaryActivityLoadRequest) {
+        Thread {
+            val state = loader.loadPreviousDay(request)
+            runOnUiThread {
+                render(binding, state)
+            }
+        }.start()
     }
 
     private fun readStateFromIntent(): DailySummaryUiState {
@@ -56,6 +90,9 @@ class DailySummaryActivity : AppCompatActivity() {
         const val EXTRA_WEB_MS = "webMs"
         const val EXTRA_TOP_APP = "topApp"
         const val EXTRA_TOP_DOMAIN = "topDomain"
+        const val EXTRA_USER_ID = "userId"
+        const val EXTRA_BASE_URL = "baseUrl"
+        const val EXTRA_TIMEZONE_ID = "timezoneId"
         private const val DefaultTopValue = "None"
     }
 }
