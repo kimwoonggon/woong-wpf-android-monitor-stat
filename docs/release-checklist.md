@@ -55,6 +55,8 @@ Use this checklist for the Milestone 12 release-candidate pass.
 
 ## Known Follow-Ups
 
+- [ ] Complete dedicated Milestone 4.5: Windows Chrome Extension + Native
+  Messaging.
 - [ ] Generate production EF Core migrations before production PostgreSQL use.
 - [ ] Repeat Android resource measurements on a physical device.
 - [ ] Add longer-running Windows collector profiling once continuous background

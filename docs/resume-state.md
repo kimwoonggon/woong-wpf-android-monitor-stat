@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 12 release candidate validation.
+PRD/TODO correction for Chrome Extension + Native Messaging continuation.
 
 ## Completed
 
@@ -333,9 +333,18 @@ Milestone 12 release candidate validation.
   `com.android.settings/com.android.settings.spa.SpaActivity`.
 - Marked `docs/release-checklist.md` and `total_todolist.md` complete for the
   PRD/MVP release-candidate pass.
+- Reopened project completion after user clarified that Chrome Extension +
+  Native Messaging must be a dedicated milestone rather than an informal
+  post-RC follow-up.
+- Added Milestone 4.5 to `docs/prd.md` and `total_todolist.md`.
+- Added `AGENTS.md` rules for Chrome extension privacy boundaries and
+  PostgreSQL/Testcontainers-style relational server integration testing.
 
 ## Next Highest Priority
 
-All planned PRD/MVP TODOs are complete. Remaining work is post-RC follow-up:
-production EF Core migrations, Android physical-device resource measurements,
-and longer-running Windows collector profiling.
+Continue Milestone 4.5:
+
+1. Start with a TDD slice for extension payload domain extraction.
+2. Add the Chrome extension project and manifest.
+3. Add native messaging DTO/receiver seams without collecting typed text,
+   passwords, messages, or form inputs.

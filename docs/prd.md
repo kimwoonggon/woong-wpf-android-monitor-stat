@@ -433,6 +433,32 @@ MVP에서는 두 단계로 나눈다.
 Chrome 내부 `windowId/tabId`와 Windows `HWND/PID`는 같은 ID가 아니다.
 따라서 직접 같은 키로 보지 않고 timestamp, title, foreground state 등을 통해 매핑한다.
 
+### Phase 2 전용 마일스톤 요구사항
+
+Chrome Extension + Native Messaging은 Windows 웹 추적의 별도 마일스톤으로
+관리한다. 확장은 사용자가 명시적으로 설치/허용하는 구성으로만 동작하며,
+비밀번호, 메시지, 폼 입력, typed text를 수집하지 않는다.
+
+필수 작업:
+
+* Chrome extension project 생성
+* extension manifest 정의
+* `tabs`, `webNavigation` 권한 검토 및 요청
+* active tab changed event 추적
+* URL/title/domain 변경 추적
+* Windows native messaging host 등록
+* extension -> native host message DTO 정의
+* Windows app/service native host receiver 구현
+* browser raw event 저장
+* browser event -> web_session 변환
+
+필수 테스트:
+
+* extension payload domain extraction
+* active tab event creates/updates web session
+* duplicate tab events do not inflate duration
+* Chrome active tab URL appears in Windows local DB
+
 ## 9.3 WPF Dashboard
 
 필수 화면:
@@ -717,6 +743,14 @@ UI Automator 테스트:
 * xUnit
 * WebApplicationFactory
 * test database
+
+서버 통합 테스트 DB 전략:
+
+* 서버 DB 테스트 구현 전 테스트 DB 전략을 먼저 결정한다.
+* PostgreSQL 고유 인덱스, 관계 제약, provider-specific 동작, idempotency는
+  EF InMemory만으로 검증하지 않는다.
+* PostgreSQL/Testcontainers를 우선 검토하고, 사용할 수 없는 경우에도
+  관계형 provider와 명시적 reset strategy를 문서화한다.
 
 필수 테스트:
 
@@ -1023,6 +1057,46 @@ Codex에서 서브 에이전트로 나눌 경우 다음 역할을 권장한다.
 * WPF 앱 빌드 성공
 * 테스트 통과
 * 실제 실행 시 오늘/최근 1시간 통계 표시
+
+---
+
+## Milestone 4.5: Windows Chrome Extension + Native Messaging
+
+목표:
+
+* Windows에서 Chrome active tab URL/title/domain을 명시적 확장 권한과
+  native messaging을 통해 수집하고, Windows local SQLite의 browser raw
+  event 및 web_session으로 연결한다.
+
+작업:
+
+* Chrome extension project 생성
+* extension manifest 정의
+* tabs/webNavigation 권한 요청
+* active tab changed event 추적
+* URL/title/domain 변경 추적
+* Windows native messaging host 등록 방식 정의
+* extension -> native host message DTO 정의
+* Windows app/service native host receiver 구현
+* browser raw event 저장
+* browser event를 web_session으로 변환
+
+테스트:
+
+* extension payload domain extraction
+* active tab event creates/updates web session
+* duplicate tab events do not inflate duration
+* Chrome active tab URL appears in Windows local DB
+
+완료 조건:
+
+* Chrome active tab URL/title/domain이 명시적 권한 기반으로 Windows local
+  DB에 저장됨
+* browser raw event에서 web_session이 생성됨
+* 중복 tab event가 duration을 부풀리지 않음
+* 관련 unit/component/integration tests 통과
+* Windows build 성공
+* 문서/TODO 업데이트 후 commit/push
 
 ---
 

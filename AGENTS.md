@@ -71,6 +71,13 @@ skill suggests Compose.
   integration tests, BackgroundService for the initial daily summary job.
 - Before introducing unfamiliar frameworks or tools, use `npx skills find ...`
   and verify the result against the PRD.
+- Chrome Extension + Native Messaging is a dedicated Windows web-tracking
+  milestone. Extension work must stay explicit/user-visible and must not collect
+  passwords, message contents, form inputs, or typed text.
+- Server integration tests that validate PostgreSQL-specific indexes,
+  relational constraints, or idempotency must use a relational provider. Prefer
+  PostgreSQL/Testcontainers with an explicit reset strategy; do not treat EF
+  InMemory as proof of PostgreSQL relational behavior.
 
 ## Agent Ownership
 
@@ -79,6 +86,8 @@ skill suggests Compose.
   docs, sync protocol docs, and milestone docs.
 - Windows Agent owns future `src/Woong.MonitorStack.Windows*` projects and
   matching Windows tests.
+- Windows Agent also owns future `extensions/chrome/` and native-messaging host
+  receiver work unless a narrower owner is documented.
 - Android Agent owns future `android/` projects and Android tests.
 - Server Agent owns future `src/Woong.MonitorStack.Server*` projects and
   matching server tests.

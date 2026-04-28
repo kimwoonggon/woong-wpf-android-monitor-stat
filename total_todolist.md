@@ -137,11 +137,32 @@ the finished slice is committed and pushed.
 - [x] Commit and push WPF smoke path and Milestone 4 completion.
 - [x] Commit and push Milestone 4.
 
+## Milestone 4.5: Windows Chrome Extension + Native Messaging
+
+- [ ] Create Chrome extension project.
+- [ ] Define extension manifest.
+- [ ] Request tabs/webNavigation permissions.
+- [ ] Track active tab changed event.
+- [ ] Track URL/title/domain changes.
+- [ ] Implement native messaging host registration for Windows.
+- [ ] Implement extension -> native host message DTO.
+- [ ] Implement native host receiver in Windows app/service.
+- [ ] Store browser raw events.
+- [ ] Convert browser events to web_session.
+- [ ] Test domain extraction from extension payload.
+- [ ] Test active tab event creates/updates web session.
+- [ ] Test duplicate tab events do not inflate duration.
+- [ ] Verify Chrome active tab URL appears in Windows local DB.
+- [ ] Commit and push Chrome extension/native messaging slice.
+
 ## Milestone 5: Server Integrated DB + API MVP
 
 - [x] Create ASP.NET Core Web API project.
 - [x] Create server test project.
 - [x] Add EF Core PostgreSQL.
+- [ ] Decide server integration test DB strategy before PostgreSQL-specific tests.
+- [ ] Add relational test database reset strategy.
+- [ ] Verify idempotency and unique indexes against a relational provider.
 - [x] Define integrated DB entities.
 - [x] Define Device integrated DB entity.
 - [x] Test Device unique index for idempotent registration.
@@ -294,12 +315,12 @@ the finished slice is committed and pushed.
 
 ## Final Definition Of Done
 
-- [x] All PRD requirements reflected in code/tests/docs.
-- [x] All core logic built TDD-first.
-- [x] All relevant tests pass.
-- [x] All builds pass.
+- [ ] All PRD requirements reflected in code/tests/docs.
+- [ ] All core logic built TDD-first.
+- [ ] All relevant tests pass.
+- [ ] All builds pass.
 - [x] Safety/privacy excluded scopes are not implemented.
 - [x] Local DB/server integrated DB separation is preserved.
 - [x] Daily integrated summary works across Windows + Android.
-- [x] Final documentation is complete.
-- [x] Final commit is pushed to `origin`.
+- [ ] Final documentation is complete.
+- [ ] Final commit is pushed to `origin`.
