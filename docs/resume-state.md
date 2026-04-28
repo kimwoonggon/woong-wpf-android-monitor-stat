@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows WPF summary card shell foundation.
+Milestone 4 Windows dashboard chart data mapper foundation.
 
 ## Completed
 
@@ -46,6 +46,12 @@ Milestone 4 Windows WPF summary card shell foundation.
   cards.
 - Added an empty dashboard data source placeholder for safe WPF startup before
   the local SQLite dashboard adapter is introduced.
+- Added dependency-free dashboard chart points and mapper logic for hourly
+  activity, app usage, and domain usage.
+- Added ViewModel chart point publication for the dashboard.
+- Checked `LiveChartsCore.SkiaSharpView.WPF` 2.0.0 as the current NuGet stable
+  package and kept it out of the commit until the WPF adapter can be added
+  without introducing unused package warnings.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -56,6 +62,7 @@ Milestone 4 Windows WPF summary card shell foundation.
 
 Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Add chart mapper tests before introducing LiveCharts2 UI.
+1. Add LiveCharts2 WPF adapter/control binding, resolving package warnings
+   deliberately.
 2. Add app sessions table and bind it to recent focus sessions.
 3. Add live event log, web sessions view, and settings view.

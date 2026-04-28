@@ -81,6 +81,34 @@ public sealed class DashboardViewModelTests
         Assert.Equal("devenv.exe", viewModel.TopAppName);
     }
 
+    [Fact]
+    public void SelectPeriod_PublishesChartPoints()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "chrome.exe", now.AddMinutes(-30), now.AddMinutes(-10), isIdle: false)],
+            [
+                WebSession.FromUtc(
+                    "session-1",
+                    "Chrome",
+                    "https://example.com/docs",
+                    "Docs",
+                    now.AddMinutes(-25),
+                    now.AddMinutes(-15))
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.NotEmpty(viewModel.HourlyActivityPoints);
+        var appPoint = Assert.Single(viewModel.AppUsagePoints);
+        Assert.Equal("chrome.exe", appPoint.Label);
+        Assert.Equal(1_200_000, appPoint.ValueMs);
+        var domainPoint = Assert.Single(viewModel.DomainUsagePoints);
+        Assert.Equal("example.com", domainPoint.Label);
+        Assert.Equal(600_000, domainPoint.ValueMs);
+    }
+
     private static FocusSession Session(
         string clientSessionId,
         string appKey,

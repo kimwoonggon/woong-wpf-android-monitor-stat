@@ -37,6 +37,15 @@ public sealed partial class DashboardViewModel : ObservableObject
         new("Web", "0m")
     ];
 
+    [ObservableProperty]
+    private IReadOnlyList<DashboardChartPoint> _hourlyActivityPoints = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardChartPoint> _appUsagePoints = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardChartPoint> _domainUsagePoints = [];
+
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
@@ -83,6 +92,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             new("Idle", FormatDuration(summary.TotalIdleMs)),
             new("Web", FormatDuration(summary.TotalWebMs))
         ];
+        HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timezoneId);
+        AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
+        DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
     }
 
     private TimeRange ResolveRange(DashboardPeriod period)
