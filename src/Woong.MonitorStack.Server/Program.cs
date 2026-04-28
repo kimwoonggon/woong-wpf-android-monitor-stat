@@ -22,6 +22,7 @@ builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
 builder.Services.AddScoped<RawEventUploadService>();
 builder.Services.AddScoped<DailySummaryQueryService>();
+builder.Services.AddScoped<DailySummaryAggregationService>();
 
 var app = builder.Build();
 

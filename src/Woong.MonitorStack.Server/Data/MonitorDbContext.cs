@@ -12,6 +12,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<RawEventEntity> RawEvents => Set<RawEventEntity>();
 
+    public DbSet<DailySummaryEntity> DailySummaries => Set<DailySummaryEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -63,6 +65,22 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(rawEvent => rawEvent.EventType).HasMaxLength(128).IsRequired();
             entity.Property(rawEvent => rawEvent.PayloadJson).IsRequired();
             entity.HasIndex(rawEvent => new { rawEvent.DeviceId, rawEvent.ClientEventId }).IsUnique();
+        });
+
+        modelBuilder.Entity<DailySummaryEntity>(entity =>
+        {
+            entity.ToTable("daily_summaries");
+            entity.HasKey(summary => summary.Id);
+            entity.Property(summary => summary.UserId).HasMaxLength(128).IsRequired();
+            entity.Property(summary => summary.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.Property(summary => summary.TopAppsJson).IsRequired();
+            entity.Property(summary => summary.TopDomainsJson).IsRequired();
+            entity.HasIndex(summary => new
+            {
+                summary.UserId,
+                summary.SummaryDate,
+                summary.TimezoneId
+            }).IsUnique();
         });
     }
 }

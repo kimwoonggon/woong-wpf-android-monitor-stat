@@ -259,14 +259,14 @@ the finished slice is committed and pushed.
 
 ## Milestone 11: Integrated Daily Summary
 
-- [ ] Implement server daily aggregation job.
-- [ ] Aggregate Windows + Android active time.
-- [ ] Exclude idle time from active totals.
+- [x] Implement server daily aggregation job.
+- [x] Aggregate Windows + Android active time.
+- [x] Exclude idle time from active totals.
 - [ ] Add app family mapping.
-- [ ] Compute top app.
-- [ ] Compute top domain.
+- [x] Compute top app.
+- [x] Compute top domain.
 - [ ] Respect user timezone local date.
-- [ ] Test mixed Windows + Android data summary.
+- [x] Test mixed Windows + Android data summary.
 - [ ] Test timezone boundaries.
 - [ ] Test duplicate data does not inflate summary.
 - [ ] Verify Windows/Android can query integrated summary.

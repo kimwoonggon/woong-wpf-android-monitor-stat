@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android morning summary notification worker.
+Milestone 11 server daily summary aggregation.
 
 ## Completed
 
@@ -272,9 +272,18 @@ Milestone 10 Android morning summary notification worker.
   concern before release.
 - Verified the notification worker delegates title/text to the runner and
   returns success.
+- Added server `DailySummaryEntity` and `daily_summaries` EF model mapping with
+  a unique `(UserId, SummaryDate, TimezoneId)` index.
+- Added `DailySummaryAggregationService` that generates and upserts persisted
+  daily summaries from integrated focus/web session data.
+- Verified persisted daily summary totals combine Windows + Android devices,
+  exclude idle time from active totals, compute top apps/domains, and ignore
+  another user's data.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
+- Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -285,6 +294,6 @@ Milestone 10 Android morning summary notification worker.
 
 Continue Milestone 11 Integrated Daily Summary:
 
-1. Implement server daily aggregation job.
-2. Add app family mapping for integrated top apps.
-3. Verify mixed Windows + Android summary data and timezone boundaries.
+1. Add app family mapping for integrated top apps.
+2. Verify timezone boundary behavior.
+3. Verify duplicate data does not inflate summaries.
