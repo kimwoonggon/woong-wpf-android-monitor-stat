@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows WPF Dashboard MVP completed.
+Milestone 5 Server bootstrap and device registration API.
 
 ## Completed
 
@@ -72,6 +72,12 @@ Milestone 4 Windows WPF Dashboard MVP completed.
   `DashboardViewModel`.
 - Verified 49 tests pass across domain, Windows, presentation, and WPF app
   tests.
+- Added ASP.NET Core Web API project and server xUnit integration test project.
+- Added `Microsoft.AspNetCore.Mvc.Testing` 10.0.1 for server API tests.
+- Replaced the template weather endpoint with `POST /api/devices/register`.
+- Added in-memory duplicate-safe device registration service as the first
+  vertical API slice.
+- Verified 50 tests pass across all current projects.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -82,6 +88,8 @@ Milestone 4 Windows WPF Dashboard MVP completed.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Create ASP.NET Core Web API and server test project.
-2. Start TDD-first device registration contract/API behavior.
-3. Add EF Core PostgreSQL entities after API tests define the behavior.
+1. Add EF Core PostgreSQL and integrated server DB entities.
+2. Keep the device registration API behavior stable while moving from in-memory
+   storage to EF.
+3. Start focus session upload API with duplicate `deviceId + clientSessionId`
+   tests.

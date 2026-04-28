@@ -1,0 +1,6 @@
+@Woong.MonitorStack.Server_HostAddress = http://localhost:5062
+
+GET {{Woong.MonitorStack.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -139,18 +139,19 @@ the finished slice is committed and pushed.
 
 ## Milestone 5: Server Integrated DB + API MVP
 
-- [ ] Create ASP.NET Core Web API project.
-- [ ] Create server test project.
+- [x] Create ASP.NET Core Web API project.
+- [x] Create server test project.
 - [ ] Add EF Core PostgreSQL.
 - [ ] Define integrated DB entities.
-- [ ] Implement device registration API.
+- [x] Implement device registration API.
 - [ ] Implement focus session upload API.
 - [ ] Implement web session upload API.
 - [ ] Implement raw event upload API.
 - [ ] Enforce device/client session idempotency.
 - [ ] Add daily summary calculator.
 - [ ] Add summary query API.
-- [ ] Add WebApplicationFactory integration tests.
+- [x] Add WebApplicationFactory integration tests.
+- [x] Test device registration idempotency.
 - [ ] Test duplicate clientSessionId ignored.
 - [ ] Test daily summary generation.
 - [ ] Commit and push Milestone 5.
