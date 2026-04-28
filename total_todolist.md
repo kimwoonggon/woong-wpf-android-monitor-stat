@@ -201,7 +201,7 @@ the finished slice is committed and pushed.
 ## Milestone 8: Android Usage Collection + Room
 
 - [x] Implement Usage Access permission checker.
-- [ ] Implement permission settings navigation UI entry.
+- [x] Implement permission settings navigation UI entry.
 - [ ] Implement UsageStats collector.
 - [ ] Implement UsageSessionizer.
 - [ ] Implement short consecutive event merge.
