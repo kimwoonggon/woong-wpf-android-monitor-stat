@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android UsageSessionizer app switch.
+Milestone 8 Android Room focus session DAO.
 
 ## Completed
 
@@ -161,6 +161,13 @@ Milestone 8 Android UsageSessionizer app switch.
 - Added configurable same-app merge gap to `UsageSessionizer`.
 - Verified close same-app pause/resume pairs merge into one session.
 - Verified a different app resume closes the previous active app session.
+- Added KSP/Room compiler plus Robolectric/Room testing dependencies.
+- Added Room `FocusSessionEntity`, `FocusSessionDao`, and `MonitorDatabase`.
+- Verified Room in-memory DAO insert/query by local date range with a
+  Robolectric component test.
+- Verified `assembleDebug`; AGP reports the expected experimental
+  `android.disallowKotlinSourceSets=false` warning required for KSP with
+  built-in Kotlin.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -171,6 +178,6 @@ Milestone 8 Android UsageSessionizer app switch.
 
 Continue Milestone 8 Android Usage Collection + Room:
 
-1. Define Room entities/DAO.
-2. Add Room DAO insert/query test.
-3. Implement UsageStats collector mapping into `UsageEventSnapshot`.
+1. Implement UsageStats collector mapping into `UsageEventSnapshot`.
+2. Implement collect worker.
+3. Add worker behavior test.

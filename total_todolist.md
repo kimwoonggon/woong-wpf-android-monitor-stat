@@ -205,12 +205,12 @@ the finished slice is committed and pushed.
 - [ ] Implement UsageStats collector.
 - [x] Implement UsageSessionizer.
 - [x] Implement short consecutive event merge.
-- [ ] Define Room entities/DAO.
+- [x] Define Room entities/DAO.
 - [ ] Implement collect worker.
 - [x] Test resumed/paused creates session.
 - [x] Test close same-app events merge.
 - [x] Test different app starts close previous session.
-- [ ] Test Room DAO insert/query.
+- [x] Test Room DAO insert/query.
 - [ ] Test worker behavior.
 - [ ] Commit and push Milestone 8.
 
