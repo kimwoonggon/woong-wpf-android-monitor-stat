@@ -7,6 +7,7 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
+import com.woong.monitorstack.settings.AndroidSyncSettings
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,6 +67,34 @@ class AndroidSyncWorkerTest {
         assertEquals(ListenableWorker.Result.retry(), result)
     }
 
+    @Test
+    fun doWorkSkipsSyncWhenSyncOptInIsDisabled() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeAndroidSyncRunner(
+            result = AndroidOutboxSyncResult(
+                syncedCount = 1,
+                failedCount = 0
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = false)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(null, runner.limit)
+        assertEquals(
+            ListenableWorker.Result.success(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_SKIPPED to true
+                )
+            ),
+            result
+        )
+    }
+
     private class FakeAndroidSyncRunner(
         private val result: AndroidOutboxSyncResult
     ) : AndroidSyncRunner {
@@ -79,7 +108,8 @@ class AndroidSyncWorkerTest {
     }
 
     private class FakeWorkerFactory(
-        private val runner: AndroidSyncRunner
+        private val runner: AndroidSyncRunner,
+        private val syncSettings: AndroidSyncSettings = FakeAndroidSyncSettings(isEnabled = true)
     ) : WorkerFactory() {
         override fun createWorker(
             appContext: Context,
@@ -87,10 +117,16 @@ class AndroidSyncWorkerTest {
             workerParameters: WorkerParameters
         ): ListenableWorker? {
             return if (workerClassName == AndroidSyncWorker::class.java.name) {
-                AndroidSyncWorker(appContext, workerParameters, runner)
+                AndroidSyncWorker(appContext, workerParameters, runner, syncSettings)
             } else {
                 null
             }
         }
+    }
+
+    private class FakeAndroidSyncSettings(
+        private val isEnabled: Boolean
+    ) : AndroidSyncSettings {
+        override fun isSyncEnabled(): Boolean = isEnabled
     }
 }

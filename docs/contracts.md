@@ -44,6 +44,12 @@ metadata are the safe default metadata for process/window duration tracking.
 Android clients should leave Windows-specific process/window metadata fields
 null and use `source = android_usage_stats`.
 
+Android sync is opt-in at the client boundary. The persisted Android sync
+setting defaults to disabled, and `AndroidSyncWorker` must return a skipped
+success without invoking upload when sync is disabled. This keeps local
+UsageStats collection and local Room storage separate from server upload
+consent.
+
 ## Daily Summary Query
 
 - Current daily summary endpoint is

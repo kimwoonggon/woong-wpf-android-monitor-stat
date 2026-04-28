@@ -4,10 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 24 Android app usage contract decision slice. Android UsageStats
-sessions remain represented by the shared `FocusSession` upload contract for
-MVP, with Android package names stored as `platformAppKey` and Windows-only
-process/window metadata left null.
+Milestone 26 Android sync opt-in enforcement slice. Android sync now has a
+persisted SharedPreferences setting that defaults to disabled, and
+`AndroidSyncWorker` skips upload work unless that opt-in is enabled.
 
 ## Completed
 
@@ -677,12 +676,29 @@ process/window metadata left null.
 - Verified latest .NET restore/test/build after migration and profiling changes.
 - Verified Android `testDebugUnitTest` and `assembleDebug` after hardening
   changes.
+- Added `AndroidSyncSettings` and
+  `SharedPreferencesAndroidSyncSettings`; sync opt-in defaults to false and
+  persists enabled state.
+- Updated `AndroidSyncWorker` so disabled sync returns a skipped success result
+  with zero upload counts and does not invoke the sync runner.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.NET` coverage generation with `scripts/test-coverage.ps1`;
+  current overall line coverage is 92.9%, Domain 89.3%, Windows 92.5%,
+  Windows.Presentation 97.6%, Windows.App 85.3%, and Server 96.3%.
+  Android coverage collection is not configured yet, so Android validation for
+  this slice is unit-test/build based.
+- Recreated ignored `android/local.properties` locally to point Gradle at the
+  installed Android SDK; this file remains untracked and must not be committed.
 
 ## Next Highest Priority
 
-Continue Milestone 26 Android usage restoration with TDD: persisted sync opt-in
-enforcement, WorkManager scheduling only when allowed/visible, and collection
-to outbox rows. The WPF browser connection status UI remains deferred per the
+Continue Milestone 26 Android usage restoration with TDD: WorkManager
+scheduling only when allowed/visible, collection to outbox rows, and
+`android_usage_stats` source alignment in the sync payload path. The WPF browser
+connection status UI and cramped lower dashboard layout remain deferred per the
 latest priority decision because non-UI tracking/schema correctness is more
 important right now. Physical Android resource measurement remains blocked until
 a device is connected.

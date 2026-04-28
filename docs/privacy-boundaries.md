@@ -46,6 +46,8 @@ usage data. They must stay under ignored artifact folders.
 - Collection must be visible in the app UI.
 - Permissions must be explicit.
 - Sync must be opt-in.
+- Android sync defaults to off and workers must suppress uploads until the
+  persisted opt-in setting is enabled.
 - Browser URL capture must be opt-in beyond generic browser app duration.
 - Full URL capture must be separate from domain-only capture.
 - Raw events need retention limits and must avoid sensitive content.
@@ -59,4 +61,3 @@ This project answers:
 It does not answer:
 
 > What did the user type, read, see, copy, say, or send?
-

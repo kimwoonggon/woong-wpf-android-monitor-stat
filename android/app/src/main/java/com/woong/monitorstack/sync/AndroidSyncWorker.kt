@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.woong.monitorstack.settings.AndroidSyncSettings
+import com.woong.monitorstack.settings.SharedPreferencesAndroidSyncSettings
 import java.io.IOException
 
 class AndroidSyncWorker @JvmOverloads constructor(
@@ -12,12 +14,22 @@ class AndroidSyncWorker @JvmOverloads constructor(
     private val runner: AndroidSyncRunner = AndroidSyncRunnerFactory.create(
         appContext,
         workerParams
-    )
+    ),
+    private val syncSettings: AndroidSyncSettings = SharedPreferencesAndroidSyncSettings(appContext)
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
         val limit = inputData.getInt(KEY_PENDING_LIMIT, DEFAULT_PENDING_LIMIT)
         if (limit <= 0) {
             return Result.failure()
+        }
+        if (!syncSettings.isSyncEnabled()) {
+            return Result.success(
+                workDataOf(
+                    KEY_SYNCED_COUNT to 0,
+                    KEY_FAILED_COUNT to 0,
+                    KEY_SYNC_SKIPPED to true
+                )
+            )
         }
 
         return try {
@@ -43,6 +55,7 @@ class AndroidSyncWorker @JvmOverloads constructor(
         const val KEY_PENDING_LIMIT = "pendingLimit"
         const val KEY_SYNCED_COUNT = "syncedCount"
         const val KEY_FAILED_COUNT = "failedCount"
+        const val KEY_SYNC_SKIPPED = "syncSkipped"
         const val DEFAULT_PENDING_LIMIT = 50
     }
 }

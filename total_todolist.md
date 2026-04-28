@@ -515,15 +515,17 @@ milestones below are finished.
 ## Milestone 26: Android Usage Tracking Restoration
 
 - [ ] Add UI Automator dependency and Usage Access settings navigation smoke test.
-- [ ] Add persisted sync opt-in setting and default-off enforcement.
+- [x] Add persisted sync opt-in setting and default-off enforcement.
 - [ ] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
 - [ ] Enqueue sync outbox rows when UsageStats sessions are collected.
-- [ ] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
+- [x] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
 - [ ] Review and disable/constrain `android:allowBackup` for local usage metadata.
 - [ ] Make SessionsActivity display real Room-backed sessions.
 - [ ] Make DailySummaryActivity load previous-day summary through repository/client rather than intent extras only.
 - [ ] Add Android 13+ notification permission UX before morning summary notifications.
-- [ ] Run Android unit tests and debug build.
+- [x] Run Android unit tests and debug build for Android sync opt-in slice.
+- [x] Run .NET regression tests and coverage report for Android sync opt-in slice; current .NET line coverage is 92.9%.
+- [x] Commit and push Android sync opt-in enforcement slice.
 - [ ] Commit and push Android usage restoration slice.
 
 ## Milestone 27: Android UI Screenshot And Device Automation
