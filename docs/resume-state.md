@@ -4,9 +4,10 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Android WorkManager scheduling slice. Android periodic collection
-now has a scheduler boundary that cancels work unless Usage Access is granted
-and a persisted collection-enabled setting is true.
+Milestone 26 Room-backed SessionsActivity slice. Android sessions now have a
+recent-session DAO query, a Room-backed sessions repository, and
+`SessionsActivity` binds RecyclerView rows from local Room data instead of an
+empty adapter.
 
 ## Completed
 
@@ -740,13 +741,27 @@ and a persisted collection-enabled setting is true.
   minimal`.
 - Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
   minimal`.
+- Added `FocusSessionDao.queryRecent(limit)` and verified newest sessions are
+  returned first.
+- Added `RoomSessionsRepository`, `SessionRow`, and duration formatting for
+  Android app usage rows.
+- Updated `SessionsActivity` to load recent sessions from `MonitorDatabase` on
+  a background thread and hide the empty state when rows exist.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal`.
+- Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`.
 
 ## Next Highest Priority
 
-Continue Milestone 26 Android usage restoration with TDD: Room-backed
-SessionsActivity data, DailySummaryActivity repository/client loading, Android
-13+ notification permission UX, and UI Automator Usage Access navigation. The
-WPF browser connection status UI and cramped lower dashboard layout remain
-deferred per the latest priority decision because non-UI tracking/schema
-correctness is more important right now. Physical Android resource measurement
-remains blocked until a device is connected.
+Continue Milestone 26 Android usage restoration with TDD: DailySummaryActivity
+repository/client loading, Android 13+ notification permission UX, and UI
+Automator Usage Access navigation. The WPF browser connection status UI and
+cramped lower dashboard layout remain deferred per the latest priority decision
+because non-UI tracking/schema correctness is more important right now.
+Physical Android resource measurement remains blocked until a device is
+connected.

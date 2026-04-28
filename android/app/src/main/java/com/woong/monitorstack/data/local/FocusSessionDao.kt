@@ -25,4 +25,14 @@ interface FocusSessionDao {
         fromLocalDate: String,
         toLocalDate: String
     ): List<FocusSessionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM focus_sessions
+        ORDER BY startedAtUtcMillis DESC
+        LIMIT :limit
+        """
+    )
+    fun queryRecent(limit: Int): List<FocusSessionEntity>
 }

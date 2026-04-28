@@ -66,4 +66,33 @@ class FocusSessionDaoTest {
         assertEquals("session-1", session.clientSessionId)
         assertEquals("com.android.chrome", session.packageName)
     }
+
+    @Test
+    fun queryRecentReturnsNewestSessionsFirst() {
+        val dao = database.focusSessionDao()
+        dao.insert(focusSession("old-session", "com.android.chrome", startedAtUtcMillis = 1_000))
+        dao.insert(focusSession("new-session", "com.slack", startedAtUtcMillis = 5_000))
+
+        val sessions = dao.queryRecent(limit = 10)
+
+        assertEquals(listOf("new-session", "old-session"), sessions.map { it.clientSessionId })
+    }
+
+    private fun focusSession(
+        clientSessionId: String,
+        packageName: String,
+        startedAtUtcMillis: Long
+    ): FocusSessionEntity {
+        return FocusSessionEntity(
+            clientSessionId = clientSessionId,
+            packageName = packageName,
+            startedAtUtcMillis = startedAtUtcMillis,
+            endedAtUtcMillis = startedAtUtcMillis + 60_000,
+            durationMs = 60_000,
+            localDate = "2026-04-29",
+            timezoneId = "Asia/Seoul",
+            isIdle = false,
+            source = "android_usage_stats"
+        )
+    }
 }
