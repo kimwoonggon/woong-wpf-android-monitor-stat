@@ -8,6 +8,9 @@ public sealed class NoopDashboardTrackingCoordinator : IDashboardTrackingCoordin
     public DashboardTrackingSnapshot StopTracking()
         => DashboardTrackingSnapshot.Empty;
 
+    public DashboardTrackingSnapshot PollOnce()
+        => DashboardTrackingSnapshot.Empty;
+
     public DashboardSyncResult SyncNow(bool syncEnabled)
         => syncEnabled
             ? new DashboardSyncResult("Sync requested. Waiting for upload worker.")

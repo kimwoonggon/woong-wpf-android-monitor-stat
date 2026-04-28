@@ -108,6 +108,78 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void CurrentSessionDuration_WhenPollTicks_AdvancesBeyondZero()
+    {
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Visual Studio Code",
+                ProcessName: "Code.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null),
+            PollSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Visual Studio Code",
+                ProcessName: "Code.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromSeconds(12),
+                LastPersistedSession: null)
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        viewModel.PollTrackingCommand.Execute(null);
+
+        Assert.Equal("00:00:12", viewModel.CurrentSessionDurationText);
+        Assert.Equal(1, coordinator.PollCount);
+    }
+
+    [Fact]
+    public void PollTrackingCommand_WhenForegroundChanged_RefreshesDashboardAfterClosedSessionPersists()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new MutableDashboardDataSource();
+        var coordinator = new FakeTrackingCoordinator
+        {
+            OnPoll = () => dataSource.FocusSessions =
+            [
+                Domain.Common.FocusSession.FromUtc(
+                    "focus-1",
+                    "windows-device-1",
+                    "Code.exe",
+                    now.AddMinutes(-10),
+                    now.AddMinutes(-5),
+                    "Asia/Seoul",
+                    isIdle: false,
+                    "foreground_window")
+            ],
+            PollSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: new DashboardPersistedSessionSnapshot(
+                    AppName: "Code.exe",
+                    ProcessName: "Code.exe",
+                    EndedAtUtc: now.AddMinutes(-5),
+                    Duration: TimeSpan.FromMinutes(5)))
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            coordinator);
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        viewModel.PollTrackingCommand.Execute(null);
+
+        var row = Assert.Single(viewModel.RecentSessions);
+        Assert.Equal("Code.exe", row.AppName);
+        Assert.Equal("Chrome", viewModel.CurrentAppNameText);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenWindowTitleHidden_MasksWindowTitle()
     {
         DashboardViewModel viewModel = CreateViewModel();
@@ -261,13 +333,19 @@ public sealed class DashboardTrackingStateTests
 
         public DashboardTrackingSnapshot StopSnapshot { get; set; } = DashboardTrackingSnapshot.Empty;
 
+        public DashboardTrackingSnapshot PollSnapshot { get; set; } = DashboardTrackingSnapshot.Empty;
+
         public DashboardSyncResult SyncResult { get; set; } = new("Sync skipped. Enable sync to upload.");
 
         public Action? OnStop { get; set; }
 
+        public Action? OnPoll { get; set; }
+
         public int StartCount { get; private set; }
 
         public int StopCount { get; private set; }
+
+        public int PollCount { get; private set; }
 
         public int SyncCount { get; private set; }
 
@@ -286,6 +364,14 @@ public sealed class DashboardTrackingStateTests
             OnStop?.Invoke();
 
             return StopSnapshot;
+        }
+
+        public DashboardTrackingSnapshot PollOnce()
+        {
+            PollCount++;
+            OnPoll?.Invoke();
+
+            return PollSnapshot;
         }
 
         public DashboardSyncResult SyncNow(bool syncEnabled)

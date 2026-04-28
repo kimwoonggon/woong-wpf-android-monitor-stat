@@ -106,6 +106,14 @@ powershell -ExecutionPolicy Bypass -File scripts\run-ui-snapshots.ps1
   Start/Stop buttons through WPF UI Automation peers, then verifies
   `focus_session` persistence, `sync_outbox` enqueueing, visible tracking
   status, and dashboard rows/cards rendered back from SQLite.
+- Added semantic tests for the WPF runtime polling path:
+  `CurrentSessionDuration_WhenPollTicks_AdvancesBeyondZero`,
+  `PollTrackingCommand_WhenForegroundChanged_RefreshesDashboardAfterClosedSessionPersists`,
+  `MainWindow_WithFakeBrowserPipeline_ShowsGithubAndChatgptInWebSessions`, and
+  `MainWindow_AtMinimumSize_KeepsTabsReachableOrProvidesScrolling`.
+- Added a WPF `DispatcherTimer` adapter in `MainWindow` that invokes
+  `PollTrackingCommand` while tracking is running. This is intentionally a UI
+  lifecycle adapter; tracking logic remains in Presentation/Windows services.
 - Disabled parallel execution for `Woong.MonitorStack.Windows.App.Tests` so
   WPF XAML loading and STA-window tests run deterministically in one assembly.
 - Added Milestone 21 tests for WPF Start/Stop/Sync controls, current-activity

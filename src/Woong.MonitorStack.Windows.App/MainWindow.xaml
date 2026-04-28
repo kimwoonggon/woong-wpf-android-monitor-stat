@@ -14,6 +14,8 @@
         MinHeight="560"
         Background="#F6F7F9"
         d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Auto">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -395,4 +397,5 @@
             </Border>
         </Grid>
     </Grid>
+    </ScrollViewer>
 </Window>

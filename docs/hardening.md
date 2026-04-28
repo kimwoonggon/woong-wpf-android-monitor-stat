@@ -47,6 +47,20 @@ MVP policy:
 - Retention deletes must be explicit scheduled maintenance, not hidden
   collection behavior.
 
+Windows local browser raw events now have a concrete client-side retention
+policy:
+
+- `BrowserRawEventRetentionPolicy.Default` keeps 30 days.
+- `SqliteBrowserRawEventRepository.DeleteOlderThan(...)` removes only rows
+  older than the cutoff and keeps boundary/newer events.
+- `ChromeNativeMessageIngestionFlow` can receive a
+  `BrowserRawEventRetentionService`; when configured, each browser native
+  message ingestion prunes expired local raw browser events using the observed
+  event time.
+
+This retention path applies only to local browser raw events. Derived
+`web_session` rows remain available for dashboard and sync behavior.
+
 ## Android Local Metadata Backup
 
 The Android manifest sets `android:allowBackup="false"` for MVP. Local Room

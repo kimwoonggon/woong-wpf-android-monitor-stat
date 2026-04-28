@@ -162,3 +162,18 @@ outbox rows are queued, and the dashboard renders the persisted session back
 from the SQLite-backed data source. The remaining Milestone 25 work is to lift
 the same standard into a local FlaUI-launched acceptance tool with reports and
 screenshots.
+
+Additional semantic coverage now proves:
+
+- Running tracking is polled through `PollTrackingCommand`, and the WPF
+  `DispatcherTimer` path advances `CurrentSessionDurationText` beyond zero.
+- Polling after a foreground change can refresh the current dashboard period
+  when a closed focus session has been persisted.
+- A fake browser pipeline can create `github.com` and `chatgpt.com` web
+  sessions, persist them in SQLite, and show them in the WPF Web Sessions tab.
+- The minimum-size WPF window exposes scrolling so the lower dashboard tabs are
+  still reachable.
+
+Still to do: move these in-process semantic checks into the local FlaUI
+acceptance executable/script with `report.md`, `manifest.json`, screenshots,
+and explicit PASS/FAIL/WARN rows.

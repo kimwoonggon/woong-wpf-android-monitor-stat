@@ -59,6 +59,10 @@ desktop or arbitrary screen regions.
 - Browser URL capture must be opt-in beyond generic browser app duration.
 - Full URL capture must be separate from domain-only capture.
 - Raw events need retention limits and must avoid sensitive content.
+- Windows browser raw events use a 30-day default local retention policy when
+  the native-message ingestion flow is configured with the retention service.
+  Retention deletes raw browser events only; derived web-session summaries stay
+  available.
 
 ## Automated Guardrails
 

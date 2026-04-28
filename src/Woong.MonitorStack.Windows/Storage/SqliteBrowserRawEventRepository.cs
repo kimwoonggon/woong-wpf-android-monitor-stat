@@ -137,6 +137,19 @@ public sealed class SqliteBrowserRawEventRepository
         return records;
     }
 
+    public int DeleteOlderThan(DateTimeOffset cutoffUtc)
+    {
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            DELETE FROM browser_raw_event
+            WHERE observed_at_utc < $cutoffUtc;
+            """;
+        _ = command.Parameters.AddWithValue("$cutoffUtc", FormatUtc(cutoffUtc));
+
+        return command.ExecuteNonQuery();
+    }
+
     private SqliteConnection OpenConnection()
     {
         var connection = new SqliteConnection(_connectionString);

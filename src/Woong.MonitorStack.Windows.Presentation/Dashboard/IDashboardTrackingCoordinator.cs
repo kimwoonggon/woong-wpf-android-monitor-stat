@@ -6,5 +6,7 @@ public interface IDashboardTrackingCoordinator
 
     DashboardTrackingSnapshot StopTracking();
 
+    DashboardTrackingSnapshot PollOnce();
+
     DashboardSyncResult SyncNow(bool syncEnabled);
 }

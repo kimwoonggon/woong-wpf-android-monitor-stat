@@ -147,6 +147,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         UpdateCurrentActivity(_trackingCoordinator.StartTracking());
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
+        PollTrackingCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanStopTracking))]
@@ -158,6 +159,18 @@ public sealed partial class DashboardViewModel : ObservableObject
         RefreshSummary(ResolveRange(SelectedPeriod));
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
+        PollTrackingCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanStopTracking))]
+    private void PollTracking()
+    {
+        DashboardTrackingSnapshot snapshot = _trackingCoordinator.PollOnce();
+        UpdateCurrentActivity(snapshot);
+        if (snapshot.LastPersistedSession is not null)
+        {
+            RefreshSummary(ResolveRange(SelectedPeriod));
+        }
     }
 
     [RelayCommand]

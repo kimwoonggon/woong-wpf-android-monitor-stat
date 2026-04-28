@@ -34,6 +34,24 @@ session back from the SQLite-backed data source.
   Windows.App 85.3%, and Server 96.3%.
 - Verified `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2` exits
   successfully with a temp SQLite DB and no server sync.
+- Added Windows local browser raw-event retention: a 30-day default
+  `BrowserRawEventRetentionPolicy`, repository-level
+  `DeleteOlderThan(...)`, and optional `ChromeNativeMessageIngestionFlow`
+  pruning through `BrowserRawEventRetentionService`.
+- Added `PollTrackingCommand` to the dashboard ViewModel and a WPF
+  `DispatcherTimer` adapter in `MainWindow` so Running tracking continues to
+  poll and advance the current session duration.
+- Added semantic WPF runtime tests for poll-tick duration updates, foreground
+  change refresh after persistence, fake browser github/chatgpt web sessions in
+  the Web Sessions tab, and minimum-size scrolling for lower dashboard tabs.
+- Verified the requested runtime confidence pass with
+  `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  (171 tests passed), `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal` (0 warnings/errors),
+  `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2`, and
+  `scripts/test-coverage.ps1`. Current .NET line coverage remains 92.9%
+  overall; Domain 89.3%, Windows 92.5%, Windows.Presentation 97.6%,
+  Windows.App 85.3%, Server 96.3%.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
   `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,

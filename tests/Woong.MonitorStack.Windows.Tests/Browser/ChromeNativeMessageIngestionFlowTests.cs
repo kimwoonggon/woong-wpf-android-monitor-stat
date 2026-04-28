@@ -123,6 +123,42 @@ public sealed class ChromeNativeMessageIngestionFlowTests : IDisposable
         Assert.Equal("github.com", savedWebSession.Domain);
     }
 
+    [Fact]
+    public async Task IngestAsync_PrunesExpiredRawEventsUsingRetentionPolicy()
+    {
+        var connectionString = $"Data Source={_dbPath};Pooling=False";
+        var rawEvents = new SqliteBrowserRawEventRepository(connectionString);
+        var webSessions = new SqliteWebSessionRepository(connectionString);
+        var ingestion = new ChromeNativeMessageIngestionFlow(
+            rawEvents,
+            webSessions,
+            outbox: null,
+            deviceId: null,
+            sessionizer: new BrowserWebSessionizer("focus-1"),
+            urlSanitizer: new BrowserUrlSanitizer(),
+            storagePolicy: BrowserUrlStoragePolicy.DomainOnly,
+            rawEventRetention: new BrowserRawEventRetentionService(rawEvents, BrowserRawEventRetentionPolicy.Default));
+        rawEvents.Initialize();
+        webSessions.Initialize();
+        rawEvents.Save(new BrowserRawEventRecord(
+            "Chrome",
+            WindowId: 7,
+            TabId: 99,
+            Url: null,
+            Title: null,
+            Domain: "expired.example",
+            ObservedAtUtc: new DateTimeOffset(2026, 3, 28, 23, 59, 59, TimeSpan.Zero)));
+
+        await ingestion.IngestAsync(CreateNativeMessage(
+            url: "https://github.com/org/repo",
+            title: "Repository",
+            observedAtUtc: "2026-04-28T00:00:00Z",
+            tabId: 42), CancellationToken.None);
+
+        Assert.Empty(rawEvents.QueryRecordsByTabId(99));
+        Assert.Single(rawEvents.QueryRecordsByTabId(42));
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))

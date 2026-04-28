@@ -497,9 +497,12 @@ milestones below are finished.
 ## Milestone 25: WPF Semantic UI Acceptance
 
 - [x] Add WPF App semantic test proving Start/Stop buttons drive fake foreground tracking into temp SQLite/outbox and dashboard renders the persisted session from SQLite.
+- [x] Add testable `PollTrackingCommand` and WPF timer path so Running tracking advances current session duration beyond zero.
+- [x] Add WPF App semantic test proving fake browser github/chatgpt web sessions render in the Web Sessions tab from SQLite.
+- [x] Add WPF App semantic test proving minimum-size windows provide scrolling while keeping dashboard tabs reachable.
 - [ ] Create `scripts/run-wpf-ui-acceptance.ps1`.
 - [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
-- [ ] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
+- [x] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
 - [ ] Implement EmptyData mode acceptance.
 - [ ] Implement SampleDashboard mode acceptance.
 - [ ] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
@@ -557,13 +560,13 @@ milestones below are finished.
 ## Milestone 28: Privacy And Retention Hardening
 
 - [x] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
-- [ ] Add browser raw event retention enforcement.
-- [ ] Add client-side raw event retention policy for Windows local SQLite.
+- [x] Add browser raw event retention enforcement.
+- [x] Add client-side raw event retention policy for Windows local SQLite.
 - [ ] Add UI copy for browser URL/domain privacy levels.
 - [ ] Add sync opt-in enforcement tests for Windows and Android.
 - [x] Verify UI screenshot tools only capture this app's UI.
 - [ ] Run full validation matrix.
-- [ ] Commit and push privacy hardening slice.
+- [x] Commit and push privacy hardening slice.
 
 ## Milestone 29: Original Intent Completion Gate
 

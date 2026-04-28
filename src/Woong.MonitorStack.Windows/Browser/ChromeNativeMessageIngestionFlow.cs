@@ -17,6 +17,7 @@ public sealed class ChromeNativeMessageIngestionFlow
     private readonly string? _deviceId;
     private readonly IBrowserUrlSanitizer _urlSanitizer;
     private readonly BrowserUrlStoragePolicy _storagePolicy;
+    private readonly BrowserRawEventRetentionService? _rawEventRetention;
 
     public ChromeNativeMessageIngestionFlow(
         SqliteBrowserRawEventRepository rawEvents,
@@ -50,7 +51,8 @@ public sealed class ChromeNativeMessageIngestionFlow
         string? deviceId,
         BrowserWebSessionizer sessionizer,
         IBrowserUrlSanitizer urlSanitizer,
-        BrowserUrlStoragePolicy storagePolicy)
+        BrowserUrlStoragePolicy storagePolicy,
+        BrowserRawEventRetentionService? rawEventRetention = null)
     {
         _rawEvents = rawEvents ?? throw new ArgumentNullException(nameof(rawEvents));
         _webSessions = webSessions ?? throw new ArgumentNullException(nameof(webSessions));
@@ -59,6 +61,7 @@ public sealed class ChromeNativeMessageIngestionFlow
         _deviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId;
         _urlSanitizer = urlSanitizer ?? throw new ArgumentNullException(nameof(urlSanitizer));
         _storagePolicy = storagePolicy;
+        _rawEventRetention = rawEventRetention;
     }
 
     public async Task IngestAsync(Stream nativeMessageStream, CancellationToken cancellationToken)
@@ -73,6 +76,7 @@ public sealed class ChromeNativeMessageIngestionFlow
 
         BrowserActivitySnapshot sanitized = _urlSanitizer.Sanitize(ToSnapshot(message), _storagePolicy);
         _rawEvents.Save(ToRawEvent(message, sanitized));
+        _ = _rawEventRetention?.PruneExpired(sanitized.CapturedAtUtc);
         foreach (var session in _sessionizer.Apply(sanitized))
         {
             _webSessions.Save(session);
