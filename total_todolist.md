@@ -1,11 +1,15 @@
 # Total TODO List: Woong Monitor Stack
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 This file is the durable source of truth for the full PRD. Every agent must keep
 it current before and after work. A TODO is complete only when relevant tests
 pass, build succeeds, docs are updated, privacy boundaries are respected, and
 the finished slice is committed and pushed.
+
+Status note: the checklist was reopened on 2026-04-29 for Original Intent
+Restoration. The product is not considered complete again until the reopened
+milestones below are finished.
 
 ## Always-On Workflow
 
@@ -415,14 +419,154 @@ the finished slice is committed and pushed.
 - [x] Update resume state for the WPF/C# guide slice.
 - [x] Commit and push WPF/C# guide slice.
 
+## Milestone 20: Original Intent Restoration Planning And Boundaries
+
+- [x] Reopen `total_todolist.md` for Original Intent Restoration.
+- [x] Document original product intent in `docs/original-product-intent-audit.md`.
+- [x] Document metadata-only privacy boundaries in `docs/privacy-boundaries.md`.
+- [x] Document runtime pipelines and acceptance modes in `docs/runtime-pipeline.md`.
+- [x] Document browser capture policy in `docs/browser-tracking-policy.md`.
+- [x] Document WPF semantic UI acceptance in `docs/wpf-ui-acceptance-checklist.md`.
+- [x] Document Android screenshot/device automation scope in `docs/android-ui-screenshot-testing.md`.
+- [x] Document future macOS feasibility only in `docs/future-macos-feasibility.md`.
+- [x] Update `AGENTS.md` and coding guide with metadata-only reminder.
+- [x] Ignore Android UI screenshot artifacts.
+- [x] Run .NET restore/build/test after Original Intent Restoration docs.
+- [x] Update resume state after Original Intent Restoration docs.
+- [x] Commit and push Original Intent Restoration planning slice.
+
+## Milestone 21: Windows Live Tracking UI Restoration
+
+- [ ] Add failing WPF App tests for required tracking AutomationIds: `StartTrackingButton`, `StopTrackingButton`, `SyncNowButton`, `TrackingStatusText`, `CurrentAppNameText`, `CurrentProcessNameText`, `CurrentWindowTitleText`, `CurrentSessionDurationText`, `LastPersistedSessionText`, `LastSyncStatusText`.
+- [ ] Add presentation state for tracking status, current app/process/window title, current duration, last persisted session, and last sync status.
+- [ ] Add WPF Start/Stop/Sync Now controls and current activity panel.
+- [ ] Add privacy-aware window title masking setting and tests.
+- [ ] Verify Start/Stop UI can transition using a fake tracking coordinator.
+- [ ] Run WPF App tests and solution build.
+- [ ] Commit and push Windows live tracking UI slice.
+
+## Milestone 22: Windows Tracking Pipeline Persistence And Dashboard
+
+- [ ] Add failing tests for app-hosted tracking start/stop wiring through DI.
+- [ ] Wire `TrackingPoller` into a visible WPF tracking coordinator.
+- [ ] Test a foreground change closes the previous session and starts a new one through the app pipeline.
+- [ ] Persist closed focus sessions to Windows local SQLite.
+- [ ] Enqueue focus session outbox records after persistence.
+- [ ] Replace `EmptyDashboardDataSource` with a SQLite-backed dashboard data source.
+- [ ] Show current and recently persisted activity in WPF.
+- [ ] Add RealStart local validation script `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy warning.
+- [ ] Ensure RealStart uses a temp DB and does not upload unless `--AllowServerSync` is provided.
+- [ ] Run focused tests, WPF smoke, solution build/test.
+- [ ] Commit and push Windows tracking pipeline slice.
+
+## Milestone 23: Browser Domain Tracking Restoration
+
+- [ ] Add `BrowserActivitySnapshot`, `CaptureMethod`, and `CaptureConfidence` domain/infrastructure models.
+- [ ] Add `IBrowserProcessClassifier`, `IBrowserActivityReader`, `IBrowserUrlSanitizer`, and `IWebSessionizer`.
+- [ ] Test supported browsers: `chrome.exe`, `msedge.exe`, `firefox.exe`, `brave.exe`.
+- [ ] Test non-browser process does not create a WebSession.
+- [ ] Test fake Chrome URL `github.com` creates a WebSession.
+- [ ] Test URL change from `github.com` to `chatgpt.com` closes/starts WebSessions.
+- [ ] Test URL unavailable falls back to FocusSession only.
+- [ ] Test domain-only privacy stores domain but not full URL.
+- [ ] Test full URL is stored only with explicit opt-in.
+- [ ] Persist WebSessions to SQLite with capture method/confidence/private indicators.
+- [ ] Create WebSession outbox items and upload payloads with domain/duration.
+- [ ] Verify duplicate WebSession uploads are idempotent.
+- [ ] Add native messaging host manifest generation and WPF browser connection status.
+- [ ] Add URL sanitizer/redaction policy before storing raw browser events.
+- [ ] Run browser/domain tests, Windows tests, solution build/test.
+- [ ] Commit and push browser domain tracking slice.
+
+## Milestone 24: Integrated Schema Restoration
+
+- [ ] Add schema tests for required focus session process/window fields.
+- [ ] Add schema tests for required web session browser/capture/privacy fields.
+- [ ] Add server `device_state_sessions` table/entity/tests.
+- [ ] Add server `app_families` and `app_family_mappings` tables/entities/tests.
+- [ ] Decide and document whether Android app usage remains focus sessions or gets a dedicated app usage upload contract.
+- [ ] Update DTO contracts for nullable URL, domain, capture method/confidence, process/window metadata, and client idempotency.
+- [ ] Generate/review EF migration for restored schema.
+- [ ] Update production migration notes.
+- [ ] Run server relational tests and solution build/test.
+- [ ] Commit and push integrated schema restoration slice.
+
+## Milestone 25: WPF Semantic UI Acceptance
+
+- [ ] Create `scripts/run-wpf-ui-acceptance.ps1`.
+- [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
+- [ ] Implement EmptyData mode acceptance.
+- [ ] Implement SampleDashboard mode acceptance.
+- [ ] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
+- [ ] Verify Start changes tracking status to Running.
+- [ ] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
+- [ ] Verify Stop changes tracking status to Stopped.
+- [ ] Verify Sync Now updates last sync status using a fake sync client.
+- [ ] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
+- [ ] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [ ] Keep screenshot review local-only and optional for GPT/human review.
+- [ ] Run WPF acceptance tool locally.
+- [ ] Commit and push WPF semantic acceptance slice.
+
+## Milestone 26: Android Usage Tracking Restoration
+
+- [ ] Add UI Automator dependency and Usage Access settings navigation smoke test.
+- [ ] Add persisted sync opt-in setting and default-off enforcement.
+- [ ] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
+- [ ] Enqueue sync outbox rows when UsageStats sessions are collected.
+- [ ] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
+- [ ] Review and disable/constrain `android:allowBackup` for local usage metadata.
+- [ ] Make SessionsActivity display real Room-backed sessions.
+- [ ] Make DailySummaryActivity load previous-day summary through repository/client rather than intent extras only.
+- [ ] Add Android 13+ notification permission UX before morning summary notifications.
+- [ ] Run Android unit tests and debug build.
+- [ ] Commit and push Android usage restoration slice.
+
+## Milestone 27: Android UI Screenshot And Device Automation
+
+- [ ] Add `docs/android-ui-screenshot-testing.md` follow-up implementation notes after tooling exists.
+- [ ] Add local Android screenshot script/tool that writes `artifacts/android-ui-snapshots/<timestamp>/`.
+- [ ] Generate Android `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [ ] Capture dashboard, settings, sessions, and daily summary screens.
+- [ ] Seed deterministic sample app usage where possible.
+- [ ] Run screenshot flow on emulator when available.
+- [ ] Repeat Android resource measurements on a physical device when connected.
+- [ ] Commit and push Android screenshot/device automation slice.
+
+## Milestone 28: Privacy And Retention Hardening
+
+- [ ] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
+- [ ] Add browser raw event retention enforcement.
+- [ ] Add client-side raw event retention policy for Windows local SQLite.
+- [ ] Add UI copy for browser URL/domain privacy levels.
+- [ ] Add sync opt-in enforcement tests for Windows and Android.
+- [ ] Verify UI screenshot tools only capture this app's UI.
+- [ ] Run full validation matrix.
+- [ ] Commit and push privacy hardening slice.
+
+## Milestone 29: Original Intent Completion Gate
+
+- [ ] Windows real foreground process/window tracking works from WPF Start/Stop.
+- [ ] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
+- [ ] Browser domain tracking is explicit, privacy-aware, and covered by tests.
+- [ ] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
+- [ ] Server schema supports required relationships and idempotent integrated storage.
+- [ ] WPF semantic UI acceptance passes with expected content.
+- [ ] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
+- [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.
+- [ ] Full .NET tests/build pass.
+- [ ] Android tests/build pass.
+- [ ] Completion audit updated.
+- [ ] Commit and push Original Intent completion.
+
 ## Final Definition Of Done
 
-- [x] All PRD requirements reflected in code/tests/docs.
-- [x] All core logic built TDD-first.
-- [x] All relevant tests pass.
-- [x] All builds pass.
-- [x] Safety/privacy excluded scopes are not implemented.
-- [x] Local DB/server integrated DB separation is preserved.
-- [x] Daily integrated summary works across Windows + Android.
-- [x] Final documentation is complete.
-- [x] Final commit is pushed to `origin`.
+- [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
+- [ ] All core logic built TDD-first.
+- [ ] All relevant tests pass.
+- [ ] All builds pass.
+- [ ] Safety/privacy excluded scopes are not implemented.
+- [ ] Local DB/server integrated DB separation is preserved.
+- [ ] Daily integrated summary works across Windows + Android.
+- [ ] Final documentation is complete.
+- [ ] Final commit is pushed to `origin`.

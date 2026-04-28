@@ -16,6 +16,7 @@ artifacts/TestResults/
 artifacts/coverage/
 artifacts/ui-snapshots/
 artifacts/ui-diffs/
+artifacts/android-ui-snapshots/
 coverage/
 
 # IDE

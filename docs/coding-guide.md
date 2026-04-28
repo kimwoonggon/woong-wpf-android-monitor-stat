@@ -41,8 +41,11 @@ examples.
 This product is a visible productivity statistics tool. Do not implement covert
 monitoring behavior.
 
+- Measure metadata only: which apps, windows, and sites were used for how long.
 - Do not collect global keystroke contents.
 - Do not capture passwords, message contents, form input, or typed text.
+- Do not capture clipboard contents, browser page contents, screen recordings,
+  or periodic user activity screenshots.
 - Do not collect Android global touch coordinates from other apps.
 - Collection must be visible in UI and based on explicit user permissions.
 - Sync must stay opt-in.

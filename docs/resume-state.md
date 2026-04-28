@@ -4,13 +4,37 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-WPF C# coding guide: added dedicated guidance for Domain, Presentation, Windows
-infrastructure, WPF App, and Server placement rules.
+Original Intent Restoration planning: reopened the project TODO around
+metadata-only Windows/Android usage measurement, explicit privacy boundaries,
+browser domain tracking, semantic WPF acceptance, Android screenshot testing,
+integrated schema restoration, and future macOS research.
 
 ## Completed
 
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
+- Reopened `total_todolist.md` for Original Intent Restoration and changed the
+  Final Definition of Done back to incomplete until the new restoration
+  milestones are implemented and verified.
+- Added `docs/original-product-intent-audit.md`, `docs/runtime-pipeline.md`,
+  `docs/browser-tracking-policy.md`, `docs/privacy-boundaries.md`,
+  `docs/wpf-ui-acceptance-checklist.md`,
+  `docs/android-ui-screenshot-testing.md`, and
+  `docs/future-macos-feasibility.md`.
+- Updated `AGENTS.md` and `docs/coding-guide.md` to state the core rule:
+  Woong Monitor Stack measures app/window/site usage metadata, not typed input,
+  screen contents, clipboard contents, messages, forms, or covert activity.
+- Used subagent audits for Windows/WPF/browser and Android. Key findings:
+  Windows has foreground/idle/sessionizer/SQLite/browser primitives but lacks
+  WPF Start/Stop/Sync UI, app-hosted tracking orchestration, SQLite-backed
+  dashboard wiring, and semantic FlaUI acceptance. Android has UsageStats,
+  Room, workers, dashboard, settings, and tests, but lacks WorkManager
+  scheduling UX, collection-to-outbox wiring, persisted sync opt-in
+  enforcement, UI Automator navigation, and Android screenshot tooling.
+- Verified the planning/docs slice with `dotnet restore Woong.MonitorStack.sln`,
+  `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`,
+  and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`; all 110 .NET tests passed.
 - Verified the coding-guide documentation slice with `dotnet restore
   Woong.MonitorStack.sln`, `dotnet build Woong.MonitorStack.sln --no-restore
   -maxcpucount:1 -v minimal`, and `dotnet test Woong.MonitorStack.sln
@@ -442,4 +466,7 @@ infrastructure, WPF App, and Server placement rules.
 
 ## Next Highest Priority
 
-Physical Android device measurement remains blocked until a device is connected.
+Start Milestone 21 with TDD: add failing WPF App tests for the required
+Start/Stop/Sync tracking AutomationIds and current-activity state, then add the
+minimal Presentation/XAML state to pass. Physical Android resource measurement
+remains blocked until a device is connected.

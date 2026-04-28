@@ -23,8 +23,13 @@ skill suggests Compose.
 ## Non-Negotiable Product Rules
 
 - This is a productivity statistics tool, not a covert monitoring tool.
+- The product measures metadata: which apps, windows, and sites were used for
+  how long. It must not monitor what the user typed, read, copied, saw, sent, or
+  entered.
 - Never collect global keystroke contents, passwords, messages, form input, or
   Android global touch coordinates.
+- Never capture clipboard contents, browser page contents, screen recordings,
+  periodic user activity screenshots, or private message contents.
 - Collection must be visible to the user, permissions must be explicit, and
   sync must be opt-in.
 - Store all persisted instants in UTC. Convert to the display timezone only at
