@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">Woong Monitor</string>
     <string name="usage_access_settings">Usage Access</string>
+    <string name="dashboard_title">Dashboard</string>
+    <string name="filter_today">Today</string>
+    <string name="filter_yesterday">Yesterday</string>
+    <string name="filter_recent_7_days">7 days</string>
+    <string name="total_active">Active time</string>
+    <string name="top_app">Top app</string>
+    <string name="idle_time">Idle time</string>
+    <string name="recent_sessions">Recent sessions</string>
 </resources>

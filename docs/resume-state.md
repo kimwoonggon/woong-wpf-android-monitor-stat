@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android Room dashboard aggregation.
+Milestone 9 Android DashboardActivity XML surface.
 
 ## Completed
 
@@ -193,8 +193,15 @@ Milestone 9 Android Room dashboard aggregation.
 - Verified Today aggregation excludes idle sessions from active total, tracks
   idle separately, picks the top active package, and formats recent session
   rows using the requested timezone.
+- Added XML/ViewBinding `DashboardActivity`.
+- Added dashboard XML surface with Today/Yesterday/Recent 7 Days filters,
+  active/top-app/idle cards, Usage Access settings action, and recent sessions
+  `RecyclerView`.
+- Added Espresso smoke test for DashboardActivity display and verified the
+  androidTest APK compiles.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
+- Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -205,7 +212,6 @@ Milestone 9 Android Room dashboard aggregation.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Create DashboardActivity or DashboardFragment.
-2. Add XML dashboard layout with period filters, summary cards, usage guidance,
-   and recent sessions container.
-3. Add XML/View dashboard tests before implementation.
+1. Bind DashboardActivity to Room-backed dashboard data.
+2. Add empty-state and usage-access guidance assertions.
+3. Add SessionsActivity or SessionsFragment.

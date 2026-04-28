@@ -216,19 +216,19 @@ the finished slice is committed and pushed.
 
 ## Milestone 9: Android XML Dashboard MVP
 
-- [ ] Create DashboardActivity or DashboardFragment.
+- [x] Create DashboardActivity or DashboardFragment.
 - [ ] Create SessionsActivity or SessionsFragment.
 - [ ] Create SettingsActivity or SettingsFragment.
-- [ ] Add period filters.
-- [ ] Add total active time card.
-- [ ] Add top app card.
-- [ ] Add idle/inactive card.
+- [x] Add period filters.
+- [x] Add total active time card.
+- [x] Add top app card.
+- [x] Add idle/inactive card.
 - [ ] Add MPAndroidChart time activity chart.
 - [ ] Add app usage chart.
-- [ ] Add recent sessions RecyclerView.
+- [x] Add recent sessions RecyclerView.
 - [x] Test ViewModel state updates.
 - [x] Add Room-backed dashboard aggregation.
-- [ ] Test DashboardActivity display with Espresso.
+- [x] Test DashboardActivity display with Espresso.
 - [ ] Test today/yesterday/recent 7 days filters.
 - [ ] Test empty state.
 - [ ] Test usage access guidance.
