@@ -247,7 +247,8 @@ the finished slice is committed and pushed.
 - [x] Implement WorkManager sync worker.
 - [x] Implement duplicate-safe upload handling.
 - [x] Test Android sync outbox failed retry persistence.
-- [ ] Integrate daily summary API.
+- [x] Integrate daily summary API.
+- [x] Test daily summary API client contract.
 - [ ] Add previous-day summary screen.
 - [ ] Add morning summary notification if feasible.
 - [x] Test sync worker success.

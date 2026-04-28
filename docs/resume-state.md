@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android WorkManager sync worker.
+Milestone 10 Android daily summary API client.
 
 ## Completed
 
@@ -254,6 +254,12 @@ Milestone 10 Android WorkManager sync worker.
   configuration is missing.
 - Verified sync worker success output and failed-item retry behavior with a
   Robolectric WorkManager test.
+- Added `DailySummaryClient` for
+  `GET /api/daily-summaries/{summaryDate}?userId=...&timezoneId=...`.
+- Added Android summary response models for total active, idle, web, top apps,
+  and top domains.
+- Verified summary client path/query construction and Moshi response parsing
+  against the server's daily summary contract.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -267,6 +273,6 @@ Milestone 10 Android WorkManager sync worker.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Integrate daily summary API / previous-day summary screen.
+1. Add previous-day summary screen.
 2. Add summary display tests.
 3. Decide whether morning summary notification is feasible for MVP.
