@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore.SkiaSharpView;
+using System.Globalization;
 using Woong.MonitorStack.Domain.Common;
 
 namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -56,6 +57,9 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<PieSeries<long>> _domainUsageSeries = [];
 
+    [ObservableProperty]
+    private IReadOnlyList<DashboardSessionRow> _recentSessions = [];
+
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
@@ -108,6 +112,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
         AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
         DomainUsageSeries = DashboardLiveChartsMapper.BuildPieSeries(DomainUsagePoints);
+        RecentSessions = BuildRecentSessionRows(focusSessions);
     }
 
     private TimeRange ResolveRange(DashboardPeriod period)
@@ -132,6 +137,20 @@ public sealed partial class DashboardViewModel : ObservableObject
         var localStart = new DateTimeOffset(localNow.Date, localNow.Offset);
 
         return TimeRange.FromUtc(localStart.ToUniversalTime(), utcNow);
+    }
+
+    private IReadOnlyList<DashboardSessionRow> BuildRecentSessionRows(IEnumerable<FocusSession> focusSessions)
+    {
+        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
+
+        return focusSessions
+            .OrderByDescending(session => session.StartedAtUtc)
+            .Select(session => new DashboardSessionRow(
+                session.PlatformAppKey,
+                TimeZoneInfo.ConvertTime(session.StartedAtUtc, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                FormatDuration(session.DurationMs),
+                session.IsIdle))
+            .ToList();
     }
 
     private static string FormatDuration(long durationMs)

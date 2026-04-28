@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows LiveCharts2 dashboard mapping.
+Milestone 4 Windows app sessions table.
 
 ## Completed
 
@@ -55,6 +55,9 @@ Milestone 4 Windows LiveCharts2 dashboard mapping.
   2.0.0.
 - Suppressed the known transitive `NU1701` warnings only in the WPF app project
   with an inline csproj explanation; final build reports 0 warnings.
+- Added recent app session row models with timezone-adjusted start time,
+  formatted duration, and idle flag.
+- Bound the WPF shell to a read-only app sessions `DataGrid`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -65,6 +68,6 @@ Milestone 4 Windows LiveCharts2 dashboard mapping.
 
 Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Add app sessions table and bind it to recent focus sessions.
-2. Add live event log and web sessions view.
-3. Add settings view and WPF smoke path when tooling is ready.
+1. Add live event log and web sessions view.
+2. Add settings view.
+3. Add WPF smoke path when tooling is ready.

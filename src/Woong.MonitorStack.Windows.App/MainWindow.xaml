@@ -59,6 +59,7 @@
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -125,6 +126,49 @@
                                   Grid.Column="1"
                                   MinHeight="220"
                                   Series="{Binding DomainUsageSeries}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2"
+                    Margin="0,16,0,0"
+                    Padding="18"
+                    CornerRadius="8"
+                    Background="White"
+                    BorderBrush="#DCE1E8"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="App Sessions"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#18202A" />
+                    <DataGrid Grid.Row="1"
+                              Margin="0,12,0,0"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              HeadersVisibility="Column"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding RecentSessions}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="App"
+                                                Binding="{Binding AppName}"
+                                                Width="*" />
+                            <DataGridTextColumn Header="Started"
+                                                Binding="{Binding StartedAtLocal}"
+                                                Width="110" />
+                            <DataGridTextColumn Header="Duration"
+                                                Binding="{Binding Duration}"
+                                                Width="110" />
+                            <DataGridCheckBoxColumn Header="Idle"
+                                                    Binding="{Binding IsIdle}"
+                                                    Width="80" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </Border>
         </Grid>
