@@ -174,7 +174,7 @@ the finished slice is committed and pushed.
 - [ ] Add sync checkpoint handling.
 - [x] Test fake API sync success.
 - [x] Test fake API sync failure retry.
-- [ ] Test duplicate upload remains safe.
+- [x] Test duplicate upload remains safe.
 - [ ] Verify Windows local data uploads to server.
 - [ ] Commit and push Milestone 6.
 

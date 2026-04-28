@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows sync failure retry path.
+Milestone 6 Windows sync duplicate-safe path.
 
 ## Completed
 
@@ -128,6 +128,8 @@ Milestone 6 Windows sync failure retry path.
 - Added retry handling for server item-level `Error` upload results.
 - Verified a fake API error marks the outbox item failed, increments retry
   count, and stores the server error message.
+- Verified server `Duplicate` upload results are treated as synced so retrying
+  an already accepted payload does not keep failing locally.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -138,6 +140,6 @@ Milestone 6 Windows sync failure retry path.
 
 Continue Milestone 6 Windows Sync:
 
-1. Add duplicate upload safe test.
-2. Add device token/auth placeholder.
-3. Add sync checkpoint handling.
+1. Add device token/auth placeholder.
+2. Add sync checkpoint handling.
+3. Add an HTTP sync API client/payload mapper for local outbox payloads.

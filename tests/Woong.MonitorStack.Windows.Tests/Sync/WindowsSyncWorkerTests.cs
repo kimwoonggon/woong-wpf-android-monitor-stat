@@ -57,6 +57,36 @@ public sealed class WindowsSyncWorkerTests
         Assert.Equal("rate limited", saved.LastError);
     }
 
+    [Fact]
+    public async Task ProcessPendingAsync_WhenApiReportsDuplicate_MarksOutboxItemSynced()
+    {
+        var failedItem = new SyncOutboxItem(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: "{\"clientSessionId\":\"session-1\"}",
+            status: SyncOutboxStatus.Failed,
+            retryCount: 2,
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            syncedAtUtc: null,
+            lastError: "previous failure");
+        var repository = new FakeSyncOutboxRepository([failedItem]);
+        var apiClient = new FakeSyncApiClient(new UploadBatchResult(
+            [new UploadItemResult("session-1", UploadItemStatus.Duplicate, ErrorMessage: null)]));
+        var syncedAtUtc = new DateTimeOffset(2026, 4, 28, 2, 0, 0, TimeSpan.Zero);
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(syncedAtUtc));
+
+        WindowsSyncResult result = await worker.ProcessPendingAsync();
+
+        Assert.Equal(1, result.SyncedCount);
+        Assert.Equal(0, result.FailedCount);
+        SyncOutboxItem saved = Assert.Single(repository.Items);
+        Assert.Equal(SyncOutboxStatus.Synced, saved.Status);
+        Assert.Equal(2, saved.RetryCount);
+        Assert.Equal(syncedAtUtc, saved.SyncedAtUtc);
+        Assert.Null(saved.LastError);
+    }
+
     private sealed class FakeSyncApiClient : IWindowsSyncApiClient
     {
         private readonly UploadBatchResult _result;
