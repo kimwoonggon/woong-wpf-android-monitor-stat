@@ -30,6 +30,23 @@ through an explicit Chrome extension and Windows native messaging host.
   abstraction for the Chrome HKCU native messaging host key.
 - Added `WindowsRegistryWriter` as the Windows-only implementation. Tests use a
   fake writer and do not mutate the developer machine registry.
+- Added `ChromeNativeMessageParser` for the extension `activeTabChanged` JSON
+  contract. The parsed Windows DTO includes browser family, tab/window ids, URL,
+  title, registrable domain, and UTC observation timestamp.
+
+## Native Message Contract
+
+```json
+{
+  "type": "activeTabChanged",
+  "browserFamily": "Chrome",
+  "windowId": 7,
+  "tabId": 42,
+  "url": "https://example.com/page",
+  "title": "Example",
+  "observedAtUtc": "2026-04-28T01:02:03Z"
+}
+```
 
 ## Next Slice
 

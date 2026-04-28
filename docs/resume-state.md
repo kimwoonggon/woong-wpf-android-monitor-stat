@@ -350,11 +350,15 @@ Milestone 4.5 extension payload domain extraction.
   Windows-only registry writer.
 - Verified registration writes the expected Chrome HKCU native host key using a
   fake registry writer.
+- Added `ChromeNativeMessageParser` for the extension `activeTabChanged` JSON
+  payload.
+- Verified parsed messages preserve browser family, tab/window ids, domain, and
+  UTC timestamp.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Add native messaging host manifest/receiver seams without collecting typed text,
+1. Add native messaging host receiver seam without collecting typed text,
    passwords, messages, or form inputs.
 2. Convert active tab messages into browser raw events and `web_session` rows.

@@ -145,7 +145,7 @@ the finished slice is committed and pushed.
 - [x] Track active tab changed event.
 - [x] Track URL/title/domain changes.
 - [x] Implement native messaging host registration for Windows.
-- [ ] Implement extension -> native host message DTO.
+- [x] Implement extension -> native host message DTO.
 - [ ] Implement native host receiver in Windows app/service.
 - [ ] Store browser raw events.
 - [ ] Convert browser events to web_session.
