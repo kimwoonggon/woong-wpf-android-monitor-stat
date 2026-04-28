@@ -354,11 +354,14 @@ Milestone 4.5 extension payload domain extraction.
   payload.
 - Verified parsed messages preserve browser family, tab/window ids, domain, and
   UTC timestamp.
+- Added `ChromeNativeMessageReceiver` for Chrome's length-prefixed native
+  messaging stream protocol.
+- Verified the receiver reads a length-prefixed active tab message and returns a
+  normalized tab DTO.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Add native messaging host receiver seam without collecting typed text,
-   passwords, messages, or form inputs.
-2. Convert active tab messages into browser raw events and `web_session` rows.
+1. Convert active tab messages into browser raw events.
+2. Convert browser raw events into `web_session` rows.

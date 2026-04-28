@@ -146,7 +146,7 @@ the finished slice is committed and pushed.
 - [x] Track URL/title/domain changes.
 - [x] Implement native messaging host registration for Windows.
 - [x] Implement extension -> native host message DTO.
-- [ ] Implement native host receiver in Windows app/service.
+- [x] Implement native host receiver in Windows app/service.
 - [ ] Store browser raw events.
 - [ ] Convert browser events to web_session.
 - [x] Test domain extraction from extension payload.

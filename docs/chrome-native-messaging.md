@@ -33,6 +33,8 @@ through an explicit Chrome extension and Windows native messaging host.
 - Added `ChromeNativeMessageParser` for the extension `activeTabChanged` JSON
   contract. The parsed Windows DTO includes browser family, tab/window ids, URL,
   title, registrable domain, and UTC observation timestamp.
+- Added `ChromeNativeMessageReceiver` for Chrome's native messaging protocol:
+  4-byte little-endian length prefix followed by a UTF-8 JSON payload.
 
 ## Native Message Contract
 
@@ -50,5 +52,5 @@ through an explicit Chrome extension and Windows native messaging host.
 
 ## Next Slice
 
-Add the native messaging host manifest contract/receiver and begin converting
-active tab messages into browser raw events and `web_session` rows.
+Begin converting active tab messages into browser raw events and `web_session`
+rows.
