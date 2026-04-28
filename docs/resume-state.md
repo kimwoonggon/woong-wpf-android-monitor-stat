@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 7 Android project setup.
+Milestone 8 Android Usage Access permission checker.
 
 ## Completed
 
@@ -150,6 +150,8 @@ Milestone 7 Android project setup.
   empty instrumentation smoke test.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
+- Added `UsageAccessPermissionChecker` with a fake-reader JVM unit test.
+- Added Android `AppOpsManager`-based usage access permission reader.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -160,6 +162,6 @@ Milestone 7 Android project setup.
 
 Continue Milestone 8 Android Usage Collection + Room:
 
-1. Add Usage Access permission checker with a unit test.
+1. Add permission settings navigation UI entry.
 2. Add UsageSessionizer resumed/paused behavior test.
 3. Add Room entities/DAO after the session model is stable.
