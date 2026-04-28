@@ -4,6 +4,8 @@ public sealed record UploadFocusSessionsRequest
 {
     public UploadFocusSessionsRequest(string deviceId, IReadOnlyList<FocusSessionUploadItem> sessions)
     {
+        ArgumentNullException.ThrowIfNull(sessions);
+
         DeviceId = RequiredContractText.Ensure(deviceId, nameof(deviceId));
         Sessions = sessions.Count > 0 ? sessions : throw new ArgumentException("At least one session is required.", nameof(sessions));
     }

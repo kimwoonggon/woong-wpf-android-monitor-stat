@@ -18,4 +18,12 @@ public sealed class UploadContractTests
             isIdle: false,
             source: "foreground_window"));
     }
+
+    [Fact]
+    public void UploadFocusSessionsRequest_RejectsNullSessions()
+    {
+        Assert.Throws<ArgumentNullException>(() => new UploadFocusSessionsRequest(
+            deviceId: "windows-device-1",
+            sessions: null!));
+    }
 }

@@ -18,6 +18,7 @@ Bootstrap plus Milestone 1 common domain/contracts foundation.
 - Added `DomainNormalizer` and `DailySummaryCalculator`.
 - Added app-family grouping support so platform app keys can roll up to a
   shared family label in daily top apps.
+- Added explicit null guards for upload batch request item lists.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -28,8 +29,8 @@ Bootstrap plus Milestone 1 common domain/contracts foundation.
 
 Continue Milestone 1 hardening before Windows Collector MVP:
 
-1. Add stronger tests for upload batch request validation and raw event
-   idempotency fields.
+1. Add stronger tests for raw event idempotency fields and batch response
+   semantics.
 2. Decide whether contracts remain in `Woong.MonitorStack.Domain.Contracts` or
    move to a separate `Woong.MonitorStack.Contracts` project before clients and
    server are created.
