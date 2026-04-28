@@ -4,11 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser snapshot-to-WebSession slice. The Windows layer now has
-privacy-safe browser activity snapshot models, capture method/confidence enums,
-the required browser interfaces, a tested classifier for the supported MVP
-browsers, URL sanitizer policy enforcement, and snapshot-based web
-sessionization that supports domain-only capture.
+Milestone 23 browser WebSession persistence metadata slice. The Windows layer
+now has privacy-safe browser activity snapshot models, capture
+method/confidence enums, required browser interfaces, a tested classifier,
+URL sanitizer policy enforcement, snapshot-based web sessionization, and local
+SQLite persistence for capture provenance.
 
 ## Completed
 
@@ -124,6 +124,18 @@ sessionization that supports domain-only capture.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.1%, Domain 88.7%, Windows.Presentation 97.6%,
   Windows 91.2%, Windows.App 85.0%, and Server 96.0%.
+- Added optional `CaptureMethod`, `CaptureConfidence`, and
+  `IsPrivateOrUnknown` fields to shared `WebSession`, web-session upload
+  contracts, and server web-session entity shape.
+- Updated `SqliteWebSessionRepository` to create/read/write
+  `capture_method`, `capture_confidence`, and `is_private_or_unknown` columns
+  in Windows local SQLite.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 146 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.2%, Domain 88.8%, Windows.Presentation 97.6%,
+  Windows 91.4%, Windows.App 85.0%, and Server 96.0%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -579,7 +591,7 @@ sessionization that supports domain-only capture.
 
 ## Next Highest Priority
 
-Continue Milestone 23 with TDD: persist browser capture method/confidence and
-privacy indicators in local SQLite web sessions, then create WebSession outbox
-items/upload payloads with domain and duration. Physical Android resource
-measurement remains blocked until a device is connected.
+Continue Milestone 23 with TDD: create WebSession outbox items/upload payloads
+with domain, duration, and capture provenance, then verify duplicate upload
+idempotency. Physical Android resource measurement remains blocked until a
+device is connected.

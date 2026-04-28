@@ -57,3 +57,6 @@ Updated: 2026-04-28
   browser privacy mode must allow site-duration measurement without storing the
   full URL or tab title. `WebSession.Domain` remains required for any persisted
   web session.
+- Browser capture provenance is optional on the shared `WebSession` contract:
+  `CaptureMethod`, `CaptureConfidence`, and `IsPrivateOrUnknown` are carried
+  when the client knows them, but older/imported sessions may leave them null.

@@ -10,7 +10,10 @@ public sealed record WebSessionUploadItem
         string? pageTitle,
         DateTimeOffset startedAtUtc,
         DateTimeOffset endedAtUtc,
-        long durationMs)
+        long durationMs,
+        string? captureMethod = null,
+        string? captureConfidence = null,
+        bool? isPrivateOrUnknown = null)
     {
         FocusSessionId = RequiredContractText.Ensure(focusSessionId, nameof(focusSessionId));
         BrowserFamily = RequiredContractText.Ensure(browserFamily, nameof(browserFamily));
@@ -20,6 +23,9 @@ public sealed record WebSessionUploadItem
         StartedAtUtc = startedAtUtc.ToUniversalTime();
         EndedAtUtc = endedAtUtc.ToUniversalTime();
         DurationMs = durationMs > 0 ? durationMs : throw new ArgumentOutOfRangeException(nameof(durationMs));
+        CaptureMethod = NormalizeOptional(captureMethod);
+        CaptureConfidence = NormalizeOptional(captureConfidence);
+        IsPrivateOrUnknown = isPrivateOrUnknown;
     }
 
     public string FocusSessionId { get; }
@@ -37,6 +43,12 @@ public sealed record WebSessionUploadItem
     public DateTimeOffset EndedAtUtc { get; }
 
     public long DurationMs { get; }
+
+    public string? CaptureMethod { get; }
+
+    public string? CaptureConfidence { get; }
+
+    public bool? IsPrivateOrUnknown { get; }
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

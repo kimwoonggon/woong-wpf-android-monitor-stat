@@ -8,7 +8,10 @@ public sealed record WebSession
         string? url,
         string domain,
         string? pageTitle,
-        TimeRange range)
+        TimeRange range,
+        string? captureMethod = null,
+        string? captureConfidence = null,
+        bool? isPrivateOrUnknown = null)
     {
         FocusSessionId = RequiredText.Ensure(focusSessionId, nameof(focusSessionId));
         BrowserFamily = RequiredText.Ensure(browserFamily, nameof(browserFamily));
@@ -16,6 +19,9 @@ public sealed record WebSession
         Domain = RequiredText.Ensure(domain, nameof(domain));
         PageTitle = NormalizeOptional(pageTitle);
         Range = range;
+        CaptureMethod = NormalizeOptional(captureMethod);
+        CaptureConfidence = NormalizeOptional(captureConfidence);
+        IsPrivateOrUnknown = isPrivateOrUnknown;
     }
 
     public string FocusSessionId { get; }
@@ -29,6 +35,12 @@ public sealed record WebSession
     public string? PageTitle { get; }
 
     public TimeRange Range { get; }
+
+    public string? CaptureMethod { get; }
+
+    public string? CaptureConfidence { get; }
+
+    public bool? IsPrivateOrUnknown { get; }
 
     public DateTimeOffset StartedAtUtc => Range.StartedAtUtc;
 

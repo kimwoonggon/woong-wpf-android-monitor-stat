@@ -135,3 +135,6 @@ Snapshots with a domain create/close web sessions, while snapshots with no URL
 and no domain are ignored for web-session creation so the browser still remains
 represented by the normal FocusSession only. Domain-only snapshots produce
 `WebSession` rows with `Url = null`.
+
+Windows local SQLite `web_session` rows now preserve optional capture
+provenance: capture method, capture confidence, and private/unknown state.

@@ -55,7 +55,10 @@ public sealed class BrowserWebSessionizer
             _current.Url,
             _current.Domain!,
             _current.TabTitle,
-            TimeRange.FromUtc(_current.CapturedAtUtc, snapshot.CapturedAtUtc));
+            TimeRange.FromUtc(_current.CapturedAtUtc, snapshot.CapturedAtUtc),
+            _current.CaptureMethod.ToString(),
+            _current.CaptureConfidence.ToString(),
+            _current.IsPrivateOrUnknown);
 
         _current = HasWebIdentity(snapshot) ? snapshot : null;
         return [completed];

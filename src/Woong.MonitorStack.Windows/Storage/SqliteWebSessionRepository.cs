@@ -29,7 +29,10 @@ public sealed class SqliteWebSessionRepository
                 page_title TEXT NULL,
                 started_at_utc TEXT NOT NULL,
                 ended_at_utc TEXT NOT NULL,
-                duration_ms INTEGER NOT NULL
+                duration_ms INTEGER NOT NULL,
+                capture_method TEXT NULL,
+                capture_confidence TEXT NULL,
+                is_private_or_unknown INTEGER NULL
             );
 
             CREATE INDEX IF NOT EXISTS ix_web_session_focus_session_id
@@ -53,7 +56,10 @@ public sealed class SqliteWebSessionRepository
                 page_title,
                 started_at_utc,
                 ended_at_utc,
-                duration_ms
+                duration_ms,
+                capture_method,
+                capture_confidence,
+                is_private_or_unknown
             ) VALUES (
                 $focusSessionId,
                 $browserFamily,
@@ -62,7 +68,10 @@ public sealed class SqliteWebSessionRepository
                 $pageTitle,
                 $startedAtUtc,
                 $endedAtUtc,
-                $durationMs
+                $durationMs,
+                $captureMethod,
+                $captureConfidence,
+                $isPrivateOrUnknown
             );
             """;
         AddParameters(command, session);
@@ -81,7 +90,10 @@ public sealed class SqliteWebSessionRepository
                 domain,
                 page_title,
                 started_at_utc,
-                ended_at_utc
+                ended_at_utc,
+                capture_method,
+                capture_confidence,
+                is_private_or_unknown
             FROM web_session
             WHERE focus_session_id = $focusSessionId
             ORDER BY started_at_utc;
@@ -115,6 +127,9 @@ public sealed class SqliteWebSessionRepository
         _ = command.Parameters.AddWithValue("$startedAtUtc", FormatUtc(session.StartedAtUtc));
         _ = command.Parameters.AddWithValue("$endedAtUtc", FormatUtc(session.EndedAtUtc));
         _ = command.Parameters.AddWithValue("$durationMs", session.DurationMs);
+        _ = command.Parameters.AddWithValue("$captureMethod", ToDbValue(session.CaptureMethod));
+        _ = command.Parameters.AddWithValue("$captureConfidence", ToDbValue(session.CaptureConfidence));
+        _ = command.Parameters.AddWithValue("$isPrivateOrUnknown", ToDbValue(session.IsPrivateOrUnknown));
     }
 
     private static WebSession ReadSession(SqliteDataReader reader)
@@ -126,11 +141,17 @@ public sealed class SqliteWebSessionRepository
             reader.IsDBNull(4) ? null : reader.GetString(4),
             TimeRange.FromUtc(
                 DateTimeOffset.Parse(reader.GetString(5), CultureInfo.InvariantCulture),
-                DateTimeOffset.Parse(reader.GetString(6), CultureInfo.InvariantCulture)));
+                DateTimeOffset.Parse(reader.GetString(6), CultureInfo.InvariantCulture)),
+            reader.IsDBNull(7) ? null : reader.GetString(7),
+            reader.IsDBNull(8) ? null : reader.GetString(8),
+            reader.IsDBNull(9) ? null : reader.GetInt64(9) == 1);
 
     private static string FormatUtc(DateTimeOffset value)
         => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
     private static object ToDbValue(string? value)
         => value is null ? DBNull.Value : value;
+
+    private static object ToDbValue(bool? value)
+        => value is null ? DBNull.Value : value.Value ? 1 : 0;
 }

@@ -470,7 +470,7 @@ milestones below are finished.
 - [x] Test URL unavailable falls back to FocusSession only.
 - [x] Test domain-only privacy stores domain but not full URL.
 - [x] Test full URL is stored only with explicit opt-in.
-- [ ] Persist WebSessions to SQLite with capture method/confidence/private indicators.
+- [x] Persist WebSessions to SQLite with capture method/confidence/private indicators.
 - [ ] Create WebSession outbox items and upload payloads with domain/duration.
 - [ ] Verify duplicate WebSession uploads are idempotent.
 - [ ] Add native messaging host manifest generation and WPF browser connection status.

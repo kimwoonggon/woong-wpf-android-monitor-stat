@@ -45,7 +45,10 @@ public sealed class WebSessionUploadService
                 PageTitle = item.PageTitle,
                 StartedAtUtc = item.StartedAtUtc,
                 EndedAtUtc = item.EndedAtUtc,
-                DurationMs = item.DurationMs
+                DurationMs = item.DurationMs,
+                CaptureMethod = item.CaptureMethod,
+                CaptureConfidence = item.CaptureConfidence,
+                IsPrivateOrUnknown = item.IsPrivateOrUnknown
             });
             results.Add(new UploadItemResult(item.FocusSessionId, UploadItemStatus.Accepted, ErrorMessage: null));
         }

@@ -21,4 +21,10 @@ public sealed class WebSessionEntity
     public DateTimeOffset EndedAtUtc { get; set; }
 
     public long DurationMs { get; set; }
+
+    public string? CaptureMethod { get; set; }
+
+    public string? CaptureConfidence { get; set; }
+
+    public bool? IsPrivateOrUnknown { get; set; }
 }
