@@ -361,10 +361,15 @@ Milestone 4.5 extension payload domain extraction.
 - Added `SqliteBrowserRawEventRepository` with a `browser_raw_event` local
   SQLite table.
 - Verified browser raw event save/query round-trips Chrome active tab metadata.
+- Added `BrowserWebSessionizer` to convert active tab messages into
+  `WebSession` intervals.
+- Verified active tab changes create a web session for the previous URL.
+- Verified duplicate tab events do not inflate duration.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Convert browser raw events into `web_session` rows.
-2. Prevent duplicate tab events from inflating duration.
+1. Wire native receiver -> browser raw event repository -> web-session
+   repository in an end-to-end local flow.
+2. Verify a Chrome active tab URL appears in the Windows local DB.

@@ -37,6 +37,11 @@ through an explicit Chrome extension and Windows native messaging host.
   4-byte little-endian length prefix followed by a UTF-8 JSON payload.
 - Added `SqliteBrowserRawEventRepository` and `browser_raw_event` local SQLite
   storage for active tab URL/title/domain metadata.
+- Added `BrowserWebSessionizer` to convert ordered active-tab messages into
+  `web_session` intervals linked to the current Windows focus session.
+- Duplicate active-tab events with the same tab/window/url/title/domain/browser
+  identity are ignored so they do not create short extra sessions or inflate
+  duration.
 
 ## Native Message Contract
 
@@ -54,5 +59,6 @@ through an explicit Chrome extension and Windows native messaging host.
 
 ## Next Slice
 
-Convert browser raw events into `web_session` rows and prevent duplicate tab
-events from inflating duration.
+Wire the native receiver, raw event repository, and web-session repository into
+an end-to-end Windows local flow, then verify a Chrome active tab URL appears in
+the Windows local DB.
