@@ -4,9 +4,10 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Usage Access UI Automator smoke slice. Android instrumentation now
-has a UI Automator smoke that taps the Settings Usage Access button and waits
-for `com.android.settings`.
+Milestone 26 Android usage restoration aggregate slice. Android UsageStats
+collection, Room persistence, local sync outbox creation, opt-in sync upload,
+WorkManager scheduling gates, Settings permission UX, and Usage Access
+navigation smoke coverage are now represented in code/tests.
 
 ## Completed
 
@@ -803,10 +804,10 @@ for `com.android.settings`.
 
 ## Next Highest Priority
 
-Complete the Android usage restoration aggregate checklist/commit, then move
-to Milestone 27 Android screenshot/device automation or Milestone 28 privacy
-retention hardening depending on device availability. The WPF browser
-connection status UI and cramped lower dashboard layout remain deferred per the
-latest priority decision because non-UI tracking/schema correctness is more
-important right now. Physical Android resource measurement remains blocked
-until a device is connected.
+Move to Milestone 27 Android screenshot/device automation if an emulator/device
+is available; otherwise continue Milestone 28 privacy retention hardening
+(forbidden-scope tests and raw-event retention). The WPF browser connection
+status UI and cramped lower dashboard layout remain deferred per the latest
+priority decision because non-UI tracking/schema correctness is more important
+right now. Physical Android resource measurement remains blocked until a device
+is connected.

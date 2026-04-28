@@ -540,7 +540,7 @@ milestones below are finished.
 - [x] Commit and push DailySummaryActivity repository/client slice.
 - [x] Commit and push notification permission UX slice.
 - [x] Commit and push Usage Access UI Automator smoke slice.
-- [ ] Commit and push Android usage restoration slice.
+- [x] Commit and push Android usage restoration slice.
 
 ## Milestone 27: Android UI Screenshot And Device Automation
 
@@ -569,7 +569,7 @@ milestones below are finished.
 - [x] Windows real foreground process/window tracking works from WPF Start/Stop.
 - [x] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
 - [ ] Browser domain tracking is explicit, privacy-aware, and covered by tests.
-- [ ] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
+- [x] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
 - [ ] Server schema supports required relationships and idempotent integrated storage.
 - [ ] WPF semantic UI acceptance passes with expected content.
 - [ ] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
