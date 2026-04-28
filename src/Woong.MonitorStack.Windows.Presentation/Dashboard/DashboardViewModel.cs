@@ -155,6 +155,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         _isTrackingRunning = false;
         TrackingStatusText = "Stopped";
         UpdateCurrentActivity(_trackingCoordinator.StopTracking());
+        RefreshSummary(ResolveRange(SelectedPeriod));
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
     }
@@ -316,11 +317,7 @@ public sealed partial class DashboardViewModel : ObservableObject
             return "No session persisted";
         }
 
-        string appName = TextOrDefault(session.AppName, TextOrDefault(session.ProcessName, "Unknown app"));
-        string endedAtLocal = FormatLocalTime(session.EndedAtUtc, _timeZone);
-        string duration = FormatDuration((long)Math.Max(0, session.Duration.TotalMilliseconds));
-
-        return $"{appName} persisted at {endedAtLocal} for {duration}";
+        return session.ToDisplayText(_timeZone.Id);
     }
 
     private static string FormatDuration(long durationMs)

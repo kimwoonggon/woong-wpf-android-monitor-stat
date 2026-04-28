@@ -120,3 +120,14 @@ The RealStart script must warn that it observes foreground window metadata,
 does not record keystrokes, does not capture screen contents, and uses a temp
 DB unless configured otherwise.
 
+## Current Windows Implementation Status
+
+Milestone 22 now wires the WPF composition root to a real app-hosted tracking
+coordinator. The coordinator creates a fresh `TrackingPoller` for each Start,
+persists closed focus sessions to Windows local SQLite, queues `focus_session`
+outbox rows, and lets the dashboard read local SQLite data through
+`SqliteDashboardDataSource`.
+
+Remaining Milestone 22 work is the RealStart local acceptance script. That
+script must use a temp DB by default and must not upload to a real server unless
+an explicit `--AllowServerSync` flag is provided.

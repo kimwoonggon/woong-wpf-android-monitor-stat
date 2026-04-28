@@ -74,6 +74,40 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void StopTrackingCommand_RefreshesCurrentDashboardPeriodAfterFlush()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new MutableDashboardDataSource();
+        var coordinator = new FakeTrackingCoordinator
+        {
+            OnStop = () => dataSource.FocusSessions =
+            [
+                Domain.Common.FocusSession.FromUtc(
+                    "focus-1",
+                    "windows-device-1",
+                    "Code.exe",
+                    now.AddMinutes(-2),
+                    now,
+                    "Asia/Seoul",
+                    isIdle: false,
+                    "foreground_window")
+            ]
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            coordinator);
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        viewModel.StopTrackingCommand.Execute(null);
+
+        var row = Assert.Single(viewModel.RecentSessions);
+        Assert.Equal("Code.exe", row.AppName);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenWindowTitleHidden_MasksWindowTitle()
     {
         DashboardViewModel viewModel = CreateViewModel();
@@ -195,6 +229,19 @@ public sealed class DashboardTrackingStateTests
             => webSessions;
     }
 
+    private sealed class MutableDashboardDataSource : IDashboardDataSource
+    {
+        public IReadOnlyList<Domain.Common.FocusSession> FocusSessions { get; set; } = [];
+
+        public IReadOnlyList<Domain.Common.WebSession> WebSessions { get; set; } = [];
+
+        public IReadOnlyList<Domain.Common.FocusSession> QueryFocusSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+            => FocusSessions;
+
+        public IReadOnlyList<Domain.Common.WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+            => WebSessions;
+    }
+
     private sealed class EmptyDataSource : FakeDashboardDataSource
     {
         public EmptyDataSource()
@@ -216,6 +263,8 @@ public sealed class DashboardTrackingStateTests
 
         public DashboardSyncResult SyncResult { get; set; } = new("Sync skipped. Enable sync to upload.");
 
+        public Action? OnStop { get; set; }
+
         public int StartCount { get; private set; }
 
         public int StopCount { get; private set; }
@@ -234,6 +283,7 @@ public sealed class DashboardTrackingStateTests
         public DashboardTrackingSnapshot StopTracking()
         {
             StopCount++;
+            OnStop?.Invoke();
 
             return StopSnapshot;
         }

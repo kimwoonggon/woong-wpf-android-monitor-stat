@@ -51,11 +51,11 @@ Collected on 2026-04-29 with `coverage.runsettings` and ReportGenerator:
 
 | Assembly | Line coverage | Notes |
 | --- | ---: | --- |
-| Overall | 91.9% | 1,732 / 1,884 coverable lines |
+| Overall | 92.0% | 1,888 / 2,050 coverable lines |
 | Woong.MonitorStack.Domain | 88.6% | Above initial 80% target |
-| Woong.MonitorStack.Windows.Presentation | 98.2% | Above initial 75% target |
+| Woong.MonitorStack.Windows.Presentation | 97.6% | Above initial 75% target |
 | Woong.MonitorStack.Windows | 91.1% | OS wrappers intentionally remain low |
-| Woong.MonitorStack.Windows.App | 52.0% | Acceptable for WPF composition root smoke coverage |
+| Woong.MonitorStack.Windows.App | 83.6% | Increased by app-hosted tracking coordinator and SQLite dashboard tests |
 | Woong.MonitorStack.Server | 96.0% | EF generated migrations excluded |
 
 ## Known Gaps

@@ -4,10 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 21: Windows Live Tracking UI Restoration. Added TDD-covered WPF
-Start/Stop/Sync controls, current activity state, privacy-aware window/page
-title masking, a fake-testable tracking coordinator seam, and local UI snapshot
-verification for the updated shell.
+Milestone 22 first vertical slice: app-hosted Windows tracking persistence and
+SQLite-backed dashboard. WPF Start/Stop now flows through a real app
+coordinator seam that can drive `TrackingPoller`, persist closed focus sessions
+to Windows local SQLite, enqueue sync outbox records, and refresh dashboard
+state from SQLite.
 
 ## Completed
 
@@ -40,6 +41,33 @@ verification for the updated shell.
 - Deferred deeper WPF layout tuning to Milestone 25 after user feedback: the
   lower App Sessions, Web Sessions, and Live Event Log areas are more important
   than perfect first-viewport visibility of the current activity panel.
+- Added `WindowsAppOptions` for typed Windows app composition settings:
+  dashboard timezone, device id, local SQLite connection string, and idle
+  threshold.
+- Added `WindowsTrackingDashboardCoordinator`, which creates a fresh
+  `TrackingPoller` per Start, persists closed focus sessions to
+  `SqliteFocusSessionRepository`, enqueues `focus_session` upload payloads in
+  `SqliteSyncOutboxRepository`, and keeps Stop->Start from extending a previous
+  stopped session.
+- Added `SqliteDashboardDataSource` so the WPF dashboard reads focus and linked
+  web sessions from Windows local SQLite rather than `EmptyDashboardDataSource`.
+- Updated WPF DI to register real Windows tracking readers, idle detection,
+  sessionizer, tracking poller factory, SQLite repositories, dashboard data
+  source, and tracking coordinator.
+- Added app-level tests for DI registration, fake foreground change
+  persistence/outbox enqueueing, Stop flush, Stop->Start session separation,
+  and SQLite dashboard source focus/web reads.
+- Added a Presentation test proving Stop refreshes the current dashboard period
+  after flushed data becomes available.
+- Verified `dotnet restore Woong.MonitorStack.sln`, `dotnet build
+  Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
+  test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 127
+  .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.0%, Domain 88.6%, Windows.Presentation 97.6%,
+  Windows 91.1%, Windows.App 83.6%, and Server 96.0%.
+- Verified WPF local snapshot smoke with `scripts/run-ui-snapshots.ps1`;
+  `artifacts/ui-snapshots/latest/report.md` reports PASS.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -495,8 +523,8 @@ verification for the updated shell.
 
 ## Next Highest Priority
 
-Start Milestone 22 with TDD: add failing tests for app-hosted tracking
-start/stop wiring through DI, then wire the real/fake tracking coordinator to
-`TrackingPoller`, SQLite focus-session persistence, outbox enqueueing, and a
-SQLite-backed dashboard data source. Physical Android resource measurement
+Continue Milestone 22 with TDD: add `scripts/run-wpf-real-start-acceptance.ps1`
+with the required privacy warning, temp DB default, no server upload unless
+`--AllowServerSync` is passed, and local validation that Start/Stop persists at
+least one real foreground focus session. Physical Android resource measurement
 remains blocked until a device is connected.

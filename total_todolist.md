@@ -447,17 +447,17 @@ milestones below are finished.
 
 ## Milestone 22: Windows Tracking Pipeline Persistence And Dashboard
 
-- [ ] Add failing tests for app-hosted tracking start/stop wiring through DI.
-- [ ] Wire `TrackingPoller` into a visible WPF tracking coordinator.
-- [ ] Test a foreground change closes the previous session and starts a new one through the app pipeline.
-- [ ] Persist closed focus sessions to Windows local SQLite.
-- [ ] Enqueue focus session outbox records after persistence.
-- [ ] Replace `EmptyDashboardDataSource` with a SQLite-backed dashboard data source.
-- [ ] Show current and recently persisted activity in WPF.
+- [x] Add failing tests for app-hosted tracking start/stop wiring through DI.
+- [x] Wire `TrackingPoller` into a visible WPF tracking coordinator.
+- [x] Test a foreground change closes the previous session and starts a new one through the app pipeline.
+- [x] Persist closed focus sessions to Windows local SQLite.
+- [x] Enqueue focus session outbox records after persistence.
+- [x] Replace `EmptyDashboardDataSource` with a SQLite-backed dashboard data source.
+- [x] Show current and recently persisted activity in WPF.
 - [ ] Add RealStart local validation script `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy warning.
 - [ ] Ensure RealStart uses a temp DB and does not upload unless `--AllowServerSync` is provided.
-- [ ] Run focused tests, WPF smoke, solution build/test.
-- [ ] Commit and push Windows tracking pipeline slice.
+- [x] Run focused tests, WPF smoke, solution build/test.
+- [x] Commit and push Windows tracking pipeline slice.
 
 ## Milestone 23: Browser Domain Tracking Restoration
 
