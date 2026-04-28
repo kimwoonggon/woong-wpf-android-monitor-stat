@@ -147,7 +147,7 @@ the finished slice is committed and pushed.
 - [x] Implement native messaging host registration for Windows.
 - [x] Implement extension -> native host message DTO.
 - [x] Implement native host receiver in Windows app/service.
-- [ ] Store browser raw events.
+- [x] Store browser raw events.
 - [ ] Convert browser events to web_session.
 - [x] Test domain extraction from extension payload.
 - [ ] Test active tab event creates/updates web session.

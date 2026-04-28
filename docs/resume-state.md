@@ -358,10 +358,13 @@ Milestone 4.5 extension payload domain extraction.
   messaging stream protocol.
 - Verified the receiver reads a length-prefixed active tab message and returns a
   normalized tab DTO.
+- Added `SqliteBrowserRawEventRepository` with a `browser_raw_event` local
+  SQLite table.
+- Verified browser raw event save/query round-trips Chrome active tab metadata.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Convert active tab messages into browser raw events.
-2. Convert browser raw events into `web_session` rows.
+1. Convert browser raw events into `web_session` rows.
+2. Prevent duplicate tab events from inflating duration.

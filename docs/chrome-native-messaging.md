@@ -35,6 +35,8 @@ through an explicit Chrome extension and Windows native messaging host.
   title, registrable domain, and UTC observation timestamp.
 - Added `ChromeNativeMessageReceiver` for Chrome's native messaging protocol:
   4-byte little-endian length prefix followed by a UTF-8 JSON payload.
+- Added `SqliteBrowserRawEventRepository` and `browser_raw_event` local SQLite
+  storage for active tab URL/title/domain metadata.
 
 ## Native Message Contract
 
@@ -52,5 +54,5 @@ through an explicit Chrome extension and Windows native messaging host.
 
 ## Next Slice
 
-Begin converting active tab messages into browser raw events and `web_session`
-rows.
+Convert browser raw events into `web_session` rows and prevent duplicate tab
+events from inflating duration.
