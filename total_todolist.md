@@ -279,8 +279,8 @@ the finished slice is committed and pushed.
 - [x] Add Windows sync failure UI.
 - [x] Add Android sync failure UI.
 - [x] Add clear permission guidance text.
-- [ ] Check Windows CPU/memory usage.
-- [ ] Check Android CPU/memory/battery impact.
+- [x] Check Windows CPU/memory usage.
+- [x] Check Android CPU/memory/battery impact.
 - [ ] Stabilize all tests.
 - [ ] Write README.
 - [ ] Run all unit/component/integration tests.

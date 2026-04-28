@@ -307,6 +307,8 @@ Milestone 12 Android Settings hardening UI.
   Usage Access action, local-only sync status, and retryable sync failure status.
 - Verified Android Settings UI hardening with Robolectric and Espresso compile
   coverage.
+- Added `docs/performance-checks.md` with Windows collector smoke CPU/memory
+  measurements and Android emulator CPU/memory/batterystats smoke results.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
