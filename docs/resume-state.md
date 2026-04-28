@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android duplicate-safe upload handling.
+Milestone 10 Android WorkManager sync worker.
 
 ## Completed
 
@@ -247,6 +247,13 @@ Milestone 10 Android duplicate-safe upload handling.
   error message.
 - Added Room DAO `markFailed` behavior that increments retry count, stores the
   last error, and keeps the row in the pending query.
+- Added `AndroidSyncRunner` and `AndroidRoomSyncRunner` to connect WorkManager
+  execution to the Room outbox plus OkHttp sync client.
+- Added `AndroidSyncWorker` with device/base URL input keys, pending limit,
+  success output counts, and retry behavior when any item fails or sync
+  configuration is missing.
+- Verified sync worker success output and failed-item retry behavior with a
+  Robolectric WorkManager test.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -260,6 +267,6 @@ Milestone 10 Android duplicate-safe upload handling.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Add sync worker tests before implementation.
-2. Implement WorkManager sync worker.
-3. Integrate daily summary API / previous-day summary screen.
+1. Integrate daily summary API / previous-day summary screen.
+2. Add summary display tests.
+3. Decide whether morning summary notification is feasible for MVP.

@@ -244,14 +244,14 @@ the finished slice is committed and pushed.
 - [x] Test Android sync outbox DAO insert/query/synced behavior.
 - [x] Implement Retrofit/OkHttp sync client.
 - [x] Test Android sync client focus-session upload contract.
-- [ ] Implement WorkManager sync worker.
+- [x] Implement WorkManager sync worker.
 - [x] Implement duplicate-safe upload handling.
 - [x] Test Android sync outbox failed retry persistence.
 - [ ] Integrate daily summary API.
 - [ ] Add previous-day summary screen.
 - [ ] Add morning summary notification if feasible.
-- [ ] Test sync worker success.
-- [ ] Test sync worker failure retry.
+- [x] Test sync worker success.
+- [x] Test sync worker failure retry.
 - [x] Test duplicate upload.
 - [ ] Test summary display.
 - [ ] Commit and push Milestone 10.
