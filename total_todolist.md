@@ -98,21 +98,24 @@ the finished slice is committed and pushed.
 
 ## Milestone 4: Windows WPF Dashboard MVP
 
-- [ ] Create WPF app project.
-- [ ] Apply MVVM structure.
-- [ ] Add CommunityToolkit.Mvvm.
-- [ ] Add dashboard view/viewmodel.
-- [ ] Add period filters: today, 1h, 6h, 24h, custom.
+- [x] Create WPF app project.
+- [x] Create WPF presentation project for MVVM-testable logic.
+- [x] Create WPF presentation xUnit test project.
+- [x] Apply initial MVVM structure.
+- [x] Add CommunityToolkit.Mvvm.
+- [x] Add dashboard viewmodel foundation.
+- [x] Add period filters: today, 1h, 6h, 24h, custom.
 - [ ] Add summary cards.
 - [ ] Add LiveCharts2 chart mapping.
 - [ ] Add app sessions table.
 - [ ] Add live event log.
 - [ ] Add web sessions view.
 - [ ] Add settings view.
-- [ ] Test DashboardViewModel filter changes refresh summary.
+- [x] Test DashboardViewModel filter changes refresh summary.
 - [ ] Test chart mapper behavior.
 - [ ] Add WPF UI smoke path when tooling is ready.
-- [ ] Verify WPF build succeeds.
+- [x] Verify WPF build succeeds.
+- [x] Commit and push WPF DashboardViewModel foundation slice.
 - [ ] Commit and push Milestone 4.
 
 ## Milestone 5: Server Integrated DB + API MVP
