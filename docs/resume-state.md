@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android UsageStats collector.
+Milestone 8 Android collect worker.
 
 ## Completed
 
@@ -169,6 +169,16 @@ Milestone 8 Android UsageStats collector.
   `UsageStatsCollector`.
 - Verified the collector reads the requested UTC range and returns events sorted
   by timestamp.
+- Added `CollectUsageWorker` with injectable collection runner for WorkManager
+  testing.
+- Added `AndroidUsageCollectionRunner` to collect UsageStats events, sessionize
+  them, and store deterministic `focus_sessions` rows in Room.
+- Added Room bulk insert support and a singleton `MonitorDatabase` opener for
+  worker execution.
+- Declared `PACKAGE_USAGE_STATS` in the Android manifest; permission remains
+  explicit through the existing Usage Access settings flow.
+- Verified worker behavior with a Robolectric WorkManager test.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `assembleDebug`; AGP reports the expected experimental
   `android.disallowKotlinSourceSets=false` warning required for KSP with
   built-in Kotlin.
@@ -180,8 +190,8 @@ Milestone 8 Android UsageStats collector.
 
 ## Next Highest Priority
 
-Continue Milestone 8 Android Usage Collection + Room:
+Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Implement collect worker.
-2. Add worker behavior test.
-3. Commit and push Milestone 8.
+1. Create DashboardActivity or DashboardFragment.
+2. Add dashboard ViewModel/state for period summary and recent sessions.
+3. Add XML/View dashboard tests before implementation.

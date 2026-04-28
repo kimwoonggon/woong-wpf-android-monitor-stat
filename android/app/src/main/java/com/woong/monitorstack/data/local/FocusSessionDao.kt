@@ -10,6 +10,9 @@ interface FocusSessionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(session: FocusSessionEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(sessions: List<FocusSessionEntity>)
+
     @Query(
         """
         SELECT *

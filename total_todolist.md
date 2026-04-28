@@ -206,13 +206,13 @@ the finished slice is committed and pushed.
 - [x] Implement UsageSessionizer.
 - [x] Implement short consecutive event merge.
 - [x] Define Room entities/DAO.
-- [ ] Implement collect worker.
+- [x] Implement collect worker.
 - [x] Test resumed/paused creates session.
 - [x] Test close same-app events merge.
 - [x] Test different app starts close previous session.
 - [x] Test Room DAO insert/query.
-- [ ] Test worker behavior.
-- [ ] Commit and push Milestone 8.
+- [x] Test worker behavior.
+- [x] Commit and push Milestone 8.
 
 ## Milestone 9: Android XML Dashboard MVP
 
