@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dailySummaryRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/dailySummaryTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/daily_summary_title"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/dailySummaryDateText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dailySummaryTitle" />
+
+    <LinearLayout
+        android:id="@+id/dailySummaryMetrics"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dailySummaryDateText">
+
+        <TextView
+            android:id="@+id/dailySummaryActiveLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_active"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/dailySummaryActiveText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/zero_duration"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dailySummaryIdleLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/idle_time"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/dailySummaryIdleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/zero_duration"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dailySummaryWebLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/web_time"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/dailySummaryWebText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/zero_duration"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dailySummaryTopAppLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/top_app"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/dailySummaryTopAppText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/no_top_app"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dailySummaryTopDomainLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/top_domain"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/dailySummaryTopDomainText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_top_domain"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

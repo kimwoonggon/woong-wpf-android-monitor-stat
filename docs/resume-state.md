@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android daily summary API client.
+Milestone 10 Android previous-day summary screen.
 
 ## Completed
 
@@ -260,6 +260,12 @@ Milestone 10 Android daily summary API client.
   and top domains.
 - Verified summary client path/query construction and Moshi response parsing
   against the server's daily summary contract.
+- Added `DailySummaryViewModel` and repository abstraction for loading the
+  previous local day and formatting active, idle, web, top app, and top domain
+  summary state.
+- Added XML/ViewBinding `DailySummaryActivity` registered in the manifest.
+- Added summary Activity smoke coverage that verifies previous-day date and
+  summary values render from intent-provided state.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -273,6 +279,6 @@ Milestone 10 Android daily summary API client.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Add previous-day summary screen.
-2. Add summary display tests.
-3. Decide whether morning summary notification is feasible for MVP.
+1. Decide whether morning summary notification is feasible for MVP.
+2. Commit and push Milestone 10 completion if notification is deferred.
+3. Move to Milestone 11 integrated daily summary hardening.

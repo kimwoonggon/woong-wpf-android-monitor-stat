@@ -9,8 +9,11 @@
     <string name="filter_recent_7_days">7 days</string>
     <string name="total_active">Active time</string>
     <string name="top_app">Top app</string>
+    <string name="top_domain">Top domain</string>
+    <string name="web_time">Web time</string>
     <string name="idle_time">Idle time</string>
     <string name="recent_sessions">Recent sessions</string>
+    <string name="daily_summary_title">Previous day summary</string>
     <string name="sessions_title">Sessions</string>
     <string name="settings_title">Settings</string>
     <string name="collection_visible_default">Collection is visible while tracking.</string>
@@ -18,4 +21,5 @@
     <string name="empty_sessions">No sessions yet</string>
     <string name="zero_duration">0m</string>
     <string name="no_top_app">No app</string>
+    <string name="no_top_domain">No domain</string>
 </resources>

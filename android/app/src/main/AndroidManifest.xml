@@ -18,6 +18,9 @@
             android:name=".settings.SettingsActivity"
             android:exported="false" />
         <activity
+            android:name=".summary.DailySummaryActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

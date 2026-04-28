@@ -10,7 +10,7 @@ import okhttp3.Request
 class DailySummaryClient(
     baseUrl: String,
     private val httpClient: OkHttpClient = OkHttpClient()
-) {
+) : DailySummaryRepository {
     private val normalizedBaseUrl = baseUrl.trimEnd('/')
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -21,7 +21,7 @@ class DailySummaryClient(
         require(normalizedBaseUrl.isNotBlank()) { "baseUrl must not be blank." }
     }
 
-    fun getDailySummary(
+    override fun getDailySummary(
         userId: String,
         summaryDate: String,
         timezoneId: String

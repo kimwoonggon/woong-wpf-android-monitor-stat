@@ -249,12 +249,12 @@ the finished slice is committed and pushed.
 - [x] Test Android sync outbox failed retry persistence.
 - [x] Integrate daily summary API.
 - [x] Test daily summary API client contract.
-- [ ] Add previous-day summary screen.
+- [x] Add previous-day summary screen.
 - [ ] Add morning summary notification if feasible.
 - [x] Test sync worker success.
 - [x] Test sync worker failure retry.
 - [x] Test duplicate upload.
-- [ ] Test summary display.
+- [x] Test summary display.
 - [ ] Commit and push Milestone 10.
 
 ## Milestone 11: Integrated Daily Summary
