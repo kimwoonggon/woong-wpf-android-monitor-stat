@@ -125,7 +125,7 @@ the finished slice is committed and pushed.
 - [x] Test DashboardViewModel publishes live event log rows.
 - [x] Test settings default privacy state.
 - [x] Test DashboardViewModel exposes settings.
-- [ ] Add WPF UI smoke path when tooling is ready.
+- [x] Add WPF UI smoke path when tooling is ready.
 - [x] Verify WPF build succeeds.
 - [x] Commit and push WPF DashboardViewModel foundation slice.
 - [x] Commit and push WPF summary card shell slice.
@@ -134,7 +134,8 @@ the finished slice is committed and pushed.
 - [x] Commit and push WPF app sessions table slice.
 - [x] Commit and push WPF web/live event views slice.
 - [x] Commit and push WPF settings view slice.
-- [ ] Commit and push Milestone 4.
+- [x] Commit and push WPF smoke path and Milestone 4 completion.
+- [x] Commit and push Milestone 4.
 
 ## Milestone 5: Server Integrated DB + API MVP
 

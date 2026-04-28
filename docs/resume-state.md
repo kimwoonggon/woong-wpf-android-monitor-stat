@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows settings dashboard tab.
+Milestone 4 Windows WPF Dashboard MVP completed.
 
 ## Completed
 
@@ -67,6 +67,11 @@ Milestone 4 Windows settings dashboard tab.
 - Added settings ViewModel defaults: collection visible and sync opt-out.
 - Exposed settings through the dashboard ViewModel.
 - Added WPF Settings tab bound to the privacy/sync settings state.
+- Added WPF app smoke test project targeting `net10.0-windows`.
+- Added STA-thread smoke test that constructs `MainWindow` with a
+  `DashboardViewModel`.
+- Verified 49 tests pass across domain, Windows, presentation, and WPF app
+  tests.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -75,8 +80,8 @@ Milestone 4 Windows settings dashboard tab.
 
 ## Next Highest Priority
 
-Continue Milestone 4 Windows WPF Dashboard MVP:
+Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add WPF smoke path when tooling is ready.
-2. Complete Milestone 4 checklist and move to server MVP.
-3. Start Milestone 5 ASP.NET Core API with TDD-first device registration.
+1. Create ASP.NET Core Web API and server test project.
+2. Start TDD-first device registration contract/API behavior.
+3. Add EF Core PostgreSQL entities after API tests define the behavior.

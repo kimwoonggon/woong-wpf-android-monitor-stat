@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.App", "src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj", "{7622473F-91A6-4304-AE5C-82B6DBF43318}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.App.Tests", "tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj", "{72866305-9DBF-47DE-AB61-9DB1DB741C68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,8 +129,23 @@ Global
 		{7622473F-91A6-4304-AE5C-82B6DBF43318}.Release|x64.Build.0 = Release|Any CPU
 		{7622473F-91A6-4304-AE5C-82B6DBF43318}.Release|x86.ActiveCfg = Release|Any CPU
 		{7622473F-91A6-4304-AE5C-82B6DBF43318}.Release|x86.Build.0 = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|x64.Build.0 = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Debug|x86.Build.0 = Debug|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|x64.ActiveCfg = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|x64.Build.0 = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|x86.ActiveCfg = Release|Any CPU
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{72866305-9DBF-47DE-AB61-9DB1DB741C68} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
