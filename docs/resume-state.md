@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows sync worker success path.
+Milestone 6 Windows sync failure retry path.
 
 ## Completed
 
@@ -125,6 +125,9 @@ Milestone 6 Windows sync worker success path.
   repository to it.
 - Added `WindowsSyncWorker` for processing pending/failed outbox rows.
 - Verified a fake API `Accepted` upload marks the outbox item synced.
+- Added retry handling for server item-level `Error` upload results.
+- Verified a fake API error marks the outbox item failed, increments retry
+  count, and stores the server error message.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -135,6 +138,6 @@ Milestone 6 Windows sync worker success path.
 
 Continue Milestone 6 Windows Sync:
 
-1. Add fake API sync failure retry test.
-2. Add duplicate upload safe test.
-3. Add device token/auth placeholder and checkpoint handling.
+1. Add duplicate upload safe test.
+2. Add device token/auth placeholder.
+3. Add sync checkpoint handling.

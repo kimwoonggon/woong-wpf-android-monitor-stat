@@ -169,11 +169,11 @@ the finished slice is committed and pushed.
 
 - [x] Define sync API client.
 - [x] Implement Windows sync worker.
-- [ ] Implement retry policy.
+- [x] Implement retry policy.
 - [ ] Add device token/auth placeholder.
 - [ ] Add sync checkpoint handling.
 - [x] Test fake API sync success.
-- [ ] Test fake API sync failure retry.
+- [x] Test fake API sync failure retry.
 - [ ] Test duplicate upload remains safe.
 - [ ] Verify Windows local data uploads to server.
 - [ ] Commit and push Milestone 6.

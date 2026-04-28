@@ -35,7 +35,7 @@ public sealed class WindowsSyncWorker
             }
             else
             {
-                _outboxRepository.MarkFailed(item.Id, "Server rejected sync payload.");
+                _outboxRepository.MarkFailed(item.Id, GetFailureMessage(result));
                 failedCount++;
             }
         }
@@ -49,4 +49,10 @@ public sealed class WindowsSyncWorker
     private static bool IsSuccessfulBatch(UploadBatchResult result)
         => result.Items.Count > 0 &&
             result.Items.All(item => item.Status is UploadItemStatus.Accepted or UploadItemStatus.Duplicate);
+
+    private static string GetFailureMessage(UploadBatchResult result)
+        => result.Items
+            .Select(item => item.ErrorMessage)
+            .FirstOrDefault(message => !string.IsNullOrWhiteSpace(message))
+            ?? "Server rejected sync payload.";
 }
