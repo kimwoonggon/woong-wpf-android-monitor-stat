@@ -25,9 +25,9 @@ public sealed class SqliteBrowserRawEventRepository
                 browser_family TEXT NOT NULL,
                 window_id INTEGER NOT NULL,
                 tab_id INTEGER NOT NULL,
-                url TEXT NOT NULL,
-                title TEXT NOT NULL,
-                domain TEXT NOT NULL,
+                url TEXT NULL,
+                title TEXT NULL,
+                domain TEXT NULL,
                 observed_at_utc TEXT NOT NULL
             );
 
@@ -40,6 +40,20 @@ public sealed class SqliteBrowserRawEventRepository
     public void Save(ChromeTabChangedMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
+
+        Save(new BrowserRawEventRecord(
+            message.BrowserFamily,
+            message.WindowId,
+            message.TabId,
+            message.Url,
+            message.Title,
+            message.Domain,
+            message.ObservedAtUtc));
+    }
+
+    public void Save(BrowserRawEventRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
 
         using var connection = OpenConnection();
         using var command = connection.CreateCommand();
@@ -62,7 +76,7 @@ public sealed class SqliteBrowserRawEventRepository
                 $observedAtUtc
             );
             """;
-        AddParameters(command, message);
+        AddParameters(command, record);
         _ = command.ExecuteNonQuery();
     }
 
@@ -94,6 +108,35 @@ public sealed class SqliteBrowserRawEventRepository
         return messages;
     }
 
+    public IReadOnlyList<BrowserRawEventRecord> QueryRecordsByTabId(int tabId)
+    {
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT
+                browser_family,
+                window_id,
+                tab_id,
+                url,
+                title,
+                domain,
+                observed_at_utc
+            FROM browser_raw_event
+            WHERE tab_id = $tabId
+            ORDER BY observed_at_utc;
+            """;
+        _ = command.Parameters.AddWithValue("$tabId", tabId);
+
+        using var reader = command.ExecuteReader();
+        var records = new List<BrowserRawEventRecord>();
+        while (reader.Read())
+        {
+            records.Add(ReadRecord(reader));
+        }
+
+        return records;
+    }
+
     private SqliteConnection OpenConnection()
     {
         var connection = new SqliteConnection(_connectionString);
@@ -101,15 +144,15 @@ public sealed class SqliteBrowserRawEventRepository
         return connection;
     }
 
-    private static void AddParameters(SqliteCommand command, ChromeTabChangedMessage message)
+    private static void AddParameters(SqliteCommand command, BrowserRawEventRecord record)
     {
-        _ = command.Parameters.AddWithValue("$browserFamily", message.BrowserFamily);
-        _ = command.Parameters.AddWithValue("$windowId", message.WindowId);
-        _ = command.Parameters.AddWithValue("$tabId", message.TabId);
-        _ = command.Parameters.AddWithValue("$url", message.Url);
-        _ = command.Parameters.AddWithValue("$title", message.Title);
-        _ = command.Parameters.AddWithValue("$domain", message.Domain);
-        _ = command.Parameters.AddWithValue("$observedAtUtc", FormatUtc(message.ObservedAtUtc));
+        _ = command.Parameters.AddWithValue("$browserFamily", record.BrowserFamily);
+        _ = command.Parameters.AddWithValue("$windowId", record.WindowId);
+        _ = command.Parameters.AddWithValue("$tabId", record.TabId);
+        _ = command.Parameters.AddWithValue("$url", ToDbValue(record.Url));
+        _ = command.Parameters.AddWithValue("$title", ToDbValue(record.Title));
+        _ = command.Parameters.AddWithValue("$domain", ToDbValue(record.Domain));
+        _ = command.Parameters.AddWithValue("$observedAtUtc", FormatUtc(record.ObservedAtUtc));
     }
 
     private static ChromeTabChangedMessage ReadMessage(SqliteDataReader reader)
@@ -121,6 +164,19 @@ public sealed class SqliteBrowserRawEventRepository
             observedAtUtc: DateTimeOffset.Parse(reader.GetString(5), CultureInfo.InvariantCulture),
             browserFamily: reader.GetString(0));
 
+    private static BrowserRawEventRecord ReadRecord(SqliteDataReader reader)
+        => new(
+            reader.GetString(0),
+            reader.GetInt32(1),
+            reader.GetInt32(2),
+            reader.IsDBNull(3) ? null : reader.GetString(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            DateTimeOffset.Parse(reader.GetString(6), CultureInfo.InvariantCulture));
+
     private static string FormatUtc(DateTimeOffset value)
         => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+
+    private static object ToDbValue(string? value)
+        => value is null ? DBNull.Value : value;
 }

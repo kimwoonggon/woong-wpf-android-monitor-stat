@@ -474,7 +474,7 @@ milestones below are finished.
 - [x] Create WebSession outbox items and upload payloads with domain/duration.
 - [x] Verify duplicate WebSession uploads are idempotent.
 - [ ] Add native messaging host manifest generation and WPF browser connection status.
-- [ ] Add URL sanitizer/redaction policy before storing raw browser events.
+- [x] Add URL sanitizer/redaction policy before storing raw browser events.
 - [ ] Run browser/domain tests, Windows tests, solution build/test.
 - [ ] Commit and push browser domain tracking slice.
 

@@ -4,11 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser WebSession duplicate upload slice. Browser domain
-tracking now has privacy-safe snapshots, URL sanitizer policy enforcement,
-snapshot-based WebSession creation, local SQLite capture provenance,
-`web_session` outbox payloads, and server duplicate handling for domain-only
-payloads with `Url = null`.
+Milestone 23 browser raw-event sanitizer flow slice. Browser domain tracking
+now has privacy-safe snapshots, URL sanitizer policy enforcement before raw
+event persistence, snapshot-based WebSession creation, local SQLite capture
+provenance, `web_session` outbox payloads, and server duplicate handling for
+domain-only payloads with `Url = null`.
 
 ## Completed
 
@@ -147,6 +147,18 @@ payloads with `Url = null`.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
+- Added nullable raw browser event records so browser raw events can preserve
+  domain-only data without storing full URLs.
+- Updated Chrome native-message ingestion to sanitize messages before raw-event
+  persistence and before WebSession creation.
+- Verified DomainOnly ingestion stores `Url = null` in both raw browser events
+  and completed WebSessions while retaining the normalized domain.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 149 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.6%, Domain 88.8%, Windows.Presentation 97.6%,
+  Windows 92.3%, Windows.App 85.0%, and Server 96.0%.
 - Updated server EF web-session model configuration so URL and page title are
   optional, while capture method/confidence have bounded lengths.
 - Verified duplicate web-session upload retries remain idempotent when URL and
@@ -613,7 +625,6 @@ payloads with `Url = null`.
 ## Next Highest Priority
 
 Continue Milestone 23 with TDD: handle the remaining native-message host
-manifest/WPF browser connection status and URL sanitizer persistence-flow TODO,
-then move to Milestone 24 schema restoration/migrations for the nullable URL
-and capture provenance shape. Physical Android resource measurement remains
-blocked until a device is connected.
+manifest/WPF browser connection status, then move to Milestone 24 schema
+restoration/migrations for nullable URL and capture provenance. Physical
+Android resource measurement remains blocked until a device is connected.

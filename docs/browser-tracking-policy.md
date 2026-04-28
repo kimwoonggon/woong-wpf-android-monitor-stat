@@ -147,3 +147,8 @@ provenance.
 Server web-session upload is retry-safe for domain-only payloads where
 `url = null`; duplicate uploads return `Duplicate` rather than inserting a
 second row.
+
+Chrome native-message ingestion now sanitizes browser URL data before writing
+browser raw events. In DomainOnly mode the raw event keeps the normalized
+domain but stores no full URL, and the resulting WebSession also has
+`Url = null`.

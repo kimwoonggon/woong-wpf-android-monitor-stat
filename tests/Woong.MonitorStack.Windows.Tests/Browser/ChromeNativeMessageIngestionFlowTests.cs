@@ -86,6 +86,43 @@ public sealed class ChromeNativeMessageIngestionFlowTests : IDisposable
         Assert.Equal("High", session.CaptureConfidence);
     }
 
+    [Fact]
+    public async Task IngestAsync_WhenPolicyIsDomainOnly_DoesNotPersistFullUrlInRawEventOrWebSession()
+    {
+        var connectionString = $"Data Source={_dbPath};Pooling=False";
+        var rawEvents = new SqliteBrowserRawEventRepository(connectionString);
+        var webSessions = new SqliteWebSessionRepository(connectionString);
+        var ingestion = new ChromeNativeMessageIngestionFlow(
+            rawEvents,
+            webSessions,
+            outbox: null,
+            deviceId: null,
+            sessionizer: new BrowserWebSessionizer("focus-1"),
+            urlSanitizer: new BrowserUrlSanitizer(),
+            storagePolicy: BrowserUrlStoragePolicy.DomainOnly);
+        rawEvents.Initialize();
+        webSessions.Initialize();
+
+        await ingestion.IngestAsync(CreateNativeMessage(
+            url: "https://github.com/org/repo?secret=1#token",
+            title: "Repository",
+            observedAtUtc: "2026-04-28T01:00:00Z",
+            tabId: 42), CancellationToken.None);
+        await ingestion.IngestAsync(CreateNativeMessage(
+            url: "https://chatgpt.com/codex",
+            title: "ChatGPT",
+            observedAtUtc: "2026-04-28T01:05:00Z",
+            tabId: 43), CancellationToken.None);
+
+        BrowserRawEventRecord savedRawEvent = Assert.Single(rawEvents.QueryRecordsByTabId(42));
+        Assert.Null(savedRawEvent.Url);
+        Assert.Equal("github.com", savedRawEvent.Domain);
+
+        var savedWebSession = Assert.Single(webSessions.QueryByFocusSessionId("focus-1"));
+        Assert.Null(savedWebSession.Url);
+        Assert.Equal("github.com", savedWebSession.Domain);
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))
