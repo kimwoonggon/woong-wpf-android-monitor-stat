@@ -124,3 +124,11 @@ Start, Stop, Sync Now, title privacy, and fake coordinator behaviors. Full
 semantic FlaUI acceptance, fake generated activity content, richer screenshots,
 chart-area visibility handling, and better vertical space for App Sessions,
 Web Sessions, and Live Event Log remain Milestone 25 work.
+
+Milestone 22 added `scripts/run-wpf-real-start-acceptance.ps1` and the
+`Woong.MonitorStack.Windows.RealStartAcceptance` tool. This local-only check
+uses real Windows foreground readers, a temp SQLite DB, and FlaUI Start/Stop
+clicks to prove that at least one focus session and one outbox item are
+persisted without uploading to a server. Per the latest product priority, the
+cramped lower App Sessions/Web Sessions area remains deferred while non-UI
+tracking and browser-domain work continues.

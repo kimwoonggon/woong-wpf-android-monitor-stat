@@ -128,6 +128,11 @@ persists closed focus sessions to Windows local SQLite, queues `focus_session`
 outbox rows, and lets the dashboard read local SQLite data through
 `SqliteDashboardDataSource`.
 
-Remaining Milestone 22 work is the RealStart local acceptance script. That
-script must use a temp DB by default and must not upload to a real server unless
-an explicit `--AllowServerSync` flag is provided.
+`scripts/run-wpf-real-start-acceptance.ps1` now provides the RealStart local
+validation path. It prints the required privacy warning, uses
+`WOONG_MONITOR_LOCAL_DB` to force the app onto a temp SQLite DB, and keeps real
+server sync disabled unless `--AllowServerSync` is explicitly passed.
+
+The latest local RealStart run launched the WPF app with real Windows readers,
+clicked Start/Stop through FlaUI, and verified that the temp DB contained one
+`focus_session` row and one `sync_outbox` row.

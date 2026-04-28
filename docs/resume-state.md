@@ -4,11 +4,10 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 22 first vertical slice: app-hosted Windows tracking persistence and
-SQLite-backed dashboard. WPF Start/Stop now flows through a real app
-coordinator seam that can drive `TrackingPoller`, persist closed focus sessions
-to Windows local SQLite, enqueue sync outbox records, and refresh dashboard
-state from SQLite.
+Milestone 22 RealStart local validation. WPF Start/Stop now flows through the
+real app-hosted tracking coordinator, persists real foreground metadata to a
+temp Windows SQLite database during local acceptance, enqueues an outbox row,
+and proves the path with FlaUI without uploading to a server.
 
 ## Completed
 
@@ -68,6 +67,24 @@ state from SQLite.
   Windows 91.1%, Windows.App 83.6%, and Server 96.0%.
 - Verified WPF local snapshot smoke with `scripts/run-ui-snapshots.ps1`;
   `artifacts/ui-snapshots/latest/report.md` reports PASS.
+- Added `WOONG_MONITOR_LOCAL_DB` and `WOONG_MONITOR_DEVICE_ID` app option
+  overrides so local acceptance can force the WPF app onto a temp SQLite DB and
+  stable test device id.
+- Added `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy
+  warning: it observes foreground window metadata only, does not record
+  keystrokes, does not capture screen contents, and uses a temp DB by default.
+- Added `tools/Woong.MonitorStack.Windows.RealStartAcceptance`, which launches
+  the WPF app, clicks Start/Stop through FlaUI, and verifies persisted
+  `focus_session` plus `sync_outbox` rows.
+- Verified RealStart locally with a temp DB containing one `focus_session` row
+  and one `sync_outbox` row.
+- Verified `dotnet restore Woong.MonitorStack.sln`, `dotnet build
+  Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
+  test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 129
+  .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.1%, Domain 88.6%, Windows.Presentation 97.6%,
+  Windows 91.1%, Windows.App 85.0%, and Server 96.0%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -523,8 +540,8 @@ state from SQLite.
 
 ## Next Highest Priority
 
-Continue Milestone 22 with TDD: add `scripts/run-wpf-real-start-acceptance.ps1`
-with the required privacy warning, temp DB default, no server upload unless
-`--AllowServerSync` is passed, and local validation that Start/Stop persists at
-least one real foreground focus session. Physical Android resource measurement
-remains blocked until a device is connected.
+Continue Milestone 23 with TDD: restore browser/domain tracking behavior around
+`BrowserActivitySnapshot`, browser process classification, URL sanitization,
+and `IWebSessionizer` behavior before doing any more WPF layout polish.
+Physical Android resource measurement remains blocked until a device is
+connected.

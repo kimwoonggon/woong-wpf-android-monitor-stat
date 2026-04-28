@@ -454,8 +454,8 @@ milestones below are finished.
 - [x] Enqueue focus session outbox records after persistence.
 - [x] Replace `EmptyDashboardDataSource` with a SQLite-backed dashboard data source.
 - [x] Show current and recently persisted activity in WPF.
-- [ ] Add RealStart local validation script `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy warning.
-- [ ] Ensure RealStart uses a temp DB and does not upload unless `--AllowServerSync` is provided.
+- [x] Add RealStart local validation script `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy warning.
+- [x] Ensure RealStart uses a temp DB and does not upload unless `--AllowServerSync` is provided.
 - [x] Run focused tests, WPF smoke, solution build/test.
 - [x] Commit and push Windows tracking pipeline slice.
 
@@ -547,8 +547,8 @@ milestones below are finished.
 
 ## Milestone 29: Original Intent Completion Gate
 
-- [ ] Windows real foreground process/window tracking works from WPF Start/Stop.
-- [ ] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
+- [x] Windows real foreground process/window tracking works from WPF Start/Stop.
+- [x] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
 - [ ] Browser domain tracking is explicit, privacy-aware, and covered by tests.
 - [ ] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
 - [ ] Server schema supports required relationships and idempotent integrated storage.

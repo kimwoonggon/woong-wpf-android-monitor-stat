@@ -5,6 +5,10 @@ namespace Woong.MonitorStack.Windows.App;
 
 public sealed class WindowsAppOptions
 {
+    public const string LocalDbEnvironmentVariable = "WOONG_MONITOR_LOCAL_DB";
+
+    public const string DeviceIdEnvironmentVariable = "WOONG_MONITOR_DEVICE_ID";
+
     public WindowsAppOptions(
         DashboardOptions dashboardOptions,
         string deviceId,
@@ -35,6 +39,28 @@ public sealed class WindowsAppOptions
     {
         ArgumentNullException.ThrowIfNull(dashboardOptions);
 
+        string? deviceId = Environment.GetEnvironmentVariable(DeviceIdEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(deviceId))
+        {
+            deviceId = $"windows-{Environment.MachineName}";
+        }
+
+        string? localDbOverride = Environment.GetEnvironmentVariable(LocalDbEnvironmentVariable);
+        if (!string.IsNullOrWhiteSpace(localDbOverride))
+        {
+            string? overrideDirectory = Path.GetDirectoryName(localDbOverride);
+            if (!string.IsNullOrWhiteSpace(overrideDirectory))
+            {
+                Directory.CreateDirectory(overrideDirectory);
+            }
+
+            return new WindowsAppOptions(
+                dashboardOptions,
+                deviceId,
+                localDatabaseConnectionString: $"Data Source={localDbOverride};Pooling=False",
+                idleThreshold: TimeSpan.FromMinutes(5));
+        }
+
         string dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "WoongMonitorStack");
@@ -42,7 +68,7 @@ public sealed class WindowsAppOptions
 
         return new WindowsAppOptions(
             dashboardOptions,
-            deviceId: $"windows-{Environment.MachineName}",
+            deviceId,
             localDatabaseConnectionString: $"Data Source={Path.Combine(dataDirectory, "windows-local.db")};Pooling=False",
             idleThreshold: TimeSpan.FromMinutes(5));
     }
