@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server focus session upload API.
+Milestone 5 Server web session upload API.
 
 ## Completed
 
@@ -96,6 +96,12 @@ Milestone 5 Server focus session upload API.
   statuses.
 - Verified duplicate retry does not insert a second focus session row.
 - Verified 53 tests pass across all current projects.
+- Added `WebSessionEntity` and unique duplicate-detection index for
+  `(DeviceId, FocusSessionId, StartedAtUtc, EndedAtUtc, Url)`.
+- Added `POST /api/web-sessions/upload`.
+- Added EF-backed web session upload service returning `Accepted` and
+  `Duplicate` item statuses.
+- Verified duplicate retry does not insert a second web session row.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -106,6 +112,6 @@ Milestone 5 Server focus session upload API.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add web session integrated DB entity and upload API.
-2. Add raw event upload API.
-3. Add daily summary calculator/query API.
+1. Add raw event upload API.
+2. Add daily summary calculator/query API.
+3. Add server-side daily summary generation test for mixed Windows/Android data.

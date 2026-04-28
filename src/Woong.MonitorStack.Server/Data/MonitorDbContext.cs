@@ -8,6 +8,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<FocusSessionEntity> FocusSessions => Set<FocusSessionEntity>();
 
+    public DbSet<WebSessionEntity> WebSessions => Set<WebSessionEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -30,6 +32,25 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(session => session.TimezoneId).HasMaxLength(128).IsRequired();
             entity.Property(session => session.Source).HasMaxLength(128).IsRequired();
             entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
+        });
+
+        modelBuilder.Entity<WebSessionEntity>(entity =>
+        {
+            entity.ToTable("web_sessions");
+            entity.HasKey(session => session.Id);
+            entity.Property(session => session.FocusSessionId).HasMaxLength(128).IsRequired();
+            entity.Property(session => session.BrowserFamily).HasMaxLength(64).IsRequired();
+            entity.Property(session => session.Url).HasMaxLength(4096).IsRequired();
+            entity.Property(session => session.Domain).HasMaxLength(253).IsRequired();
+            entity.Property(session => session.PageTitle).HasMaxLength(512).IsRequired();
+            entity.HasIndex(session => new
+            {
+                session.DeviceId,
+                session.FocusSessionId,
+                session.StartedAtUtc,
+                session.EndedAtUtc,
+                session.Url
+            }).IsUnique();
         });
     }
 }

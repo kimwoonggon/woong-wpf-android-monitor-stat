@@ -16,6 +16,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 
 builder.Services.AddScoped<DeviceRegistrationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
+builder.Services.AddScoped<WebSessionUploadService>();
 
 var app = builder.Build();
 
@@ -36,6 +37,15 @@ app.MapPost("/api/devices/register", async (
 app.MapPost("/api/focus-sessions/upload", async (
     UploadFocusSessionsRequest request,
     FocusSessionUploadService uploads) =>
+{
+    UploadBatchResult response = await uploads.UploadAsync(request);
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/api/web-sessions/upload", async (
+    UploadWebSessionsRequest request,
+    WebSessionUploadService uploads) =>
 {
     UploadBatchResult response = await uploads.UploadAsync(request);
 

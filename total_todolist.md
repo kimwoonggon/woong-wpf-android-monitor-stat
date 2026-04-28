@@ -149,7 +149,7 @@ the finished slice is committed and pushed.
 - [x] Implement device registration API.
 - [x] Persist device registration API through EF Core.
 - [x] Implement focus session upload API.
-- [ ] Implement web session upload API.
+- [x] Implement web session upload API.
 - [ ] Implement raw event upload API.
 - [x] Enforce device/client session idempotency.
 - [ ] Add daily summary calculator.
@@ -158,6 +158,7 @@ the finished slice is committed and pushed.
 - [x] Test device registration idempotency.
 - [x] Test device registration persists a server DB row.
 - [x] Test duplicate clientSessionId ignored.
+- [x] Test duplicate web session upload ignored.
 - [ ] Test daily summary generation.
 - [ ] Commit and push Milestone 5.
 
