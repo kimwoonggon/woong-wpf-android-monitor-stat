@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android UsageSessionizer resumed/paused.
+Milestone 8 Android UsageSessionizer same-app merge.
 
 ## Completed
 
@@ -158,6 +158,8 @@ Milestone 8 Android UsageSessionizer resumed/paused.
 - Added pure Kotlin usage event snapshot/session models.
 - Added `UsageSessionizer` with resumed-to-paused session creation.
 - Verified resumed/paused events create one app session with expected duration.
+- Added configurable same-app merge gap to `UsageSessionizer`.
+- Verified close same-app pause/resume pairs merge into one session.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -168,6 +170,6 @@ Milestone 8 Android UsageSessionizer resumed/paused.
 
 Continue Milestone 8 Android Usage Collection + Room:
 
-1. Add short consecutive same-app event merge behavior.
-2. Add different-app-start closes previous session behavior.
-3. Add Room entities/DAO after the session model is stable.
+1. Add different-app-start closes previous session behavior.
+2. Define Room entities/DAO.
+3. Add Room DAO insert/query test.

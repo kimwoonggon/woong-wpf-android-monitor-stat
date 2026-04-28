@@ -204,11 +204,11 @@ the finished slice is committed and pushed.
 - [x] Implement permission settings navigation UI entry.
 - [ ] Implement UsageStats collector.
 - [x] Implement UsageSessionizer.
-- [ ] Implement short consecutive event merge.
+- [x] Implement short consecutive event merge.
 - [ ] Define Room entities/DAO.
 - [ ] Implement collect worker.
 - [x] Test resumed/paused creates session.
-- [ ] Test close same-app events merge.
+- [x] Test close same-app events merge.
 - [ ] Test different app starts close previous session.
 - [ ] Test Room DAO insert/query.
 - [ ] Test worker behavior.
