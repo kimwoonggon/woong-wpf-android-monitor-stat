@@ -346,11 +346,15 @@ Milestone 4.5 extension payload domain extraction.
   Milestone 4.5 status.
 - Added `extensions/chrome/` with an MV3 manifest and `background.js`.
 - Verified the manifest declares the required service worker and permissions.
+- Added Windows native messaging host registration abstraction and a
+  Windows-only registry writer.
+- Verified registration writes the expected Chrome HKCU native host key using a
+  fake registry writer.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Add native messaging DTO/receiver seams without collecting typed text,
+1. Add native messaging host manifest/receiver seams without collecting typed text,
    passwords, messages, or form inputs.
 2. Convert active tab messages into browser raw events and `web_session` rows.

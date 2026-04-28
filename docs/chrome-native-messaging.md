@@ -26,8 +26,12 @@ through an explicit Chrome extension and Windows native messaging host.
 - Added `background.js` listeners for active tab activation and URL/title
   updates. The listener sends only URL, title, tab/window ids, browser family,
   and timestamp to the native host.
+- Added `NativeMessagingHostRegistration` and a testable registry writer
+  abstraction for the Chrome HKCU native messaging host key.
+- Added `WindowsRegistryWriter` as the Windows-only implementation. Tests use a
+  fake writer and do not mutate the developer machine registry.
 
 ## Next Slice
 
-Add the native messaging host contract/receiver and begin converting active tab
-messages into browser raw events and `web_session` rows.
+Add the native messaging host manifest contract/receiver and begin converting
+active tab messages into browser raw events and `web_session` rows.
