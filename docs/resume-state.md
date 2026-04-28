@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server bootstrap and device registration API.
+Milestone 5 Server EF PostgreSQL device model foundation.
 
 ## Completed
 
@@ -78,6 +78,12 @@ Milestone 5 Server bootstrap and device registration API.
 - Added in-memory duplicate-safe device registration service as the first
   vertical API slice.
 - Verified 50 tests pass across all current projects.
+- Added `Npgsql.EntityFrameworkCore.PostgreSQL` 10.0.1 to the server.
+- Added `MonitorDbContext` and `DeviceEntity`.
+- Configured the server with a local `MonitorDb` PostgreSQL connection string.
+- Added model metadata test for the unique `(UserId, Platform, DeviceKey)`
+  device index.
+- Verified 51 tests pass across all current projects.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -88,8 +94,7 @@ Milestone 5 Server bootstrap and device registration API.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add EF Core PostgreSQL and integrated server DB entities.
-2. Keep the device registration API behavior stable while moving from in-memory
-   storage to EF.
-3. Start focus session upload API with duplicate `deviceId + clientSessionId`
-   tests.
+1. Move device registration storage from in-memory registry to EF repository
+   while preserving the API idempotency test.
+2. Add FocusSession integrated DB entity and upload API.
+3. Add duplicate `deviceId + clientSessionId` tests.

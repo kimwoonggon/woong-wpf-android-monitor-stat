@@ -141,8 +141,10 @@ the finished slice is committed and pushed.
 
 - [x] Create ASP.NET Core Web API project.
 - [x] Create server test project.
-- [ ] Add EF Core PostgreSQL.
+- [x] Add EF Core PostgreSQL.
 - [ ] Define integrated DB entities.
+- [x] Define Device integrated DB entity.
+- [x] Test Device unique index for idempotent registration.
 - [x] Implement device registration API.
 - [ ] Implement focus session upload API.
 - [ ] Implement web session upload API.
