@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android Room focus session DAO.
+Milestone 8 Android UsageStats collector.
 
 ## Completed
 
@@ -165,6 +165,10 @@ Milestone 8 Android Room focus session DAO.
 - Added Room `FocusSessionEntity`, `FocusSessionDao`, and `MonitorDatabase`.
 - Verified Room in-memory DAO insert/query by local date range with a
   Robolectric component test.
+- Added `UsageEventsReader`, Android `UsageStatsManager` event reader, and
+  `UsageStatsCollector`.
+- Verified the collector reads the requested UTC range and returns events sorted
+  by timestamp.
 - Verified `assembleDebug`; AGP reports the expected experimental
   `android.disallowKotlinSourceSets=false` warning required for KSP with
   built-in Kotlin.
@@ -178,6 +182,6 @@ Milestone 8 Android Room focus session DAO.
 
 Continue Milestone 8 Android Usage Collection + Room:
 
-1. Implement UsageStats collector mapping into `UsageEventSnapshot`.
-2. Implement collect worker.
-3. Add worker behavior test.
+1. Implement collect worker.
+2. Add worker behavior test.
+3. Commit and push Milestone 8.

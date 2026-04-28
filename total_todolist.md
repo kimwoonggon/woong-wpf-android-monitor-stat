@@ -202,7 +202,7 @@ the finished slice is committed and pushed.
 
 - [x] Implement Usage Access permission checker.
 - [x] Implement permission settings navigation UI entry.
-- [ ] Implement UsageStats collector.
+- [x] Implement UsageStats collector.
 - [x] Implement UsageSessionizer.
 - [x] Implement short consecutive event merge.
 - [x] Define Room entities/DAO.
