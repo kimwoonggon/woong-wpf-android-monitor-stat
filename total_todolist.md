@@ -217,7 +217,7 @@ the finished slice is committed and pushed.
 ## Milestone 9: Android XML Dashboard MVP
 
 - [x] Create DashboardActivity or DashboardFragment.
-- [ ] Create SessionsActivity or SessionsFragment.
+- [x] Create SessionsActivity or SessionsFragment.
 - [ ] Create SettingsActivity or SettingsFragment.
 - [x] Add period filters.
 - [x] Add total active time card.

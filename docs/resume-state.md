@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android Dashboard usage-access guidance.
+Milestone 9 Android SessionsActivity shell.
 
 ## Completed
 
@@ -206,6 +206,10 @@ Milestone 9 Android Dashboard usage-access guidance.
   surface.
 - Added explicit Usage Access guidance text and covered it from the Espresso
   smoke surface.
+- Added XML/ViewBinding `SessionsActivity` with a sessions `RecyclerView` and
+  empty-state text.
+- Added Espresso smoke test for SessionsActivity and verified the androidTest
+  APK compiles.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -219,6 +223,6 @@ Milestone 9 Android Dashboard usage-access guidance.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add SessionsActivity or SessionsFragment.
-2. Add MPAndroidChart dependency decision and chart placeholders/data binding.
-3. Add today/yesterday/recent 7 days filter click assertions.
+1. Add MPAndroidChart dependency decision and chart placeholders/data binding.
+2. Add today/yesterday/recent 7 days filter click assertions.
+3. Create SettingsActivity or SettingsFragment.
