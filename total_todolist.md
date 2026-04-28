@@ -269,8 +269,8 @@ the finished slice is committed and pushed.
 - [x] Test mixed Windows + Android data summary.
 - [x] Test timezone boundaries.
 - [x] Test duplicate data does not inflate summary.
-- [ ] Verify Windows/Android can query integrated summary.
-- [ ] Commit and push Milestone 11.
+- [x] Verify Windows/Android can query integrated summary.
+- [x] Commit and push Milestone 11.
 
 ## Milestone 12: Hardening & Release Candidate
 

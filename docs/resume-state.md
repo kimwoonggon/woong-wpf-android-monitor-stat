@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 11 server duplicate-safe summary reruns.
+Milestone 11 Windows integrated summary client verification.
 
 ## Completed
 
@@ -292,6 +292,12 @@ Milestone 11 server duplicate-safe summary reruns.
 - Added persisted summary rerun coverage proving the aggregation service
   updates a single `(UserId, SummaryDate, TimezoneId)` row instead of creating
   duplicates or inflating totals.
+- Added Windows `HttpWindowsSummaryApiClient` for
+  `GET /api/daily-summaries/{summaryDate}`.
+- Verified Windows summary client path/query construction and deserialization
+  of integrated summary totals/top apps/top domains.
+- Android summary client verification was completed earlier in Milestone 10,
+  so both Windows and Android clients now have summary query coverage.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -305,8 +311,8 @@ Milestone 11 server duplicate-safe summary reruns.
 
 ## Next Highest Priority
 
-Continue Milestone 11 Integrated Daily Summary:
+Continue Milestone 12 Hardening & Release Candidate:
 
-1. Verify Windows/Android clients can query the integrated summary.
-2. Commit and push Milestone 11 completion.
-3. Move to Milestone 12 hardening and release-candidate work.
+1. Review DB migrations and retention/privacy policy docs.
+2. Add sync failure UI and clearer permission guidance.
+3. Run full RC validation matrix.
