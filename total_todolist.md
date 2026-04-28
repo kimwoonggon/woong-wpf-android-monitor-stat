@@ -282,7 +282,7 @@ the finished slice is committed and pushed.
 - [x] Check Windows CPU/memory usage.
 - [x] Check Android CPU/memory/battery impact.
 - [ ] Stabilize all tests.
-- [ ] Write README.
+- [x] Write README.
 - [ ] Run all unit/component/integration tests.
 - [ ] Run WPF UI smoke tests.
 - [ ] Run Android connected tests when device/emulator is available.

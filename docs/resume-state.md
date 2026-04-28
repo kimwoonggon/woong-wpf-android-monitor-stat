@@ -309,6 +309,8 @@ Milestone 12 Android Settings hardening UI.
   coverage.
 - Added `docs/performance-checks.md` with Windows collector smoke CPU/memory
   measurements and Android emulator CPU/memory/batterystats smoke results.
+- Added root `README.md` and `docs/release-checklist.md` for the final
+  release-candidate pass.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
