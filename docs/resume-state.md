@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows sync checkpoint handling.
+Milestone 6 Windows local sync upload flow.
 
 ## Completed
 
@@ -138,6 +138,8 @@ Milestone 6 Windows sync checkpoint handling.
 - Added sync checkpoint store abstraction.
 - Verified the worker saves a checkpoint timestamp when at least one outbox
   item syncs successfully.
+- Verified a real SQLite outbox row is uploaded through the HTTP sync client
+  and then marked synced locally.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -146,8 +148,8 @@ Milestone 6 Windows sync checkpoint handling.
 
 ## Next Highest Priority
 
-Continue Milestone 6 Windows Sync:
+Continue Milestone 7 Android Project Setup:
 
-1. Verify Windows local data upload flow through the HTTP sync client.
-2. Mark Milestone 6 committed/pushed.
-3. Continue Android project setup.
+1. Locate or import `WoongAndroidBasicProject` Gradle style if available.
+2. Create Android project with Gradle wrapper and Kotlin XML/View stack.
+3. Add empty JUnit/Espresso smoke tests and verify Gradle unit/build tasks.

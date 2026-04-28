@@ -175,8 +175,8 @@ the finished slice is committed and pushed.
 - [x] Test fake API sync success.
 - [x] Test fake API sync failure retry.
 - [x] Test duplicate upload remains safe.
-- [ ] Verify Windows local data uploads to server.
-- [ ] Commit and push Milestone 6.
+- [x] Verify Windows local data uploads to server.
+- [x] Commit and push Milestone 6.
 
 ## Milestone 7: Android Project Setup
 
