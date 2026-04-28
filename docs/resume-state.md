@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 12 Android Settings hardening UI.
+Milestone 12 release candidate validation.
 
 ## Completed
 
@@ -324,11 +324,18 @@ Milestone 12 Android Settings hardening UI.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
 - Pushed latest completed slice to `origin/main`.
+- Completed the full release-candidate validation matrix:
+  `dotnet test`, `dotnet build`, Windows foreground smoke,
+  `testDebugUnitTest`, `assembleDebug`, `assembleDebugAndroidTest`, and
+  `connectedDebugAndroidTest`.
+- Verified Android Usage Access settings navigation manually on
+  `emulator-5554`; tapping `usageAccessSettingsButton` moved focus to
+  `com.android.settings/com.android.settings.spa.SpaActivity`.
+- Marked `docs/release-checklist.md` and `total_todolist.md` complete for the
+  PRD/MVP release-candidate pass.
 
 ## Next Highest Priority
 
-Continue Milestone 12 Hardening & Release Candidate:
-
-1. Run full RC validation matrix.
-2. Complete README and release checklist.
-3. Perform performance/resource checks.
+All planned PRD/MVP TODOs are complete. Remaining work is post-RC follow-up:
+production EF Core migrations, Android physical-device resource measurements,
+and longer-running Windows collector profiling.

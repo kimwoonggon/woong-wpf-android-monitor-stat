@@ -6,40 +6,52 @@ Use this checklist for the Milestone 12 release-candidate pass.
 
 ## Required Validation
 
-- [ ] `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
-- [ ] `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
-- [ ] `dotnet run --project tools\Woong.MonitorStack.Windows.Smoke\Woong.MonitorStack.Windows.Smoke.csproj --no-build`
-- [ ] `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`
-- [ ] `.\gradlew.bat assembleDebug --no-daemon --stacktrace`
-- [ ] `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`
-- [ ] `.\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace`
+- [x] `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- [x] `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- [x] `dotnet run --project tools\Woong.MonitorStack.Windows.Smoke\Woong.MonitorStack.Windows.Smoke.csproj --no-build`
+- [x] `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`
+- [x] `.\gradlew.bat assembleDebug --no-daemon --stacktrace`
+- [x] `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`
+- [x] `.\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace`
 
 ## Manual Smoke
 
-- [ ] WPF app opens Dashboard.
-- [ ] WPF Today, 1h, 6h, and 24h filters can be selected.
-- [ ] WPF Settings shows visible collection state, opt-in sync state, and sync
+- [x] WPF app opens Dashboard.
+- [x] WPF Today, 1h, 6h, and 24h filters can be selected.
+- [x] WPF Settings shows visible collection state, opt-in sync state, and sync
   failure status.
-- [ ] Windows smoke captures foreground window metadata without collecting key
+- [x] Windows smoke captures foreground window metadata without collecting key
   contents or form input.
-- [ ] Android app opens Dashboard on emulator/device.
-- [ ] Android Dashboard shows Today, Yesterday, and 7 days filters.
-- [ ] Android Settings shows Usage Access guidance, privacy boundary text,
+- [x] Android app opens Dashboard on emulator/device.
+- [x] Android Dashboard shows Today, Yesterday, and 7 days filters.
+- [x] Android Settings shows Usage Access guidance, privacy boundary text,
   local-only sync status, and retryable sync failure status.
-- [ ] Android Usage Access Settings action opens the platform settings screen.
-- [ ] Android previous-day summary screen opens.
+- [x] Android Usage Access Settings action opens the platform settings screen.
+- [x] Android previous-day summary screen opens.
 
 ## Privacy And Data Boundaries
 
-- [ ] No global keystroke contents are collected.
-- [ ] No passwords, messages, or form input are collected.
-- [ ] No Android global touch coordinates are collected.
-- [ ] Collection is visible to the user.
-- [ ] Sync remains opt-in.
-- [ ] Windows SQLite stores only Windows local data.
-- [ ] Android Room stores only Android local data.
-- [ ] Server/PostgreSQL is the only cross-device integration layer.
-- [ ] Raw-event retention policy is documented in `docs/hardening.md`.
+- [x] No global keystroke contents are collected.
+- [x] No passwords, messages, or form input are collected.
+- [x] No Android global touch coordinates are collected.
+- [x] Collection is visible to the user.
+- [x] Sync remains opt-in.
+- [x] Windows SQLite stores only Windows local data.
+- [x] Android Room stores only Android local data.
+- [x] Server/PostgreSQL is the only cross-device integration layer.
+- [x] Raw-event retention policy is documented in `docs/hardening.md`.
+
+## Validation Evidence
+
+- .NET test/build matrix completed with 0 failures and 0 build warnings.
+- Windows smoke captured foreground metadata for `cmd.exe` with idle state
+  `False`, without key contents, messages, or form input.
+- Android unit tests, debug APK, androidTest APK, and connected tests completed
+  on emulator `emulator-5554`.
+- Android Usage Access action was manually verified by installing
+  `app-debug.apk`, launching `com.woong.monitorstack/.MainActivity`, tapping
+  `usageAccessSettingsButton`, and confirming current focus moved to
+  `com.android.settings/com.android.settings.spa.SpaActivity`.
 
 ## Known Follow-Ups
 

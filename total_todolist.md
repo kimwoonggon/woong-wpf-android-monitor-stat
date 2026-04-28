@@ -142,7 +142,7 @@ the finished slice is committed and pushed.
 - [x] Create ASP.NET Core Web API project.
 - [x] Create server test project.
 - [x] Add EF Core PostgreSQL.
-- [ ] Define integrated DB entities.
+- [x] Define integrated DB entities.
 - [x] Define Device integrated DB entity.
 - [x] Test Device unique index for idempotent registration.
 - [x] Define FocusSession integrated DB entity.
@@ -281,25 +281,25 @@ the finished slice is committed and pushed.
 - [x] Add clear permission guidance text.
 - [x] Check Windows CPU/memory usage.
 - [x] Check Android CPU/memory/battery impact.
-- [ ] Stabilize all tests.
+- [x] Stabilize all tests.
 - [x] Write README.
-- [ ] Run all unit/component/integration tests.
-- [ ] Run WPF UI smoke tests.
-- [ ] Run Android connected tests when device/emulator is available.
-- [ ] Complete manual release checklist.
-- [ ] Verify Windows build.
-- [ ] Verify Android assemble.
-- [ ] Verify server integration tests.
-- [ ] Commit and push release candidate.
+- [x] Run all unit/component/integration tests.
+- [x] Run WPF UI smoke tests.
+- [x] Run Android connected tests when device/emulator is available.
+- [x] Complete manual release checklist.
+- [x] Verify Windows build.
+- [x] Verify Android assemble.
+- [x] Verify server integration tests.
+- [x] Commit and push release candidate.
 
 ## Final Definition Of Done
 
-- [ ] All PRD requirements reflected in code/tests/docs.
-- [ ] All core logic built TDD-first.
-- [ ] All relevant tests pass.
-- [ ] All builds pass.
-- [ ] Safety/privacy excluded scopes are not implemented.
-- [ ] Local DB/server integrated DB separation is preserved.
-- [ ] Daily integrated summary works across Windows + Android.
-- [ ] Final documentation is complete.
-- [ ] Final commit is pushed to `origin`.
+- [x] All PRD requirements reflected in code/tests/docs.
+- [x] All core logic built TDD-first.
+- [x] All relevant tests pass.
+- [x] All builds pass.
+- [x] Safety/privacy excluded scopes are not implemented.
+- [x] Local DB/server integrated DB separation is preserved.
+- [x] Daily integrated summary works across Windows + Android.
+- [x] Final documentation is complete.
+- [x] Final commit is pushed to `origin`.
