@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows local sync upload flow.
+Milestone 7 Android project setup.
 
 ## Completed
 
@@ -140,6 +140,16 @@ Milestone 6 Windows local sync upload flow.
   item syncs successfully.
 - Verified a real SQLite outbox row is uploaded through the HTTP sync client
   and then marked synced locally.
+- Added Android project under `android/` using the local WoongViewActivity
+  Gradle Wrapper/AGP 9.1 style because `WoongAndroidBasicProject` was not
+  present in the workspace.
+- Configured Kotlin source, XML/View UI, ViewBinding, AppCompat,
+  ConstraintLayout, RecyclerView, Room runtime/ktx, WorkManager, Retrofit,
+  Moshi, OkHttp, JUnit, Espresso, and AndroidX test dependencies.
+- Added `MainActivity`, `activity_main.xml`, an empty JUnit smoke test, and an
+  empty instrumentation smoke test.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -148,8 +158,8 @@ Milestone 6 Windows local sync upload flow.
 
 ## Next Highest Priority
 
-Continue Milestone 7 Android Project Setup:
+Continue Milestone 8 Android Usage Collection + Room:
 
-1. Locate or import `WoongAndroidBasicProject` Gradle style if available.
-2. Create Android project with Gradle wrapper and Kotlin XML/View stack.
-3. Add empty JUnit/Espresso smoke tests and verify Gradle unit/build tasks.
+1. Add Usage Access permission checker with a unit test.
+2. Add UsageSessionizer resumed/paused behavior test.
+3. Add Room entities/DAO after the session model is stable.

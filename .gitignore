@@ -16,3 +16,9 @@ artifacts/logs/
 # IDE
 .vs/
 .vscode/
+
+# Android
+android/.gradle/
+android/**/build/
+android/local.properties
+.gradle-user/

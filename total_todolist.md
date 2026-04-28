@@ -180,23 +180,23 @@ the finished slice is committed and pushed.
 
 ## Milestone 7: Android Project Setup
 
-- [ ] Locate or import `WoongAndroidBasicProject` Gradle style if available.
-- [ ] Create Android project with Gradle wrapper.
-- [ ] Configure Kotlin.
-- [ ] Configure XML/View UI stack.
-- [ ] Enable ViewBinding.
-- [ ] Add ConstraintLayout.
-- [ ] Add RecyclerView.
-- [ ] Add Room dependencies.
-- [ ] Add WorkManager dependencies.
-- [ ] Add Retrofit/Moshi or OkHttp.
-- [ ] Add unit test dependencies.
-- [ ] Add Espresso/UI Automator dependencies.
-- [ ] Add empty JUnit test.
-- [ ] Add empty Espresso smoke test.
-- [ ] Verify `gradlew testDebugUnitTest`.
-- [ ] Verify `gradlew assembleDebug`.
-- [ ] Commit and push Milestone 7.
+- [x] Locate or import `WoongAndroidBasicProject` Gradle style if available.
+- [x] Create Android project with Gradle wrapper.
+- [x] Configure Kotlin.
+- [x] Configure XML/View UI stack.
+- [x] Enable ViewBinding.
+- [x] Add ConstraintLayout.
+- [x] Add RecyclerView.
+- [x] Add Room dependencies.
+- [x] Add WorkManager dependencies.
+- [x] Add Retrofit/Moshi or OkHttp.
+- [x] Add unit test dependencies.
+- [x] Add Espresso/UI Automator dependencies.
+- [x] Add empty JUnit test.
+- [x] Add empty Espresso smoke test.
+- [x] Verify `gradlew testDebugUnitTest`.
+- [x] Verify `gradlew assembleDebug`.
+- [x] Commit and push Milestone 7.
 
 ## Milestone 8: Android Usage Collection + Room
 
