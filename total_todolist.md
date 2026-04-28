@@ -242,7 +242,8 @@ the finished slice is committed and pushed.
 
 - [x] Define Android sync outbox.
 - [x] Test Android sync outbox DAO insert/query/synced behavior.
-- [ ] Implement Retrofit/OkHttp sync client.
+- [x] Implement Retrofit/OkHttp sync client.
+- [x] Test Android sync client focus-session upload contract.
 - [ ] Implement WorkManager sync worker.
 - [ ] Implement duplicate-safe upload handling.
 - [ ] Integrate daily summary API.

@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android sync outbox storage.
+Milestone 10 Android sync client.
 
 ## Completed
 
@@ -235,6 +235,10 @@ Milestone 10 Android sync outbox storage.
   database migration.
 - Verified pending outbox insert/query and synced transition with a Robolectric
   Room test.
+- Added OkHttp/Moshi Android sync client for focus session upload.
+- Added Moshi Kotlin dependency and numeric upload status adapter.
+- Verified the Android sync client posts the contract path/payload and parses
+  numeric upload status responses.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -248,6 +252,6 @@ Milestone 10 Android sync outbox storage.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Implement Retrofit/OkHttp sync client.
+1. Implement duplicate-safe upload handling.
 2. Add sync worker tests before implementation.
-3. Implement duplicate-safe upload handling.
+3. Integrate daily summary API / previous-day summary screen.
