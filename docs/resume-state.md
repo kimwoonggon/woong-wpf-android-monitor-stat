@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows WPF DashboardViewModel foundation.
+Milestone 4 Windows WPF summary card shell foundation.
 
 ## Completed
 
@@ -39,6 +39,13 @@ Milestone 4 Windows WPF DashboardViewModel foundation.
   selection.
 - Added dashboard summary refresh behavior that reports active, idle, web, top
   app, and top domain totals through public ViewModel properties.
+- Added `DashboardSummaryCard` models and tested the public summary-card
+  collection.
+- Added `SelectDashboardPeriodCommand` for XAML period filter buttons.
+- Bound the WPF shell to `DashboardViewModel` with period buttons and summary
+  cards.
+- Added an empty dashboard data source placeholder for safe WPF startup before
+  the local SQLite dashboard adapter is introduced.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -49,6 +56,6 @@ Milestone 4 Windows WPF DashboardViewModel foundation.
 
 Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Add summary cards and bind the WPF shell to `DashboardViewModel`.
-2. Add chart mapper tests before introducing LiveCharts2 UI.
-3. Add app sessions table, live event log, web sessions view, and settings view.
+1. Add chart mapper tests before introducing LiveCharts2 UI.
+2. Add app sessions table and bind it to recent focus sessions.
+3. Add live event log, web sessions view, and settings view.

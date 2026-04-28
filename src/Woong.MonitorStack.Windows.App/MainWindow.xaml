@@ -1,12 +1,119 @@
-﻿<Window x:Class="Woong.MonitorStack.Windows.App.MainWindow"
+<Window x:Class="Woong.MonitorStack.Windows.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Woong.MonitorStack.Windows.App"
+        xmlns:dashboard="clr-namespace:Woong.MonitorStack.Windows.Presentation.Dashboard;assembly=Woong.MonitorStack.Windows.Presentation"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Woong Monitor Stack"
+        Width="1040"
+        Height="680"
+        MinWidth="860"
+        MinHeight="560"
+        Background="#F6F7F9"
+        d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
+        <DockPanel Grid.Row="0" LastChildFill="True">
+            <TextBlock Text="Woong Monitor Stack"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       Foreground="#18202A" />
+            <TextBlock DockPanel.Dock="Right"
+                       Text="{Binding TopAppName, TargetNullValue=''}"
+                       FontSize="14"
+                       Foreground="#5A6472"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+
+        <StackPanel Grid.Row="1"
+                    Margin="0,20,0,18"
+                    Orientation="Horizontal">
+            <Button Content="Today"
+                    Command="{Binding SelectDashboardPeriodCommand}"
+                    CommandParameter="{x:Static dashboard:DashboardPeriod.Today}"
+                    Padding="14,8"
+                    Margin="0,0,8,0" />
+            <Button Content="1h"
+                    Command="{Binding SelectDashboardPeriodCommand}"
+                    CommandParameter="{x:Static dashboard:DashboardPeriod.LastHour}"
+                    Padding="14,8"
+                    Margin="0,0,8,0" />
+            <Button Content="6h"
+                    Command="{Binding SelectDashboardPeriodCommand}"
+                    CommandParameter="{x:Static dashboard:DashboardPeriod.Last6Hours}"
+                    Padding="14,8"
+                    Margin="0,0,8,0" />
+            <Button Content="24h"
+                    Command="{Binding SelectDashboardPeriodCommand}"
+                    CommandParameter="{x:Static dashboard:DashboardPeriod.Last24Hours}"
+                    Padding="14,8" />
+        </StackPanel>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <ItemsControl ItemsSource="{Binding SummaryCards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type dashboard:DashboardSummaryCard}">
+                        <Border Margin="0,0,12,0"
+                                Padding="18"
+                                CornerRadius="8"
+                                Background="White"
+                                BorderBrush="#DCE1E8"
+                                BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Label}"
+                                           Foreground="#5A6472"
+                                           FontSize="13" />
+                                <TextBlock Text="{Binding Value}"
+                                           Foreground="#18202A"
+                                           FontSize="28"
+                                           FontWeight="SemiBold"
+                                           Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Grid.Row="1"
+                    Margin="0,22,0,0"
+                    Padding="18"
+                    CornerRadius="8"
+                    Background="White"
+                    BorderBrush="#DCE1E8"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Sessions"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#18202A" />
+                    <TextBlock Grid.Row="1"
+                               Text="No sessions"
+                               Foreground="#7A8491"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
