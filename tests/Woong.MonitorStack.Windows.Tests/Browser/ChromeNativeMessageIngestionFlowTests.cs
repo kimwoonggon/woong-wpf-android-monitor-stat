@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Storage;
 
@@ -38,6 +40,50 @@ public sealed class ChromeNativeMessageIngestionFlowTests : IDisposable
         var savedWebSession = Assert.Single(webSessions.QueryByFocusSessionId("focus-1"));
         Assert.Equal("youtube.com", savedWebSession.Domain);
         Assert.Equal(300_000, savedWebSession.DurationMs);
+    }
+
+    [Fact]
+    public async Task IngestAsync_WhenWebSessionCompletes_EnqueuesUploadPayload()
+    {
+        var connectionString = $"Data Source={_dbPath};Pooling=False";
+        var rawEvents = new SqliteBrowserRawEventRepository(connectionString);
+        var webSessions = new SqliteWebSessionRepository(connectionString);
+        var outbox = new SqliteSyncOutboxRepository(connectionString);
+        var ingestion = new ChromeNativeMessageIngestionFlow(
+            rawEvents,
+            webSessions,
+            outbox,
+            deviceId: "device-1",
+            new BrowserWebSessionizer("focus-1"));
+        rawEvents.Initialize();
+        webSessions.Initialize();
+        outbox.Initialize();
+
+        await ingestion.IngestAsync(CreateNativeMessage(
+            url: "https://github.com/kimwoonggon/woong-wpf-android-monitor-stat",
+            title: "Repository",
+            observedAtUtc: "2026-04-28T01:00:00Z",
+            tabId: 42), CancellationToken.None);
+        await ingestion.IngestAsync(CreateNativeMessage(
+            url: "https://chatgpt.com/codex",
+            title: "ChatGPT",
+            observedAtUtc: "2026-04-28T01:05:00Z",
+            tabId: 43), CancellationToken.None);
+
+        SyncOutboxItem item = Assert.Single(outbox.QueryAll());
+        Assert.Equal("web_session", item.AggregateType);
+        Assert.Equal("focus-1:202604280100000000000", item.AggregateId);
+
+        var request = JsonSerializer.Deserialize<UploadWebSessionsRequest>(
+            item.PayloadJson,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.NotNull(request);
+        WebSessionUploadItem session = Assert.Single(request.Sessions);
+        Assert.Equal("device-1", request.DeviceId);
+        Assert.Equal("github.com", session.Domain);
+        Assert.Equal(300_000, session.DurationMs);
+        Assert.Equal("BrowserExtensionFuture", session.CaptureMethod);
+        Assert.Equal("High", session.CaptureConfidence);
     }
 
     public void Dispose()

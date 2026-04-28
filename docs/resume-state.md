@@ -4,11 +4,12 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser WebSession persistence metadata slice. The Windows layer
-now has privacy-safe browser activity snapshot models, capture
-method/confidence enums, required browser interfaces, a tested classifier,
-URL sanitizer policy enforcement, snapshot-based web sessionization, and local
-SQLite persistence for capture provenance.
+Milestone 23 browser WebSession outbox payload slice. The Windows layer now has
+privacy-safe browser activity snapshot models, capture method/confidence enums,
+required browser interfaces, a tested classifier, URL sanitizer policy
+enforcement, snapshot-based web sessionization, local SQLite capture
+provenance, and a `web_session` outbox payload path from Chrome native-message
+ingestion.
 
 ## Completed
 
@@ -136,6 +137,17 @@ SQLite persistence for capture provenance.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.2%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.4%, Windows.App 85.0%, and Server 96.0%.
+- Updated `ChromeNativeMessageIngestionFlow` so completed web sessions can
+  enqueue `web_session` outbox items when configured with a device id and
+  outbox repository.
+- Verified the web-session upload payload includes device id, focus session id,
+  domain, duration, nullable URL/title fields, and capture provenance.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 147 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
+  Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -591,7 +603,8 @@ SQLite persistence for capture provenance.
 
 ## Next Highest Priority
 
-Continue Milestone 23 with TDD: create WebSession outbox items/upload payloads
-with domain, duration, and capture provenance, then verify duplicate upload
-idempotency. Physical Android resource measurement remains blocked until a
-device is connected.
+Continue Milestone 23 with TDD: verify duplicate WebSession uploads are
+idempotent with nullable URL/capture provenance, then decide whether the
+native-message host manifest/WPF browser connection status belongs in this
+milestone or should move after schema restoration. Physical Android resource
+measurement remains blocked until a device is connected.

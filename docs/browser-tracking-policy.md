@@ -138,3 +138,8 @@ represented by the normal FocusSession only. Domain-only snapshots produce
 
 Windows local SQLite `web_session` rows now preserve optional capture
 provenance: capture method, capture confidence, and private/unknown state.
+
+Chrome native-message ingestion can now enqueue a `web_session` outbox item
+when a web session completes. The upload payload includes device id, focus
+session id, domain, duration, nullable URL/title fields, and capture
+provenance.
