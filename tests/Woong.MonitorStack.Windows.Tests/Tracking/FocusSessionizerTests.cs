@@ -84,6 +84,31 @@ public sealed class FocusSessionizerTests
         Assert.Equal(360_000, result.ClosedSession.DurationMs);
     }
 
+    [Fact]
+    public void Process_WhenSessionCrossesLocalMidnight_UsesStartLocalDate()
+    {
+        var sessionizer = new FocusSessionizer("windows-device-1", "Asia/Seoul");
+        var beforeMidnight = Snapshot(
+            hwnd: 100,
+            processId: 10,
+            processName: "chrome.exe",
+            title: "Docs - Chrome",
+            timestampUtc: new DateTimeOffset(2026, 4, 27, 14, 50, 0, TimeSpan.Zero));
+        var afterMidnightOtherApp = Snapshot(
+            hwnd: 200,
+            processId: 20,
+            processName: "Code.exe",
+            title: "Woong Monitor - Visual Studio Code",
+            timestampUtc: new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero));
+
+        sessionizer.Process(beforeMidnight, isIdle: false);
+        var result = sessionizer.Process(afterMidnightOtherApp, isIdle: false);
+
+        Assert.NotNull(result.ClosedSession);
+        Assert.Equal(new DateOnly(2026, 4, 27), result.ClosedSession.LocalDate);
+        Assert.Equal(new DateOnly(2026, 4, 28), result.CurrentSession.LocalDate);
+    }
+
     private static ForegroundWindowSnapshot Snapshot(
         nint hwnd,
         int processId,

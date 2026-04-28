@@ -71,15 +71,15 @@ the finished slice is committed and pushed.
 - [x] Create Windows collector/domain project structure.
 - [x] Add user32.dll P/Invoke wrapper.
 - [x] Define foreground window snapshot model.
-- [ ] Implement collector service.
+- [x] Implement collector service.
 - [x] Implement Windows focus sessionizer.
 - [x] Implement idle detector.
 - [x] Test app change closes previous session and starts new session.
 - [x] Test same window extends current session.
 - [x] Test idle threshold marks idle.
-- [ ] Test local midnight behavior.
-- [ ] Verify foreground app logging on Windows 10.
-- [ ] Commit and push Milestone 2.
+- [x] Test local midnight behavior.
+- [x] Verify foreground app logging on Windows 10.
+- [x] Commit and push Milestone 2.
 
 ## Milestone 3: Windows Local DB + Outbox
 

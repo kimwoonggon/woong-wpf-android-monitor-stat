@@ -25,6 +25,9 @@ Milestone 2 Windows local collector foundation.
 - Added foreground window collector abstraction with fake-testable reader/clock.
 - Added Windows `user32.dll` foreground window and last-input readers behind
   interfaces.
+- Added `TrackingPoller` orchestration and Windows smoke console.
+- Smoke run captured foreground window `Codex.exe` / title `Codex` on
+  2026-04-28.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -33,10 +36,8 @@ Milestone 2 Windows local collector foundation.
 
 ## Next Highest Priority
 
-Continue Milestone 2 hardening:
+Continue Milestone 3 Windows SQLite + Outbox:
 
-1. Add a polling orchestration service that combines foreground snapshot,
-   last-input idle status, and `FocusSessionizer`.
-2. Add a safe manual smoke command or console harness for foreground logging on
-   Windows 10.
-3. Then move to Milestone 3 Windows SQLite + outbox.
+1. Choose EF Core SQLite or Dapper for local persistence.
+2. Add repository/outbox tests first.
+3. Implement SQLite schema and persistence.
