@@ -374,11 +374,14 @@ Milestone 4.5 extension payload domain extraction.
   relational fallback because Docker/Testcontainers is unavailable here.
 - Verified the server device unique index is enforced by a relational provider.
 - Verified the relational reset strategy recreates an empty schema.
+- Added local `dotnet-ef` 10.0.4 tool manifest and EF Core design package.
+- Generated `20260428131352_InitialCreate` for server PostgreSQL schema.
+- Added `docs/production-migrations.md` with migration review notes.
+- Verified migration files define the core PostgreSQL tables.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Generate production EF Core migrations before PostgreSQL use.
-2. Continue post-RC hardening: Android physical-device measurements and
+1. Continue post-RC hardening: Android physical-device measurements and
    longer-running Windows collector profiling.

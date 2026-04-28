@@ -16,6 +16,8 @@ Current persistence surfaces:
 Release-candidate requirement:
 
 - Generate and review EF Core migrations before production database use.
+- Initial production migration review is documented in
+  `docs/production-migrations.md`.
 - Server relational behavior must be tested with a relational provider. See
   `docs/server-test-db-strategy.md` for the current SQLite fallback and the
   PostgreSQL/Testcontainers target strategy.

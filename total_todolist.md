@@ -313,6 +313,17 @@ the finished slice is committed and pushed.
 - [x] Verify server integration tests.
 - [x] Commit and push release candidate.
 
+## Milestone 13: Post-RC Production Hardening
+
+- [x] Generate production EF Core migrations before production PostgreSQL use.
+- [x] Add migration review notes for generated PostgreSQL schema.
+- [ ] Repeat Android resource measurements on a physical device.
+- [ ] Add longer-running Windows collector profiling once continuous background tracking is enabled.
+- [ ] Run full .NET tests.
+- [ ] Run full .NET build.
+- [ ] Run Android unit/build checks.
+- [ ] Commit and push post-RC hardening.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs.
