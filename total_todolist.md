@@ -472,7 +472,7 @@ milestones below are finished.
 - [x] Test full URL is stored only with explicit opt-in.
 - [x] Persist WebSessions to SQLite with capture method/confidence/private indicators.
 - [x] Create WebSession outbox items and upload payloads with domain/duration.
-- [ ] Verify duplicate WebSession uploads are idempotent.
+- [x] Verify duplicate WebSession uploads are idempotent.
 - [ ] Add native messaging host manifest generation and WPF browser connection status.
 - [ ] Add URL sanitizer/redaction policy before storing raw browser events.
 - [ ] Run browser/domain tests, Windows tests, solution build/test.

@@ -44,9 +44,11 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.HasKey(session => session.Id);
             entity.Property(session => session.FocusSessionId).HasMaxLength(128).IsRequired();
             entity.Property(session => session.BrowserFamily).HasMaxLength(64).IsRequired();
-            entity.Property(session => session.Url).HasMaxLength(4096).IsRequired();
+            entity.Property(session => session.Url).HasMaxLength(4096);
             entity.Property(session => session.Domain).HasMaxLength(253).IsRequired();
-            entity.Property(session => session.PageTitle).HasMaxLength(512).IsRequired();
+            entity.Property(session => session.PageTitle).HasMaxLength(512);
+            entity.Property(session => session.CaptureMethod).HasMaxLength(64);
+            entity.Property(session => session.CaptureConfidence).HasMaxLength(64);
             entity.HasIndex(session => new
             {
                 session.DeviceId,

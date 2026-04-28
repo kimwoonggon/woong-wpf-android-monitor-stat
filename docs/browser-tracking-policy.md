@@ -143,3 +143,7 @@ Chrome native-message ingestion can now enqueue a `web_session` outbox item
 when a web session completes. The upload payload includes device id, focus
 session id, domain, duration, nullable URL/title fields, and capture
 provenance.
+
+Server web-session upload is retry-safe for domain-only payloads where
+`url = null`; duplicate uploads return `Duplicate` rather than inserting a
+second row.

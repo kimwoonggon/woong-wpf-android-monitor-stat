@@ -4,12 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser WebSession outbox payload slice. The Windows layer now has
-privacy-safe browser activity snapshot models, capture method/confidence enums,
-required browser interfaces, a tested classifier, URL sanitizer policy
-enforcement, snapshot-based web sessionization, local SQLite capture
-provenance, and a `web_session` outbox payload path from Chrome native-message
-ingestion.
+Milestone 23 browser WebSession duplicate upload slice. Browser domain
+tracking now has privacy-safe snapshots, URL sanitizer policy enforcement,
+snapshot-based WebSession creation, local SQLite capture provenance,
+`web_session` outbox payloads, and server duplicate handling for domain-only
+payloads with `Url = null`.
 
 ## Completed
 
@@ -145,6 +144,16 @@ ingestion.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 147 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
+  Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
+- Updated server EF web-session model configuration so URL and page title are
+  optional, while capture method/confidence have bounded lengths.
+- Verified duplicate web-session upload retries remain idempotent when URL and
+  page title are null and capture provenance is present.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 148 .NET tests passed.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
@@ -603,8 +612,8 @@ ingestion.
 
 ## Next Highest Priority
 
-Continue Milestone 23 with TDD: verify duplicate WebSession uploads are
-idempotent with nullable URL/capture provenance, then decide whether the
-native-message host manifest/WPF browser connection status belongs in this
-milestone or should move after schema restoration. Physical Android resource
-measurement remains blocked until a device is connected.
+Continue Milestone 23 with TDD: handle the remaining native-message host
+manifest/WPF browser connection status and URL sanitizer persistence-flow TODO,
+then move to Milestone 24 schema restoration/migrations for the nullable URL
+and capture provenance shape. Physical Android resource measurement remains
+blocked until a device is connected.

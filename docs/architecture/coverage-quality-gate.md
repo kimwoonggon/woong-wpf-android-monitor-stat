@@ -51,7 +51,7 @@ Collected on 2026-04-29 with `coverage.runsettings` and ReportGenerator:
 
 | Assembly | Line coverage | Notes |
 | --- | ---: | --- |
-| Overall | 92.3% | 2,087 / 2,259 coverable lines |
+| Overall | 92.3% | 2,089 / 2,261 coverable lines |
 | Woong.MonitorStack.Domain | 88.8% | Above initial 80% target |
 | Woong.MonitorStack.Windows.Presentation | 97.6% | Above initial 75% target |
 | Woong.MonitorStack.Windows | 91.7% | OS wrappers intentionally remain low |
