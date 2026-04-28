@@ -60,6 +60,12 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<DashboardSessionRow> _recentSessions = [];
 
+    [ObservableProperty]
+    private IReadOnlyList<DashboardWebSessionRow> _recentWebSessions = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardEventLogRow> _liveEvents = [];
+
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
@@ -113,6 +119,8 @@ public sealed partial class DashboardViewModel : ObservableObject
         AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
         DomainUsageSeries = DashboardLiveChartsMapper.BuildPieSeries(DomainUsagePoints);
         RecentSessions = BuildRecentSessionRows(focusSessions);
+        RecentWebSessions = BuildRecentWebSessionRows(webSessions);
+        LiveEvents = BuildLiveEventRows(focusSessions, webSessions);
     }
 
     private TimeRange ResolveRange(DashboardPeriod period)
@@ -152,6 +160,50 @@ public sealed partial class DashboardViewModel : ObservableObject
                 session.IsIdle))
             .ToList();
     }
+
+    private IReadOnlyList<DashboardWebSessionRow> BuildRecentWebSessionRows(IEnumerable<WebSession> webSessions)
+    {
+        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
+
+        return webSessions
+            .OrderByDescending(session => session.StartedAtUtc)
+            .Select(session => new DashboardWebSessionRow(
+                session.Domain,
+                session.PageTitle,
+                TimeZoneInfo.ConvertTime(session.StartedAtUtc, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                FormatDuration(session.DurationMs)))
+            .ToList();
+    }
+
+    private IReadOnlyList<DashboardEventLogRow> BuildLiveEventRows(
+        IEnumerable<FocusSession> focusSessions,
+        IEnumerable<WebSession> webSessions)
+    {
+        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
+        IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> focusRows = focusSessions
+            .Select(session => (
+                session.StartedAtUtc,
+                new DashboardEventLogRow(
+                    "Focus",
+                    FormatLocalTime(session.StartedAtUtc, timeZone),
+                    session.PlatformAppKey)));
+        IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> webRows = webSessions
+            .Select(session => (
+                session.StartedAtUtc,
+                new DashboardEventLogRow(
+                    "Web",
+                    FormatLocalTime(session.StartedAtUtc, timeZone),
+                    session.Domain)));
+
+        return focusRows
+            .Concat(webRows)
+            .OrderByDescending(row => row.OccurredAtUtc)
+            .Select(row => row.Row)
+            .ToList();
+    }
+
+    private static string FormatLocalTime(DateTimeOffset utcValue, TimeZoneInfo timeZone)
+        => TimeZoneInfo.ConvertTime(utcValue, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture);
 
     private static string FormatDuration(long durationMs)
     {

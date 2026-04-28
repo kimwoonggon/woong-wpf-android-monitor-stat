@@ -136,40 +136,77 @@
                     Background="White"
                     BorderBrush="#DCE1E8"
                     BorderThickness="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Text="App Sessions"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#18202A" />
-                    <DataGrid Grid.Row="1"
-                              Margin="0,12,0,0"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              HeadersVisibility="Column"
-                              IsReadOnly="True"
-                              ItemsSource="{Binding RecentSessions}">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="App"
-                                                Binding="{Binding AppName}"
-                                                Width="*" />
-                            <DataGridTextColumn Header="Started"
-                                                Binding="{Binding StartedAtLocal}"
-                                                Width="110" />
-                            <DataGridTextColumn Header="Duration"
-                                                Binding="{Binding Duration}"
-                                                Width="110" />
-                            <DataGridCheckBoxColumn Header="Idle"
-                                                    Binding="{Binding IsIdle}"
-                                                    Width="80" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
+                <TabControl>
+                    <TabItem Header="App Sessions">
+                        <DataGrid Margin="0,12,0,0"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="True"
+                                  ItemsSource="{Binding RecentSessions}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="App"
+                                                    Binding="{Binding AppName}"
+                                                    Width="*" />
+                                <DataGridTextColumn Header="Started"
+                                                    Binding="{Binding StartedAtLocal}"
+                                                    Width="110" />
+                                <DataGridTextColumn Header="Duration"
+                                                    Binding="{Binding Duration}"
+                                                    Width="110" />
+                                <DataGridCheckBoxColumn Header="Idle"
+                                                        Binding="{Binding IsIdle}"
+                                                        Width="80" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="Web Sessions">
+                        <DataGrid Margin="0,12,0,0"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="True"
+                                  ItemsSource="{Binding RecentWebSessions}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Domain"
+                                                    Binding="{Binding Domain}"
+                                                    Width="180" />
+                                <DataGridTextColumn Header="Page"
+                                                    Binding="{Binding PageTitle}"
+                                                    Width="*" />
+                                <DataGridTextColumn Header="Started"
+                                                    Binding="{Binding StartedAtLocal}"
+                                                    Width="110" />
+                                <DataGridTextColumn Header="Duration"
+                                                    Binding="{Binding Duration}"
+                                                    Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="Live Event Log">
+                        <DataGrid Margin="0,12,0,0"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  HeadersVisibility="Column"
+                                  IsReadOnly="True"
+                                  ItemsSource="{Binding LiveEvents}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time"
+                                                    Binding="{Binding OccurredAtLocal}"
+                                                    Width="110" />
+                                <DataGridTextColumn Header="Kind"
+                                                    Binding="{Binding Kind}"
+                                                    Width="120" />
+                                <DataGridTextColumn Header="Message"
+                                                    Binding="{Binding Message}"
+                                                    Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
     </Grid>

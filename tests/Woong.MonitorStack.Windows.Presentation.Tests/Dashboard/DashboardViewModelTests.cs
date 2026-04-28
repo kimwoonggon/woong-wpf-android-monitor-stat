@@ -166,6 +166,67 @@ public sealed class DashboardViewModelTests
             });
     }
 
+    [Fact]
+    public void SelectPeriod_PublishesRecentWebSessionRows()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "chrome.exe", now.AddMinutes(-30), now, isIdle: false)],
+            [
+                WebSession.FromUtc(
+                    "session-1",
+                    "Chrome",
+                    "https://docs.example.com/start",
+                    "Getting Started",
+                    now.AddMinutes(-20),
+                    now.AddMinutes(-5))
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        var row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("example.com", row.Domain);
+        Assert.Equal("Getting Started", row.PageTitle);
+        Assert.Equal("11:40", row.StartedAtLocal);
+        Assert.Equal("15m", row.Duration);
+    }
+
+    [Fact]
+    public void SelectPeriod_PublishesLiveEventLogRows()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "chrome.exe", now.AddMinutes(-30), now, isIdle: false)],
+            [
+                WebSession.FromUtc(
+                    "session-1",
+                    "Chrome",
+                    "https://example.com/article",
+                    "Article",
+                    now.AddMinutes(-20),
+                    now.AddMinutes(-5))
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Collection(
+            viewModel.LiveEvents,
+            row =>
+            {
+                Assert.Equal("Web", row.Kind);
+                Assert.Equal("11:40", row.OccurredAtLocal);
+                Assert.Equal("example.com", row.Message);
+            },
+            row =>
+            {
+                Assert.Equal("Focus", row.Kind);
+                Assert.Equal("11:30", row.OccurredAtLocal);
+                Assert.Equal("chrome.exe", row.Message);
+            });
+    }
+
     private static FocusSession Session(
         string clientSessionId,
         string appKey,

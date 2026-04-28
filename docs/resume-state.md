@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows app sessions table.
+Milestone 4 Windows web sessions and live event dashboard tabs.
 
 ## Completed
 
@@ -58,6 +58,12 @@ Milestone 4 Windows app sessions table.
 - Added recent app session row models with timezone-adjusted start time,
   formatted duration, and idle flag.
 - Bound the WPF shell to a read-only app sessions `DataGrid`.
+- Added recent web session row models with domain, page title, local start
+  time, and duration.
+- Added live event row models derived from focus and web sessions until raw
+  events are wired into the dashboard.
+- Replaced the lower dashboard panel with tabs for App Sessions, Web Sessions,
+  and Live Event Log.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -68,6 +74,6 @@ Milestone 4 Windows app sessions table.
 
 Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Add live event log and web sessions view.
-2. Add settings view.
-3. Add WPF smoke path when tooling is ready.
+1. Add settings view.
+2. Add WPF smoke path when tooling is ready.
+3. Complete Milestone 4 checklist and move to server MVP.
