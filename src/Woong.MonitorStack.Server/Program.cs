@@ -2,6 +2,7 @@ using Woong.MonitorStack.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Devices;
+using Woong.MonitorStack.Server.Events;
 using Woong.MonitorStack.Server.Sessions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 builder.Services.AddScoped<DeviceRegistrationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
+builder.Services.AddScoped<RawEventUploadService>();
 
 var app = builder.Build();
 
@@ -46,6 +48,15 @@ app.MapPost("/api/focus-sessions/upload", async (
 app.MapPost("/api/web-sessions/upload", async (
     UploadWebSessionsRequest request,
     WebSessionUploadService uploads) =>
+{
+    UploadBatchResult response = await uploads.UploadAsync(request);
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/api/raw-events/upload", async (
+    UploadRawEventsRequest request,
+    RawEventUploadService uploads) =>
 {
     UploadBatchResult response = await uploads.UploadAsync(request);
 

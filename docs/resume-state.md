@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server web session upload API.
+Milestone 5 Server raw event upload API.
 
 ## Completed
 
@@ -102,6 +102,11 @@ Milestone 5 Server web session upload API.
 - Added EF-backed web session upload service returning `Accepted` and
   `Duplicate` item statuses.
 - Verified duplicate retry does not insert a second web session row.
+- Added `RawEventEntity` and unique `(DeviceId, ClientEventId)` index.
+- Added `POST /api/raw-events/upload`.
+- Added EF-backed raw event upload service returning `Accepted` and
+  `Duplicate` item statuses.
+- Verified duplicate retry does not insert a second raw event row.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -112,6 +117,6 @@ Milestone 5 Server web session upload API.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add raw event upload API.
-2. Add daily summary calculator/query API.
-3. Add server-side daily summary generation test for mixed Windows/Android data.
+1. Add daily summary calculator/query API.
+2. Add server-side daily summary generation test for mixed Windows/Android data.
+3. Define the server summary DTO shape for Windows + Android integrated reports.

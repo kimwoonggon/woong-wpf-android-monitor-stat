@@ -25,6 +25,8 @@ Updated: 2026-04-28
 
 - Focus session uploads must include `clientSessionId`.
 - Raw event uploads must include `clientEventId`.
+- Current upload endpoints are `POST /api/focus-sessions/upload`,
+  `POST /api/web-sessions/upload`, and `POST /api/raw-events/upload`.
 - Server idempotency will be based on `deviceId + clientSessionId` for sessions
   and `deviceId + clientEventId` for raw events.
 - Batch responses use `UploadItemStatus`: `Accepted`, `Duplicate`, or `Error`.

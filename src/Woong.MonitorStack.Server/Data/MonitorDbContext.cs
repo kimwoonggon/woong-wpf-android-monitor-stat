@@ -10,6 +10,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<WebSessionEntity> WebSessions => Set<WebSessionEntity>();
 
+    public DbSet<RawEventEntity> RawEvents => Set<RawEventEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -51,6 +53,16 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
                 session.EndedAtUtc,
                 session.Url
             }).IsUnique();
+        });
+
+        modelBuilder.Entity<RawEventEntity>(entity =>
+        {
+            entity.ToTable("raw_events");
+            entity.HasKey(rawEvent => rawEvent.Id);
+            entity.Property(rawEvent => rawEvent.ClientEventId).HasMaxLength(128).IsRequired();
+            entity.Property(rawEvent => rawEvent.EventType).HasMaxLength(128).IsRequired();
+            entity.Property(rawEvent => rawEvent.PayloadJson).IsRequired();
+            entity.HasIndex(rawEvent => new { rawEvent.DeviceId, rawEvent.ClientEventId }).IsUnique();
         });
     }
 }
