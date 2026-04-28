@@ -274,8 +274,8 @@ the finished slice is committed and pushed.
 
 ## Milestone 12: Hardening & Release Candidate
 
-- [ ] Review DB migrations.
-- [ ] Define raw event retention policy.
+- [x] Review DB migrations.
+- [x] Define raw event retention policy.
 - [ ] Add sync failure UI.
 - [ ] Add clear permission guidance text.
 - [ ] Check Windows CPU/memory usage.

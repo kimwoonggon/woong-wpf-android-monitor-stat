@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 11 Windows integrated summary client verification.
+Milestone 12 DB migration and retention review.
 
 ## Completed
 
@@ -298,6 +298,9 @@ Milestone 11 Windows integrated summary client verification.
   of integrated summary totals/top apps/top domains.
 - Android summary client verification was completed earlier in Milestone 10,
   so both Windows and Android clients now have summary query coverage.
+- Added `docs/hardening.md` with DB migration review notes, server/local DB
+  separation reminders, required idempotency indexes, raw event retention
+  policy, and Android notification permission follow-up.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -313,6 +316,6 @@ Milestone 11 Windows integrated summary client verification.
 
 Continue Milestone 12 Hardening & Release Candidate:
 
-1. Review DB migrations and retention/privacy policy docs.
-2. Add sync failure UI and clearer permission guidance.
-3. Run full RC validation matrix.
+1. Add sync failure UI and clearer permission guidance.
+2. Run full RC validation matrix.
+3. Complete README and release checklist.
