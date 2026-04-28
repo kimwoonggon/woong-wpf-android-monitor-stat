@@ -3,6 +3,7 @@ package com.woong.monitorstack.settings
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.woong.monitorstack.databinding.ActivitySettingsBinding
+import com.woong.monitorstack.summary.NotificationPermissionController
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 
 class SettingsActivity : AppCompatActivity() {
@@ -19,6 +20,10 @@ class SettingsActivity : AppCompatActivity() {
         val usageAccessSettings = UsageAccessSettingsIntentFactory()
         binding.openUsageAccessSettingsButton.setOnClickListener {
             startActivity(usageAccessSettings.createIntent())
+        }
+        val notificationPermissionController = NotificationPermissionController(this)
+        binding.requestNotificationPermissionButton.setOnClickListener {
+            notificationPermissionController.requestIfNeeded()
         }
         renderSyncStatus(binding)
     }

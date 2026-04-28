@@ -38,6 +38,11 @@ class SettingsActivityRobolectricTest {
         )
         assertEquals("Open Usage Access settings", binding.openUsageAccessSettingsButton.text.toString())
         assertEquals("Sync is off. Data stays on this Android device.", binding.syncStatusText.text.toString())
+        assertEquals(
+            "Morning summary notifications require notification permission on Android 13+.",
+            binding.notificationPermissionGuidanceText.text.toString()
+        )
+        assertEquals("Allow notifications", binding.requestNotificationPermissionButton.text.toString())
     }
 
     @Test

@@ -4,10 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 DailySummaryActivity repository/client slice. Android daily
-summary now has an Activity loader path that builds a repository/client from
-intent configuration and loads the previous-day integrated summary instead of
-being limited to intent-provided display values.
+Milestone 26 notification permission UX slice. Android Settings now explains
+morning summary notification permission and exposes an explicit Android 13+
+notification permission request button.
 
 ## Completed
 
@@ -769,12 +768,28 @@ being limited to intent-provided display values.
   minimal`.
 - Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
   minimal`.
+- Added `NotificationPermissionPolicy` and `NotificationPermissionController`
+  for Android 13+ `POST_NOTIFICATIONS` runtime requests.
+- Updated Android Settings XML and strings with notification permission
+  guidance plus an explicit request button.
+- Extended Settings Robolectric coverage for notification permission copy and
+  button binding.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`
+  from `android/`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal`.
+- Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`.
 
 ## Next Highest Priority
 
-Continue Milestone 26 Android usage restoration with TDD: Android 13+
-notification permission UX and UI Automator Usage Access navigation. The WPF
-browser connection status UI and cramped lower dashboard layout remain deferred
-per the latest priority decision because non-UI tracking/schema correctness is
-more important right now. Physical Android resource measurement remains blocked
-until a device is connected.
+Continue Milestone 26 Android usage restoration with TDD: UI Automator Usage
+Access navigation, then complete the Android usage restoration aggregate
+commit/checklist. The WPF browser connection status UI and cramped lower
+dashboard layout remain deferred per the latest priority decision because
+non-UI tracking/schema correctness is more important right now. Physical
+Android resource measurement remains blocked until a device is connected.

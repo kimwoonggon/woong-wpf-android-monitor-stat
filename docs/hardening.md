@@ -56,5 +56,6 @@ opts into server sync.
 ## Android Notification Permission
 
 `POST_NOTIFICATIONS` is declared so the morning summary worker can eventually
-post notifications on Android 13+. Runtime permission UX is still required
-before release-candidate validation.
+post notifications on Android 13+. Settings now shows a notification
+permission explanation and an explicit request button. The request is made only
+on Android 13+ when the permission has not already been granted.
