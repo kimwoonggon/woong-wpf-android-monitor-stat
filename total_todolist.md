@@ -465,9 +465,9 @@ milestones below are finished.
 - [x] Add `IBrowserProcessClassifier`, `IBrowserActivityReader`, `IBrowserUrlSanitizer`, and `IWebSessionizer`.
 - [x] Test supported browsers: `chrome.exe`, `msedge.exe`, `firefox.exe`, `brave.exe`.
 - [x] Test non-browser process does not create a WebSession.
-- [ ] Test fake Chrome URL `github.com` creates a WebSession.
-- [ ] Test URL change from `github.com` to `chatgpt.com` closes/starts WebSessions.
-- [ ] Test URL unavailable falls back to FocusSession only.
+- [x] Test fake Chrome URL `github.com` creates a WebSession.
+- [x] Test URL change from `github.com` to `chatgpt.com` closes/starts WebSessions.
+- [x] Test URL unavailable falls back to FocusSession only.
 - [x] Test domain-only privacy stores domain but not full URL.
 - [x] Test full URL is stored only with explicit opt-in.
 - [ ] Persist WebSessions to SQLite with capture method/confidence/private indicators.

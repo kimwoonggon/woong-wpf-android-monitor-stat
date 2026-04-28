@@ -4,11 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser URL privacy slice. The Windows layer now has
+Milestone 23 browser snapshot-to-WebSession slice. The Windows layer now has
 privacy-safe browser activity snapshot models, capture method/confidence enums,
 the required browser interfaces, a tested classifier for the supported MVP
-browsers, and a URL sanitizer that enforces Off, DomainOnly, and FullUrl
-storage policies.
+browsers, URL sanitizer policy enforcement, and snapshot-based web
+sessionization that supports domain-only capture.
 
 ## Completed
 
@@ -109,6 +109,21 @@ storage policies.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.0%, Domain 88.6%, Windows.Presentation 97.6%,
   Windows 91.0%, Windows.App 85.0%, and Server 96.0%.
+- Updated `WebSession` and `WebSessionUploadItem` so `Url` and `PageTitle` are
+  nullable while `Domain` remains required for persisted web sessions.
+- Updated `SqliteWebSessionRepository` to write/read nullable URL and page
+  title values for domain-only browser privacy mode.
+- Updated `BrowserWebSessionizer` to accept sanitized
+  `BrowserActivitySnapshot` inputs, create domain-only `WebSession` rows
+  without a full URL, close a prior domain on domain change, and ignore
+  snapshots with neither URL nor domain so they fall back to FocusSession-only
+  tracking.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 145 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.1%, Domain 88.7%, Windows.Presentation 97.6%,
+  Windows 91.2%, Windows.App 85.0%, and Server 96.0%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -564,8 +579,7 @@ storage policies.
 
 ## Next Highest Priority
 
-Continue Milestone 23 with TDD: connect sanitized `BrowserActivitySnapshot`
-inputs to `IWebSessionizer` so URL-unavailable browser activity falls back to
-FocusSession-only behavior, while available domains create privacy-safe
-`WebSession` rows. Physical Android resource measurement remains blocked until
-a device is connected.
+Continue Milestone 23 with TDD: persist browser capture method/confidence and
+privacy indicators in local SQLite web sessions, then create WebSession outbox
+items/upload payloads with domain and duration. Physical Android resource
+measurement remains blocked until a device is connected.

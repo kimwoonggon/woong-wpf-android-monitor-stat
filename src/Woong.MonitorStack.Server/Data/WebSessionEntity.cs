@@ -10,11 +10,11 @@ public sealed class WebSessionEntity
 
     public string BrowserFamily { get; set; } = "";
 
-    public string Url { get; set; } = "";
+    public string? Url { get; set; }
 
     public string Domain { get; set; } = "";
 
-    public string PageTitle { get; set; } = "";
+    public string? PageTitle { get; set; }
 
     public DateTimeOffset StartedAtUtc { get; set; }
 

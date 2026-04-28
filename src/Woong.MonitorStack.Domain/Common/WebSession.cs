@@ -5,16 +5,16 @@ public sealed record WebSession
     public WebSession(
         string focusSessionId,
         string browserFamily,
-        string url,
+        string? url,
         string domain,
-        string pageTitle,
+        string? pageTitle,
         TimeRange range)
     {
         FocusSessionId = RequiredText.Ensure(focusSessionId, nameof(focusSessionId));
         BrowserFamily = RequiredText.Ensure(browserFamily, nameof(browserFamily));
-        Url = RequiredText.Ensure(url, nameof(url));
+        Url = NormalizeOptional(url);
         Domain = RequiredText.Ensure(domain, nameof(domain));
-        PageTitle = RequiredText.Ensure(pageTitle, nameof(pageTitle));
+        PageTitle = NormalizeOptional(pageTitle);
         Range = range;
     }
 
@@ -22,11 +22,11 @@ public sealed record WebSession
 
     public string BrowserFamily { get; }
 
-    public string Url { get; }
+    public string? Url { get; }
 
     public string Domain { get; }
 
-    public string PageTitle { get; }
+    public string? PageTitle { get; }
 
     public TimeRange Range { get; }
 
@@ -50,4 +50,7 @@ public sealed record WebSession
             DomainNormalizer.ExtractRegistrableDomain(url),
             pageTitle,
             TimeRange.FromUtc(startedAtUtc, endedAtUtc));
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

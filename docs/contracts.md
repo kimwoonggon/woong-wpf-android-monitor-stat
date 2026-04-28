@@ -53,3 +53,7 @@ Updated: 2026-04-28
   suffixes such as `co.kr` and `co.uk`.
 - A full public suffix list dependency can be evaluated later if Phase 2 web
   tracking needs broader global domain precision.
+- `WebSession.Url` and `WebSession.PageTitle` are nullable because domain-only
+  browser privacy mode must allow site-duration measurement without storing the
+  full URL or tab title. `WebSession.Domain` remains required for any persisted
+  web session.

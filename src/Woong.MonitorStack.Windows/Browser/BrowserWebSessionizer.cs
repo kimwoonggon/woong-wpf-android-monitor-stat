@@ -3,9 +3,10 @@ using Woong.MonitorStack.Domain.Common;
 namespace Woong.MonitorStack.Windows.Browser;
 
 public sealed class BrowserWebSessionizer
+    : IWebSessionizer
 {
     private readonly string _focusSessionId;
-    private ChromeTabChangedMessage? _current;
+    private BrowserActivitySnapshot? _current;
 
     public BrowserWebSessionizer(string focusSessionId)
     {
@@ -18,34 +19,55 @@ public sealed class BrowserWebSessionizer
     {
         ArgumentNullException.ThrowIfNull(message);
 
+        return Apply(new BrowserActivitySnapshot(
+            message.ObservedAtUtc,
+            message.BrowserFamily,
+            processName: $"{message.BrowserFamily}.exe",
+            processId: null,
+            windowHandle: message.WindowId,
+            windowTitle: null,
+            tabTitle: message.Title,
+            url: message.Url,
+            domain: message.Domain,
+            CaptureMethod.BrowserExtensionFuture,
+            CaptureConfidence.High,
+            isPrivateOrUnknown: false));
+    }
+
+    public IReadOnlyList<WebSession> Apply(BrowserActivitySnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
         if (_current is null)
         {
-            _current = message;
+            _current = HasWebIdentity(snapshot) ? snapshot : null;
             return [];
         }
 
-        if (IsDuplicate(_current, message))
+        if (IsDuplicate(_current, snapshot))
         {
             return [];
         }
 
-        var completed = WebSession.FromUtc(
-            focusSessionId: _focusSessionId,
-            browserFamily: _current.BrowserFamily,
-            url: _current.Url,
-            pageTitle: _current.Title,
-            startedAtUtc: _current.ObservedAtUtc,
-            endedAtUtc: message.ObservedAtUtc);
+        var completed = new WebSession(
+            _focusSessionId,
+            _current.BrowserName,
+            _current.Url,
+            _current.Domain!,
+            _current.TabTitle,
+            TimeRange.FromUtc(_current.CapturedAtUtc, snapshot.CapturedAtUtc));
 
-        _current = message;
+        _current = HasWebIdentity(snapshot) ? snapshot : null;
         return [completed];
     }
 
-    private static bool IsDuplicate(ChromeTabChangedMessage current, ChromeTabChangedMessage next)
-        => current.WindowId == next.WindowId
-            && current.TabId == next.TabId
+    private static bool HasWebIdentity(BrowserActivitySnapshot snapshot)
+        => !string.IsNullOrWhiteSpace(snapshot.Domain);
+
+    private static bool IsDuplicate(BrowserActivitySnapshot current, BrowserActivitySnapshot next)
+        => current.WindowHandle == next.WindowHandle
             && string.Equals(current.Url, next.Url, StringComparison.Ordinal)
-            && string.Equals(current.Title, next.Title, StringComparison.Ordinal)
+            && string.Equals(current.TabTitle, next.TabTitle, StringComparison.Ordinal)
             && string.Equals(current.Domain, next.Domain, StringComparison.Ordinal)
-            && string.Equals(current.BrowserFamily, next.BrowserFamily, StringComparison.Ordinal);
+            && string.Equals(current.BrowserName, next.BrowserName, StringComparison.Ordinal);
 }

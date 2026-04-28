@@ -129,3 +129,9 @@ suffix.
 - Domain only keeps the registrable domain and clears the full URL.
 - Full URL keeps the URL only when explicitly requested and strips URL
   fragments before persistence.
+
+`BrowserWebSessionizer` now accepts sanitized `BrowserActivitySnapshot` inputs.
+Snapshots with a domain create/close web sessions, while snapshots with no URL
+and no domain are ignored for web-session creation so the browser still remains
+represented by the normal FocusSession only. Domain-only snapshots produce
+`WebSession` rows with `Url = null`.

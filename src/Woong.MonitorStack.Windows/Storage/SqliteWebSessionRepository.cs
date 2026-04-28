@@ -24,9 +24,9 @@ public sealed class SqliteWebSessionRepository
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 focus_session_id TEXT NOT NULL,
                 browser_family TEXT NOT NULL,
-                url TEXT NOT NULL,
+                url TEXT NULL,
                 domain TEXT NOT NULL,
-                page_title TEXT NOT NULL,
+                page_title TEXT NULL,
                 started_at_utc TEXT NOT NULL,
                 ended_at_utc TEXT NOT NULL,
                 duration_ms INTEGER NOT NULL
@@ -109,9 +109,9 @@ public sealed class SqliteWebSessionRepository
     {
         _ = command.Parameters.AddWithValue("$focusSessionId", session.FocusSessionId);
         _ = command.Parameters.AddWithValue("$browserFamily", session.BrowserFamily);
-        _ = command.Parameters.AddWithValue("$url", session.Url);
+        _ = command.Parameters.AddWithValue("$url", ToDbValue(session.Url));
         _ = command.Parameters.AddWithValue("$domain", session.Domain);
-        _ = command.Parameters.AddWithValue("$pageTitle", session.PageTitle);
+        _ = command.Parameters.AddWithValue("$pageTitle", ToDbValue(session.PageTitle));
         _ = command.Parameters.AddWithValue("$startedAtUtc", FormatUtc(session.StartedAtUtc));
         _ = command.Parameters.AddWithValue("$endedAtUtc", FormatUtc(session.EndedAtUtc));
         _ = command.Parameters.AddWithValue("$durationMs", session.DurationMs);
@@ -121,13 +121,16 @@ public sealed class SqliteWebSessionRepository
         => new(
             reader.GetString(0),
             reader.GetString(1),
-            reader.GetString(2),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
             reader.GetString(3),
-            reader.GetString(4),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
             TimeRange.FromUtc(
                 DateTimeOffset.Parse(reader.GetString(5), CultureInfo.InvariantCulture),
                 DateTimeOffset.Parse(reader.GetString(6), CultureInfo.InvariantCulture)));
 
     private static string FormatUtc(DateTimeOffset value)
         => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+
+    private static object ToDbValue(string? value)
+        => value is null ? DBNull.Value : value;
 }
