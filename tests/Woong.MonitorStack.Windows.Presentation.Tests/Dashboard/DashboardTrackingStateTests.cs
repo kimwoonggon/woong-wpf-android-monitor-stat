@@ -1,0 +1,251 @@
+using Woong.MonitorStack.Windows.Presentation.Dashboard;
+
+namespace Woong.MonitorStack.Windows.Presentation.Tests.Dashboard;
+
+public sealed class DashboardTrackingStateTests
+{
+    [Fact]
+    public void Constructor_PublishesSafeStoppedTrackingState()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        Assert.Equal("Stopped", viewModel.TrackingStatusText);
+        Assert.Equal("No current app", viewModel.CurrentAppNameText);
+        Assert.Equal("No process", viewModel.CurrentProcessNameText);
+        Assert.Equal("Window title hidden by privacy settings", viewModel.CurrentWindowTitleText);
+        Assert.Equal("00:00:00", viewModel.CurrentSessionDurationText);
+        Assert.Equal("No session persisted", viewModel.LastPersistedSessionText);
+        Assert.Equal("Sync is off. Data stays on this Windows device.", viewModel.LastSyncStatusText);
+        Assert.False(viewModel.Settings.IsWindowTitleVisible);
+    }
+
+    [Fact]
+    public void TrackingCommands_TransitionVisibleTrackingStatus()
+    {
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Visual Studio Code",
+                ProcessName: "Code.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromSeconds(1),
+                LastPersistedSession: null)
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        Assert.Equal("Running", viewModel.TrackingStatusText);
+        Assert.Equal(1, coordinator.StartCount);
+        Assert.Equal("Visual Studio Code", viewModel.CurrentAppNameText);
+
+        viewModel.StopTrackingCommand.Execute(null);
+        Assert.Equal("Stopped", viewModel.TrackingStatusText);
+        Assert.Equal(1, coordinator.StopCount);
+    }
+
+    [Fact]
+    public void SyncNowCommand_WhenSyncIsOptOut_ShowsSkippedStatus()
+    {
+        var coordinator = new FakeTrackingCoordinator();
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+
+        viewModel.SyncNowCommand.Execute(null);
+
+        Assert.Equal("Sync skipped. Enable sync to upload.", viewModel.LastSyncStatusText);
+        Assert.Equal(1, coordinator.SyncCount);
+        Assert.False(coordinator.LastSyncEnabled);
+    }
+
+    [Fact]
+    public void SyncNowCommand_WhenSyncIsEnabled_ShowsRequestedStatus()
+    {
+        var coordinator = new FakeTrackingCoordinator
+        {
+            SyncResult = new DashboardSyncResult("Fake sync queued.")
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+        viewModel.Settings.IsSyncEnabled = true;
+
+        viewModel.SyncNowCommand.Execute(null);
+
+        Assert.Equal("Fake sync queued.", viewModel.LastSyncStatusText);
+        Assert.Equal(1, coordinator.SyncCount);
+        Assert.True(coordinator.LastSyncEnabled);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenWindowTitleHidden_MasksWindowTitle()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Visual Studio Code",
+            ProcessName: "Code.exe",
+            WindowTitle: "Secret Project - Visual Studio Code",
+            CurrentSessionDuration: TimeSpan.FromSeconds(75),
+            LastPersistedSession: new DashboardPersistedSessionSnapshot(
+                AppName: "Code.exe",
+                ProcessName: "Code.exe",
+                EndedAtUtc: new DateTimeOffset(2026, 4, 28, 12, 0, 0, TimeSpan.Zero),
+                Duration: TimeSpan.FromSeconds(75))));
+
+        Assert.Equal("Visual Studio Code", viewModel.CurrentAppNameText);
+        Assert.Equal("Code.exe", viewModel.CurrentProcessNameText);
+        Assert.Equal("Window title hidden by privacy settings", viewModel.CurrentWindowTitleText);
+        Assert.Equal("00:01:15", viewModel.CurrentSessionDurationText);
+        Assert.Equal("Code.exe persisted at 21:00 for 1m", viewModel.LastPersistedSessionText);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenWindowTitleVisible_ShowsWindowTitle()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+        viewModel.Settings.IsWindowTitleVisible = true;
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: "GitHub - Chrome",
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null));
+
+        Assert.Equal("GitHub - Chrome", viewModel.CurrentWindowTitleText);
+        Assert.Equal("No session persisted", viewModel.LastPersistedSessionText);
+    }
+
+    [Fact]
+    public void Settings_WhenWindowTitleWasCapturedWhileHidden_DoesNotRevealItLater()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: "GitHub - Chrome",
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null));
+
+        viewModel.Settings.IsWindowTitleVisible = true;
+
+        Assert.Equal("No window title", viewModel.CurrentWindowTitleText);
+    }
+
+    [Fact]
+    public void SelectPeriod_WhenWindowTitlesAreHidden_MasksWebPageTitles()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [],
+            [
+                Domain.Common.WebSession.FromUtc(
+                    "focus-1",
+                    "Chrome",
+                    "https://github.com/org/private",
+                    "Private issue title",
+                    now.AddMinutes(-10),
+                    now)
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        var row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("github.com", row.Domain);
+        Assert.Equal("Page title hidden by privacy settings", row.PageTitle);
+    }
+
+    [Fact]
+    public void SelectPeriod_WhenWindowTitlesAreVisible_ShowsWebPageTitles()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [],
+            [
+                Domain.Common.WebSession.FromUtc(
+                    "focus-1",
+                    "Chrome",
+                    "https://github.com/org/private",
+                    "Private issue title",
+                    now.AddMinutes(-10),
+                    now)
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+        viewModel.Settings.IsWindowTitleVisible = true;
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        var row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("Private issue title", row.PageTitle);
+    }
+
+    private static DashboardViewModel CreateViewModel(IDashboardTrackingCoordinator? coordinator = null)
+        => new(
+            new EmptyDataSource(),
+            new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
+            new DashboardOptions("Asia/Seoul"),
+            coordinator);
+
+    private class FakeDashboardDataSource(
+        IReadOnlyList<Domain.Common.FocusSession> focusSessions,
+        IReadOnlyList<Domain.Common.WebSession> webSessions) : IDashboardDataSource
+    {
+        public IReadOnlyList<Domain.Common.FocusSession> QueryFocusSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+            => focusSessions;
+
+        public IReadOnlyList<Domain.Common.WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+            => webSessions;
+    }
+
+    private sealed class EmptyDataSource : FakeDashboardDataSource
+    {
+        public EmptyDataSource()
+            : base([], [])
+        {
+        }
+    }
+
+    private sealed class FixedClock(DateTimeOffset utcNow) : IDashboardClock
+    {
+        public DateTimeOffset UtcNow => utcNow;
+    }
+
+    private sealed class FakeTrackingCoordinator : IDashboardTrackingCoordinator
+    {
+        public DashboardTrackingSnapshot StartSnapshot { get; set; } = DashboardTrackingSnapshot.Empty;
+
+        public DashboardTrackingSnapshot StopSnapshot { get; set; } = DashboardTrackingSnapshot.Empty;
+
+        public DashboardSyncResult SyncResult { get; set; } = new("Sync skipped. Enable sync to upload.");
+
+        public int StartCount { get; private set; }
+
+        public int StopCount { get; private set; }
+
+        public int SyncCount { get; private set; }
+
+        public bool LastSyncEnabled { get; private set; }
+
+        public DashboardTrackingSnapshot StartTracking()
+        {
+            StartCount++;
+
+            return StartSnapshot;
+        }
+
+        public DashboardTrackingSnapshot StopTracking()
+        {
+            StopCount++;
+
+            return StopSnapshot;
+        }
+
+        public DashboardSyncResult SyncNow(bool syncEnabled)
+        {
+            SyncCount++;
+            LastSyncEnabled = syncEnabled;
+
+            return syncEnabled
+                ? SyncResult
+                : new DashboardSyncResult("Sync skipped. Enable sync to upload.");
+        }
+    }
+}

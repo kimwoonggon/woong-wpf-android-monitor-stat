@@ -26,6 +26,7 @@ public static class WindowsAppServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IDashboardClock, SystemDashboardClock>();
+        services.AddSingleton<IDashboardTrackingCoordinator, NoopDashboardTrackingCoordinator>();
         services.AddTransient<DashboardViewModel>();
 
         return services;

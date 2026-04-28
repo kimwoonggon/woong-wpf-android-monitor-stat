@@ -8,6 +8,9 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     private bool _isCollectionVisible = true;
 
     [ObservableProperty]
+    private bool _isWindowTitleVisible;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SyncModeLabel))]
     private bool _isSyncEnabled;
 

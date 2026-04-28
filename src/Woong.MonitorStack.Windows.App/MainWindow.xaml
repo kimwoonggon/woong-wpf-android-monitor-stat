@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="Woong Monitor Stack"
         AutomationProperties.AutomationId="MainWindow"
-        Width="1040"
+        Width="860"
         Height="680"
         MinWidth="860"
         MinHeight="560"
@@ -16,6 +16,7 @@
         d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -37,6 +38,21 @@
                     Margin="0,20,0,18"
                     AutomationProperties.AutomationId="PeriodSelector"
                     Orientation="Horizontal">
+            <Button Content="Start"
+                    AutomationProperties.AutomationId="StartTrackingButton"
+                    Command="{Binding StartTrackingCommand}"
+                    Padding="14,8"
+                    Margin="0,0,8,0" />
+            <Button Content="Stop"
+                    AutomationProperties.AutomationId="StopTrackingButton"
+                    Command="{Binding StopTrackingCommand}"
+                    Padding="14,8"
+                    Margin="0,0,8,0" />
+            <Button Content="Sync Now"
+                    AutomationProperties.AutomationId="SyncNowButton"
+                    Command="{Binding SyncNowCommand}"
+                    Padding="14,8"
+                    Margin="0,0,16,0" />
             <Button Content="Refresh"
                     AutomationProperties.AutomationId="RefreshButton"
                     Command="{Binding RefreshDashboardCommand}"
@@ -67,7 +83,96 @@
                     Padding="14,8" />
         </StackPanel>
 
-        <Grid Grid.Row="2">
+        <Border Grid.Row="2"
+                Margin="0,0,0,18"
+                Padding="18"
+                CornerRadius="8"
+                Background="White"
+                BorderBrush="#DCE1E8"
+                BorderThickness="1">
+            <Grid AutomationProperties.AutomationId="CurrentActivityPanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Margin="0,0,16,0">
+                    <TextBlock Text="Tracking"
+                               Foreground="#5A6472"
+                               FontSize="12" />
+                    <TextBlock AutomationProperties.AutomationId="TrackingStatusText"
+                               Text="{Binding TrackingStatusText}"
+                               Foreground="#18202A"
+                               FontSize="18"
+                               FontWeight="SemiBold" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Margin="0,0,16,0">
+                    <TextBlock Text="Current app"
+                               Foreground="#5A6472"
+                               FontSize="12" />
+                    <TextBlock AutomationProperties.AutomationId="CurrentAppNameText"
+                               Text="{Binding CurrentAppNameText}"
+                               Foreground="#18202A"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock AutomationProperties.AutomationId="CurrentProcessNameText"
+                               Text="{Binding CurrentProcessNameText}"
+                               Foreground="#5A6472"
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2"
+                            Margin="0,0,16,0">
+                    <TextBlock Text="Window title"
+                               Foreground="#5A6472"
+                               FontSize="12" />
+                    <TextBlock AutomationProperties.AutomationId="CurrentWindowTitleText"
+                               Text="{Binding CurrentWindowTitleText}"
+                               Foreground="#18202A"
+                               FontSize="14"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <TextBlock Grid.Row="1"
+                           Margin="0,14,16,0"
+                           AutomationProperties.AutomationId="LastPersistedSessionText"
+                           Text="{Binding LastPersistedSessionText}"
+                           Foreground="#5A6472"
+                           FontSize="13"
+                           TextWrapping="Wrap" />
+                <StackPanel Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,14,16,0">
+                    <TextBlock Text="Duration"
+                               Foreground="#5A6472"
+                               FontSize="12" />
+                    <TextBlock AutomationProperties.AutomationId="CurrentSessionDurationText"
+                               Text="{Binding CurrentSessionDurationText}"
+                               Foreground="#18202A"
+                               FontSize="16"
+                               FontWeight="SemiBold" />
+                </StackPanel>
+                <TextBlock Grid.Row="1"
+                           Grid.Column="2"
+                           Margin="0,14,0,0"
+                           AutomationProperties.AutomationId="LastSyncStatusText"
+                           Text="{Binding LastSyncStatusText}"
+                           Foreground="#5A6472"
+                           FontSize="13"
+                           TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="2*" />
@@ -75,15 +180,20 @@
             </Grid.RowDefinitions>
 
             <ItemsControl AutomationProperties.AutomationId="SummaryCardsContainer"
+                          ClipToBounds="True"
+                          HorizontalAlignment="Left"
+                          Width="786"
                           ItemsSource="{Binding SummaryCards}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="3" />
+                        <UniformGrid Columns="3"
+                                     Width="786" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type dashboard:DashboardSummaryCard}">
-                        <Border Margin="0,0,12,0"
+                        <Border Width="250"
+                                Margin="0,0,12,0"
                                 Padding="18"
                                 CornerRadius="8"
                                 Background="White"
@@ -247,6 +357,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <CheckBox Content="Collection visible"
@@ -255,17 +366,23 @@
                                       FontSize="14"
                                       Margin="0,0,0,12" />
                             <CheckBox Grid.Row="1"
+                                      Content="Show window titles"
+                                      AutomationProperties.AutomationId="WindowTitleVisibleCheckBox"
+                                      IsChecked="{Binding Settings.IsWindowTitleVisible}"
+                                      FontSize="14"
+                                      Margin="0,0,0,12" />
+                            <CheckBox Grid.Row="2"
                                       Content="Sync enabled"
                                       AutomationProperties.AutomationId="SyncEnabledCheckBox"
                                       IsChecked="{Binding Settings.IsSyncEnabled}"
                                       FontSize="14"
                                       Margin="0,0,0,12" />
-                            <TextBlock Grid.Row="2"
+                            <TextBlock Grid.Row="3"
                                        AutomationProperties.AutomationId="SyncModeLabel"
                                        Text="{Binding Settings.SyncModeLabel}"
                                        Foreground="#5A6472"
                                        FontSize="13" />
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="4"
                                        Margin="0,8,0,0"
                                        AutomationProperties.AutomationId="SyncStatusLabel"
                                        Text="{Binding Settings.SyncStatusLabel}"

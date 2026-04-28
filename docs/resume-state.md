@@ -4,13 +4,42 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Original Intent Restoration planning: reopened the project TODO around
-metadata-only Windows/Android usage measurement, explicit privacy boundaries,
-browser domain tracking, semantic WPF acceptance, Android screenshot testing,
-integrated schema restoration, and future macOS research.
+Milestone 21: Windows Live Tracking UI Restoration. Added TDD-covered WPF
+Start/Stop/Sync controls, current activity state, privacy-aware window/page
+title masking, a fake-testable tracking coordinator seam, and local UI snapshot
+verification for the updated shell.
 
 ## Completed
 
+- Completed Milestone 21 with Presentation-first MVVM state and tests.
+- Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
+  `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,
+  and `DashboardSyncResult`.
+- Added WPF current activity panel and stable AutomationIds:
+  `StartTrackingButton`, `StopTrackingButton`, `SyncNowButton`,
+  `TrackingStatusText`, `CurrentAppNameText`, `CurrentProcessNameText`,
+  `CurrentWindowTitleText`, `CurrentSessionDurationText`,
+  `LastPersistedSessionText`, and `LastSyncStatusText`.
+- Added `WindowTitleVisibleCheckBox`; window and web page titles are hidden by
+  default and previously hidden raw titles are not retained for later reveal.
+- Verified Start/Stop commands through a fake tracking coordinator and verified
+  Sync Now receives the current sync opt-in state.
+- Reduced the default WPF shell width to fit local snapshot automation better
+  and added a UI expectation test for the default width ceiling.
+- Verified `dotnet restore Woong.MonitorStack.sln`, `dotnet build
+  Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
+  test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 120
+  .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 91.9%, Domain 88.6%, Windows.Presentation 98.2%,
+  Windows 91.1%, Windows.App 52.0%, and Server 96.0%.
+- Verified local WPF UI snapshots with `scripts/run-ui-snapshots.ps1`;
+  `artifacts/ui-snapshots/latest/report.md` reports PASS. `ChartArea` crop
+  remains skipped when not visible in the first viewport and should be handled
+  in Milestone 25 semantic acceptance.
+- Deferred deeper WPF layout tuning to Milestone 25 after user feedback: the
+  lower App Sessions, Web Sessions, and Live Event Log areas are more important
+  than perfect first-viewport visibility of the current activity panel.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -466,7 +495,8 @@ integrated schema restoration, and future macOS research.
 
 ## Next Highest Priority
 
-Start Milestone 21 with TDD: add failing WPF App tests for the required
-Start/Stop/Sync tracking AutomationIds and current-activity state, then add the
-minimal Presentation/XAML state to pass. Physical Android resource measurement
+Start Milestone 22 with TDD: add failing tests for app-hosted tracking
+start/stop wiring through DI, then wire the real/fake tracking coordinator to
+`TrackingPoller`, SQLite focus-session persistence, outbox enqueueing, and a
+SQLite-backed dashboard data source. Physical Android resource measurement
 remains blocked until a device is connected.

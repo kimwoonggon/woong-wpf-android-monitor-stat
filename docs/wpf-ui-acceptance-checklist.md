@@ -17,6 +17,8 @@ Screenshots are supporting evidence after FlaUI semantic checks.
 - `CurrentSessionDurationText`
 - `LastPersistedSessionText`
 - `LastSyncStatusText`
+- `CurrentActivityPanel`
+- `WindowTitleVisibleCheckBox`
 - `RecentAppSessionsList`
 - `RecentWebSessionsList`
 - `LiveEventsList`
@@ -42,6 +44,10 @@ Screenshots are supporting evidence after FlaUI semantic checks.
 - Summary cards show expected durations.
 - Live event log shows `FocusChanged` and `BrowserVisit`.
 - Settings contains privacy controls.
+- Window and page titles are privacy-masked unless the explicit title setting
+  allows them.
+- Previously hidden titles are not retained and revealed later just because the
+  setting changes.
 - Stop changes `TrackingStatusText` to `Stopped`.
 - Sync Now updates `LastSyncStatusText`.
 
@@ -111,3 +117,10 @@ or GPT reviewer to check:
 No OpenAI API call is required. Automated GPT visual review is optional,
 disabled by default, and may only run when `OPENAI_API_KEY` exists.
 
+## Current Status
+
+Milestone 21 added the baseline current-activity UI and unit/WPF tests for the
+Start, Stop, Sync Now, title privacy, and fake coordinator behaviors. Full
+semantic FlaUI acceptance, fake generated activity content, richer screenshots,
+chart-area visibility handling, and better vertical space for App Sessions,
+Web Sessions, and Live Event Log remain Milestone 25 work.

@@ -243,14 +243,14 @@ public sealed class DashboardViewModelTests
             row =>
             {
                 Assert.Equal("openai.com", row.Domain);
-                Assert.Equal("News", row.PageTitle);
+                Assert.Equal("Page title hidden by privacy settings", row.PageTitle);
                 Assert.Equal("11:50", row.StartedAtLocal);
                 Assert.Equal("9m", row.Duration);
             },
             row =>
             {
                 Assert.Equal("example.com", row.Domain);
-                Assert.Equal("Getting Started", row.PageTitle);
+                Assert.Equal("Page title hidden by privacy settings", row.PageTitle);
                 Assert.Equal("11:40", row.StartedAtLocal);
                 Assert.Equal("15m", row.Duration);
             });

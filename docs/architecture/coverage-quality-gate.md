@@ -47,15 +47,15 @@ flaky-test behavior are stable.
 
 ## Current Snapshot
 
-Collected on 2026-04-28 with `coverage.runsettings` and ReportGenerator:
+Collected on 2026-04-29 with `coverage.runsettings` and ReportGenerator:
 
 | Assembly | Line coverage | Notes |
 | --- | ---: | --- |
-| Overall | 91.7% | 1,652 / 1,801 coverable lines |
+| Overall | 91.9% | 1,732 / 1,884 coverable lines |
 | Woong.MonitorStack.Domain | 88.6% | Above initial 80% target |
-| Woong.MonitorStack.Windows.Presentation | 99.0% | Above initial 75% target |
+| Woong.MonitorStack.Windows.Presentation | 98.2% | Above initial 75% target |
 | Woong.MonitorStack.Windows | 91.1% | OS wrappers intentionally remain low |
-| Woong.MonitorStack.Windows.App | 51.0% | Acceptable for WPF composition root smoke coverage |
+| Woong.MonitorStack.Windows.App | 52.0% | Acceptable for WPF composition root smoke coverage |
 | Woong.MonitorStack.Server | 96.0% | EF generated migrations excluded |
 
 ## Known Gaps

@@ -24,6 +24,7 @@ public sealed class MainWindowUiExpectationTests
                 window.UpdateLayout();
 
                 Assert.Equal("Woong Monitor Stack", window.Title);
+                Assert.True(window.Width <= 960);
                 Assert.True(window.MinWidth >= 860);
                 Assert.True(window.MinHeight >= 560);
                 Assert.Same(dashboard.ViewModel, window.DataContext);
@@ -36,6 +37,58 @@ public sealed class MainWindowUiExpectationTests
                 AssertPeriodButton(window, "LastHourPeriodButton", "1h", DashboardPeriod.LastHour, dashboard.ViewModel);
                 AssertPeriodButton(window, "Last6HoursPeriodButton", "6h", DashboardPeriod.Last6Hours, dashboard.ViewModel);
                 AssertPeriodButton(window, "Last24HoursPeriodButton", "24h", DashboardPeriod.Last24Hours, dashboard.ViewModel);
+
+                Button startTracking = FindByAutomationId<Button>(window, "StartTrackingButton");
+                Button stopTracking = FindByAutomationId<Button>(window, "StopTrackingButton");
+                Button syncNow = FindByAutomationId<Button>(window, "SyncNowButton");
+                Assert.Equal("Start", startTracking.Content);
+                Assert.Equal("Stop", stopTracking.Content);
+                Assert.Equal("Sync Now", syncNow.Content);
+                Assert.Same(dashboard.ViewModel.StartTrackingCommand, startTracking.Command);
+                Assert.Same(dashboard.ViewModel.StopTrackingCommand, stopTracking.Command);
+                Assert.Same(dashboard.ViewModel.SyncNowCommand, syncNow.Command);
+
+                Assert.Equal("Stopped", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Equal("No current app", FindByAutomationId<TextBlock>(window, "CurrentAppNameText").Text);
+                Assert.Equal("No process", FindByAutomationId<TextBlock>(window, "CurrentProcessNameText").Text);
+                Assert.Equal(
+                    "Window title hidden by privacy settings",
+                    FindByAutomationId<TextBlock>(window, "CurrentWindowTitleText").Text);
+                Assert.Equal("00:00:00", FindByAutomationId<TextBlock>(window, "CurrentSessionDurationText").Text);
+                Assert.Equal("No session persisted", FindByAutomationId<TextBlock>(window, "LastPersistedSessionText").Text);
+                Assert.Equal(
+                    "Sync is off. Data stays on this Windows device.",
+                    FindByAutomationId<TextBlock>(window, "LastSyncStatusText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void MainWindow_TrackingButtonsUpdateVisibleStatus()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Invoke(FindByAutomationId<Button>(window, "StartTrackingButton"));
+                window.UpdateLayout();
+                Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+
+                Invoke(FindByAutomationId<Button>(window, "StopTrackingButton"));
+                window.UpdateLayout();
+                Assert.Equal("Stopped", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+
+                Invoke(FindByAutomationId<Button>(window, "SyncNowButton"));
+                window.UpdateLayout();
+                Assert.Equal("Sync skipped. Enable sync to upload.", FindByAutomationId<TextBlock>(window, "LastSyncStatusText").Text);
             }
             finally
             {
@@ -154,12 +207,15 @@ public sealed class MainWindowUiExpectationTests
                 tabs.SelectedIndex = 3;
                 window.UpdateLayout();
                 CheckBox collectionVisible = FindByAutomationId<CheckBox>(window, "CollectionVisibleCheckBox");
+                CheckBox windowTitleVisible = FindByAutomationId<CheckBox>(window, "WindowTitleVisibleCheckBox");
                 CheckBox syncEnabled = FindByAutomationId<CheckBox>(window, "SyncEnabledCheckBox");
                 TextBlock syncMode = FindByAutomationId<TextBlock>(window, "SyncModeLabel");
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(window, "SyncStatusLabel");
 
                 Assert.Equal("Collection visible", collectionVisible.Content);
                 Assert.True(collectionVisible.IsChecked);
+                Assert.Equal("Show window titles", windowTitleVisible.Content);
+                Assert.False(windowTitleVisible.IsChecked);
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
                 Assert.Equal("Local only", syncMode.Text);

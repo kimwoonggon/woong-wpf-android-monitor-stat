@@ -34,6 +34,16 @@ public sealed class MainWindowAutomationIdTests
                 }
 
                 Assert.Contains("MainWindow", automationIds);
+                Assert.Contains("StartTrackingButton", automationIds);
+                Assert.Contains("StopTrackingButton", automationIds);
+                Assert.Contains("SyncNowButton", automationIds);
+                Assert.Contains("TrackingStatusText", automationIds);
+                Assert.Contains("CurrentAppNameText", automationIds);
+                Assert.Contains("CurrentProcessNameText", automationIds);
+                Assert.Contains("CurrentWindowTitleText", automationIds);
+                Assert.Contains("CurrentSessionDurationText", automationIds);
+                Assert.Contains("LastPersistedSessionText", automationIds);
+                Assert.Contains("LastSyncStatusText", automationIds);
                 Assert.Contains("RefreshButton", automationIds);
                 Assert.Contains("PeriodSelector", automationIds);
                 Assert.Contains("SummaryCardsContainer", automationIds);
@@ -44,6 +54,7 @@ public sealed class MainWindowAutomationIdTests
                 Assert.Contains("RecentWebSessionsList", automationIds);
                 Assert.Contains("LiveEventsList", automationIds);
                 Assert.Contains("SettingsTab", automationIds);
+                Assert.Contains("WindowTitleVisibleCheckBox", automationIds);
             }
             finally
             {

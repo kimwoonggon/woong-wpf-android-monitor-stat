@@ -437,13 +437,13 @@ milestones below are finished.
 
 ## Milestone 21: Windows Live Tracking UI Restoration
 
-- [ ] Add failing WPF App tests for required tracking AutomationIds: `StartTrackingButton`, `StopTrackingButton`, `SyncNowButton`, `TrackingStatusText`, `CurrentAppNameText`, `CurrentProcessNameText`, `CurrentWindowTitleText`, `CurrentSessionDurationText`, `LastPersistedSessionText`, `LastSyncStatusText`.
-- [ ] Add presentation state for tracking status, current app/process/window title, current duration, last persisted session, and last sync status.
-- [ ] Add WPF Start/Stop/Sync Now controls and current activity panel.
-- [ ] Add privacy-aware window title masking setting and tests.
-- [ ] Verify Start/Stop UI can transition using a fake tracking coordinator.
-- [ ] Run WPF App tests and solution build.
-- [ ] Commit and push Windows live tracking UI slice.
+- [x] Add failing WPF App tests for required tracking AutomationIds: `StartTrackingButton`, `StopTrackingButton`, `SyncNowButton`, `TrackingStatusText`, `CurrentAppNameText`, `CurrentProcessNameText`, `CurrentWindowTitleText`, `CurrentSessionDurationText`, `LastPersistedSessionText`, `LastSyncStatusText`.
+- [x] Add presentation state for tracking status, current app/process/window title, current duration, last persisted session, and last sync status.
+- [x] Add WPF Start/Stop/Sync Now controls and current activity panel.
+- [x] Add privacy-aware window title masking setting and tests.
+- [x] Verify Start/Stop UI can transition using a fake tracking coordinator.
+- [x] Run WPF App tests and solution build.
+- [x] Commit and push Windows live tracking UI slice.
 
 ## Milestone 22: Windows Tracking Pipeline Persistence And Dashboard
 
@@ -495,6 +495,7 @@ milestones below are finished.
 
 - [ ] Create `scripts/run-wpf-ui-acceptance.ps1`.
 - [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
+- [ ] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
 - [ ] Implement EmptyData mode acceptance.
 - [ ] Implement SampleDashboard mode acceptance.
 - [ ] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.

@@ -42,9 +42,10 @@ internal static class UiSnapshotRunner
             Window mainWindow = application.GetMainWindow(automation, options.Timeout)
                 ?? throw new InvalidOperationException($"Main window with title process for '{AppFileName}' did not appear within {options.Timeout.TotalSeconds:N0} seconds.");
 
-            if (!string.Equals(mainWindow.AutomationId, MainWindowAutomationId, StringComparison.Ordinal))
+            string? automationId = TryGetAutomationId(mainWindow, notes);
+            if (!string.Equals(automationId, MainWindowAutomationId, StringComparison.Ordinal))
             {
-                notes.Add($"Main window AutomationId was '{mainWindow.AutomationId}', expected '{MainWindowAutomationId}'. Continuing because the window was found by process.");
+                notes.Add($"Main window AutomationId was '{automationId ?? "<unsupported>"}', expected '{MainWindowAutomationId}'. Continuing because the window was found by process.");
             }
 
             mainWindow.Focus();
@@ -108,6 +109,19 @@ internal static class UiSnapshotRunner
         notes.Add($"Captured `{fileName}`.");
     }
 
+    private static string? TryGetAutomationId(AutomationElement element, ICollection<string> notes)
+    {
+        try
+        {
+            return element.AutomationId;
+        }
+        catch (Exception exception)
+        {
+            notes.Add($"Main window AutomationId could not be read: {exception.Message}");
+            return null;
+        }
+    }
+
     private static void CaptureElementIfAvailable(
         Window window,
         string automationId,
@@ -157,8 +171,8 @@ internal static class UiSnapshotRunner
     {
         try
         {
-            window.Move(50, 50);
-            notes.Add("Moved main window to 50,50 for more deterministic screenshots. Size uses XAML defaults.");
+            window.Move(0, 0);
+            notes.Add("Moved main window to 0,0 for more deterministic screenshots. Size uses XAML defaults.");
         }
         catch (Exception exception)
         {

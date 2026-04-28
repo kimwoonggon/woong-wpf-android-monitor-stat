@@ -1,6 +1,6 @@
 # WPF UI Test Plan
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 This plan covers the current WPF MVP shell in `Woong.MonitorStack.Windows.App`.
 The UI tests are local Windows tests because WPF requires an STA desktop
@@ -10,6 +10,9 @@ environment.
 
 - Main dashboard window construction and data context.
 - Refresh and period selector buttons.
+- Start, Stop, and Sync Now tracking controls.
+- Current activity status, app/process metadata, privacy-aware window title,
+  session duration, last persisted session, and last sync status.
 - Summary cards for active, idle, and web usage.
 - Chart surface for activity, app usage, and domain usage.
 - App sessions, web sessions, and live event log tabs.
@@ -30,6 +33,14 @@ environment.
 - The main window is titled `Woong Monitor Stack` and is backed by
   `DashboardViewModel`.
 - The refresh button invokes `RefreshDashboardCommand`.
+- The Start button invokes `StartTrackingCommand` and transitions visible
+  status to `Running` through a fake-testable tracking coordinator.
+- The Stop button invokes `StopTrackingCommand` and transitions visible status
+  back to `Stopped`.
+- The Sync Now button invokes `SyncNowCommand` and receives the current sync
+  opt-in state.
+- Current window and web page titles are hidden by default; previously hidden
+  raw titles are not retained for later reveal.
 - The Today, 1h, 6h, and 24h buttons invoke `SelectDashboardPeriodCommand` with
   the correct `DashboardPeriod` command parameter.
 - Refreshing with sample dashboard data renders the expected summary card labels
@@ -42,8 +53,8 @@ environment.
   columns bound to `RecentWebSessions`.
 - The Live Event Log tab exposes `Time`, `Kind`, and `Message` columns bound to
   `LiveEvents`.
-- The Settings tab exposes visible collection status, sync enabled state, sync
-  mode label, and sync status label.
+- The Settings tab exposes visible collection status, window title visibility,
+  sync enabled state, sync mode label, and sync status label.
 
 ## Commands
 
@@ -73,6 +84,18 @@ powershell -ExecutionPolicy Bypass -File scripts\run-ui-snapshots.ps1
 - Installer-based smoke testing.
 
 ## Current Verification
+
+2026-04-29:
+
+- Added Milestone 21 tests for WPF Start/Stop/Sync controls, current-activity
+  AutomationIds, fake coordinator transitions, title privacy masking, structured
+  persisted-session display, and a smaller default window width for local
+  snapshot automation.
+- Verified `Woong.MonitorStack.Windows.Presentation.Tests` passes with 33
+  tests.
+- Verified `Woong.MonitorStack.Windows.App.Tests` passes with 8 tests.
+- Verified solution restore, build, and all 120 .NET tests pass.
+- Verified `scripts/test-coverage.ps1` and `scripts/run-ui-snapshots.ps1`.
 
 2026-04-28:
 

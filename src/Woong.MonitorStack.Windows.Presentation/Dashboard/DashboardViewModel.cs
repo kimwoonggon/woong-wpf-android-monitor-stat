@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore.SkiaSharpView;
+using System.ComponentModel;
 using System.Globalization;
 using Woong.MonitorStack.Domain.Common;
 
@@ -10,11 +11,35 @@ public sealed partial class DashboardViewModel : ObservableObject
 {
     private readonly IDashboardDataSource _dataSource;
     private readonly IDashboardClock _clock;
+    private readonly IDashboardTrackingCoordinator _trackingCoordinator;
     private readonly TimeZoneInfo _timeZone;
+    private string? _currentWindowTitle;
+    private bool _isTrackingRunning;
     private TimeRange? _customRange;
 
     [ObservableProperty]
     private DashboardPeriod _selectedPeriod = DashboardPeriod.Today;
+
+    [ObservableProperty]
+    private string _trackingStatusText = "Stopped";
+
+    [ObservableProperty]
+    private string _currentAppNameText = "No current app";
+
+    [ObservableProperty]
+    private string _currentProcessNameText = "No process";
+
+    [ObservableProperty]
+    private string _currentWindowTitleText = "Window title hidden by privacy settings";
+
+    [ObservableProperty]
+    private string _currentSessionDurationText = "00:00:00";
+
+    [ObservableProperty]
+    private string _lastPersistedSessionText = "No session persisted";
+
+    [ObservableProperty]
+    private string _lastSyncStatusText = "Sync is off. Data stays on this Windows device.";
 
     [ObservableProperty]
     private long _totalActiveMs;
@@ -69,15 +94,30 @@ public sealed partial class DashboardViewModel : ObservableObject
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
-        DashboardOptions options)
+        DashboardOptions options,
+        IDashboardTrackingCoordinator? trackingCoordinator = null)
     {
         _dataSource = dataSource;
         _clock = clock;
+        _trackingCoordinator = trackingCoordinator ?? new NoopDashboardTrackingCoordinator();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
+        Settings.PropertyChanged += OnSettingsPropertyChanged;
     }
 
     public DashboardSettingsViewModel Settings { get; } = new();
+
+    public void UpdateCurrentActivity(DashboardTrackingSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
+        CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
+        _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
+        UpdateCurrentWindowTitleText();
+        CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
+        LastPersistedSessionText = FormatPersistedSession(snapshot.LastPersistedSession);
+    }
 
     public void SelectPeriod(DashboardPeriod period)
     {
@@ -98,6 +138,59 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void RefreshDashboard()
         => RefreshSummary(ResolveRange(SelectedPeriod));
+
+    [RelayCommand(CanExecute = nameof(CanStartTracking))]
+    private void StartTracking()
+    {
+        _isTrackingRunning = true;
+        TrackingStatusText = "Running";
+        UpdateCurrentActivity(_trackingCoordinator.StartTracking());
+        StartTrackingCommand.NotifyCanExecuteChanged();
+        StopTrackingCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanStopTracking))]
+    private void StopTracking()
+    {
+        _isTrackingRunning = false;
+        TrackingStatusText = "Stopped";
+        UpdateCurrentActivity(_trackingCoordinator.StopTracking());
+        StartTrackingCommand.NotifyCanExecuteChanged();
+        StopTrackingCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void SyncNow()
+    {
+        LastSyncStatusText = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled).StatusText;
+        Settings.SyncStatusLabel = LastSyncStatusText;
+    }
+
+    private bool CanStartTracking()
+        => !_isTrackingRunning;
+
+    private bool CanStopTracking()
+        => _isTrackingRunning;
+
+    private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DashboardSettingsViewModel.IsWindowTitleVisible))
+        {
+            if (!Settings.IsWindowTitleVisible)
+            {
+                _currentWindowTitle = null;
+            }
+
+            UpdateCurrentWindowTitleText();
+        }
+    }
+
+    private void UpdateCurrentWindowTitleText()
+    {
+        CurrentWindowTitleText = Settings.IsWindowTitleVisible
+            ? TextOrDefault(_currentWindowTitle, "No window title")
+            : "Window title hidden by privacy settings";
+    }
 
     private void RefreshSummary(TimeRange range)
     {
@@ -169,7 +262,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             .OrderByDescending(session => session.StartedAtUtc)
             .Select(session => new DashboardWebSessionRow(
                 session.Domain,
-                session.PageTitle,
+                Settings.IsWindowTitleVisible
+                    ? TextOrDefault(session.PageTitle, "No page title")
+                    : "Page title hidden by privacy settings",
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 FormatDuration(session.DurationMs)))
             .ToList();
@@ -203,6 +298,30 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private static string FormatLocalTime(DateTimeOffset utcValue, TimeZoneInfo timeZone)
         => TimeZoneInfo.ConvertTime(utcValue, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    private static string TextOrDefault(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static string FormatClockDuration(TimeSpan duration)
+    {
+        TimeSpan safeDuration = duration < TimeSpan.Zero ? TimeSpan.Zero : duration;
+
+        return $"{(int)safeDuration.TotalHours:D2}:{safeDuration.Minutes:D2}:{safeDuration.Seconds:D2}";
+    }
+
+    private string FormatPersistedSession(DashboardPersistedSessionSnapshot? session)
+    {
+        if (session is null)
+        {
+            return "No session persisted";
+        }
+
+        string appName = TextOrDefault(session.AppName, TextOrDefault(session.ProcessName, "Unknown app"));
+        string endedAtLocal = FormatLocalTime(session.EndedAtUtc, _timeZone);
+        string duration = FormatDuration((long)Math.Max(0, session.Duration.TotalMilliseconds));
+
+        return $"{appName} persisted at {endedAtLocal} for {duration}";
+    }
 
     private static string FormatDuration(long durationMs)
     {
