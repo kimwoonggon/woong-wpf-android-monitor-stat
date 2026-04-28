@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 12 DB migration and retention review.
+Milestone 12 Android Settings hardening UI.
 
 ## Completed
 
@@ -303,6 +303,13 @@ Milestone 12 DB migration and retention review.
   policy, and Android notification permission follow-up.
 - Added Windows Settings sync failure status in the dashboard presentation
   model and WPF Settings tab.
+- Added Android Settings permission guidance, explicit privacy boundary text,
+  Usage Access action, local-only sync status, and retryable sync failure status.
+- Verified Android Settings UI hardening with Robolectric and Espresso compile
+  coverage.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
+- Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -318,6 +325,6 @@ Milestone 12 DB migration and retention review.
 
 Continue Milestone 12 Hardening & Release Candidate:
 
-1. Add Android sync failure UI and clearer permission guidance.
-2. Run full RC validation matrix.
-3. Complete README and release checklist.
+1. Run full RC validation matrix.
+2. Complete README and release checklist.
+3. Perform performance/resource checks.

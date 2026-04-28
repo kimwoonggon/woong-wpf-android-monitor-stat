@@ -277,8 +277,8 @@ the finished slice is committed and pushed.
 - [x] Review DB migrations.
 - [x] Define raw event retention policy.
 - [x] Add Windows sync failure UI.
-- [ ] Add Android sync failure UI.
-- [ ] Add clear permission guidance text.
+- [x] Add Android sync failure UI.
+- [x] Add clear permission guidance text.
 - [ ] Check Windows CPU/memory usage.
 - [ ] Check Android CPU/memory/battery impact.
 - [ ] Stabilize all tests.

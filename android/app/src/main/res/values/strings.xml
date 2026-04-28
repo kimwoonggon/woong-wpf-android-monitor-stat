@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Woong Monitor</string>
-    <string name="usage_access_settings">Usage Access</string>
-    <string name="usage_access_guidance">Usage access is required to calculate app statistics.</string>
+    <string name="usage_access_settings">Open Usage Access settings</string>
+    <string name="usage_access_guidance">Usage Access is needed to calculate app usage statistics.</string>
+    <string name="sensitive_data_boundary">This app does not collect messages, passwords, form input, or global touch coordinates.</string>
+    <string name="sync_local_only_status">Sync is off. Data stays on this Android device.</string>
+    <string name="sync_failure_status">Sync failed for %1$d queued items: %2$s. Data remains local and will retry.</string>
     <string name="dashboard_title">Dashboard</string>
     <string name="filter_today">Today</string>
     <string name="filter_yesterday">Yesterday</string>

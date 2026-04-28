@@ -28,14 +28,56 @@
         app:layout_constraintTop_toBottomOf="@id/settingsTitle" />
 
     <TextView
-        android:id="@+id/syncOptInText"
+        android:id="@+id/usageAccessGuidanceText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/sync_opt_in_default"
+        android:text="@string/usage_access_guidance"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/collectionVisibleText" />
+
+    <TextView
+        android:id="@+id/sensitiveDataBoundaryText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/sensitive_data_boundary"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usageAccessGuidanceText" />
+
+    <Button
+        android:id="@+id/openUsageAccessSettingsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/usage_access_settings"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sensitiveDataBoundaryText" />
+
+    <TextView
+        android:id="@+id/syncOptInText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/sync_opt_in_default"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/openUsageAccessSettingsButton" />
+
+    <TextView
+        android:id="@+id/syncStatusText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/sync_local_only_status"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/syncOptInText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -22,7 +22,15 @@ class SettingsActivityTest {
         onView(withId(R.id.settingsRoot)).check(matches(isDisplayed()))
         onView(withId(R.id.collectionVisibleText))
             .check(matches(withText(R.string.collection_visible_default)))
+        onView(withId(R.id.usageAccessGuidanceText))
+            .check(matches(withText(R.string.usage_access_guidance)))
+        onView(withId(R.id.sensitiveDataBoundaryText))
+            .check(matches(withText(R.string.sensitive_data_boundary)))
+        onView(withId(R.id.openUsageAccessSettingsButton))
+            .check(matches(withText(R.string.usage_access_settings)))
         onView(withId(R.id.syncOptInText))
             .check(matches(withText(R.string.sync_opt_in_default)))
+        onView(withId(R.id.syncStatusText))
+            .check(matches(withText(R.string.sync_local_only_status)))
     }
 }
