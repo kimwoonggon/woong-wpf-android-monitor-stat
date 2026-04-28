@@ -17,7 +17,7 @@ the finished slice is committed and pushed.
 - [x] Add root `AGENTS.md`.
 - [x] Keep this `total_todolist.md` updated for every feature slice.
 - [x] For each completed slice: run tests, run build, update docs, commit, push.
-- [ ] After every push: leave a concise resume summary for future context resets.
+- [x] After every push: leave a concise resume summary for future context resets.
 
 ## Milestone 0: Repository/Workspace Bootstrap
 
@@ -33,7 +33,7 @@ the finished slice is committed and pushed.
 - [x] Document bootstrap state in `docs/bootstrap.md`.
 - [x] Verify initial common tests pass.
 - [x] Verify initial solution build succeeds with `-maxcpucount:1`.
-- [ ] Commit and push bootstrap/common-domain baseline.
+- [x] Commit and push bootstrap/common-domain baseline.
 
 ## Milestone 1: Common Domain & Contracts
 
@@ -62,7 +62,7 @@ the finished slice is committed and pushed.
 - [x] Document time/date and DTO contract policy.
 - [x] Run common domain tests.
 - [x] Run solution build.
-- [ ] Commit and push Milestone 1 slice.
+- [x] Commit and push Milestone 1 slice.
 
 ## Milestone 2: Windows Local Collector MVP
 
