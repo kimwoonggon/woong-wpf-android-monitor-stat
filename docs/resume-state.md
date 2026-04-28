@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android MPAndroidChart mapper.
+Milestone 9 Android dashboard chart views.
 
 ## Completed
 
@@ -217,6 +217,9 @@ Milestone 9 Android MPAndroidChart mapper.
   added JitPack repository/dependency configuration.
 - Added `DashboardChartMapper` and chart data models that convert durations to
   minute-based MPAndroidChart `Entry`, `BarEntry`, and `PieEntry` values.
+- Added MPAndroidChart `LineChart` and `BarChart` views to DashboardActivity.
+- Configured chart no-data states and covered chart view presence from the
+  Espresso smoke surface.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -230,7 +233,6 @@ Milestone 9 Android MPAndroidChart mapper.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add MPAndroidChart views to DashboardActivity and bind placeholder chart
-   data.
-2. Add today/yesterday/recent 7 days filter click assertions.
-3. Create SettingsActivity or SettingsFragment.
+1. Add today/yesterday/recent 7 days filter click assertions.
+2. Create SettingsActivity or SettingsFragment.
+3. Add real chart data aggregation beyond no-data placeholders.

@@ -223,8 +223,8 @@ the finished slice is committed and pushed.
 - [x] Add total active time card.
 - [x] Add top app card.
 - [x] Add idle/inactive card.
-- [ ] Add MPAndroidChart time activity chart.
-- [ ] Add app usage chart.
+- [x] Add MPAndroidChart time activity chart.
+- [x] Add app usage chart.
 - [x] Add recent sessions RecyclerView.
 - [x] Test ViewModel state updates.
 - [x] Add Room-backed dashboard aggregation.

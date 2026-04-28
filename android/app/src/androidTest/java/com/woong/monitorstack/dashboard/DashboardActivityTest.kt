@@ -30,6 +30,8 @@ class DashboardActivityTest {
         onView(withId(R.id.usageAccessGuidanceText))
             .check(matches(withText(R.string.usage_access_guidance)))
         onView(withId(R.id.usageAccessSettingsButton)).check(matches(isDisplayed()))
+        onView(withId(R.id.activityLineChart)).check(matches(isDisplayed()))
+        onView(withId(R.id.appUsageBarChart)).check(matches(isDisplayed()))
         onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
         onView(withId(R.id.recentSessionsList)).check(matches(isDisplayed()))
     }

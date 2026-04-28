@@ -158,6 +158,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/usageAccessGuidanceText" />
 
+    <LinearLayout
+        android:id="@+id/chartsPanel"
+        android:layout_width="0dp"
+        android:layout_height="210dp"
+        android:layout_marginTop="14dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usageAccessSettingsButton">
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/activityLineChart"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/appUsageBarChart"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/recentSessionsTitle"
         android:layout_width="0dp"
@@ -167,7 +191,7 @@
         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/usageAccessSettingsButton" />
+        app:layout_constraintTop_toBottomOf="@id/chartsPanel" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recentSessionsList"

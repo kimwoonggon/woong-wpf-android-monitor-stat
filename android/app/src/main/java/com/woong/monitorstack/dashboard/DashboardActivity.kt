@@ -7,6 +7,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.LineChart
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
@@ -25,6 +27,8 @@ class DashboardActivity : AppCompatActivity() {
 
         binding.recentSessionsList.layoutManager = LinearLayoutManager(this)
         binding.recentSessionsList.adapter = sessionAdapter
+        configureChart(binding.activityLineChart)
+        configureChart(binding.appUsageBarChart)
 
         val usageAccessSettings = UsageAccessSettingsIntentFactory()
         binding.usageAccessSettingsButton.setOnClickListener {
@@ -37,6 +41,16 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         loadPeriod(binding, DashboardPeriod.Today)
+    }
+
+    private fun configureChart(chart: LineChart) {
+        chart.description.isEnabled = false
+        chart.setNoDataText(getString(com.woong.monitorstack.R.string.empty_sessions))
+    }
+
+    private fun configureChart(chart: BarChart) {
+        chart.description.isEnabled = false
+        chart.setNoDataText(getString(com.woong.monitorstack.R.string.empty_sessions))
     }
 
     private fun loadPeriod(binding: ActivityDashboardBinding, period: DashboardPeriod) {
