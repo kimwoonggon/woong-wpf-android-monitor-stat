@@ -324,6 +324,24 @@ the finished slice is committed and pushed.
 - [x] Run Android unit/build checks.
 - [x] Commit and push post-RC hardening.
 
+## Milestone 14: WPF/.NET Architecture Quality Gate
+
+- [x] Document project reference rules in `docs/architecture/reference-rules.md`.
+- [x] Add architecture tests for forbidden project and assembly dependencies.
+- [x] Remove `Windows.Presentation` reference to `Windows` infrastructure.
+- [x] Refactor WPF startup to Generic Host + DI.
+- [x] Register `MainWindow`, `DashboardViewModel`, `IDashboardDataSource`, `IDashboardClock`, and typed `DashboardOptions`.
+- [x] Keep `MainWindow.xaml.cs` thin.
+- [x] Verify and update `MainWindow.xaml` as readable WPF XAML with summary cards, period commands, three chart areas, recent sessions, recent web sessions, live events, and settings.
+- [x] Add MVVM behavior tests for period ranges, custom ranges, empty state, top domain, row ordering, invalid timezone behavior, chart mapper empty input, timezone labels, and retained LiveCharts mapper behavior.
+- [x] Add repo coverage runsettings.
+- [x] Add `scripts/test-coverage.ps1` and `scripts/test-coverage.sh`.
+- [x] Add ReportGenerator local tool.
+- [x] Ignore coverage output folders.
+- [x] Document coverage expectations, current summary, gaps, and LiveCharts Presentation exception.
+- [x] Run restore/build/test/coverage/report generation/smoke validation.
+- [ ] Commit and push architecture quality gate.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.
@@ -334,4 +352,4 @@ the finished slice is committed and pushed.
 - [x] Local DB/server integrated DB separation is preserved.
 - [x] Daily integrated summary works across Windows + Android.
 - [x] Final documentation is complete.
-- [x] Final commit is pushed to `origin`.
+- [ ] Final commit is pushed to `origin`.

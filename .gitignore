@@ -12,6 +12,9 @@ TestResults/
 
 # Diagnostics
 artifacts/logs/
+artifacts/TestResults/
+artifacts/coverage/
+coverage/
 
 # IDE
 .vs/

@@ -107,6 +107,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="Activity"
@@ -114,6 +115,11 @@
                                FontWeight="SemiBold"
                                Foreground="#18202A" />
                     <TextBlock Grid.Column="1"
+                               Text="Apps"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#18202A" />
+                    <TextBlock Grid.Column="2"
                                Text="Domains"
                                FontSize="16"
                                FontWeight="SemiBold"
@@ -122,8 +128,12 @@
                     <lvc:CartesianChart Grid.Row="1"
                                         MinHeight="220"
                                         Series="{Binding HourlyActivityChart.Series}" />
+                    <lvc:CartesianChart Grid.Row="1"
+                                        Grid.Column="1"
+                                        MinHeight="220"
+                                        Series="{Binding AppUsageChart.Series}" />
                     <lvc:PieChart Grid.Row="1"
-                                  Grid.Column="1"
+                                  Grid.Column="2"
                                   MinHeight="220"
                                   Series="{Binding DomainUsageSeries}" />
                 </Grid>

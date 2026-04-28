@@ -15,7 +15,7 @@ public sealed class DashboardViewModelTests
                 Session("session-2", "chrome.exe", now.AddMinutes(-10), now, isIdle: true)
             ],
             webSessions: []);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -43,7 +43,7 @@ public sealed class DashboardViewModelTests
                     now.AddMinutes(-25),
                     now.AddMinutes(-15))
             ]);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -73,12 +73,57 @@ public sealed class DashboardViewModelTests
         var dataSource = new FakeDashboardDataSource(
             [Session("session-1", "devenv.exe", now.AddMinutes(-5), now, isIdle: false)],
             webSessions: []);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectDashboardPeriodCommand.Execute(DashboardPeriod.LastHour);
 
         Assert.Equal(DashboardPeriod.LastHour, viewModel.SelectedPeriod);
         Assert.Equal("devenv.exe", viewModel.TopAppName);
+    }
+
+    [Fact]
+    public void SelectPeriod_TodayQueriesCurrentLocalDayRange()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.Today);
+
+        Assert.Equal(new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero), dataSource.LastFocusQueryStartedAtUtc);
+        Assert.Equal(now, dataSource.LastFocusQueryEndedAtUtc);
+    }
+
+    [Theory]
+    [InlineData(DashboardPeriod.LastHour, 1)]
+    [InlineData(DashboardPeriod.Last6Hours, 6)]
+    [InlineData(DashboardPeriod.Last24Hours, 24)]
+    public void SelectPeriod_RollingPeriodsQueryExpectedUtcRange(DashboardPeriod period, int expectedHours)
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(period);
+
+        Assert.Equal(now.AddHours(-expectedHours), dataSource.LastFocusQueryStartedAtUtc);
+        Assert.Equal(now, dataSource.LastFocusQueryEndedAtUtc);
+    }
+
+    [Fact]
+    public void SelectCustomRange_QueriesProvidedUtcRange()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var customStart = now.AddHours(-3);
+        var customEnd = now.AddHours(-2);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectCustomRange(customStart, customEnd);
+
+        Assert.Equal(DashboardPeriod.Custom, viewModel.SelectedPeriod);
+        Assert.Equal(customStart, dataSource.LastFocusQueryStartedAtUtc);
+        Assert.Equal(customEnd, dataSource.LastFocusQueryEndedAtUtc);
     }
 
     [Fact]
@@ -96,7 +141,7 @@ public sealed class DashboardViewModelTests
                     now.AddMinutes(-25),
                     now.AddMinutes(-15))
             ]);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -107,6 +152,7 @@ public sealed class DashboardViewModelTests
         var domainPoint = Assert.Single(viewModel.DomainUsagePoints);
         Assert.Equal("example.com", domainPoint.Label);
         Assert.Equal(600_000, domainPoint.ValueMs);
+        Assert.Equal("example.com", viewModel.TopDomainName);
     }
 
     [Fact]
@@ -124,7 +170,7 @@ public sealed class DashboardViewModelTests
                     now.AddMinutes(-25),
                     now.AddMinutes(-15))
             ]);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -144,7 +190,7 @@ public sealed class DashboardViewModelTests
                 Session("session-2", "devenv.exe", now.AddMinutes(-10), now, isIdle: true)
             ],
             webSessions: []);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -179,17 +225,35 @@ public sealed class DashboardViewModelTests
                     "https://docs.example.com/start",
                     "Getting Started",
                     now.AddMinutes(-20),
-                    now.AddMinutes(-5))
+                    now.AddMinutes(-5)),
+                WebSession.FromUtc(
+                    "session-2",
+                    "Chrome",
+                    "https://openai.com/news",
+                    "News",
+                    now.AddMinutes(-10),
+                    now.AddMinutes(-1))
             ]);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
-        var row = Assert.Single(viewModel.RecentWebSessions);
-        Assert.Equal("example.com", row.Domain);
-        Assert.Equal("Getting Started", row.PageTitle);
-        Assert.Equal("11:40", row.StartedAtLocal);
-        Assert.Equal("15m", row.Duration);
+        Assert.Collection(
+            viewModel.RecentWebSessions,
+            row =>
+            {
+                Assert.Equal("openai.com", row.Domain);
+                Assert.Equal("News", row.PageTitle);
+                Assert.Equal("11:50", row.StartedAtLocal);
+                Assert.Equal("9m", row.Duration);
+            },
+            row =>
+            {
+                Assert.Equal("example.com", row.Domain);
+                Assert.Equal("Getting Started", row.PageTitle);
+                Assert.Equal("11:40", row.StartedAtLocal);
+                Assert.Equal("15m", row.Duration);
+            });
     }
 
     [Fact]
@@ -207,7 +271,7 @@ public sealed class DashboardViewModelTests
                     now.AddMinutes(-20),
                     now.AddMinutes(-5))
             ]);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         viewModel.SelectPeriod(DashboardPeriod.LastHour);
 
@@ -232,10 +296,36 @@ public sealed class DashboardViewModelTests
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
         var dataSource = new FakeDashboardDataSource([], []);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         Assert.True(viewModel.Settings.IsCollectionVisible);
         Assert.False(viewModel.Settings.IsSyncEnabled);
+    }
+
+    [Fact]
+    public void SelectPeriod_WithEmptyDataPublishesSafeZeroState()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Equal(0, viewModel.TotalActiveMs);
+        Assert.Equal(0, viewModel.TotalIdleMs);
+        Assert.Equal(0, viewModel.TotalWebMs);
+        Assert.Equal("", viewModel.TopAppName);
+        Assert.Equal("", viewModel.TopDomainName);
+        Assert.All(viewModel.SummaryCards, card => Assert.Equal("0m", card.Value));
+        Assert.Empty(viewModel.RecentSessions);
+        Assert.Empty(viewModel.RecentWebSessions);
+        Assert.Empty(viewModel.LiveEvents);
+    }
+
+    [Fact]
+    public void DashboardOptions_WhenTimezoneIsInvalid_ThrowsTimeZoneNotFoundException()
+    {
+        Assert.Throws<TimeZoneNotFoundException>(() => new DashboardOptions("Invalid/Timezone"));
     }
 
     private static FocusSession Session(
@@ -258,8 +348,17 @@ public sealed class DashboardViewModelTests
         IReadOnlyList<FocusSession> focusSessions,
         IReadOnlyList<WebSession> webSessions) : IDashboardDataSource
     {
+        public DateTimeOffset LastFocusQueryStartedAtUtc { get; private set; }
+
+        public DateTimeOffset LastFocusQueryEndedAtUtc { get; private set; }
+
         public IReadOnlyList<FocusSession> QueryFocusSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
-            => focusSessions;
+        {
+            LastFocusQueryStartedAtUtc = startedAtUtc;
+            LastFocusQueryEndedAtUtc = endedAtUtc;
+
+            return focusSessions;
+        }
 
         public IReadOnlyList<WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
             => webSessions;

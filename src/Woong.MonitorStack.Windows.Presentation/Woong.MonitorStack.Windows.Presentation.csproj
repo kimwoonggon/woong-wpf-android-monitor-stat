@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Woong.MonitorStack.Domain\Woong.MonitorStack.Domain.csproj" />
-    <ProjectReference Include="..\Woong.MonitorStack.Windows\Woong.MonitorStack.Windows.csproj" />
   </ItemGroup>
 
   <ItemGroup>

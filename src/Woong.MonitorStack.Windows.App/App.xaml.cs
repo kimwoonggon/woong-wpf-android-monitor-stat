@@ -1,22 +1,41 @@
 using System.Windows;
-using Woong.MonitorStack.Windows.App.Dashboard;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 namespace Woong.MonitorStack.Windows.App;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    private IHost? _host;
+
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        var dashboardViewModel = new DashboardViewModel(
-            new EmptyDashboardDataSource(),
-            new SystemDashboardClock(),
-            TimeZoneInfo.Local.Id);
-        dashboardViewModel.SelectPeriod(DashboardPeriod.Today);
+        _host = Host
+            .CreateDefaultBuilder(e.Args)
+            .ConfigureServices(services => services.AddWindowsApp(new DashboardOptions(TimeZoneInfo.Local.Id)))
+            .Build();
+        await _host.StartAsync();
 
-        var mainWindow = new MainWindow(dashboardViewModel);
+        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+        if (mainWindow.DataContext is DashboardViewModel dashboardViewModel)
+        {
+            dashboardViewModel.SelectPeriod(DashboardPeriod.Today);
+        }
+
         mainWindow.Show();
+    }
+
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        if (_host is not null)
+        {
+            await _host.StopAsync(TimeSpan.FromSeconds(5));
+            _host.Dispose();
+        }
+
+        base.OnExit(e);
     }
 }

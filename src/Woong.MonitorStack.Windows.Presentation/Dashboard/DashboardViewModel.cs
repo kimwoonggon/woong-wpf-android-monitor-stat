@@ -10,7 +10,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 {
     private readonly IDashboardDataSource _dataSource;
     private readonly IDashboardClock _clock;
-    private readonly string _timezoneId;
+    private readonly TimeZoneInfo _timeZone;
     private TimeRange? _customRange;
 
     [ObservableProperty]
@@ -69,13 +69,12 @@ public sealed partial class DashboardViewModel : ObservableObject
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
-        string timezoneId)
+        DashboardOptions options)
     {
         _dataSource = dataSource;
         _clock = clock;
-        _timezoneId = string.IsNullOrWhiteSpace(timezoneId)
-            ? throw new ArgumentException("Value must not be empty.", nameof(timezoneId))
-            : timezoneId;
+        ArgumentNullException.ThrowIfNull(options);
+        _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
     }
 
     public DashboardSettingsViewModel Settings { get; } = new();
@@ -100,8 +99,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
         IReadOnlyList<WebSession> webSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
-        DateOnly summaryDate = LocalDateCalculator.GetLocalDate(_clock.UtcNow, _timezoneId);
-        DailySummary summary = DailySummaryCalculator.Calculate(focusSessions, webSessions, summaryDate, _timezoneId);
+        DateOnly summaryDate = LocalDateCalculator.GetLocalDate(_clock.UtcNow, _timeZone.Id);
+        DailySummary summary = DailySummaryCalculator.Calculate(focusSessions, webSessions, summaryDate, _timeZone.Id);
 
         TotalActiveMs = summary.TotalActiveMs;
         TotalIdleMs = summary.TotalIdleMs;
@@ -114,7 +113,7 @@ public sealed partial class DashboardViewModel : ObservableObject
             new("Idle", FormatDuration(summary.TotalIdleMs)),
             new("Web", FormatDuration(summary.TotalWebMs))
         ];
-        HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timezoneId);
+        HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
         AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
         DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
@@ -142,8 +141,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private TimeRange ResolveTodayRange(DateTimeOffset utcNow)
     {
-        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
-        DateTimeOffset localNow = TimeZoneInfo.ConvertTime(utcNow, timeZone);
+        DateTimeOffset localNow = TimeZoneInfo.ConvertTime(utcNow, _timeZone);
         var localStart = new DateTimeOffset(localNow.Date, localNow.Offset);
 
         return TimeRange.FromUtc(localStart.ToUniversalTime(), utcNow);
@@ -151,13 +149,11 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private IReadOnlyList<DashboardSessionRow> BuildRecentSessionRows(IEnumerable<FocusSession> focusSessions)
     {
-        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
-
         return focusSessions
             .OrderByDescending(session => session.StartedAtUtc)
             .Select(session => new DashboardSessionRow(
                 session.PlatformAppKey,
-                TimeZoneInfo.ConvertTime(session.StartedAtUtc, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 FormatDuration(session.DurationMs),
                 session.IsIdle))
             .ToList();
@@ -165,14 +161,12 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private IReadOnlyList<DashboardWebSessionRow> BuildRecentWebSessionRows(IEnumerable<WebSession> webSessions)
     {
-        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
-
         return webSessions
             .OrderByDescending(session => session.StartedAtUtc)
             .Select(session => new DashboardWebSessionRow(
                 session.Domain,
                 session.PageTitle,
-                TimeZoneInfo.ConvertTime(session.StartedAtUtc, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 FormatDuration(session.DurationMs)))
             .ToList();
     }
@@ -181,20 +175,19 @@ public sealed partial class DashboardViewModel : ObservableObject
         IEnumerable<FocusSession> focusSessions,
         IEnumerable<WebSession> webSessions)
     {
-        TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(_timezoneId);
         IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> focusRows = focusSessions
             .Select(session => (
                 session.StartedAtUtc,
                 new DashboardEventLogRow(
                     "Focus",
-                    FormatLocalTime(session.StartedAtUtc, timeZone),
+                    FormatLocalTime(session.StartedAtUtc, _timeZone),
                     session.PlatformAppKey)));
         IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> webRows = webSessions
             .Select(session => (
                 session.StartedAtUtc,
                 new DashboardEventLogRow(
                     "Web",
-                    FormatLocalTime(session.StartedAtUtc, timeZone),
+                    FormatLocalTime(session.StartedAtUtc, _timeZone),
                     session.Domain)));
 
         return focusRows

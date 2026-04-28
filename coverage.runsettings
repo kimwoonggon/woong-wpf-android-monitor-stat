@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Exclude>[*.Tests]*,[xunit.*]*,[Microsoft.*]*,[System.*]*</Exclude>
+          <ExcludeByFile>**/bin/**,**/obj/**,**/*.g.cs,**/*.g.i.cs,**/*.Designer.cs,**/*AssemblyInfo.cs,**/*GlobalUsings.g.cs,**/Data/Migrations/*.cs</ExcludeByFile>
+          <SkipAutoProps>true</SkipAutoProps>
+          <UseSourceLink>false</UseSourceLink>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

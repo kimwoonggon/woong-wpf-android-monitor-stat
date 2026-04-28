@@ -6,6 +6,14 @@ namespace Woong.MonitorStack.Windows.Presentation.Tests.Dashboard;
 public sealed class DashboardChartMapperTests
 {
     [Fact]
+    public void BuildHourlyActivityPoints_WithEmptyInput_ReturnsEmptyPoints()
+    {
+        IReadOnlyList<DashboardChartPoint> points = DashboardChartMapper.BuildHourlyActivityPoints([], "Asia/Seoul");
+
+        Assert.Empty(points);
+    }
+
+    [Fact]
     public void BuildHourlyActivityPoints_UsesDisplayTimezoneAndExcludesIdle()
     {
         var active = Session(

@@ -12,7 +12,7 @@ public sealed class MainWindowSmokeTests
             var viewModel = new DashboardViewModel(
                 new EmptyDataSource(),
                 new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
-                "Asia/Seoul");
+                new DashboardOptions("Asia/Seoul"));
             viewModel.SelectPeriod(DashboardPeriod.Today);
 
             var window = new MainWindow(viewModel);

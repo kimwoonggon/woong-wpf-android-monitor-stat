@@ -4,10 +4,37 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4.5 extension payload domain extraction.
+WPF/.NET architecture quality gate: reference rules, architecture tests,
+Generic Host DI startup, MVVM coverage tests, and coverage reporting.
 
 ## Completed
 
+- Added `docs/architecture/reference-rules.md` with project dependency
+  direction and the explicit LiveCharts Presentation adapter exception.
+- Added `tests/Woong.MonitorStack.Architecture.Tests` with NetArchTest and
+  csproj/source checks for forbidden project, package, WPF, server, and Windows
+  dependencies.
+- Removed the accidental `Windows.Presentation` reference to the Windows
+  infrastructure project.
+- Refactored WPF startup to `Microsoft.Extensions.Hosting`; `App.xaml.cs` owns
+  host lifecycle and resolves `MainWindow` from DI.
+- Added typed `DashboardOptions` and registered `MainWindow`,
+  `DashboardViewModel`, `IDashboardDataSource`, and `IDashboardClock` through
+  DI.
+- Kept `MainWindow.xaml.cs` thin and added a DI composition smoke test.
+- Verified `MainWindow.xaml` is readable WPF XAML and added the missing app
+  usage chart binding alongside activity and domain charts.
+- Expanded dashboard ViewModel tests for Today, rolling, and custom ranges,
+  empty state, invalid timezone behavior, top domain, row ordering, chart mapper
+  empty input, timezone labels, and retained LiveCharts mapper behavior.
+- Added `coverage.runsettings`, `scripts/test-coverage.ps1`,
+  `scripts/test-coverage.sh`, and ReportGenerator local tool registration.
+- Added `docs/architecture/coverage-quality-gate.md`; current coverage snapshot
+  is overall 91.7%, Domain 88.6%, Windows.Presentation 99.0%, Windows 91.1%,
+  Windows.App 51.0%, Server 96.0%.
+- Verified `dotnet restore`, `dotnet build --no-restore`,
+  `dotnet test --no-build`, coverage collection/report generation, and Windows
+  smoke tool.
 - Added root `AGENTS.md` with mandatory installed skill usage and always-on
   todo/test/build/commit/push workflow.
 - Added `total_todolist.md` as the full PRD checklist.

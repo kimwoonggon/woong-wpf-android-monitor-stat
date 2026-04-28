@@ -6,6 +6,18 @@ namespace Woong.MonitorStack.Windows.Presentation.Tests.Dashboard;
 public sealed class DashboardLiveChartsMapperTests
 {
     [Fact]
+    public void BuildColumnChart_WithEmptyInput_ReturnsNamedEmptySeries()
+    {
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildColumnChart("Activity", []);
+
+        Assert.Empty(chart.Labels);
+        var series = Assert.Single(chart.Series);
+        var columnSeries = Assert.IsType<ColumnSeries<long>>(series);
+        Assert.Equal("Activity", columnSeries.Name);
+        Assert.Empty(columnSeries.Values ?? []);
+    }
+
+    [Fact]
     public void BuildColumnChart_MapsLabelsAndValues()
     {
         var points = new[]
