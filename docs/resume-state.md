@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android dashboard chart views.
+Milestone 9 Android dashboard period filter click coverage.
 
 ## Completed
 
@@ -220,6 +220,8 @@ Milestone 9 Android dashboard chart views.
 - Added MPAndroidChart `LineChart` and `BarChart` views to DashboardActivity.
 - Configured chart no-data states and covered chart view presence from the
   Espresso smoke surface.
+- Added selected-period label and Espresso click assertions for Today,
+  Yesterday, and Recent 7 Days filters.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -233,6 +235,6 @@ Milestone 9 Android dashboard chart views.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add today/yesterday/recent 7 days filter click assertions.
-2. Create SettingsActivity or SettingsFragment.
-3. Add real chart data aggregation beyond no-data placeholders.
+1. Create SettingsActivity or SettingsFragment.
+2. Add real chart data aggregation beyond no-data placeholders.
+3. Add dashboard-to-sessions/settings navigation if needed.

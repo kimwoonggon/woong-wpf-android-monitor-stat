@@ -3,6 +3,7 @@ package com.woong.monitorstack.dashboard
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -34,5 +35,17 @@ class DashboardActivityTest {
         onView(withId(R.id.appUsageBarChart)).check(matches(isDisplayed()))
         onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
         onView(withId(R.id.recentSessionsList)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun periodFilterClicksUpdateSelectedPeriodLabel() {
+        onView(withId(R.id.yesterdayFilterButton)).perform(click())
+        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_yesterday)))
+
+        onView(withId(R.id.recent7DaysFilterButton)).perform(click())
+        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_recent_7_days)))
+
+        onView(withId(R.id.todayFilterButton)).perform(click())
+        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_today)))
     }
 }

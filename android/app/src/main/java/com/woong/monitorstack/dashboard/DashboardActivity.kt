@@ -54,10 +54,19 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun loadPeriod(binding: ActivityDashboardBinding, period: DashboardPeriod) {
+        binding.selectedPeriodText.setText(period.toTextResId())
         Thread {
             viewModel.selectPeriod(period)
             runOnUiThread { render(binding, viewModel.state) }
         }.start()
+    }
+
+    private fun DashboardPeriod.toTextResId(): Int {
+        return when (this) {
+            DashboardPeriod.Today -> com.woong.monitorstack.R.string.filter_today
+            DashboardPeriod.Yesterday -> com.woong.monitorstack.R.string.filter_yesterday
+            DashboardPeriod.Recent7Days -> com.woong.monitorstack.R.string.filter_recent_7_days
+        }
     }
 
     private fun render(binding: ActivityDashboardBinding, state: DashboardUiState) {

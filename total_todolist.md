@@ -231,7 +231,7 @@ the finished slice is committed and pushed.
 - [x] Bind DashboardActivity to Room-backed dashboard data.
 - [x] Add MPAndroidChart dependency and chart mapper.
 - [x] Test DashboardActivity display with Espresso.
-- [ ] Test today/yesterday/recent 7 days filters.
+- [x] Test today/yesterday/recent 7 days filters.
 - [x] Test empty state.
 - [x] Test usage access guidance.
 - [ ] Commit and push Milestone 9.
