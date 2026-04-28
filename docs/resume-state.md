@@ -369,11 +369,16 @@ Milestone 4.5 extension payload domain extraction.
   -> web-session repository.
 - Verified a Chrome active tab URL appears in the Windows local SQLite raw event
   table and that the previous tab is persisted as a `web_session`.
+- Added `docs/server-test-db-strategy.md`.
+- Added `RelationalTestDatabase` using SQLite in-memory as the current
+  relational fallback because Docker/Testcontainers is unavailable here.
+- Verified the server device unique index is enforced by a relational provider.
+- Verified the relational reset strategy recreates an empty schema.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Continue server hardening by replacing EF InMemory-only relational assurance
-   with a documented relational/PostgreSQL test DB strategy.
-2. Add reset strategy coverage for server integration tests.
+1. Generate production EF Core migrations before PostgreSQL use.
+2. Continue post-RC hardening: Android physical-device measurements and
+   longer-running Windows collector profiling.

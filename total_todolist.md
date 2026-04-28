@@ -160,9 +160,9 @@ the finished slice is committed and pushed.
 - [x] Create ASP.NET Core Web API project.
 - [x] Create server test project.
 - [x] Add EF Core PostgreSQL.
-- [ ] Decide server integration test DB strategy before PostgreSQL-specific tests.
-- [ ] Add relational test database reset strategy.
-- [ ] Verify idempotency and unique indexes against a relational provider.
+- [x] Decide server integration test DB strategy before PostgreSQL-specific tests.
+- [x] Add relational test database reset strategy.
+- [x] Verify idempotency and unique indexes against a relational provider.
 - [x] Define integrated DB entities.
 - [x] Define Device integrated DB entity.
 - [x] Test Device unique index for idempotent registration.

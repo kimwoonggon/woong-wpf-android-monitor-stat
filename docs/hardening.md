@@ -16,6 +16,9 @@ Current persistence surfaces:
 Release-candidate requirement:
 
 - Generate and review EF Core migrations before production database use.
+- Server relational behavior must be tested with a relational provider. See
+  `docs/server-test-db-strategy.md` for the current SQLite fallback and the
+  PostgreSQL/Testcontainers target strategy.
 - Keep local Windows SQLite, Android Room, and server PostgreSQL migrations
   separate; no local database may depend on another device database.
 - Verify unique indexes remain in place for idempotency:
