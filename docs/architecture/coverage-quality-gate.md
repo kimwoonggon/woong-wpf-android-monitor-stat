@@ -51,12 +51,12 @@ Collected on 2026-04-29 with `coverage.runsettings` and ReportGenerator:
 
 | Assembly | Line coverage | Notes |
 | --- | ---: | --- |
-| Overall | 92.8% | 2,262 / 2,437 coverable lines |
+| Overall | 92.9% | 2,293 / 2,468 coverable lines |
 | Woong.MonitorStack.Domain | 89.3% | Above initial 80% target |
 | Woong.MonitorStack.Windows.Presentation | 97.6% | Above initial 75% target |
 | Woong.MonitorStack.Windows | 92.5% | OS wrappers intentionally remain low |
 | Woong.MonitorStack.Windows.App | 85.3% | Increased by app-hosted tracking coordinator, SQLite dashboard tests, and env-safe RealStart options |
-| Woong.MonitorStack.Server | 96.1% | EF generated migrations excluded |
+| Woong.MonitorStack.Server | 96.3% | EF generated migrations excluded |
 
 ## Known Gaps
 

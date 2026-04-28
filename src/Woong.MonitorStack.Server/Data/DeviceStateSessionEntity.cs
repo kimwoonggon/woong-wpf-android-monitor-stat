@@ -1,0 +1,24 @@
+namespace Woong.MonitorStack.Server.Data;
+
+public sealed class DeviceStateSessionEntity
+{
+    public long Id { get; set; }
+
+    public Guid DeviceId { get; set; }
+
+    public string ClientSessionId { get; set; } = "";
+
+    public string StateType { get; set; } = "";
+
+    public DateTimeOffset StartedAtUtc { get; set; }
+
+    public DateTimeOffset EndedAtUtc { get; set; }
+
+    public long DurationMs { get; set; }
+
+    public DateOnly LocalDate { get; set; }
+
+    public string TimezoneId { get; set; } = "";
+
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}

@@ -483,14 +483,15 @@ milestones below are finished.
 
 - [x] Add schema tests for required focus session process/window fields.
 - [x] Add schema tests for required web session browser/capture/privacy fields.
-- [ ] Add server `device_state_sessions` table/entity/tests.
-- [ ] Add server `app_families` and `app_family_mappings` tables/entities/tests.
+- [x] Add server `device_state_sessions` table/entity/tests.
+- [x] Add server `app_families` and `app_family_mappings` tables/entities/tests.
 - [ ] Decide and document whether Android app usage remains focus sessions or gets a dedicated app usage upload contract.
 - [x] Update DTO contracts for nullable URL, domain, capture method/confidence, process/window metadata, and client idempotency.
 - [x] Generate/review EF migration for restored schema.
 - [x] Update production migration notes.
 - [x] Run server relational tests and solution build/test.
 - [x] Commit and push integrated schema restoration focus/browser metadata slice.
+- [x] Commit and push integrated schema restoration device-state/app-family slice.
 
 ## Milestone 25: WPF Semantic UI Acceptance
 

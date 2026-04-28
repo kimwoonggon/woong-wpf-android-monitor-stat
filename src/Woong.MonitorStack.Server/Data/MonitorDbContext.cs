@@ -14,6 +14,12 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<DailySummaryEntity> DailySummaries => Set<DailySummaryEntity>();
 
+    public DbSet<DeviceStateSessionEntity> DeviceStateSessions => Set<DeviceStateSessionEntity>();
+
+    public DbSet<AppFamilyEntity> AppFamilies => Set<AppFamilyEntity>();
+
+    public DbSet<AppFamilyMappingEntity> AppFamilyMappings => Set<AppFamilyMappingEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -86,6 +92,37 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
                 summary.SummaryDate,
                 summary.TimezoneId
             }).IsUnique();
+        });
+
+        modelBuilder.Entity<DeviceStateSessionEntity>(entity =>
+        {
+            entity.ToTable("device_state_sessions");
+            entity.HasKey(session => session.Id);
+            entity.Property(session => session.ClientSessionId).HasMaxLength(128).IsRequired();
+            entity.Property(session => session.StateType).HasMaxLength(64).IsRequired();
+            entity.Property(session => session.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
+        });
+
+        modelBuilder.Entity<AppFamilyEntity>(entity =>
+        {
+            entity.ToTable("app_families");
+            entity.HasKey(family => family.Id);
+            entity.Property(family => family.Key).HasMaxLength(128).IsRequired();
+            entity.Property(family => family.DisplayName).HasMaxLength(256).IsRequired();
+            entity.HasIndex(family => family.Key).IsUnique();
+        });
+
+        modelBuilder.Entity<AppFamilyMappingEntity>(entity =>
+        {
+            entity.ToTable("app_family_mappings");
+            entity.HasKey(mapping => mapping.Id);
+            entity.Property(mapping => mapping.MappingType).HasMaxLength(64).IsRequired();
+            entity.Property(mapping => mapping.MatchKey).HasMaxLength(512).IsRequired();
+            entity.HasIndex(mapping => new { mapping.MappingType, mapping.MatchKey }).IsUnique();
+            entity.HasOne(mapping => mapping.AppFamily)
+                .WithMany()
+                .HasForeignKey(mapping => mapping.AppFamilyId);
         });
     }
 }

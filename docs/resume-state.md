@@ -4,11 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 24 integrated schema restoration slice. Focus sessions now preserve
-safe process/window metadata through Windows sessionization, Windows local
-SQLite, focus-session outbox payloads, shared upload DTOs, and the server
-integrated DB. Web-session nullable URL/title plus capture provenance are
-covered by server schema tests and the new server migration.
+Milestone 24 device state and app family schema slice. The server integrated DB
+now has schema coverage, relational unique-index tests, and migrations for
+device state sessions plus app family/app family mapping tables.
 
 ## Completed
 
@@ -202,6 +200,25 @@ covered by server schema tests and the new server migration.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.8%, Domain 89.3%, Windows.Presentation 97.6%,
   Windows 92.5%, Windows.App 85.3%, and Server 96.1%.
+- Added `DeviceStateSessionEntity`, `AppFamilyEntity`, and
+  `AppFamilyMappingEntity` to the server integrated DB model.
+- Added EF mappings for `device_state_sessions`, `app_families`, and
+  `app_family_mappings`, including unique indexes for `(DeviceId,
+  ClientSessionId)`, `Key`, and `(MappingType, MatchKey)`.
+- Added relational SQLite fallback tests proving duplicate
+  `device_state_sessions` and `app_family_mappings` rows are rejected by a real
+  relational provider rather than EF InMemory.
+- Generated server migration
+  `20260428170042_AddDeviceStateAndAppFamilyTables`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` with 0 warnings/errors.
+- The first full `dotnet test --no-build` run hit the known intermittent WPF
+  XAML lazy-load failure in `MainWindowSmokeTests`; rerunning the WPF App test
+  project passed, then rerunning full `dotnet test Woong.MonitorStack.sln
+  --no-build -maxcpucount:1 -v minimal` passed all 158 tests.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.9%, Domain 89.3%, Windows.Presentation 97.6%,
+  Windows 92.5%, Windows.App 85.3%, and Server 96.3%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -657,9 +674,9 @@ covered by server schema tests and the new server migration.
 
 ## Next Highest Priority
 
-Continue Milestone 24 with TDD by adding server
-`device_state_sessions` and app family mapping tables/entities/tests. The WPF
-browser connection status UI remains deferred per the latest priority decision
-because non-UI tracking/schema correctness is more important right now.
-Physical Android resource measurement remains blocked until a device is
-connected.
+Continue Milestone 24 with TDD by deciding and documenting whether Android app
+usage remains represented as focus sessions or gets a dedicated app usage
+upload contract. The WPF browser connection status UI remains deferred per the
+latest priority decision because non-UI tracking/schema correctness is more
+important right now. Physical Android resource measurement remains blocked until
+a device is connected.

@@ -6,6 +6,7 @@ Updated: 2026-04-29
 
 - Migration: `20260428131352_InitialCreate`
 - Migration: `20260428165251_AddFocusSessionWindowMetadata`
+- Migration: `20260428170042_AddDeviceStateAndAppFamilyTables`
 - Context: `MonitorDbContext`
 - Provider: Npgsql / PostgreSQL
 - Local tool: `dotnet-ef` 10.0.4 in `dotnet-tools.json`
@@ -17,6 +18,9 @@ Updated: 2026-04-29
 - `web_sessions`
 - `raw_events`
 - `daily_summaries`
+- `device_state_sessions`
+- `app_families`
+- `app_family_mappings`
 
 ## Schema Restoration Migration
 
@@ -31,6 +35,16 @@ schema for Original Intent Restoration:
 - Adds nullable browser capture provenance columns:
   `CaptureMethod`, `CaptureConfidence`, and `IsPrivateOrUnknown`.
 
+`20260428170042_AddDeviceStateAndAppFamilyTables` adds the remaining
+relationship tables needed before richer integration:
+
+- `device_state_sessions` stores active/idle/lock/screen state intervals with
+  duplicate protection through `(DeviceId, ClientSessionId)`.
+- `app_families` stores cross-platform app family labels such as Chrome or VS
+  Code.
+- `app_family_mappings` maps platform app keys or domains to a family through a
+  unique `(MappingType, MatchKey)` index.
+
 ## Idempotency Indexes
 
 - `devices`: unique `(UserId, Platform, DeviceKey)`
@@ -38,6 +52,9 @@ schema for Original Intent Restoration:
 - `raw_events`: unique `(DeviceId, ClientEventId)`
 - `web_sessions`: unique `(DeviceId, FocusSessionId, StartedAtUtc, EndedAtUtc, Url)`
 - `daily_summaries`: unique `(UserId, SummaryDate, TimezoneId)`
+- `device_state_sessions`: unique `(DeviceId, ClientSessionId)`
+- `app_families`: unique `(Key)`
+- `app_family_mappings`: unique `(MappingType, MatchKey)`
 
 ## Review Notes
 

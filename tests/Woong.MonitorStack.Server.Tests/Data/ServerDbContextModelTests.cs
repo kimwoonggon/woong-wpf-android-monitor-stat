@@ -55,4 +55,50 @@ public sealed class ServerDbContextModelTests
         Assert.Equal(64, entityType.FindProperty(nameof(WebSessionEntity.CaptureConfidence))!.GetMaxLength());
         Assert.True(entityType.FindProperty(nameof(WebSessionEntity.IsPrivateOrUnknown))!.IsNullable);
     }
+
+    [Fact]
+    public void DeviceStateSessionEntity_HasDeviceClientSessionUniqueIndex()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseNpgsql("Host=localhost;Database=woong_monitor_test;Username=test;Password=test")
+            .Options;
+        using var dbContext = new MonitorDbContext(options);
+
+        var entityType = dbContext.Model.FindEntityType(typeof(DeviceStateSessionEntity));
+        var uniqueIndex = Assert.Single(entityType!.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(DeviceStateSessionEntity.DeviceId), nameof(DeviceStateSessionEntity.ClientSessionId)]));
+
+        Assert.Equal("device_state_sessions", entityType.GetTableName());
+        Assert.True(uniqueIndex.IsUnique);
+        Assert.Equal(64, entityType.FindProperty(nameof(DeviceStateSessionEntity.StateType))!.GetMaxLength());
+        Assert.Equal(128, entityType.FindProperty(nameof(DeviceStateSessionEntity.TimezoneId))!.GetMaxLength());
+    }
+
+    [Fact]
+    public void AppFamilyMappingEntity_HasFamilyAndMappingUniqueIndexes()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseNpgsql("Host=localhost;Database=woong_monitor_test;Username=test;Password=test")
+            .Options;
+        using var dbContext = new MonitorDbContext(options);
+
+        var familyEntityType = dbContext.Model.FindEntityType(typeof(AppFamilyEntity));
+        var mappingEntityType = dbContext.Model.FindEntityType(typeof(AppFamilyMappingEntity));
+
+        Assert.NotNull(familyEntityType);
+        Assert.NotNull(mappingEntityType);
+        Assert.Equal("app_families", familyEntityType!.GetTableName());
+        Assert.Equal("app_family_mappings", mappingEntityType!.GetTableName());
+        Assert.Contains(familyEntityType.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual([nameof(AppFamilyEntity.Key)]));
+        Assert.Contains(mappingEntityType.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(AppFamilyMappingEntity.MappingType), nameof(AppFamilyMappingEntity.MatchKey)]));
+        Assert.Equal(64, mappingEntityType.FindProperty(nameof(AppFamilyMappingEntity.MappingType))!.GetMaxLength());
+        Assert.Equal(512, mappingEntityType.FindProperty(nameof(AppFamilyMappingEntity.MatchKey))!.GetMaxLength());
+    }
 }
