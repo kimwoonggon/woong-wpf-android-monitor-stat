@@ -395,7 +395,7 @@ the finished slice is committed and pushed.
 - [x] Solution build succeeds.
 - [x] Solution tests pass.
 - [x] Local WPF UI snapshot script succeeds and writes `artifacts/ui-snapshots/latest/report.md`.
-- [ ] Commit and push WPF UI expectation test coverage.
+- [x] Commit and push WPF UI expectation test coverage.
 
 ## Final Definition Of Done
 
