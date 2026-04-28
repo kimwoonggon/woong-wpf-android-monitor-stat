@@ -67,6 +67,50 @@ public sealed class DailySummaryCalculatorTests
         Assert.Equal(300_000, topDomain.DurationMs);
     }
 
+    [Fact]
+    public void Calculate_GroupsTopAppsByAppFamily()
+    {
+        var windowsChrome = FocusSession.FromUtc(
+            clientSessionId: "windows-chrome",
+            deviceId: "windows-device-1",
+            platformAppKey: "chrome.exe",
+            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
+            timezoneId: "Asia/Seoul",
+            isIdle: false,
+            source: "foreground_window");
+        var androidChrome = FocusSession.FromUtc(
+            clientSessionId: "android-chrome",
+            deviceId: "android-device-1",
+            platformAppKey: "com.android.chrome",
+            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 25, 0, TimeSpan.Zero),
+            timezoneId: "Asia/Seoul",
+            isIdle: false,
+            source: "usage_stats");
+        var platformApps = new[]
+        {
+            new PlatformApp(Platform.Windows, "chrome.exe", "Chrome", appFamilyKey: "chrome"),
+            new PlatformApp(Platform.Android, "com.android.chrome", "Chrome", appFamilyKey: "chrome")
+        };
+        var appFamilies = new[]
+        {
+            new AppFamily("chrome", "Chrome")
+        };
+
+        var summary = DailySummaryCalculator.Calculate(
+            [windowsChrome, androidChrome],
+            webSessions: [],
+            new DateOnly(2026, 4, 28),
+            "Asia/Seoul",
+            platformApps,
+            appFamilies);
+
+        var topApp = Assert.Single(summary.TopApps);
+        Assert.Equal("Chrome", topApp.Key);
+        Assert.Equal(1_500_000, topApp.DurationMs);
+    }
+
     private static FocusSession Session(
         string clientSessionId,
         DateTimeOffset startedAtUtc,

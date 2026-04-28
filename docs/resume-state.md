@@ -16,6 +16,8 @@ Bootstrap plus Milestone 1 common domain/contracts foundation.
   `DailySummary`.
 - Added contract DTOs for device registration and focus/web/raw upload batches.
 - Added `DomainNormalizer` and `DailySummaryCalculator`.
+- Added app-family grouping support so platform app keys can roll up to a
+  shared family label in daily top apps.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -28,8 +30,6 @@ Continue Milestone 1 hardening before Windows Collector MVP:
 
 1. Add stronger tests for upload batch request validation and raw event
    idempotency fields.
-2. Add app-family summary tests so top apps can group `chrome.exe` and
-   `com.android.chrome` under one family later.
-3. Decide whether contracts remain in `Woong.MonitorStack.Domain.Contracts` or
+2. Decide whether contracts remain in `Woong.MonitorStack.Domain.Contracts` or
    move to a separate `Woong.MonitorStack.Contracts` project before clients and
    server are created.

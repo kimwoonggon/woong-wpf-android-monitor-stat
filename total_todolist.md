@@ -59,6 +59,7 @@ the finished slice is committed and pushed.
 - [x] Test grouping by local date in daily summaries.
 - [x] Test registrable domain extraction.
 - [x] Test device registration requires stable device key.
+- [x] Test app family grouping in daily summaries.
 - [x] Document time/date and DTO contract policy.
 - [x] Run common domain tests.
 - [x] Run solution build.
