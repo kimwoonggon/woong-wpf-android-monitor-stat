@@ -78,6 +78,20 @@ app.MapGet("/api/daily-summaries/{summaryDate}", async (
     return Results.Ok(response);
 });
 
+app.MapGet("/api/statistics/range", async (
+    string userId,
+    string from,
+    string to,
+    string timezoneId,
+    DailySummaryQueryService summaries) =>
+{
+    var fromDate = DateOnly.Parse(from, CultureInfo.InvariantCulture);
+    var toDate = DateOnly.Parse(to, CultureInfo.InvariantCulture);
+    var response = await summaries.GetRangeAsync(userId, fromDate, toDate, timezoneId);
+
+    return Results.Ok(response);
+});
+
 app.Run();
 
 public partial class Program;

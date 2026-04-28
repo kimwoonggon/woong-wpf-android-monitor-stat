@@ -35,7 +35,11 @@ Updated: 2026-04-28
 
 - Current daily summary endpoint is
   `GET /api/daily-summaries/{summaryDate}?userId={userId}&timezoneId={timezoneId}`.
+- Current date-range statistics endpoint is
+  `GET /api/statistics/range?userId={userId}&from={fromDate}&to={toDate}&timezoneId={timezoneId}`.
 - `summaryDate` is an ISO local date in the requested/user timezone.
+- `fromDate` and `toDate` are inclusive ISO local dates in the requested/user
+  timezone.
 - The server combines all devices registered to `userId`.
 - `totalActiveMs` excludes idle focus sessions; `totalIdleMs` reports idle
   focus sessions separately.
