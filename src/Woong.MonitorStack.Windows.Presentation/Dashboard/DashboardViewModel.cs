@@ -78,6 +78,8 @@ public sealed partial class DashboardViewModel : ObservableObject
             : timezoneId;
     }
 
+    public DashboardSettingsViewModel Settings { get; } = new();
+
     public void SelectPeriod(DashboardPeriod period)
     {
         SelectedPeriod = period;

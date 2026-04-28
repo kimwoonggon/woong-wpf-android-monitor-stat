@@ -227,6 +227,17 @@ public sealed class DashboardViewModelTests
             });
     }
 
+    [Fact]
+    public void Constructor_ExposesSettings()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), timezoneId: "Asia/Seoul");
+
+        Assert.True(viewModel.Settings.IsCollectionVisible);
+        Assert.False(viewModel.Settings.IsSyncEnabled);
+    }
+
     private static FocusSession Session(
         string clientSessionId,
         string appKey,

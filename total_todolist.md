@@ -113,7 +113,7 @@ the finished slice is committed and pushed.
 - [x] Add app sessions table.
 - [x] Add live event log.
 - [x] Add web sessions view.
-- [ ] Add settings view.
+- [x] Add settings view.
 - [x] Test DashboardViewModel filter changes refresh summary.
 - [x] Test DashboardViewModel summary card models.
 - [x] Test chart mapper behavior.
@@ -123,6 +123,8 @@ the finished slice is committed and pushed.
 - [x] Test DashboardViewModel publishes recent app session rows.
 - [x] Test DashboardViewModel publishes web session rows.
 - [x] Test DashboardViewModel publishes live event log rows.
+- [x] Test settings default privacy state.
+- [x] Test DashboardViewModel exposes settings.
 - [ ] Add WPF UI smoke path when tooling is ready.
 - [x] Verify WPF build succeeds.
 - [x] Commit and push WPF DashboardViewModel foundation slice.
@@ -131,6 +133,7 @@ the finished slice is committed and pushed.
 - [x] Commit and push WPF LiveCharts2 mapper slice.
 - [x] Commit and push WPF app sessions table slice.
 - [x] Commit and push WPF web/live event views slice.
+- [x] Commit and push WPF settings view slice.
 - [ ] Commit and push Milestone 4.
 
 ## Milestone 5: Server Integrated DB + API MVP

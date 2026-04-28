@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 4 Windows web sessions and live event dashboard tabs.
+Milestone 4 Windows settings dashboard tab.
 
 ## Completed
 
@@ -64,6 +64,9 @@ Milestone 4 Windows web sessions and live event dashboard tabs.
   events are wired into the dashboard.
 - Replaced the lower dashboard panel with tabs for App Sessions, Web Sessions,
   and Live Event Log.
+- Added settings ViewModel defaults: collection visible and sync opt-out.
+- Exposed settings through the dashboard ViewModel.
+- Added WPF Settings tab bound to the privacy/sync settings state.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -74,6 +77,6 @@ Milestone 4 Windows web sessions and live event dashboard tabs.
 
 Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Add settings view.
-2. Add WPF smoke path when tooling is ready.
-3. Complete Milestone 4 checklist and move to server MVP.
+1. Add WPF smoke path when tooling is ready.
+2. Complete Milestone 4 checklist and move to server MVP.
+3. Start Milestone 5 ASP.NET Core API with TDD-first device registration.

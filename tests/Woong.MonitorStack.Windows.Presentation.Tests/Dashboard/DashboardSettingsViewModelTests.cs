@@ -1,0 +1,16 @@
+using Woong.MonitorStack.Windows.Presentation.Dashboard;
+
+namespace Woong.MonitorStack.Windows.Presentation.Tests.Dashboard;
+
+public sealed class DashboardSettingsViewModelTests
+{
+    [Fact]
+    public void Constructor_DefaultsToVisibleCollectionAndSyncOptOut()
+    {
+        var viewModel = new DashboardSettingsViewModel();
+
+        Assert.True(viewModel.IsCollectionVisible);
+        Assert.False(viewModel.IsSyncEnabled);
+        Assert.Equal("Local only", viewModel.SyncModeLabel);
+    }
+}
