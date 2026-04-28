@@ -149,7 +149,7 @@ the finished slice is committed and pushed.
 - [ ] Implement native host receiver in Windows app/service.
 - [ ] Store browser raw events.
 - [ ] Convert browser events to web_session.
-- [ ] Test domain extraction from extension payload.
+- [x] Test domain extraction from extension payload.
 - [ ] Test active tab event creates/updates web session.
 - [ ] Test duplicate tab events do not inflate duration.
 - [ ] Verify Chrome active tab URL appears in Windows local DB.

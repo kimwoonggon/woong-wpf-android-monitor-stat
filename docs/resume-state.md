@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-PRD/TODO correction for Chrome Extension + Native Messaging continuation.
+Milestone 4.5 extension payload domain extraction.
 
 ## Completed
 
@@ -339,12 +339,16 @@ PRD/TODO correction for Chrome Extension + Native Messaging continuation.
 - Added Milestone 4.5 to `docs/prd.md` and `total_todolist.md`.
 - Added `AGENTS.md` rules for Chrome extension privacy boundaries and
   PostgreSQL/Testcontainers-style relational server integration testing.
+- Added Windows-side `ChromeTabChangedMessage` as the first native-message DTO
+  seam.
+- Verified extension URL payload domain extraction with a TDD test.
+- Added `docs/chrome-native-messaging.md` with privacy boundaries and current
+  Milestone 4.5 status.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Start with a TDD slice for extension payload domain extraction.
-2. Add the Chrome extension project and manifest.
-3. Add native messaging DTO/receiver seams without collecting typed text,
+1. Add the Chrome extension project and manifest.
+2. Add native messaging DTO/receiver seams without collecting typed text,
    passwords, messages, or form inputs.
