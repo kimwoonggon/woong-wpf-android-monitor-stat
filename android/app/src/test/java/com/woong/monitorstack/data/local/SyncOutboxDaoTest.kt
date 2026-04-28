@@ -35,15 +35,9 @@ class SyncOutboxDaoTest {
     fun insertAndMarkSyncedRemovesItemFromPendingQueue() {
         val dao = database.syncOutboxDao()
         dao.insert(
-            SyncOutboxEntity(
+            syncOutboxItem(
                 clientItemId = "outbox-1",
-                aggregateType = "focus_session",
-                payloadJson = """{"clientSessionId":"session-1"}""",
-                status = SyncOutboxStatus.Pending,
-                retryCount = 0,
-                lastError = null,
-                createdAtUtcMillis = 1_000,
-                updatedAtUtcMillis = 1_000
+                retryCount = 0
             )
         )
 
@@ -55,5 +49,44 @@ class SyncOutboxDaoTest {
         dao.markSynced("outbox-1", updatedAtUtcMillis = 2_000)
 
         assertTrue(dao.queryPending(limit = 10).isEmpty())
+    }
+
+    @Test
+    fun markFailedKeepsItemRetryableAndStoresError() {
+        val dao = database.syncOutboxDao()
+        dao.insert(
+            syncOutboxItem(
+                clientItemId = "outbox-1",
+                retryCount = 1
+            )
+        )
+
+        dao.markFailed(
+            clientItemId = "outbox-1",
+            lastError = "server rejected",
+            updatedAtUtcMillis = 2_000
+        )
+
+        val pending = dao.queryPending(limit = 10).single()
+        assertEquals(SyncOutboxStatus.Failed, pending.status)
+        assertEquals(2, pending.retryCount)
+        assertEquals("server rejected", pending.lastError)
+        assertEquals(2_000, pending.updatedAtUtcMillis)
+    }
+
+    private fun syncOutboxItem(
+        clientItemId: String,
+        retryCount: Int
+    ): SyncOutboxEntity {
+        return SyncOutboxEntity(
+            clientItemId = clientItemId,
+            aggregateType = "focus_session",
+            payloadJson = """{"clientSessionId":"session-1"}""",
+            status = SyncOutboxStatus.Pending,
+            retryCount = retryCount,
+            lastError = null,
+            createdAtUtcMillis = 1_000,
+            updatedAtUtcMillis = 1_000
+        )
     }
 }

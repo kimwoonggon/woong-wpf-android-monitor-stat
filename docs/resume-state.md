@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android sync client.
+Milestone 10 Android duplicate-safe upload handling.
 
 ## Completed
 
@@ -239,6 +239,14 @@ Milestone 10 Android sync client.
 - Added Moshi Kotlin dependency and numeric upload status adapter.
 - Verified the Android sync client posts the contract path/payload and parses
   numeric upload status responses.
+- Added `AndroidOutboxSyncProcessor` for focus-session outbox upload batches.
+- Added `AndroidSyncApi` and `SyncOutboxStore` interfaces so the processor can
+  be unit-tested without WorkManager or HTTP.
+- Verified `Accepted` and `Duplicate` server item results mark outbox items as
+  synced, while `Error` marks the item failed and retryable with the server
+  error message.
+- Added Room DAO `markFailed` behavior that increments retry count, stores the
+  last error, and keeps the row in the pending query.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -252,6 +260,6 @@ Milestone 10 Android sync client.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Implement duplicate-safe upload handling.
-2. Add sync worker tests before implementation.
+1. Add sync worker tests before implementation.
+2. Implement WorkManager sync worker.
 3. Integrate daily summary API / previous-day summary screen.

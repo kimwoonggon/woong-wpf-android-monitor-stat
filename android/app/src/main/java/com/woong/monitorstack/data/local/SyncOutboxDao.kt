@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-interface SyncOutboxDao {
+interface SyncOutboxDao : SyncOutboxStore {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(item: SyncOutboxEntity)
 
@@ -19,7 +19,7 @@ interface SyncOutboxDao {
         LIMIT :limit
         """
     )
-    fun queryPending(limit: Int): List<SyncOutboxEntity>
+    override fun queryPending(limit: Int): List<SyncOutboxEntity>
 
     @Query(
         """
@@ -29,8 +29,24 @@ interface SyncOutboxDao {
         WHERE clientItemId = :clientItemId
         """
     )
-    fun markSynced(
+    override fun markSynced(
         clientItemId: String,
+        updatedAtUtcMillis: Long
+    )
+
+    @Query(
+        """
+        UPDATE sync_outbox
+        SET status = 'Failed',
+            retryCount = retryCount + 1,
+            lastError = :lastError,
+            updatedAtUtcMillis = :updatedAtUtcMillis
+        WHERE clientItemId = :clientItemId
+        """
+    )
+    override fun markFailed(
+        clientItemId: String,
+        lastError: String,
         updatedAtUtcMillis: Long
     )
 }

@@ -11,7 +11,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class AndroidSyncClient(
     baseUrl: String,
     private val httpClient: OkHttpClient = OkHttpClient()
-) {
+) : AndroidSyncApi {
     private val normalizedBaseUrl = baseUrl.trimEnd('/')
     private val moshi = Moshi.Builder()
         .add(SyncUploadItemStatusJsonAdapter())
@@ -24,7 +24,7 @@ class AndroidSyncClient(
         require(normalizedBaseUrl.isNotBlank()) { "baseUrl must not be blank." }
     }
 
-    fun uploadFocusSessions(request: SyncFocusSessionUploadRequest): SyncUploadBatchResult {
+    override fun uploadFocusSessions(request: SyncFocusSessionUploadRequest): SyncUploadBatchResult {
         val httpRequest = Request.Builder()
             .url("$normalizedBaseUrl/api/focus-sessions/upload")
             .post(requestAdapter.toJson(request).toRequestBody(JsonMediaType))
