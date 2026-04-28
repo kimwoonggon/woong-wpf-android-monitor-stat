@@ -517,14 +517,15 @@ milestones below are finished.
 - [ ] Add UI Automator dependency and Usage Access settings navigation smoke test.
 - [x] Add persisted sync opt-in setting and default-off enforcement.
 - [ ] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
-- [ ] Enqueue sync outbox rows when UsageStats sessions are collected.
+- [x] Enqueue sync outbox rows when UsageStats sessions are collected.
 - [x] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
 - [ ] Review and disable/constrain `android:allowBackup` for local usage metadata.
 - [ ] Make SessionsActivity display real Room-backed sessions.
 - [ ] Make DailySummaryActivity load previous-day summary through repository/client rather than intent extras only.
 - [ ] Add Android 13+ notification permission UX before morning summary notifications.
 - [x] Run Android unit tests and debug build for Android sync opt-in slice.
-- [x] Run .NET regression tests and coverage report for Android sync opt-in slice; current .NET line coverage is 92.9%.
+- [x] Run Android unit tests and debug build for Android collection outbox slice.
+- [x] Run .NET regression tests and coverage report for Android usage restoration slices; current .NET line coverage is 92.4%.
 - [x] Commit and push Android sync opt-in enforcement slice.
 - [ ] Commit and push Android usage restoration slice.
 

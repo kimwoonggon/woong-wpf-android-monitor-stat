@@ -6,9 +6,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-interface SyncOutboxDao : SyncOutboxStore {
+interface SyncOutboxDao : SyncOutboxStore, SyncOutboxWriter {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(item: SyncOutboxEntity)
+    override fun insert(item: SyncOutboxEntity)
 
     @Query(
         """

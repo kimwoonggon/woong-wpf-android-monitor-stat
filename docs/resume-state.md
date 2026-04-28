@@ -4,9 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Android sync opt-in enforcement slice. Android sync now has a
-persisted SharedPreferences setting that defaults to disabled, and
-`AndroidSyncWorker` skips upload work unless that opt-in is enabled.
+Milestone 26 Android collection-to-outbox slice. UsageStats-derived Android
+focus sessions now enqueue `focus_session` sync outbox rows with
+`android_usage_stats` source payloads after local Room persistence.
 
 ## Completed
 
@@ -692,13 +692,33 @@ persisted SharedPreferences setting that defaults to disabled, and
   this slice is unit-test/build based.
 - Recreated ignored `android/local.properties` locally to point Gradle at the
   installed Android SDK; this file remains untracked and must not be committed.
+- Added `UsageSyncOutboxEnqueuer` and `FocusSessionSyncOutboxEnqueuer`.
+- Updated `AndroidUsageCollectionRunner` to enqueue collected focus sessions
+  into `sync_outbox` after local Room storage.
+- Updated the Android UsageStats source value to `android_usage_stats` to match
+  the shared contract decision.
+- Added a `SyncOutboxWriter` interface implemented by `SyncOutboxDao`.
+- Updated `scripts/test-coverage.ps1` to pass `-maxcpucount:1`, matching the
+  repository's stable .NET validation convention after coverage collection hit
+  the known intermittent WPF XAML lazy-load failure once.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal`.
+- Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`.
+- Verified `.NET` coverage generation with `scripts/test-coverage.ps1`;
+  current overall line coverage is 92.4%, Domain 89.3%, Windows 92.5%,
+  Windows.Presentation 97.6%, Windows.App 79.9%, and Server 96.3%.
 
 ## Next Highest Priority
 
 Continue Milestone 26 Android usage restoration with TDD: WorkManager
-scheduling only when allowed/visible, collection to outbox rows, and
-`android_usage_stats` source alignment in the sync payload path. The WPF browser
-connection status UI and cramped lower dashboard layout remain deferred per the
-latest priority decision because non-UI tracking/schema correctness is more
-important right now. Physical Android resource measurement remains blocked until
-a device is connected.
+scheduling only when allowed/visible, Android backup hardening for local usage
+metadata, and Room-backed SessionsActivity data. The WPF browser connection
+status UI and cramped lower dashboard layout remain deferred per the latest
+priority decision because non-UI tracking/schema correctness is more important
+right now. Physical Android resource measurement remains blocked until a device
+is connected.

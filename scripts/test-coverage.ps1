@@ -16,6 +16,7 @@ New-Item -ItemType Directory -Force -Path $coverageReport | Out-Null
 Push-Location $repoRoot
 try {
     dotnet test Woong.MonitorStack.sln `
+        -maxcpucount:1 `
         --collect:"XPlat Code Coverage" `
         --settings coverage.runsettings `
         --results-directory $testResults

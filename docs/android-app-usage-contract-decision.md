@@ -14,10 +14,15 @@ implementation, but the server integration fact remains:
 ```text
 Android UsageStats session
   -> local Room focus/app session row
+  -> sync_outbox focus_session row
   -> FocusSessionUploadItem
   -> server focus_sessions
   -> daily summary aggregation
 ```
+
+The Android collection runner now writes the local Room focus session first,
+then enqueues a `focus_session` outbox payload for later opt-in sync. The sync
+worker still suppresses upload while the persisted sync opt-in setting is off.
 
 ## Required Mapping
 

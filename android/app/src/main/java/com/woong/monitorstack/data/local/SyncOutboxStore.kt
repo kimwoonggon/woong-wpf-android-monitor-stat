@@ -14,3 +14,7 @@ interface SyncOutboxStore {
         updatedAtUtcMillis: Long
     )
 }
+
+interface SyncOutboxWriter {
+    fun insert(item: SyncOutboxEntity)
+}

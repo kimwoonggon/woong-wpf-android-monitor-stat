@@ -10,12 +10,14 @@ class AndroidUsageCollectionRunner(
     private val collector: UsageStatsCollector,
     private val sessionizer: UsageSessionizer,
     private val store: UsageSessionStore,
-    private val timezoneId: ZoneId = ZoneId.systemDefault()
+    private val timezoneId: ZoneId = ZoneId.systemDefault(),
+    private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer
 ) : UsageCollectionRunner {
     override suspend fun collect(fromUtcMillis: Long, toUtcMillis: Long): Int {
         val sessions = sessionizer.sessionize(collector.collect(fromUtcMillis, toUtcMillis))
         val entities = sessions.map { it.toFocusSessionEntity(timezoneId) }
         store.insertAll(entities)
+        outboxEnqueuer.enqueueFocusSessions(entities)
 
         return entities.size
     }
@@ -38,7 +40,7 @@ class AndroidUsageCollectionRunner(
     }
 
     companion object {
-        private const val SOURCE_USAGE_STATS = "usage_stats"
+        private const val SOURCE_USAGE_STATS = "android_usage_stats"
 
         fun create(context: Context): AndroidUsageCollectionRunner {
             val appContext = context.applicationContext
@@ -47,7 +49,8 @@ class AndroidUsageCollectionRunner(
             return AndroidUsageCollectionRunner(
                 collector = UsageStatsCollector(AndroidUsageEventsReader(appContext)),
                 sessionizer = UsageSessionizer(),
-                store = RoomUsageSessionStore(database.focusSessionDao())
+                store = RoomUsageSessionStore(database.focusSessionDao()),
+                outboxEnqueuer = FocusSessionSyncOutboxEnqueuer(database.syncOutboxDao())
             )
         }
     }
