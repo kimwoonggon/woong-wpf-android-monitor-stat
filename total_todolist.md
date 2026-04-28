@@ -240,7 +240,8 @@ the finished slice is committed and pushed.
 
 ## Milestone 10: Android Sync + Morning Summary
 
-- [ ] Define Android sync outbox.
+- [x] Define Android sync outbox.
+- [x] Test Android sync outbox DAO insert/query/synced behavior.
 - [ ] Implement Retrofit/OkHttp sync client.
 - [ ] Implement WorkManager sync worker.
 - [ ] Implement duplicate-safe upload handling.

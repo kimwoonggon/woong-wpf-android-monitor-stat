@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android chart data aggregation and completion.
+Milestone 10 Android sync outbox storage.
 
 ## Completed
 
@@ -231,6 +231,10 @@ Milestone 9 Android chart data aggregation and completion.
   usage.
 - Bound non-empty chart data into DashboardActivity MPAndroidChart line/bar
   views.
+- Added Android Room `sync_outbox` table, DAO, status enum, and v1-to-v2
+  database migration.
+- Verified pending outbox insert/query and synced transition with a Robolectric
+  Room test.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -244,6 +248,6 @@ Milestone 9 Android chart data aggregation and completion.
 
 Continue Milestone 10 Android Sync + Morning Summary:
 
-1. Define Android sync outbox.
-2. Implement Retrofit/OkHttp sync client.
-3. Add sync worker tests before implementation.
+1. Implement Retrofit/OkHttp sync client.
+2. Add sync worker tests before implementation.
+3. Implement duplicate-safe upload handling.
