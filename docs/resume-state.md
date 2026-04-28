@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android collect worker.
+Milestone 9 Android dashboard ViewModel state foundation.
 
 ## Completed
 
@@ -182,6 +182,14 @@ Milestone 8 Android collect worker.
 - Verified `assembleDebug`; AGP reports the expected experimental
   `android.disallowKotlinSourceSets=false` warning required for KSP with
   built-in Kotlin.
+- Added pure Kotlin dashboard state models: `DashboardPeriod`,
+  `DashboardSnapshot`, `DashboardSessionRow`, and `DashboardUiState`.
+- Added `DashboardRepository` and a dependency-light `DashboardViewModel`.
+- Verified selecting a dashboard period loads a repository snapshot and exposes
+  total active time, top app, idle time, and recent sessions through public
+  ViewModel state.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -192,6 +200,6 @@ Milestone 8 Android collect worker.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Create DashboardActivity or DashboardFragment.
-2. Add dashboard ViewModel/state for period summary and recent sessions.
+1. Add Room-backed dashboard aggregation for Today/Yesterday/Recent 7 Days.
+2. Create DashboardActivity or DashboardFragment.
 3. Add XML/View dashboard tests before implementation.

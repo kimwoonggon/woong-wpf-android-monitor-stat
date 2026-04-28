@@ -226,7 +226,7 @@ the finished slice is committed and pushed.
 - [ ] Add MPAndroidChart time activity chart.
 - [ ] Add app usage chart.
 - [ ] Add recent sessions RecyclerView.
-- [ ] Test ViewModel state updates.
+- [x] Test ViewModel state updates.
 - [ ] Test DashboardActivity display with Espresso.
 - [ ] Test today/yesterday/recent 7 days filters.
 - [ ] Test empty state.
