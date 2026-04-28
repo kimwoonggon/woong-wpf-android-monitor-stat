@@ -1,18 +1,25 @@
 # Resume State
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Project coding guide: consolidated the active AGENTS, PRD, TODO, architecture,
-contract, TDD, WPF, Android, server, testing, verification, documentation, and
-commit/push rules into `docs/coding-guide.md`.
+WPF C# coding guide: added dedicated guidance for Domain, Presentation, Windows
+infrastructure, WPF App, and Server placement rules.
 
 ## Completed
 
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Verified the coding-guide documentation slice with `dotnet restore
+  Woong.MonitorStack.sln`, `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal`, and `dotnet test Woong.MonitorStack.sln
+  --no-build -maxcpucount:1 -v minimal`; all 110 .NET tests passed.
+- Added `docs/wpf-csharp-coding-guide.md` as a dedicated WPF/.NET layering
+  guide that explains what belongs in Domain, Windows.Presentation, Windows
+  infrastructure, Windows.App, and Server.
+- Linked the WPF/C# guide from `docs/coding-guide.md`.
+- Verified the WPF/C# guide documentation slice with `dotnet restore
   Woong.MonitorStack.sln`, `dotnet build Woong.MonitorStack.sln --no-restore
   -maxcpucount:1 -v minimal`, and `dotnet test Woong.MonitorStack.sln
   --no-build -maxcpucount:1 -v minimal`; all 110 .NET tests passed.

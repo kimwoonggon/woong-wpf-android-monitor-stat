@@ -138,6 +138,9 @@ these rules. Add tests before adding new dependency exceptions.
 
 ## WPF Rules
 
+For detailed WPF/C# layering and MVVM placement rules, read
+`docs/wpf-csharp-coding-guide.md`.
+
 - Use WPF + MVVM with CommunityToolkit.Mvvm by default.
 - `App.xaml.cs` owns Generic Host lifecycle and DI registration.
 - `MainWindow.xaml.cs` should only initialize the view and assign DataContext.

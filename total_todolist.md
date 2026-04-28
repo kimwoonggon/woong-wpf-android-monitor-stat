@@ -406,6 +406,15 @@ the finished slice is committed and pushed.
 - [x] Update resume state for the coding guide slice.
 - [x] Commit and push coding guide slice.
 
+## Milestone 19: WPF C# Coding Guide
+
+- [x] Add a dedicated `docs/wpf-csharp-coding-guide.md` for WPF/C# architecture, MVVM, project layering, and placement rules.
+- [x] Link the dedicated WPF/C# guide from `docs/coding-guide.md`.
+- [x] Run solution build after WPF/C# guide update.
+- [x] Run solution tests after WPF/C# guide update.
+- [x] Update resume state for the WPF/C# guide slice.
+- [x] Commit and push WPF/C# guide slice.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.
