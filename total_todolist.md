@@ -379,6 +379,24 @@ the finished slice is committed and pushed.
 - [x] Run solution restore/build/test after adding the snapshot tool.
 - [x] Commit and push local WPF UI snapshot automation.
 
+## Milestone 17: WPF UI Expectation Test Coverage
+
+- [x] Create WPF UI test plan in `docs/wpf-ui-test-plan.md`.
+- [x] Add XAML-level tests for MainWindow title, DataContext, refresh command, and period command bindings.
+- [x] Add UI tests that execute Today, 1h, 6h, and 24h period commands through bound buttons.
+- [x] Add UI tests for summary card labels/values rendered from sample dashboard data.
+- [x] Add UI tests for chart captions and chart controls.
+- [x] Add UI tests for App Sessions, Web Sessions, and Live Event Log tabs and DataGrid columns.
+- [x] Add UI tests for Settings tab collection visibility, sync opt-out, mode label, and status label.
+- [x] Add stable AutomationIds for chart controls and settings controls.
+- [x] First WPF App test run failed on missing AutomationIds and command invocation coverage as expected for TDD RED.
+- [x] WPF App tests pass after XAML/test fixes.
+- [x] Solution restore succeeds.
+- [x] Solution build succeeds.
+- [x] Solution tests pass.
+- [x] Local WPF UI snapshot script succeeds and writes `artifacts/ui-snapshots/latest/report.md`.
+- [ ] Commit and push WPF UI expectation test coverage.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.

@@ -139,14 +139,17 @@
                                    Foreground="#18202A" />
 
                         <lvc:CartesianChart Grid.Row="1"
+                                            AutomationProperties.AutomationId="HourlyActivityChart"
                                             MinHeight="220"
                                             Series="{Binding HourlyActivityChart.Series}" />
                         <lvc:CartesianChart Grid.Row="1"
                                             Grid.Column="1"
+                                            AutomationProperties.AutomationId="AppUsageChart"
                                             MinHeight="220"
                                             Series="{Binding AppUsageChart.Series}" />
                         <lvc:PieChart Grid.Row="1"
                                       Grid.Column="2"
+                                      AutomationProperties.AutomationId="DomainUsageChart"
                                       MinHeight="220"
                                       Series="{Binding DomainUsageSeries}" />
                     </Grid>
@@ -247,20 +250,24 @@
                             </Grid.RowDefinitions>
 
                             <CheckBox Content="Collection visible"
+                                      AutomationProperties.AutomationId="CollectionVisibleCheckBox"
                                       IsChecked="{Binding Settings.IsCollectionVisible}"
                                       FontSize="14"
                                       Margin="0,0,0,12" />
                             <CheckBox Grid.Row="1"
                                       Content="Sync enabled"
+                                      AutomationProperties.AutomationId="SyncEnabledCheckBox"
                                       IsChecked="{Binding Settings.IsSyncEnabled}"
                                       FontSize="14"
                                       Margin="0,0,0,12" />
                             <TextBlock Grid.Row="2"
+                                       AutomationProperties.AutomationId="SyncModeLabel"
                                        Text="{Binding Settings.SyncModeLabel}"
                                        Foreground="#5A6472"
                                        FontSize="13" />
                             <TextBlock Grid.Row="3"
                                        Margin="0,8,0,0"
+                                       AutomationProperties.AutomationId="SyncStatusLabel"
                                        Text="{Binding Settings.SyncStatusLabel}"
                                        Foreground="#8A4B00"
                                        FontSize="13"
