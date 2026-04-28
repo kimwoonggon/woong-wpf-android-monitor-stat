@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Woong.MonitorStack.Windows.Storage;
 
-public sealed class SqliteSyncOutboxRepository
+public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
 {
     private readonly string _connectionString;
 

@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server date-range statistics query API.
+Milestone 6 Windows sync worker success path.
 
 ## Completed
 
@@ -120,6 +120,11 @@ Milestone 5 Server date-range statistics query API.
   top domains.
 - Verified the date-range API combines user devices across multiple local dates
   and excludes out-of-range plus other-user data.
+- Added Windows sync API client abstraction.
+- Added sync outbox repository interface and connected the SQLite outbox
+  repository to it.
+- Added `WindowsSyncWorker` for processing pending/failed outbox rows.
+- Verified a fake API `Accepted` upload marks the outbox item synced.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -130,6 +135,6 @@ Milestone 5 Server date-range statistics query API.
 
 Continue Milestone 6 Windows Sync:
 
-1. Define Windows sync API client abstraction and payload mapping.
-2. Add fake API sync success test.
-3. Add fake API sync failure retry test.
+1. Add fake API sync failure retry test.
+2. Add duplicate upload safe test.
+3. Add device token/auth placeholder and checkpoint handling.
