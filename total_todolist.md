@@ -397,6 +397,15 @@ the finished slice is committed and pushed.
 - [x] Local WPF UI snapshot script succeeds and writes `artifacts/ui-snapshots/latest/report.md`.
 - [x] Commit and push WPF UI expectation test coverage.
 
+## Milestone 18: Coding Guide
+
+- [x] Review current constraints from `AGENTS.md`, `docs/prd.md`, architecture docs, contracts docs, and installed skill guidance.
+- [x] Add `docs/coding-guide.md` with project-wide coding, testing, privacy, architecture, platform, verification, TODO, and commit/push rules.
+- [x] Run solution build after documentation update.
+- [x] Run solution tests after documentation update.
+- [x] Update resume state for the coding guide slice.
+- [x] Commit and push coding guide slice.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.

@@ -4,11 +4,18 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-WPF/.NET architecture quality gate: reference rules, architecture tests,
-Generic Host DI startup, MVVM coverage tests, and coverage reporting.
+Project coding guide: consolidated the active AGENTS, PRD, TODO, architecture,
+contract, TDD, WPF, Android, server, testing, verification, documentation, and
+commit/push rules into `docs/coding-guide.md`.
 
 ## Completed
 
+- Added `docs/coding-guide.md` as the project-wide coding guide for future
+  slices.
+- Verified the coding-guide documentation slice with `dotnet restore
+  Woong.MonitorStack.sln`, `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal`, and `dotnet test Woong.MonitorStack.sln
+  --no-build -maxcpucount:1 -v minimal`; all 110 .NET tests passed.
 - Added `docs/architecture/reference-rules.md` with project dependency
   direction and the explicit LiveCharts Presentation adapter exception.
 - Added `tests/Woong.MonitorStack.Architecture.Tests` with NetArchTest and
@@ -428,7 +435,4 @@ Generic Host DI startup, MVVM coverage tests, and coverage reporting.
 
 ## Next Highest Priority
 
-Continue Milestone 4.5:
-
-1. Physical Android device measurement remains blocked until a device is
-   connected.
+Physical Android device measurement remains blocked until a device is connected.
