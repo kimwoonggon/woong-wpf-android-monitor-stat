@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 8 Android Usage Access settings navigation.
+Milestone 8 Android UsageSessionizer resumed/paused.
 
 ## Completed
 
@@ -155,6 +155,9 @@ Milestone 8 Android Usage Access settings navigation.
 - Added Usage Access Settings intent factory and connected a ViewBinding button
   in `MainActivity` to launch Android settings.
 - Verified the settings action factory with a JVM unit test.
+- Added pure Kotlin usage event snapshot/session models.
+- Added `UsageSessionizer` with resumed-to-paused session creation.
+- Verified resumed/paused events create one app session with expected duration.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -165,6 +168,6 @@ Milestone 8 Android Usage Access settings navigation.
 
 Continue Milestone 8 Android Usage Collection + Room:
 
-1. Add UsageSessionizer resumed/paused behavior test.
-2. Add short consecutive same-app event merge behavior.
+1. Add short consecutive same-app event merge behavior.
+2. Add different-app-start closes previous session behavior.
 3. Add Room entities/DAO after the session model is stable.
