@@ -108,7 +108,8 @@ the finished slice is committed and pushed.
 - [x] Add summary cards.
 - [x] Bind WPF shell to dashboard summary cards.
 - [x] Add dependency-free dashboard chart data mapper.
-- [ ] Add LiveCharts2 chart mapping.
+- [x] Add LiveCharts2 chart mapping.
+- [x] Bind WPF shell to LiveCharts2 activity/domain charts.
 - [ ] Add app sessions table.
 - [ ] Add live event log.
 - [ ] Add web sessions view.
@@ -117,11 +118,14 @@ the finished slice is committed and pushed.
 - [x] Test DashboardViewModel summary card models.
 - [x] Test chart mapper behavior.
 - [x] Test DashboardViewModel publishes chart points.
+- [x] Test LiveCharts2 mapper behavior.
+- [x] Test DashboardViewModel publishes LiveCharts2 series.
 - [ ] Add WPF UI smoke path when tooling is ready.
 - [x] Verify WPF build succeeds.
 - [x] Commit and push WPF DashboardViewModel foundation slice.
 - [x] Commit and push WPF summary card shell slice.
 - [x] Commit and push WPF chart data mapper slice.
+- [x] Commit and push WPF LiveCharts2 mapper slice.
 - [ ] Commit and push Milestone 4.
 
 ## Milestone 5: Server Integrated DB + API MVP

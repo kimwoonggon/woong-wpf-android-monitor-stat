@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LiveChartsCore.SkiaSharpView;
 using Woong.MonitorStack.Domain.Common;
 
 namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -45,6 +46,15 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [ObservableProperty]
     private IReadOnlyList<DashboardChartPoint> _domainUsagePoints = [];
+
+    [ObservableProperty]
+    private DashboardLiveChartsData _hourlyActivityChart = new([], []);
+
+    [ObservableProperty]
+    private DashboardLiveChartsData _appUsageChart = new([], []);
+
+    [ObservableProperty]
+    private IReadOnlyList<PieSeries<long>> _domainUsageSeries = [];
 
     public DashboardViewModel(
         IDashboardDataSource dataSource,
@@ -95,6 +105,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timezoneId);
         AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
         DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
+        HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
+        AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
+        DomainUsageSeries = DashboardLiveChartsMapper.BuildPieSeries(DomainUsagePoints);
     }
 
     private TimeRange ResolveRange(DashboardPeriod period)
