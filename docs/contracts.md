@@ -20,6 +20,9 @@ Updated: 2026-04-29
   identifiers and must not be empty.
 - Windows and Android local stores keep only their own device data.
 - Cross-device integration happens only through the server API and PostgreSQL.
+- Android UsageStats app intervals sync through the same `FocusSession`
+  contract as Windows foreground app intervals. See
+  `docs/android-app-usage-contract-decision.md`.
 
 ## Upload Idempotency
 
@@ -38,6 +41,8 @@ Updated: 2026-04-29
 Window titles can expose sensitive context. Windows should send `windowTitle`
 only when the user's privacy setting allows it; process id/name/path and HWND
 metadata are the safe default metadata for process/window duration tracking.
+Android clients should leave Windows-specific process/window metadata fields
+null and use `source = android_usage_stats`.
 
 ## Daily Summary Query
 

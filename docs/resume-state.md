@@ -4,9 +4,10 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 24 device state and app family schema slice. The server integrated DB
-now has schema coverage, relational unique-index tests, and migrations for
-device state sessions plus app family/app family mapping tables.
+Milestone 24 Android app usage contract decision slice. Android UsageStats
+sessions remain represented by the shared `FocusSession` upload contract for
+MVP, with Android package names stored as `platformAppKey` and Windows-only
+process/window metadata left null.
 
 ## Completed
 
@@ -219,6 +220,11 @@ device state sessions plus app family/app family mapping tables.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.9%, Domain 89.3%, Windows.Presentation 97.6%,
   Windows 92.5%, Windows.App 85.3%, and Server 96.3%.
+- Added `docs/android-app-usage-contract-decision.md`.
+- Decided that Android app usage sync remains on `FocusSessionUploadItem` for
+  MVP instead of introducing a separate `AppUsageSession` server contract.
+- Documented the Android mapping: package name to `platformAppKey`,
+  `source = android_usage_stats`, and null Windows process/window metadata.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -674,9 +680,9 @@ device state sessions plus app family/app family mapping tables.
 
 ## Next Highest Priority
 
-Continue Milestone 24 with TDD by deciding and documenting whether Android app
-usage remains represented as focus sessions or gets a dedicated app usage
-upload contract. The WPF browser connection status UI remains deferred per the
+Continue Milestone 26 Android usage restoration with TDD: persisted sync opt-in
+enforcement, WorkManager scheduling only when allowed/visible, and collection
+to outbox rows. The WPF browser connection status UI remains deferred per the
 latest priority decision because non-UI tracking/schema correctness is more
 important right now. Physical Android resource measurement remains blocked until
 a device is connected.
