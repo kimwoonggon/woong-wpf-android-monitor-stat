@@ -473,10 +473,11 @@ milestones below are finished.
 - [x] Persist WebSessions to SQLite with capture method/confidence/private indicators.
 - [x] Create WebSession outbox items and upload payloads with domain/duration.
 - [x] Verify duplicate WebSession uploads are idempotent.
-- [ ] Add native messaging host manifest generation and WPF browser connection status.
+- [x] Add native messaging host manifest generation.
+- [ ] Add WPF browser connection status after higher-priority non-UI tracking/schema work.
 - [x] Add URL sanitizer/redaction policy before storing raw browser events.
-- [ ] Run browser/domain tests, Windows tests, solution build/test.
-- [ ] Commit and push browser domain tracking slice.
+- [x] Run browser/domain tests, Windows tests, solution build/test.
+- [x] Commit and push browser domain tracking non-UI slice through native manifest generation.
 
 ## Milestone 24: Integrated Schema Restoration
 

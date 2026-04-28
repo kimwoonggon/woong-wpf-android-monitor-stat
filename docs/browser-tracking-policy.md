@@ -152,3 +152,10 @@ Chrome native-message ingestion now sanitizes browser URL data before writing
 browser raw events. In DomainOnly mode the raw event keeps the normalized
 domain but stores no full URL, and the resulting WebSession also has
 `Url = null`.
+
+The Windows infrastructure can now generate the Chrome native messaging host
+manifest JSON through `NativeMessagingHostManifestGenerator`. The manifest
+declares the stable native host name, host executable path, `stdio` transport,
+and explicit allowed extension origins. WPF browser connection status remains a
+deferred UI affordance because current restoration priority is non-UI
+tracking/schema correctness.

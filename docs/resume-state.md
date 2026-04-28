@@ -4,11 +4,12 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 browser raw-event sanitizer flow slice. Browser domain tracking
-now has privacy-safe snapshots, URL sanitizer policy enforcement before raw
-event persistence, snapshot-based WebSession creation, local SQLite capture
-provenance, `web_session` outbox payloads, and server duplicate handling for
-domain-only payloads with `Url = null`.
+Milestone 23 native messaging host manifest slice. Browser domain tracking now
+has privacy-safe snapshots, URL sanitizer policy enforcement before raw event
+persistence, snapshot-based WebSession creation, local SQLite capture
+provenance, `web_session` outbox payloads, server duplicate handling for
+domain-only payloads with `Url = null`, and a Windows-side generator for the
+Chrome native messaging host manifest JSON.
 
 ## Completed
 
@@ -169,6 +170,16 @@ domain-only payloads with `Url = null`.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
+- Added `NativeMessagingHostManifestGenerator`, which emits the Chrome native
+  messaging host manifest JSON with the stable host name, description, host
+  executable path, `stdio` transport type, and explicit allowed extension
+  origins.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 150 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.7%, Domain 88.8%, Windows.Presentation 97.6%,
+  Windows 92.4%, Windows.App 85.0%, and Server 96.0%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -624,7 +635,7 @@ domain-only payloads with `Url = null`.
 
 ## Next Highest Priority
 
-Continue Milestone 23 with TDD: handle the remaining native-message host
-manifest/WPF browser connection status, then move to Milestone 24 schema
-restoration/migrations for nullable URL and capture provenance. Physical
+Move to Milestone 24 schema restoration/migrations with TDD. The WPF browser
+connection status UI remains deferred per the latest priority decision because
+non-UI tracking/schema correctness is more important right now. Physical
 Android resource measurement remains blocked until a device is connected.

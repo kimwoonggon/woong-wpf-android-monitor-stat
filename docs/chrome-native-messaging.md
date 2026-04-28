@@ -1,6 +1,6 @@
 # Chrome Extension + Native Messaging
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 Milestone 4.5 tracks Windows Chrome active-tab URL/title/domain collection
 through an explicit Chrome extension and Windows native messaging host.
@@ -47,6 +47,9 @@ through an explicit Chrome extension and Windows native messaging host.
 - Component coverage verifies a Chrome active tab URL is stored in Windows local
   SQLite and that the previous tab becomes a `web_session` when the active tab
   changes.
+- Added `NativeMessagingHostManifestGenerator` so the Windows side can generate
+  the Chrome native messaging host manifest JSON with the stable host name,
+  executable path, stdio type, and allowed extension origins.
 
 ## Native Message Contract
 
@@ -65,4 +68,6 @@ through an explicit Chrome extension and Windows native messaging host.
 ## Next Slice
 
 Milestone 4.5 implementation is complete for the local Windows path. Remaining
-work is physical Chrome installation/manual verification during packaging.
+work is physical Chrome installation/manual verification during packaging and a
+later WPF browser connection status indicator. The connection-status UI is
+deferred while non-UI tracking/schema restoration remains higher priority.
