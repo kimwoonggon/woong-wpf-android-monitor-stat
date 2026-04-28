@@ -209,7 +209,7 @@ the finished slice is committed and pushed.
 - [ ] Implement collect worker.
 - [x] Test resumed/paused creates session.
 - [x] Test close same-app events merge.
-- [ ] Test different app starts close previous session.
+- [x] Test different app starts close previous session.
 - [ ] Test Room DAO insert/query.
 - [ ] Test worker behavior.
 - [ ] Commit and push Milestone 8.

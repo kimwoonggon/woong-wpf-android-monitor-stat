@@ -15,6 +15,21 @@ class UsageSessionizer(
         for (event in events.sortedBy { it.occurredAtUtcMillis }) {
             when (event.eventType) {
                 UsageEventType.ACTIVITY_RESUMED -> {
+                    val packageName = activePackageName
+                    val startedAtUtcMillis = activeStartedAtUtcMillis
+                    if (
+                        packageName != null &&
+                        packageName != event.packageName &&
+                        startedAtUtcMillis != null
+                    ) {
+                        sessions.add(
+                            UsageAppSession(
+                                packageName,
+                                startedAtUtcMillis,
+                                event.occurredAtUtcMillis
+                            )
+                        )
+                    }
                     activePackageName = event.packageName
                     activeStartedAtUtcMillis = event.occurredAtUtcMillis
                 }

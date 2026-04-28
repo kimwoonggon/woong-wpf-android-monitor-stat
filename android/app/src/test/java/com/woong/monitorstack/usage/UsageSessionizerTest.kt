@@ -39,4 +39,24 @@ class UsageSessionizerTest {
         assertEquals(20_000, session.endedAtUtcMillis)
         assertEquals(19_000, session.durationMs)
     }
+
+    @Test
+    fun sessionizeWhenDifferentAppStartsClosesPreviousSession() {
+        val sessionizer = UsageSessionizer()
+        val events = listOf(
+            UsageEventSnapshot("com.android.chrome", UsageEventType.ACTIVITY_RESUMED, 1_000),
+            UsageEventSnapshot("com.slack", UsageEventType.ACTIVITY_RESUMED, 5_000),
+            UsageEventSnapshot("com.slack", UsageEventType.ACTIVITY_PAUSED, 11_000)
+        )
+
+        val sessions = sessionizer.sessionize(events)
+
+        assertEquals(2, sessions.size)
+        assertEquals("com.android.chrome", sessions[0].packageName)
+        assertEquals(1_000, sessions[0].startedAtUtcMillis)
+        assertEquals(5_000, sessions[0].endedAtUtcMillis)
+        assertEquals("com.slack", sessions[1].packageName)
+        assertEquals(5_000, sessions[1].startedAtUtcMillis)
+        assertEquals(11_000, sessions[1].endedAtUtcMillis)
+    }
 }
