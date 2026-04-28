@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android dashboard period filter click coverage.
+Milestone 9 Android SettingsActivity shell.
 
 ## Completed
 
@@ -222,6 +222,10 @@ Milestone 9 Android dashboard period filter click coverage.
   Espresso smoke surface.
 - Added selected-period label and Espresso click assertions for Today,
   Yesterday, and Recent 7 Days filters.
+- Added XML/ViewBinding `SettingsActivity` with visible collection and opt-in
+  sync defaults.
+- Added Espresso smoke test for SettingsActivity privacy/sync defaults and
+  verified the androidTest APK compiles.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -235,6 +239,7 @@ Milestone 9 Android dashboard period filter click coverage.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Create SettingsActivity or SettingsFragment.
-2. Add real chart data aggregation beyond no-data placeholders.
-3. Add dashboard-to-sessions/settings navigation if needed.
+1. Add real chart data aggregation beyond no-data placeholders.
+2. Add dashboard-to-sessions/settings navigation if needed.
+3. Commit and push Milestone 9 completion when remaining chart/data checks are
+   healthy.

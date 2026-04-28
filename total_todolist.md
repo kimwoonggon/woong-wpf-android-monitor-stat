@@ -218,7 +218,7 @@ the finished slice is committed and pushed.
 
 - [x] Create DashboardActivity or DashboardFragment.
 - [x] Create SessionsActivity or SessionsFragment.
-- [ ] Create SettingsActivity or SettingsFragment.
+- [x] Create SettingsActivity or SettingsFragment.
 - [x] Add period filters.
 - [x] Add total active time card.
 - [x] Add top app card.
@@ -234,6 +234,7 @@ the finished slice is committed and pushed.
 - [x] Test today/yesterday/recent 7 days filters.
 - [x] Test empty state.
 - [x] Test usage access guidance.
+- [x] Test SettingsActivity privacy and sync defaults.
 - [ ] Commit and push Milestone 9.
 
 ## Milestone 10: Android Sync + Morning Summary
