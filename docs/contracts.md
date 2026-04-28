@@ -31,6 +31,17 @@ Updated: 2026-04-28
   and `deviceId + clientEventId` for raw events.
 - Batch responses use `UploadItemStatus`: `Accepted`, `Duplicate`, or `Error`.
 
+## Daily Summary Query
+
+- Current daily summary endpoint is
+  `GET /api/daily-summaries/{summaryDate}?userId={userId}&timezoneId={timezoneId}`.
+- `summaryDate` is an ISO local date in the requested/user timezone.
+- The server combines all devices registered to `userId`.
+- `totalActiveMs` excludes idle focus sessions; `totalIdleMs` reports idle
+  focus sessions separately.
+- `totalWebMs` and `topDomains` are grouped by converting web session UTC start
+  timestamps into `timezoneId`.
+
 ## Web Domains
 
 - MVP domain normalization uses `DomainNormalizer.ExtractRegistrableDomain`.

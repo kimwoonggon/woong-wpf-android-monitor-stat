@@ -152,15 +152,17 @@ the finished slice is committed and pushed.
 - [x] Implement web session upload API.
 - [x] Implement raw event upload API.
 - [x] Enforce device/client session idempotency.
-- [ ] Add daily summary calculator.
-- [ ] Add summary query API.
+- [x] Add daily summary calculator.
+- [x] Add summary query API.
+- [ ] Add date range statistics query API.
 - [x] Add WebApplicationFactory integration tests.
 - [x] Test device registration idempotency.
 - [x] Test device registration persists a server DB row.
 - [x] Test duplicate clientSessionId ignored.
 - [x] Test duplicate web session upload ignored.
 - [x] Test duplicate raw event upload ignored.
-- [ ] Test daily summary generation.
+- [x] Test daily summary generation.
+- [ ] Test date range statistics query.
 - [ ] Commit and push Milestone 5.
 
 ## Milestone 6: Windows Sync

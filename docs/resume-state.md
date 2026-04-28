@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server raw event upload API.
+Milestone 5 Server daily summary query API.
 
 ## Completed
 
@@ -107,6 +107,13 @@ Milestone 5 Server raw event upload API.
 - Added EF-backed raw event upload service returning `Accepted` and
   `Duplicate` item statuses.
 - Verified duplicate retry does not insert a second raw event row.
+- Added `GET /api/daily-summaries/{summaryDate}` with `userId` and
+  `timezoneId` query parameters.
+- Added EF-backed daily summary query service that combines all devices for a
+  user, excludes idle focus sessions from active totals, reports idle totals
+  separately, and groups web totals by requested timezone.
+- Verified the summary API combines Windows + Android sessions for the same
+  user and ignores another user's device data.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -117,6 +124,6 @@ Milestone 5 Server raw event upload API.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add daily summary calculator/query API.
-2. Add server-side daily summary generation test for mixed Windows/Android data.
-3. Define the server summary DTO shape for Windows + Android integrated reports.
+1. Add date-range statistics query API.
+2. Add date-range statistics query test.
+3. Mark Milestone 5 committed/pushed, then continue Windows Sync.
