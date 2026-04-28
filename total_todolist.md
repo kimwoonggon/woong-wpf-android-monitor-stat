@@ -146,6 +146,7 @@ the finished slice is committed and pushed.
 - [x] Define Device integrated DB entity.
 - [x] Test Device unique index for idempotent registration.
 - [x] Implement device registration API.
+- [x] Persist device registration API through EF Core.
 - [ ] Implement focus session upload API.
 - [ ] Implement web session upload API.
 - [ ] Implement raw event upload API.
@@ -154,6 +155,7 @@ the finished slice is committed and pushed.
 - [ ] Add summary query API.
 - [x] Add WebApplicationFactory integration tests.
 - [x] Test device registration idempotency.
+- [x] Test device registration persists a server DB row.
 - [ ] Test duplicate clientSessionId ignored.
 - [ ] Test daily summary generation.
 - [ ] Commit and push Milestone 5.

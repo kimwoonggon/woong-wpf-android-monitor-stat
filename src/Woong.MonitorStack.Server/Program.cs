@@ -8,8 +8,12 @@ string monitorDbConnectionString = builder.Configuration.GetConnectionString("Mo
     ?? "Host=localhost;Database=woong_monitor;Username=postgres;Password=postgres";
 
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<MonitorDbContext>(options => options.UseNpgsql(monitorDbConnectionString));
-builder.Services.AddSingleton<DeviceRegistrationService>();
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<MonitorDbContext>(options => options.UseNpgsql(monitorDbConnectionString));
+}
+
+builder.Services.AddScoped<DeviceRegistrationService>();
 
 var app = builder.Build();
 
@@ -18,11 +22,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapPost("/api/devices/register", (
+app.MapPost("/api/devices/register", async (
     RegisterDeviceRequest request,
     DeviceRegistrationService registrations) =>
 {
-    DeviceRegistrationResponse response = registrations.Register(request, DateTimeOffset.UtcNow);
+    DeviceRegistrationResponse response = await registrations.RegisterAsync(request, DateTimeOffset.UtcNow);
 
     return Results.Ok(response);
 });

@@ -1,30 +1,56 @@
-using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
+using Woong.MonitorStack.Server.Data;
 
 namespace Woong.MonitorStack.Server.Devices;
 
 public sealed class DeviceRegistrationService
 {
-    private readonly ConcurrentDictionary<DeviceRegistrationKey, RegisteredDevice> _devices = new();
+    private readonly MonitorDbContext _dbContext;
 
-    public DeviceRegistrationResponse Register(RegisterDeviceRequest request, DateTimeOffset seenAtUtc)
+    public DeviceRegistrationService(MonitorDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<DeviceRegistrationResponse> RegisterAsync(RegisterDeviceRequest request, DateTimeOffset seenAtUtc)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var key = new DeviceRegistrationKey(request.UserId, request.Platform, request.DeviceKey);
-        bool isNew = false;
-        RegisteredDevice device = _devices.AddOrUpdate(
-            key,
-            _ =>
+        DateTimeOffset seenAtUtcNormalized = seenAtUtc.ToUniversalTime();
+        DeviceEntity? device = await _dbContext.Devices.FirstOrDefaultAsync(existing =>
+            existing.UserId == request.UserId &&
+            existing.Platform == request.Platform &&
+            existing.DeviceKey == request.DeviceKey);
+        bool isNew = device is null;
+
+        if (device is null)
+        {
+            device = new DeviceEntity
             {
-                isNew = true;
-                return RegisteredDevice.Create(request, seenAtUtc);
-            },
-            (_, existing) => existing.MarkSeen(request, seenAtUtc));
+                Id = Guid.NewGuid(),
+                UserId = request.UserId,
+                Platform = request.Platform,
+                DeviceKey = request.DeviceKey,
+                DeviceName = request.DeviceName,
+                TimezoneId = request.TimezoneId,
+                CreatedAtUtc = seenAtUtcNormalized,
+                LastSeenAtUtc = seenAtUtcNormalized
+            };
+            _dbContext.Devices.Add(device);
+        }
+        else
+        {
+            device.DeviceName = request.DeviceName;
+            device.TimezoneId = request.TimezoneId;
+            device.LastSeenAtUtc = seenAtUtcNormalized;
+        }
+
+        await _dbContext.SaveChangesAsync();
 
         return new DeviceRegistrationResponse(
-            device.DeviceId,
+            device.Id.ToString("N"),
             device.UserId,
             FormatPlatform(device.Platform),
             device.DeviceKey,
@@ -43,35 +69,4 @@ public sealed class DeviceRegistrationService
             _ => throw new ArgumentOutOfRangeException(nameof(platform), platform, "Unsupported platform.")
         };
 
-    private sealed record DeviceRegistrationKey(string UserId, Platform Platform, string DeviceKey);
-
-    private sealed record RegisteredDevice(
-        string DeviceId,
-        string UserId,
-        Platform Platform,
-        string DeviceKey,
-        string DeviceName,
-        string TimezoneId,
-        DateTimeOffset CreatedAtUtc,
-        DateTimeOffset LastSeenAtUtc)
-    {
-        public static RegisteredDevice Create(RegisterDeviceRequest request, DateTimeOffset nowUtc)
-            => new(
-                Guid.NewGuid().ToString("N"),
-                request.UserId,
-                request.Platform,
-                request.DeviceKey,
-                request.DeviceName,
-                request.TimezoneId,
-                nowUtc.ToUniversalTime(),
-                nowUtc.ToUniversalTime());
-
-        public RegisteredDevice MarkSeen(RegisterDeviceRequest request, DateTimeOffset nowUtc)
-            => this with
-            {
-                DeviceName = request.DeviceName,
-                TimezoneId = request.TimezoneId,
-                LastSeenAtUtc = nowUtc.ToUniversalTime()
-            };
-    }
 }

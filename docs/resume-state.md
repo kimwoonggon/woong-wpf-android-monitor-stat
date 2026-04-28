@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server EF PostgreSQL device model foundation.
+Milestone 5 Server EF-backed device registration.
 
 ## Completed
 
@@ -84,6 +84,12 @@ Milestone 5 Server EF PostgreSQL device model foundation.
 - Added model metadata test for the unique `(UserId, Platform, DeviceKey)`
   device index.
 - Verified 51 tests pass across all current projects.
+- Added server test EF InMemory override for WebApplicationFactory.
+- Moved device registration from singleton memory storage to scoped
+  `MonitorDbContext` persistence.
+- Preserved duplicate-safe registration behavior while proving a `DeviceEntity`
+  row is persisted.
+- Verified 52 tests pass across all current projects.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -94,7 +100,6 @@ Milestone 5 Server EF PostgreSQL device model foundation.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Move device registration storage from in-memory registry to EF repository
-   while preserving the API idempotency test.
-2. Add FocusSession integrated DB entity and upload API.
-3. Add duplicate `deviceId + clientSessionId` tests.
+1. Add FocusSession integrated DB entity and upload API.
+2. Add duplicate `deviceId + clientSessionId` tests.
+3. Add web session upload API after focus upload is stable.
