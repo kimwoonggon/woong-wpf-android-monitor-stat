@@ -2,6 +2,7 @@ using Woong.MonitorStack.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Devices;
+using Woong.MonitorStack.Server.Sessions;
 
 var builder = WebApplication.CreateBuilder(args);
 string monitorDbConnectionString = builder.Configuration.GetConnectionString("MonitorDb")
@@ -14,6 +15,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 builder.Services.AddScoped<DeviceRegistrationService>();
+builder.Services.AddScoped<FocusSessionUploadService>();
 
 var app = builder.Build();
 
@@ -27,6 +29,15 @@ app.MapPost("/api/devices/register", async (
     DeviceRegistrationService registrations) =>
 {
     DeviceRegistrationResponse response = await registrations.RegisterAsync(request, DateTimeOffset.UtcNow);
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/api/focus-sessions/upload", async (
+    UploadFocusSessionsRequest request,
+    FocusSessionUploadService uploads) =>
+{
+    UploadBatchResult response = await uploads.UploadAsync(request);
 
     return Results.Ok(response);
 });

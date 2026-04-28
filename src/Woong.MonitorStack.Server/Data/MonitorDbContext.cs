@@ -6,6 +6,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 {
     public DbSet<DeviceEntity> Devices => Set<DeviceEntity>();
 
+    public DbSet<FocusSessionEntity> FocusSessions => Set<FocusSessionEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -17,6 +19,17 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(device => device.DeviceName).HasMaxLength(256).IsRequired();
             entity.Property(device => device.TimezoneId).HasMaxLength(128).IsRequired();
             entity.HasIndex(device => new { device.UserId, device.Platform, device.DeviceKey }).IsUnique();
+        });
+
+        modelBuilder.Entity<FocusSessionEntity>(entity =>
+        {
+            entity.ToTable("focus_sessions");
+            entity.HasKey(session => session.Id);
+            entity.Property(session => session.ClientSessionId).HasMaxLength(128).IsRequired();
+            entity.Property(session => session.PlatformAppKey).HasMaxLength(256).IsRequired();
+            entity.Property(session => session.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.Property(session => session.Source).HasMaxLength(128).IsRequired();
+            entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
         });
     }
 }

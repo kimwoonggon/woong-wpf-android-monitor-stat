@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 5 Server EF-backed device registration.
+Milestone 5 Server focus session upload API.
 
 ## Completed
 
@@ -90,6 +90,12 @@ Milestone 5 Server EF-backed device registration.
 - Preserved duplicate-safe registration behavior while proving a `DeviceEntity`
   row is persisted.
 - Verified 52 tests pass across all current projects.
+- Added `FocusSessionEntity` and unique `(DeviceId, ClientSessionId)` index.
+- Added `POST /api/focus-sessions/upload`.
+- Added EF-backed upload service returning `Accepted` and `Duplicate` item
+  statuses.
+- Verified duplicate retry does not insert a second focus session row.
+- Verified 53 tests pass across all current projects.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -100,6 +106,6 @@ Milestone 5 Server EF-backed device registration.
 
 Continue Milestone 5 Server Integrated DB + API MVP:
 
-1. Add FocusSession integrated DB entity and upload API.
-2. Add duplicate `deviceId + clientSessionId` tests.
-3. Add web session upload API after focus upload is stable.
+1. Add web session integrated DB entity and upload API.
+2. Add raw event upload API.
+3. Add daily summary calculator/query API.
