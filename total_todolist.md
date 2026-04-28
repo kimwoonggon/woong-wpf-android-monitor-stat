@@ -461,10 +461,10 @@ milestones below are finished.
 
 ## Milestone 23: Browser Domain Tracking Restoration
 
-- [ ] Add `BrowserActivitySnapshot`, `CaptureMethod`, and `CaptureConfidence` domain/infrastructure models.
-- [ ] Add `IBrowserProcessClassifier`, `IBrowserActivityReader`, `IBrowserUrlSanitizer`, and `IWebSessionizer`.
-- [ ] Test supported browsers: `chrome.exe`, `msedge.exe`, `firefox.exe`, `brave.exe`.
-- [ ] Test non-browser process does not create a WebSession.
+- [x] Add `BrowserActivitySnapshot`, `CaptureMethod`, and `CaptureConfidence` domain/infrastructure models.
+- [x] Add `IBrowserProcessClassifier`, `IBrowserActivityReader`, `IBrowserUrlSanitizer`, and `IWebSessionizer`.
+- [x] Test supported browsers: `chrome.exe`, `msedge.exe`, `firefox.exe`, `brave.exe`.
+- [x] Test non-browser process does not create a WebSession.
 - [ ] Test fake Chrome URL `github.com` creates a WebSession.
 - [ ] Test URL change from `github.com` to `chatgpt.com` closes/starts WebSessions.
 - [ ] Test URL unavailable falls back to FocusSession only.

@@ -110,7 +110,14 @@ URLs must be sanitized before persistence:
 
 The repository already contains Chrome extension/native messaging primitives
 and a browser raw event repository. The remaining restoration work is to add
-browser process classification, URL sanitization/privacy settings, native host
-packaging/connection status, UI Automation fallback evaluation, and stronger
-correlation between browser tab events and the active browser focus session.
+URL sanitization/privacy settings, native host packaging/connection status, UI
+Automation fallback evaluation, and stronger correlation between browser tab
+events and the active browser focus session.
 
+Milestone 23 now includes the first privacy-safe browser abstraction layer:
+`BrowserActivitySnapshot`, `CaptureMethod`, `CaptureConfidence`,
+`IBrowserProcessClassifier`, `IBrowserActivityReader`,
+`IBrowserUrlSanitizer`, and `IWebSessionizer`. `BrowserProcessClassifier`
+recognizes `chrome.exe`, `msedge.exe`, `firefox.exe`, and `brave.exe`
+case-insensitively, including process names reported without the `.exe`
+suffix.
