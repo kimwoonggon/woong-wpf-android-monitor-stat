@@ -344,11 +344,13 @@ Milestone 4.5 extension payload domain extraction.
 - Verified extension URL payload domain extraction with a TDD test.
 - Added `docs/chrome-native-messaging.md` with privacy boundaries and current
   Milestone 4.5 status.
+- Added `extensions/chrome/` with an MV3 manifest and `background.js`.
+- Verified the manifest declares the required service worker and permissions.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Add the Chrome extension project and manifest.
-2. Add native messaging DTO/receiver seams without collecting typed text,
+1. Add native messaging DTO/receiver seams without collecting typed text,
    passwords, messages, or form inputs.
+2. Convert active tab messages into browser raw events and `web_session` rows.

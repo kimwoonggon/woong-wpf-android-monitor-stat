@@ -139,11 +139,11 @@ the finished slice is committed and pushed.
 
 ## Milestone 4.5: Windows Chrome Extension + Native Messaging
 
-- [ ] Create Chrome extension project.
-- [ ] Define extension manifest.
-- [ ] Request tabs/webNavigation permissions.
-- [ ] Track active tab changed event.
-- [ ] Track URL/title/domain changes.
+- [x] Create Chrome extension project.
+- [x] Define extension manifest.
+- [x] Request tabs/webNavigation permissions.
+- [x] Track active tab changed event.
+- [x] Track URL/title/domain changes.
 - [ ] Implement native messaging host registration for Windows.
 - [ ] Implement extension -> native host message DTO.
 - [ ] Implement native host receiver in Windows app/service.

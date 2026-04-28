@@ -20,8 +20,14 @@ through an explicit Chrome extension and Windows native messaging host.
   the shared `DomainNormalizer`.
 - TDD coverage proves `https://www.youtube.com/watch?v=abc` becomes
   `youtube.com`.
+- Added `extensions/chrome/manifest.json` as an MV3 Chrome extension manifest.
+- The manifest declares `tabs`, `webNavigation`, and `nativeMessaging`
+  permissions, with HTTP/HTTPS host permissions visible at install time.
+- Added `background.js` listeners for active tab activation and URL/title
+  updates. The listener sends only URL, title, tab/window ids, browser family,
+  and timestamp to the native host.
 
 ## Next Slice
 
-Create the Chrome extension project and manifest, then add the native messaging
-host contract from the extension side.
+Add the native messaging host contract/receiver and begin converting active tab
+messages into browser raw events and `web_session` rows.
