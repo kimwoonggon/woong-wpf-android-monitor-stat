@@ -514,7 +514,7 @@ milestones below are finished.
 
 ## Milestone 26: Android Usage Tracking Restoration
 
-- [ ] Add UI Automator dependency and Usage Access settings navigation smoke test.
+- [x] Add UI Automator dependency and Usage Access settings navigation smoke test.
 - [x] Add persisted sync opt-in setting and default-off enforcement.
 - [x] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
 - [x] Enqueue sync outbox rows when UsageStats sessions are collected.
@@ -530,6 +530,8 @@ milestones below are finished.
 - [x] Run Android unit tests/debug build and .NET regression for Room-backed SessionsActivity slice.
 - [x] Run Android unit tests/debug/androidTest build and .NET regression for DailySummaryActivity repository/client slice.
 - [x] Run Android unit tests/debug/androidTest build and .NET regression for notification permission UX slice.
+- [x] Run Android unit tests/debug/androidTest build and .NET regression for Usage Access UI Automator smoke slice.
+- [x] Check connected Android device availability for Usage Access UI Automator smoke; blocked because `adb devices -l` returned no attached devices.
 - [x] Run .NET regression tests and coverage report for Android usage restoration slices; current .NET line coverage is 92.4%.
 - [x] Commit and push Android sync opt-in enforcement slice.
 - [x] Commit and push Android backup hardening slice.
@@ -537,6 +539,7 @@ milestones below are finished.
 - [x] Commit and push Room-backed SessionsActivity slice.
 - [x] Commit and push DailySummaryActivity repository/client slice.
 - [x] Commit and push notification permission UX slice.
+- [x] Commit and push Usage Access UI Automator smoke slice.
 - [ ] Commit and push Android usage restoration slice.
 
 ## Milestone 27: Android UI Screenshot And Device Automation
