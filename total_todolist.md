@@ -265,9 +265,9 @@ the finished slice is committed and pushed.
 - [x] Add app family mapping.
 - [x] Compute top app.
 - [x] Compute top domain.
-- [ ] Respect user timezone local date.
+- [x] Respect user timezone local date.
 - [x] Test mixed Windows + Android data summary.
-- [ ] Test timezone boundaries.
+- [x] Test timezone boundaries.
 - [ ] Test duplicate data does not inflate summary.
 - [ ] Verify Windows/Android can query integrated summary.
 - [ ] Commit and push Milestone 11.

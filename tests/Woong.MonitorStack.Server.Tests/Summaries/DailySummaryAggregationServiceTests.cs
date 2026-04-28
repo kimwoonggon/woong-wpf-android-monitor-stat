@@ -60,6 +60,35 @@ public sealed class DailySummaryAggregationServiceTests
         Assert.Equal(900_000, topApps[0].DurationMs);
     }
 
+    [Fact]
+    public async Task GenerateAsync_UsesTimezoneWhenGroupingWebSessionsAcrossUtcMidnight()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseInMemoryDatabase($"summary-timezone-{Guid.NewGuid():N}")
+            .Options;
+        await using var dbContext = new MonitorDbContext(options);
+        Guid deviceId = Guid.NewGuid();
+        dbContext.Devices.Add(Device(deviceId, "user-1", Platform.Windows, "windows-key"));
+        dbContext.WebSessions.Add(
+            Web(
+                deviceId,
+                "boundary-web",
+                "boundary.example",
+                startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 30, 0, TimeSpan.Zero),
+                durationMs: 180_000));
+        await dbContext.SaveChangesAsync();
+        var service = new DailySummaryAggregationService(dbContext);
+
+        DailySummaryEntity summary = await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 28, 23, 0, 0, TimeSpan.Zero));
+
+        Assert.Equal(180_000, summary.TotalWebMs);
+        Assert.Contains("boundary.example", summary.TopDomainsJson, StringComparison.Ordinal);
+    }
+
     private static async Task SeedSessionsAsync(MonitorDbContext dbContext)
     {
         Guid windowsDeviceId = Guid.NewGuid();
@@ -126,6 +155,19 @@ public sealed class DailySummaryAggregationServiceTests
         string focusSessionId,
         string domain,
         long durationMs)
+        => Web(
+            deviceId,
+            focusSessionId,
+            domain,
+            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            durationMs: durationMs);
+
+    private static WebSessionEntity Web(
+        Guid deviceId,
+        string focusSessionId,
+        string domain,
+        DateTimeOffset startedAtUtc,
+        long durationMs)
         => new()
         {
             DeviceId = deviceId,
@@ -134,8 +176,8 @@ public sealed class DailySummaryAggregationServiceTests
             Url = $"https://{domain}/docs",
             Domain = domain,
             PageTitle = "Docs",
-            StartedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
-            EndedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 4, 0, TimeSpan.Zero),
+            StartedAtUtc = startedAtUtc,
+            EndedAtUtc = startedAtUtc.AddMilliseconds(durationMs),
             DurationMs = durationMs
         };
 }

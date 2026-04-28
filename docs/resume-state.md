@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 11 server app family mapping.
+Milestone 11 server timezone boundary summary.
 
 ## Completed
 
@@ -285,6 +285,10 @@ Milestone 11 server app family mapping.
   family labels.
 - Verified persisted and API summary top apps combine Windows + Android Chrome
   durations under one `Chrome` row.
+- Added persisted summary coverage for a web session that crosses a UTC date
+  boundary but belongs to the requested `Asia/Seoul` local date.
+- Verified server daily aggregation includes web duration and top domain by
+  requested user timezone, not raw UTC date.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -300,6 +304,6 @@ Milestone 11 server app family mapping.
 
 Continue Milestone 11 Integrated Daily Summary:
 
-1. Verify timezone boundary behavior.
-2. Verify duplicate data does not inflate summaries.
-3. Verify Windows/Android clients can query the integrated summary.
+1. Verify duplicate data does not inflate summaries.
+2. Verify Windows/Android clients can query the integrated summary.
+3. Commit and push Milestone 11 completion.
