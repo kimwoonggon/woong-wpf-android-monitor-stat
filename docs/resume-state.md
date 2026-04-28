@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows HTTP sync client token placeholder.
+Milestone 6 Windows sync checkpoint handling.
 
 ## Completed
 
@@ -135,6 +135,9 @@ Milestone 6 Windows HTTP sync client token placeholder.
 - Added `WindowsSyncClientOptions` with a required device token placeholder.
 - Verified the HTTP client posts the raw outbox payload to the matching server
   endpoint with the `X-Device-Token` header.
+- Added sync checkpoint store abstraction.
+- Verified the worker saves a checkpoint timestamp when at least one outbox
+  item syncs successfully.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -145,6 +148,6 @@ Milestone 6 Windows HTTP sync client token placeholder.
 
 Continue Milestone 6 Windows Sync:
 
-1. Add sync checkpoint handling.
-2. Verify Windows local data upload flow through the HTTP sync client.
-3. Mark Milestone 6 committed/pushed, then continue Android project setup.
+1. Verify Windows local data upload flow through the HTTP sync client.
+2. Mark Milestone 6 committed/pushed.
+3. Continue Android project setup.

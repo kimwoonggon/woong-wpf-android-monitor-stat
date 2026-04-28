@@ -87,6 +87,27 @@ public sealed class WindowsSyncWorkerTests
         Assert.Null(saved.LastError);
     }
 
+    [Fact]
+    public async Task ProcessPendingAsync_WhenAnyItemSyncs_SavesSyncCheckpoint()
+    {
+        var syncedAtUtc = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var item = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: "{\"clientSessionId\":\"session-1\"}",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        var repository = new FakeSyncOutboxRepository([item]);
+        var checkpointStore = new FakeSyncCheckpointStore();
+        var apiClient = new FakeSyncApiClient(new UploadBatchResult(
+            [new UploadItemResult("session-1", UploadItemStatus.Accepted, ErrorMessage: null)]));
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(syncedAtUtc), checkpointStore);
+
+        _ = await worker.ProcessPendingAsync();
+
+        Assert.Equal(syncedAtUtc, checkpointStore.LastSavedAtUtc);
+    }
+
     private sealed class FakeSyncApiClient : IWindowsSyncApiClient
     {
         private readonly UploadBatchResult _result;
@@ -161,5 +182,15 @@ public sealed class WindowsSyncWorkerTests
         }
 
         public DateTimeOffset UtcNow { get; }
+    }
+
+    private sealed class FakeSyncCheckpointStore : ISyncCheckpointStore
+    {
+        public DateTimeOffset? LastSavedAtUtc { get; private set; }
+
+        public void Save(DateTimeOffset syncedAtUtc)
+        {
+            LastSavedAtUtc = syncedAtUtc;
+        }
     }
 }

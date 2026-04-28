@@ -171,7 +171,7 @@ the finished slice is committed and pushed.
 - [x] Implement Windows sync worker.
 - [x] Implement retry policy.
 - [x] Add device token/auth placeholder.
-- [ ] Add sync checkpoint handling.
+- [x] Add sync checkpoint handling.
 - [x] Test fake API sync success.
 - [x] Test fake API sync failure retry.
 - [x] Test duplicate upload remains safe.

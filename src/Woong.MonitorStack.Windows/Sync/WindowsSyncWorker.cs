@@ -9,15 +9,26 @@ public sealed class WindowsSyncWorker
     private readonly ISyncOutboxRepository _outboxRepository;
     private readonly IWindowsSyncApiClient _apiClient;
     private readonly ISystemClock _clock;
+    private readonly ISyncCheckpointStore _checkpointStore;
 
     public WindowsSyncWorker(
         ISyncOutboxRepository outboxRepository,
         IWindowsSyncApiClient apiClient,
         ISystemClock clock)
+        : this(outboxRepository, apiClient, clock, new NoOpSyncCheckpointStore())
+    {
+    }
+
+    public WindowsSyncWorker(
+        ISyncOutboxRepository outboxRepository,
+        IWindowsSyncApiClient apiClient,
+        ISystemClock clock,
+        ISyncCheckpointStore checkpointStore)
     {
         _outboxRepository = outboxRepository;
         _apiClient = apiClient;
         _clock = clock;
+        _checkpointStore = checkpointStore;
     }
 
     public async Task<WindowsSyncResult> ProcessPendingAsync(CancellationToken cancellationToken = default)
@@ -30,7 +41,9 @@ public sealed class WindowsSyncWorker
             UploadBatchResult result = await _apiClient.UploadAsync(item, cancellationToken);
             if (IsSuccessfulBatch(result))
             {
-                _outboxRepository.MarkSynced(item.Id, _clock.UtcNow);
+                DateTimeOffset syncedAtUtc = _clock.UtcNow;
+                _outboxRepository.MarkSynced(item.Id, syncedAtUtc);
+                _checkpointStore.Save(syncedAtUtc);
                 syncedCount++;
             }
             else
@@ -55,4 +68,11 @@ public sealed class WindowsSyncWorker
             .Select(item => item.ErrorMessage)
             .FirstOrDefault(message => !string.IsNullOrWhiteSpace(message))
             ?? "Server rejected sync payload.";
+
+    private sealed class NoOpSyncCheckpointStore : ISyncCheckpointStore
+    {
+        public void Save(DateTimeOffset syncedAtUtc)
+        {
+        }
+    }
 }
