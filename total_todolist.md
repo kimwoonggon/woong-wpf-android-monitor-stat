@@ -250,12 +250,12 @@ the finished slice is committed and pushed.
 - [x] Integrate daily summary API.
 - [x] Test daily summary API client contract.
 - [x] Add previous-day summary screen.
-- [ ] Add morning summary notification if feasible.
+- [x] Add morning summary notification if feasible.
 - [x] Test sync worker success.
 - [x] Test sync worker failure retry.
 - [x] Test duplicate upload.
 - [x] Test summary display.
-- [ ] Commit and push Milestone 10.
+- [x] Commit and push Milestone 10.
 
 ## Milestone 11: Integrated Daily Summary
 

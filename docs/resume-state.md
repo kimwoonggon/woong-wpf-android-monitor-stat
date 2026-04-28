@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 10 Android previous-day summary screen.
+Milestone 10 Android morning summary notification worker.
 
 ## Completed
 
@@ -266,6 +266,12 @@ Milestone 10 Android previous-day summary screen.
 - Added XML/ViewBinding `DailySummaryActivity` registered in the manifest.
 - Added summary Activity smoke coverage that verifies previous-day date and
   summary values render from intent-provided state.
+- Added `MorningSummaryNotificationWorker` and notification runner seam for
+  WorkManager-triggered morning summary notifications.
+- Declared `POST_NOTIFICATIONS`; runtime permission UX remains a hardening
+  concern before release.
+- Verified the notification worker delegates title/text to the runner and
+  returns success.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -277,8 +283,8 @@ Milestone 10 Android previous-day summary screen.
 
 ## Next Highest Priority
 
-Continue Milestone 10 Android Sync + Morning Summary:
+Continue Milestone 11 Integrated Daily Summary:
 
-1. Decide whether morning summary notification is feasible for MVP.
-2. Commit and push Milestone 10 completion if notification is deferred.
-3. Move to Milestone 11 integrated daily summary hardening.
+1. Implement server daily aggregation job.
+2. Add app family mapping for integrated top apps.
+3. Verify mixed Windows + Android summary data and timezone boundaries.
