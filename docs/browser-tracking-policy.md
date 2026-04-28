@@ -109,10 +109,10 @@ URLs must be sanitized before persistence:
 ## Current Implementation Notes
 
 The repository already contains Chrome extension/native messaging primitives
-and a browser raw event repository. The remaining restoration work is to add
-URL sanitization/privacy settings, native host packaging/connection status, UI
-Automation fallback evaluation, and stronger correlation between browser tab
-events and the active browser focus session.
+and a browser raw event repository. The remaining restoration work is to apply
+URL sanitization/privacy settings to persistence flows, add native host
+packaging/connection status, evaluate UI Automation fallback, and strengthen
+correlation between browser tab events and the active browser focus session.
 
 Milestone 23 now includes the first privacy-safe browser abstraction layer:
 `BrowserActivitySnapshot`, `CaptureMethod`, `CaptureConfidence`,
@@ -121,3 +121,11 @@ Milestone 23 now includes the first privacy-safe browser abstraction layer:
 recognizes `chrome.exe`, `msedge.exe`, `firefox.exe`, and `brave.exe`
 case-insensitively, including process names reported without the `.exe`
 suffix.
+
+`BrowserUrlSanitizer` now enforces the URL storage policy boundary:
+
+- Off clears URL/domain data and downgrades capture metadata to
+  `None`/`Unknown`.
+- Domain only keeps the registrable domain and clears the full URL.
+- Full URL keeps the URL only when explicitly requested and strips URL
+  fragments before persistence.

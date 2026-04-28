@@ -468,8 +468,8 @@ milestones below are finished.
 - [ ] Test fake Chrome URL `github.com` creates a WebSession.
 - [ ] Test URL change from `github.com` to `chatgpt.com` closes/starts WebSessions.
 - [ ] Test URL unavailable falls back to FocusSession only.
-- [ ] Test domain-only privacy stores domain but not full URL.
-- [ ] Test full URL is stored only with explicit opt-in.
+- [x] Test domain-only privacy stores domain but not full URL.
+- [x] Test full URL is stored only with explicit opt-in.
 - [ ] Persist WebSessions to SQLite with capture method/confidence/private indicators.
 - [ ] Create WebSession outbox items and upload payloads with domain/duration.
 - [ ] Verify duplicate WebSession uploads are idempotent.
