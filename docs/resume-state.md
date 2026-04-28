@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android dashboard ViewModel state foundation.
+Milestone 9 Android Room dashboard aggregation.
 
 ## Completed
 
@@ -188,6 +188,11 @@ Milestone 9 Android dashboard ViewModel state foundation.
 - Verified selecting a dashboard period loads a repository snapshot and exposes
   total active time, top app, idle time, and recent sessions through public
   ViewModel state.
+- Added `RoomDashboardRepository` for Today/Yesterday/Recent 7 Days dashboard
+  snapshots from local Android Room data.
+- Verified Today aggregation excludes idle sessions from active total, tracks
+  idle separately, picks the top active package, and formats recent session
+  rows using the requested timezone.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
@@ -200,6 +205,7 @@ Milestone 9 Android dashboard ViewModel state foundation.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Add Room-backed dashboard aggregation for Today/Yesterday/Recent 7 Days.
-2. Create DashboardActivity or DashboardFragment.
+1. Create DashboardActivity or DashboardFragment.
+2. Add XML dashboard layout with period filters, summary cards, usage guidance,
+   and recent sessions container.
 3. Add XML/View dashboard tests before implementation.
