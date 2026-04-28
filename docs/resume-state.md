@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 2 Windows local collector foundation.
+Milestone 3 Windows SQLite + outbox foundation.
 
 ## Completed
 
@@ -28,6 +28,10 @@ Milestone 2 Windows local collector foundation.
 - Added `TrackingPoller` orchestration and Windows smoke console.
 - Smoke run captured foreground window `Codex.exe` / title `Codex` on
   2026-04-28.
+- Added `Microsoft.Data.Sqlite` local persistence.
+- Added focus session repository with duplicate-safe insert and range query.
+- Added web session repository linked by `focusSessionId`.
+- Added sync outbox repository with pending, synced, failed, and retry count.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -36,8 +40,8 @@ Milestone 2 Windows local collector foundation.
 
 ## Next Highest Priority
 
-Continue Milestone 3 Windows SQLite + Outbox:
+Continue Milestone 4 Windows WPF Dashboard MVP:
 
-1. Choose EF Core SQLite or Dapper for local persistence.
-2. Add repository/outbox tests first.
-3. Implement SQLite schema and persistence.
+1. Create WPF app project.
+2. Add MVVM structure with CommunityToolkit.Mvvm.
+3. Build DashboardViewModel tests before XAML.

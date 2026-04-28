@@ -83,18 +83,18 @@ the finished slice is committed and pushed.
 
 ## Milestone 3: Windows Local DB + Outbox
 
-- [ ] Choose EF Core SQLite or Dapper for Windows local DB.
-- [ ] Define SQLite schema/migrations.
-- [ ] Implement focus session repository.
-- [ ] Implement web session repository.
-- [ ] Implement sync outbox schema/repository.
-- [ ] Test repository insert/query/update.
-- [ ] Test focus session persistence and query.
-- [ ] Test web session links to focus session.
-- [ ] Test outbox pending to synced transition.
-- [ ] Test outbox failure increments retry count.
-- [ ] Verify local DB file creation/query.
-- [ ] Commit and push Milestone 3.
+- [x] Choose EF Core SQLite or Dapper for Windows local DB.
+- [x] Define SQLite schema/migrations.
+- [x] Implement focus session repository.
+- [x] Implement web session repository.
+- [x] Implement sync outbox schema/repository.
+- [x] Test repository insert/query/update.
+- [x] Test focus session persistence and query.
+- [x] Test web session links to focus session.
+- [x] Test outbox pending to synced transition.
+- [x] Test outbox failure increments retry count.
+- [x] Verify local DB file creation/query.
+- [x] Commit and push Milestone 3.
 
 ## Milestone 4: Windows WPF Dashboard MVP
 
