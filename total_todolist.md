@@ -152,8 +152,8 @@ the finished slice is committed and pushed.
 - [x] Test domain extraction from extension payload.
 - [x] Test active tab event creates/updates web session.
 - [x] Test duplicate tab events do not inflate duration.
-- [ ] Verify Chrome active tab URL appears in Windows local DB.
-- [ ] Commit and push Chrome extension/native messaging slice.
+- [x] Verify Chrome active tab URL appears in Windows local DB.
+- [x] Commit and push Chrome extension/native messaging slice.
 
 ## Milestone 5: Server Integrated DB + API MVP
 

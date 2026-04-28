@@ -365,11 +365,15 @@ Milestone 4.5 extension payload domain extraction.
   `WebSession` intervals.
 - Verified active tab changes create a web session for the previous URL.
 - Verified duplicate tab events do not inflate duration.
+- Added `ChromeNativeMessageIngestionFlow` for receiver -> raw event repository
+  -> web-session repository.
+- Verified a Chrome active tab URL appears in the Windows local SQLite raw event
+  table and that the previous tab is persisted as a `web_session`.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Wire native receiver -> browser raw event repository -> web-session
-   repository in an end-to-end local flow.
-2. Verify a Chrome active tab URL appears in the Windows local DB.
+1. Continue server hardening by replacing EF InMemory-only relational assurance
+   with a documented relational/PostgreSQL test DB strategy.
+2. Add reset strategy coverage for server integration tests.

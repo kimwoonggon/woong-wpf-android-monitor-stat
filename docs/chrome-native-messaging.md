@@ -42,6 +42,11 @@ through an explicit Chrome extension and Windows native messaging host.
 - Duplicate active-tab events with the same tab/window/url/title/domain/browser
   identity are ignored so they do not create short extra sessions or inflate
   duration.
+- Added `ChromeNativeMessageIngestionFlow` to connect native message reading,
+  browser raw event persistence, and completed `web_session` persistence.
+- Component coverage verifies a Chrome active tab URL is stored in Windows local
+  SQLite and that the previous tab becomes a `web_session` when the active tab
+  changes.
 
 ## Native Message Contract
 
@@ -59,6 +64,5 @@ through an explicit Chrome extension and Windows native messaging host.
 
 ## Next Slice
 
-Wire the native receiver, raw event repository, and web-session repository into
-an end-to-end Windows local flow, then verify a Chrome active tab URL appears in
-the Windows local DB.
+Milestone 4.5 implementation is complete for the local Windows path. Remaining
+work is physical Chrome installation/manual verification during packaging.
