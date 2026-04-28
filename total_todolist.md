@@ -516,7 +516,7 @@ milestones below are finished.
 
 - [ ] Add UI Automator dependency and Usage Access settings navigation smoke test.
 - [x] Add persisted sync opt-in setting and default-off enforcement.
-- [ ] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
+- [x] Wire WorkManager periodic scheduling for usage collection only when allowed and visible.
 - [x] Enqueue sync outbox rows when UsageStats sessions are collected.
 - [x] Ensure sync worker refuses/suppresses upload unless sync opt-in is true.
 - [x] Review and disable/constrain `android:allowBackup` for local usage metadata.
@@ -526,9 +526,11 @@ milestones below are finished.
 - [x] Run Android unit tests and debug build for Android sync opt-in slice.
 - [x] Run Android unit tests and debug build for Android collection outbox slice.
 - [x] Run Android unit tests and debug build for Android backup hardening slice.
+- [x] Run Android unit tests/debug build and .NET regression for Android WorkManager scheduling slice.
 - [x] Run .NET regression tests and coverage report for Android usage restoration slices; current .NET line coverage is 92.4%.
 - [x] Commit and push Android sync opt-in enforcement slice.
 - [x] Commit and push Android backup hardening slice.
+- [x] Commit and push Android WorkManager scheduling slice.
 - [ ] Commit and push Android usage restoration slice.
 
 ## Milestone 27: Android UI Screenshot And Device Automation

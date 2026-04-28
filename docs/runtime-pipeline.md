@@ -63,11 +63,12 @@ marked low-confidence test/fallback data.
 
 ```text
 User grants Usage Access
-  -> WorkManager periodically runs usage collection
+  -> User-visible collection setting is enabled
+  -> WorkManager periodically runs usage collection only while both are true
   -> UsageStatsManager UsageEvents are sessionized
   -> App usage sessions are stored in Room
-  -> Sync outbox rows are created only when sync is opted in
-  -> WorkManager sync uploads outbox rows to the server
+  -> Local sync outbox rows are created for retry-safe future upload
+  -> WorkManager sync uploads outbox rows to the server only when sync is opted in
   -> Android dashboard reads local Room data
   -> Daily summary screen can query integrated server summary
 ```

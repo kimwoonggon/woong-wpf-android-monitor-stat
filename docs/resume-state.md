@@ -4,9 +4,9 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Android backup hardening slice. The Android manifest now disables
-app backup so local Room usage metadata and sync outbox rows stay local unless
-the user explicitly opts into server sync.
+Milestone 26 Android WorkManager scheduling slice. Android periodic collection
+now has a scheduler boundary that cancels work unless Usage Access is granted
+and a persisted collection-enabled setting is true.
 
 ## Completed
 
@@ -721,13 +721,32 @@ the user explicitly opts into server sync.
   `android/`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
   `android/`.
+- Added `AndroidUsageCollectionSettings` with a SharedPreferences
+  implementation that defaults collection scheduling to disabled.
+- Added `AndroidUsageCollectionScheduler`, `UsageCollectionWorkScheduler`, and
+  `WorkManagerUsageCollectionWorkScheduler` for unique 15-minute
+  `CollectUsageWorker` scheduling.
+- Verified the scheduler cancels periodic work when collection is disabled,
+  cancels when Usage Access is missing, and schedules only when both persisted
+  collection setting and Usage Access permission allow it.
+- Updated `docs/runtime-pipeline.md` so local outbox creation is separate from
+  server upload opt-in: outbox rows are local retry metadata, and upload remains
+  suppressed while sync opt-in is off.
+- Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
+  `android/`.
+- Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
+  `android/`.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal`.
+- Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`.
 
 ## Next Highest Priority
 
-Continue Milestone 26 Android usage restoration with TDD: WorkManager
-scheduling only when allowed/visible, Room-backed SessionsActivity data, and
-DailySummaryActivity repository/client loading. The WPF browser connection
-status UI and cramped lower dashboard layout remain deferred per the latest
-priority decision because non-UI tracking/schema correctness is more important
-right now. Physical Android resource measurement remains blocked until a device
-is connected.
+Continue Milestone 26 Android usage restoration with TDD: Room-backed
+SessionsActivity data, DailySummaryActivity repository/client loading, Android
+13+ notification permission UX, and UI Automator Usage Access navigation. The
+WPF browser connection status UI and cramped lower dashboard layout remain
+deferred per the latest priority decision because non-UI tracking/schema
+correctness is more important right now. Physical Android resource measurement
+remains blocked until a device is connected.

@@ -45,6 +45,8 @@ usage data. They must stay under ignored artifact folders.
 
 - Collection must be visible in the app UI.
 - Permissions must be explicit.
+- Android periodic collection scheduling requires both Usage Access permission
+  and a persisted collection-enabled setting.
 - Sync must be opt-in.
 - Android sync defaults to off and workers must suppress uploads until the
   persisted opt-in setting is enabled.
