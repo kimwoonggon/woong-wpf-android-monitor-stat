@@ -89,6 +89,34 @@ public sealed class DailySummaryAggregationServiceTests
         Assert.Contains("boundary.example", summary.TopDomainsJson, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task GenerateAsync_WhenRunTwice_UpdatesSingleSummaryWithoutInflatingTotals()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseInMemoryDatabase($"summary-rerun-{Guid.NewGuid():N}")
+            .Options;
+        await using var dbContext = new MonitorDbContext(options);
+        await SeedSessionsAsync(dbContext);
+        var service = new DailySummaryAggregationService(dbContext);
+
+        await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 28, 22, 0, 0, TimeSpan.Zero));
+        DailySummaryEntity secondRun = await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 28, 23, 0, 0, TimeSpan.Zero));
+
+        DailySummaryEntity persisted = Assert.Single(dbContext.DailySummaries);
+        Assert.Equal(900_000, persisted.TotalActiveMs);
+        Assert.Equal(120_000, persisted.TotalIdleMs);
+        Assert.Equal(240_000, persisted.TotalWebMs);
+        Assert.Equal(secondRun.GeneratedAtUtc, persisted.GeneratedAtUtc);
+    }
+
     private static async Task SeedSessionsAsync(MonitorDbContext dbContext)
     {
         Guid windowsDeviceId = Guid.NewGuid();

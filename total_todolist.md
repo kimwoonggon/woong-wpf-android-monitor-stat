@@ -268,7 +268,7 @@ the finished slice is committed and pushed.
 - [x] Respect user timezone local date.
 - [x] Test mixed Windows + Android data summary.
 - [x] Test timezone boundaries.
-- [ ] Test duplicate data does not inflate summary.
+- [x] Test duplicate data does not inflate summary.
 - [ ] Verify Windows/Android can query integrated summary.
 - [ ] Commit and push Milestone 11.
 
