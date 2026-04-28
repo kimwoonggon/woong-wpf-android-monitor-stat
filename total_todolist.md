@@ -318,20 +318,20 @@ the finished slice is committed and pushed.
 - [x] Generate production EF Core migrations before production PostgreSQL use.
 - [x] Add migration review notes for generated PostgreSQL schema.
 - [ ] Repeat Android resource measurements on a physical device.
-- [ ] Add longer-running Windows collector profiling once continuous background tracking is enabled.
-- [ ] Run full .NET tests.
-- [ ] Run full .NET build.
-- [ ] Run Android unit/build checks.
-- [ ] Commit and push post-RC hardening.
+- [x] Add longer-running Windows collector profiling once continuous background tracking is enabled.
+- [x] Run full .NET tests.
+- [x] Run full .NET build.
+- [x] Run Android unit/build checks.
+- [x] Commit and push post-RC hardening.
 
 ## Final Definition Of Done
 
-- [ ] All PRD requirements reflected in code/tests/docs.
-- [ ] All core logic built TDD-first.
-- [ ] All relevant tests pass.
-- [ ] All builds pass.
+- [x] All PRD requirements reflected in code/tests/docs.
+- [x] All core logic built TDD-first.
+- [x] All relevant tests pass.
+- [x] All builds pass.
 - [x] Safety/privacy excluded scopes are not implemented.
 - [x] Local DB/server integrated DB separation is preserved.
 - [x] Daily integrated summary works across Windows + Android.
-- [ ] Final documentation is complete.
+- [x] Final documentation is complete.
 - [ ] Final commit is pushed to `origin`.

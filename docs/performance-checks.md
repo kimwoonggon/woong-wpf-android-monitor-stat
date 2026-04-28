@@ -34,6 +34,34 @@ Results:
 Result: acceptable for the current one-shot collector smoke. Warm runs stayed
 under 80 ms wall time and under 18 MB peak working set.
 
+## Windows Collector 30-Second Polling Profile
+
+Command target:
+
+```powershell
+dotnet run --project tools\Woong.MonitorStack.Windows.Profile\Woong.MonitorStack.Windows.Profile.csproj --no-build -- 30 500
+```
+
+Method:
+
+- Ran the profiler in one process for 30 seconds.
+- The profiler calls the real `TrackingPoller` every 500 ms.
+- Captured poll count, closed sessions, process CPU time, and peak working set.
+
+Results:
+
+| Metric | Value |
+| --- | ---: |
+| Duration | 30 seconds |
+| Poll interval | 500 ms |
+| Polls | 59 |
+| Closed sessions | 0 |
+| CPU time | 406.25 ms |
+| Peak working set | 23.80 MB |
+
+Result: acceptable for the current polling loop. CPU use stayed well below one
+core over the 30-second sample and peak working set stayed under 24 MB.
+
 ## Android Dashboard Smoke
 
 Environment:
@@ -85,7 +113,7 @@ with AppCompat, Room, WorkManager, Retrofit, and chart dependencies loaded.
 ## Follow-Up
 
 - Repeat Android measurements on a real device before a production release.
-- Add longer-running Windows collector profiling once the tracker runs as a
-  continuous background service instead of one-shot smoke.
+  No physical Android device was connected when checked with `adb devices -l`
+  on 2026-04-28.
 - Add Android WorkManager collection/sync profiling once periodic workers are
   configured from the UI.

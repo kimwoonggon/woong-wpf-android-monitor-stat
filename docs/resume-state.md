@@ -378,10 +378,18 @@ Milestone 4.5 extension payload domain extraction.
 - Generated `20260428131352_InitialCreate` for server PostgreSQL schema.
 - Added `docs/production-migrations.md` with migration review notes.
 - Verified migration files define the core PostgreSQL tables.
+- Added `tools/Woong.MonitorStack.Windows.Profile`.
+- Ran a 30-second Windows collector polling profile: 59 polls, 406.25 ms CPU,
+  23.80 MB peak working set.
+- Checked `adb devices -l`; no physical Android device was connected, so
+  physical-device resource measurement remains blocked.
+- Verified latest .NET restore/test/build after migration and profiling changes.
+- Verified Android `testDebugUnitTest` and `assembleDebug` after hardening
+  changes.
 
 ## Next Highest Priority
 
 Continue Milestone 4.5:
 
-1. Continue post-RC hardening: Android physical-device measurements and
-   longer-running Windows collector profiling.
+1. Physical Android device measurement remains blocked until a device is
+   connected.
