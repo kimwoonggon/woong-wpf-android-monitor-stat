@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Bootstrap plus Milestone 1 common domain/contracts foundation.
+Milestone 2 Windows local collector foundation.
 
 ## Completed
 
@@ -19,6 +19,12 @@ Bootstrap plus Milestone 1 common domain/contracts foundation.
 - Added app-family grouping support so platform app keys can roll up to a
   shared family label in daily top apps.
 - Added explicit null guards for upload batch request item lists.
+- Added Windows tracking project and tests.
+- Added `FocusSessionizer` app-change, same-window, and idle-state behavior.
+- Added pure `IdleDetector`.
+- Added foreground window collector abstraction with fake-testable reader/clock.
+- Added Windows `user32.dll` foreground window and last-input readers behind
+  interfaces.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -27,10 +33,10 @@ Bootstrap plus Milestone 1 common domain/contracts foundation.
 
 ## Next Highest Priority
 
-Continue Milestone 1 hardening before Windows Collector MVP:
+Continue Milestone 2 hardening:
 
-1. Add stronger tests for raw event idempotency fields and batch response
-   semantics.
-2. Decide whether contracts remain in `Woong.MonitorStack.Domain.Contracts` or
-   move to a separate `Woong.MonitorStack.Contracts` project before clients and
-   server are created.
+1. Add a polling orchestration service that combines foreground snapshot,
+   last-input idle status, and `FocusSessionizer`.
+2. Add a safe manual smoke command or console harness for foreground logging on
+   Windows 10.
+3. Then move to Milestone 3 Windows SQLite + outbox.
