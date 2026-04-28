@@ -64,6 +64,11 @@ public sealed class FocusSessionizer
             endedAtUtc: normalizedEndedAtUtc,
             timezoneId: _timezoneId,
             isIdle: _currentIsIdle,
-            source: "foreground_window");
+            source: "foreground_window",
+            processId: _currentSnapshot.ProcessId,
+            processName: _currentSnapshot.ProcessName,
+            processPath: _currentSnapshot.ExecutablePath,
+            windowHandle: _currentSnapshot.Hwnd.ToInt64(),
+            windowTitle: null);
     }
 }

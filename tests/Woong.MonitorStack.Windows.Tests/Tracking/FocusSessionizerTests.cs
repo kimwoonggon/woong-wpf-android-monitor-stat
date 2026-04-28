@@ -109,6 +109,26 @@ public sealed class FocusSessionizerTests
         Assert.Equal(new DateOnly(2026, 4, 28), result.CurrentSession.LocalDate);
     }
 
+    [Fact]
+    public void Process_WhenSnapshotHasWindowMetadata_PreservesSafeFocusMetadata()
+    {
+        var sessionizer = new FocusSessionizer("windows-device-1", "Asia/Seoul");
+        var snapshot = Snapshot(
+            hwnd: 100,
+            processId: 10,
+            processName: "Code.exe",
+            title: "Woong Monitor - Visual Studio Code",
+            timestampUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+
+        var result = sessionizer.Process(snapshot, isIdle: false);
+
+        Assert.Equal(10, result.CurrentSession.ProcessId);
+        Assert.Equal("Code.exe", result.CurrentSession.ProcessName);
+        Assert.Equal(@"C:\Apps\Code.exe", result.CurrentSession.ProcessPath);
+        Assert.Equal(100, result.CurrentSession.WindowHandle);
+        Assert.Null(result.CurrentSession.WindowTitle);
+    }
+
     private static ForegroundWindowSnapshot Snapshot(
         nint hwnd,
         int processId,

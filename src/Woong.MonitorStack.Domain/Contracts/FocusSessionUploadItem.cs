@@ -11,7 +11,12 @@ public sealed record FocusSessionUploadItem
         DateOnly localDate,
         string timezoneId,
         bool isIdle,
-        string source)
+        string source,
+        int? processId = null,
+        string? processName = null,
+        string? processPath = null,
+        long? windowHandle = null,
+        string? windowTitle = null)
     {
         ClientSessionId = RequiredContractText.Ensure(clientSessionId, nameof(clientSessionId));
         PlatformAppKey = RequiredContractText.Ensure(platformAppKey, nameof(platformAppKey));
@@ -22,6 +27,11 @@ public sealed record FocusSessionUploadItem
         TimezoneId = RequiredContractText.Ensure(timezoneId, nameof(timezoneId));
         IsIdle = isIdle;
         Source = RequiredContractText.Ensure(source, nameof(source));
+        ProcessId = processId;
+        ProcessName = NormalizeOptional(processName);
+        ProcessPath = NormalizeOptional(processPath);
+        WindowHandle = windowHandle;
+        WindowTitle = NormalizeOptional(windowTitle);
     }
 
     public string ClientSessionId { get; }
@@ -41,4 +51,17 @@ public sealed record FocusSessionUploadItem
     public bool IsIdle { get; }
 
     public string Source { get; }
+
+    public int? ProcessId { get; }
+
+    public string? ProcessName { get; }
+
+    public string? ProcessPath { get; }
+
+    public long? WindowHandle { get; }
+
+    public string? WindowTitle { get; }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value;
 }

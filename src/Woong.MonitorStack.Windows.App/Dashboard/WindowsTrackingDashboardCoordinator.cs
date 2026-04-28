@@ -102,8 +102,8 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DashboardPersistedSessionSnapshot? persistedSession)
         => new(
             AppName: session.PlatformAppKey,
-            ProcessName: session.PlatformAppKey,
-            WindowTitle: null,
+            ProcessName: session.ProcessName ?? session.PlatformAppKey,
+            WindowTitle: session.WindowTitle,
             CurrentSessionDuration: TimeSpan.FromMilliseconds(session.DurationMs),
             LastPersistedSession: persistedSession);
 
@@ -121,7 +121,12 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
                     session.LocalDate,
                     session.TimezoneId,
                     session.IsIdle,
-                    session.Source)
+                    session.Source,
+                    session.ProcessId,
+                    session.ProcessName,
+                    session.ProcessPath,
+                    session.WindowHandle,
+                    session.WindowTitle)
             ]);
 
         return JsonSerializer.Serialize(request, JsonOptions);

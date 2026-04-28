@@ -10,7 +10,12 @@ public sealed record FocusSession
         DateOnly localDate,
         string timezoneId,
         bool isIdle,
-        string source)
+        string source,
+        int? processId = null,
+        string? processName = null,
+        string? processPath = null,
+        long? windowHandle = null,
+        string? windowTitle = null)
     {
         ClientSessionId = RequireNonEmpty(clientSessionId, nameof(clientSessionId));
         DeviceId = RequireNonEmpty(deviceId, nameof(deviceId));
@@ -20,6 +25,11 @@ public sealed record FocusSession
         TimezoneId = RequireNonEmpty(timezoneId, nameof(timezoneId));
         IsIdle = isIdle;
         Source = RequireNonEmpty(source, nameof(source));
+        ProcessId = processId;
+        ProcessName = NormalizeOptional(processName);
+        ProcessPath = NormalizeOptional(processPath);
+        WindowHandle = windowHandle;
+        WindowTitle = NormalizeOptional(windowTitle);
     }
 
     public string ClientSessionId { get; }
@@ -44,6 +54,16 @@ public sealed record FocusSession
 
     public string Source { get; }
 
+    public int? ProcessId { get; }
+
+    public string? ProcessName { get; }
+
+    public string? ProcessPath { get; }
+
+    public long? WindowHandle { get; }
+
+    public string? WindowTitle { get; }
+
     public static FocusSession FromUtc(
         string clientSessionId,
         string deviceId,
@@ -52,7 +72,12 @@ public sealed record FocusSession
         DateTimeOffset endedAtUtc,
         string timezoneId,
         bool isIdle,
-        string source)
+        string source,
+        int? processId = null,
+        string? processName = null,
+        string? processPath = null,
+        long? windowHandle = null,
+        string? windowTitle = null)
     {
         var range = TimeRange.FromUtc(startedAtUtc, endedAtUtc);
 
@@ -64,11 +89,19 @@ public sealed record FocusSession
             LocalDateCalculator.GetLocalDate(range.StartedAtUtc, timezoneId),
             timezoneId,
             isIdle,
-            source);
+            source,
+            processId,
+            processName,
+            processPath,
+            windowHandle,
+            windowTitle);
     }
 
     private static string RequireNonEmpty(string value, string parameterName)
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException("Value must not be empty.", parameterName)
             : value;
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value;
 }

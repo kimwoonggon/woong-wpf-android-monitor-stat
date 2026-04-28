@@ -23,4 +23,14 @@ public sealed class FocusSessionEntity
     public bool IsIdle { get; set; }
 
     public string Source { get; set; } = "";
+
+    public int? ProcessId { get; set; }
+
+    public string? ProcessName { get; set; }
+
+    public string? ProcessPath { get; set; }
+
+    public long? WindowHandle { get; set; }
+
+    public string? WindowTitle { get; set; }
 }

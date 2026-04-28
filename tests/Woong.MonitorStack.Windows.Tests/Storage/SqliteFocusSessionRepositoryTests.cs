@@ -35,6 +35,40 @@ public sealed class SqliteFocusSessionRepositoryTests : IDisposable
     }
 
     [Fact]
+    public void SaveAndQueryByRange_RoundTripsProcessWindowMetadata()
+    {
+        var repository = new SqliteFocusSessionRepository($"Data Source={_dbPath};Pooling=False");
+        var session = FocusSession.FromUtc(
+            clientSessionId: "session-1",
+            deviceId: "windows-device-1",
+            platformAppKey: "Code.exe",
+            startedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+            timezoneId: "Asia/Seoul",
+            isIdle: false,
+            source: "foreground_window",
+            processId: 1234,
+            processName: "Code.exe",
+            processPath: @"C:\Apps\Code.exe",
+            windowHandle: 9876,
+            windowTitle: null);
+
+        repository.Initialize();
+        repository.Save(session);
+
+        var sessions = repository.QueryByRange(
+            new DateTimeOffset(2026, 4, 27, 23, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero));
+
+        var saved = Assert.Single(sessions);
+        Assert.Equal(1234, saved.ProcessId);
+        Assert.Equal("Code.exe", saved.ProcessName);
+        Assert.Equal(@"C:\Apps\Code.exe", saved.ProcessPath);
+        Assert.Equal(9876, saved.WindowHandle);
+        Assert.Null(saved.WindowTitle);
+    }
+
+    [Fact]
     public void Save_WhenClientSessionIdAlreadyExists_DoesNotInsertDuplicate()
     {
         var repository = new SqliteFocusSessionRepository($"Data Source={_dbPath};Pooling=False");

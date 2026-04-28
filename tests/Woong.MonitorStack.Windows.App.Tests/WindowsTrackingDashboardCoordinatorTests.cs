@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.Json;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
@@ -54,6 +55,14 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         Assert.Equal("focus_session", outbox.AggregateType);
         Assert.Equal(saved.ClientSessionId, outbox.AggregateId);
         Assert.Contains(saved.ClientSessionId, outbox.PayloadJson, StringComparison.Ordinal);
+        using JsonDocument payload = JsonDocument.Parse(outbox.PayloadJson);
+        JsonElement firstSession = payload.RootElement.GetProperty("sessions")[0];
+        Assert.Equal(10, firstSession.GetProperty("processId").GetInt32());
+        Assert.Equal("Code.exe", firstSession.GetProperty("processName").GetString());
+        Assert.Equal(@"C:\Apps\Code.exe", firstSession.GetProperty("processPath").GetString());
+        Assert.Equal(100, firstSession.GetProperty("windowHandle").GetInt64());
+        Assert.True(firstSession.TryGetProperty("windowTitle", out JsonElement windowTitle));
+        Assert.Equal(JsonValueKind.Null, windowTitle.ValueKind);
     }
 
     [Fact]

@@ -30,13 +30,23 @@ public sealed class SqliteFocusSessionRepository
                 local_date TEXT NOT NULL,
                 timezone_id TEXT NOT NULL,
                 is_idle INTEGER NOT NULL,
-                source TEXT NOT NULL
+                source TEXT NOT NULL,
+                process_id INTEGER NULL,
+                process_name TEXT NULL,
+                process_path TEXT NULL,
+                window_handle INTEGER NULL,
+                window_title TEXT NULL
             );
 
             CREATE INDEX IF NOT EXISTS ix_focus_session_started_at_utc
                 ON focus_session(started_at_utc);
             """;
         _ = command.ExecuteNonQuery();
+        EnsureColumn(connection, "process_id", "INTEGER NULL");
+        EnsureColumn(connection, "process_name", "TEXT NULL");
+        EnsureColumn(connection, "process_path", "TEXT NULL");
+        EnsureColumn(connection, "window_handle", "INTEGER NULL");
+        EnsureColumn(connection, "window_title", "TEXT NULL");
     }
 
     public void Save(FocusSession session)
@@ -56,7 +66,12 @@ public sealed class SqliteFocusSessionRepository
                 local_date,
                 timezone_id,
                 is_idle,
-                source
+                source,
+                process_id,
+                process_name,
+                process_path,
+                window_handle,
+                window_title
             ) VALUES (
                 $clientSessionId,
                 $deviceId,
@@ -67,7 +82,12 @@ public sealed class SqliteFocusSessionRepository
                 $localDate,
                 $timezoneId,
                 $isIdle,
-                $source
+                $source,
+                $processId,
+                $processName,
+                $processPath,
+                $windowHandle,
+                $windowTitle
             );
             """;
         AddCommonParameters(command, session);
@@ -88,7 +108,12 @@ public sealed class SqliteFocusSessionRepository
                 local_date,
                 timezone_id,
                 is_idle,
-                source
+                source,
+                process_id,
+                process_name,
+                process_path,
+                window_handle,
+                window_title
             FROM focus_session
             WHERE started_at_utc < $endedAtUtc
               AND ended_at_utc > $startedAtUtc
@@ -126,6 +151,11 @@ public sealed class SqliteFocusSessionRepository
         _ = command.Parameters.AddWithValue("$timezoneId", session.TimezoneId);
         _ = command.Parameters.AddWithValue("$isIdle", session.IsIdle ? 1 : 0);
         _ = command.Parameters.AddWithValue("$source", session.Source);
+        _ = command.Parameters.AddWithValue("$processId", (object?)session.ProcessId ?? DBNull.Value);
+        _ = command.Parameters.AddWithValue("$processName", (object?)session.ProcessName ?? DBNull.Value);
+        _ = command.Parameters.AddWithValue("$processPath", (object?)session.ProcessPath ?? DBNull.Value);
+        _ = command.Parameters.AddWithValue("$windowHandle", (object?)session.WindowHandle ?? DBNull.Value);
+        _ = command.Parameters.AddWithValue("$windowTitle", (object?)session.WindowTitle ?? DBNull.Value);
     }
 
     private static FocusSession ReadSession(SqliteDataReader reader)
@@ -139,8 +169,32 @@ public sealed class SqliteFocusSessionRepository
             DateOnly.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
             reader.GetString(6),
             reader.GetInt32(7) == 1,
-            reader.GetString(8));
+            reader.GetString(8),
+            reader.IsDBNull(9) ? null : reader.GetInt32(9),
+            reader.IsDBNull(10) ? null : reader.GetString(10),
+            reader.IsDBNull(11) ? null : reader.GetString(11),
+            reader.IsDBNull(12) ? null : reader.GetInt64(12),
+            reader.IsDBNull(13) ? null : reader.GetString(13));
 
     private static string FormatUtc(DateTimeOffset value)
         => value.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
+
+    private static void EnsureColumn(SqliteConnection connection, string columnName, string columnDefinition)
+    {
+        using SqliteCommand readColumns = connection.CreateCommand();
+        readColumns.CommandText = "PRAGMA table_info(focus_session);";
+
+        using SqliteDataReader reader = readColumns.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        using SqliteCommand addColumn = connection.CreateCommand();
+        addColumn.CommandText = $"ALTER TABLE focus_session ADD COLUMN {columnName} {columnDefinition};";
+        _ = addColumn.ExecuteNonQuery();
+    }
 }

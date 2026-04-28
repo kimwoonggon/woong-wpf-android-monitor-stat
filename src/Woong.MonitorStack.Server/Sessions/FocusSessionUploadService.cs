@@ -43,7 +43,12 @@ public sealed class FocusSessionUploadService
                 LocalDate = item.LocalDate,
                 TimezoneId = item.TimezoneId,
                 IsIdle = item.IsIdle,
-                Source = item.Source
+                Source = item.Source,
+                ProcessId = item.ProcessId,
+                ProcessName = item.ProcessName,
+                ProcessPath = item.ProcessPath,
+                WindowHandle = item.WindowHandle,
+                WindowTitle = item.WindowTitle
             });
             results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Accepted, ErrorMessage: null));
         }

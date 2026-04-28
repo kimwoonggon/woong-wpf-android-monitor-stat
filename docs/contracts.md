@@ -1,6 +1,6 @@
 # Common Domain And API Contract Policy
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 ## Time And Date
 
@@ -24,12 +24,20 @@ Updated: 2026-04-28
 ## Upload Idempotency
 
 - Focus session uploads must include `clientSessionId`.
+- Focus session uploads may include Windows metadata fields:
+  `processId`, `processName`, `processPath`, `windowHandle`, and `windowTitle`.
+  These fields are nullable so Android app-usage sessions and privacy-masked
+  Windows sessions can use the same endpoint.
 - Raw event uploads must include `clientEventId`.
 - Current upload endpoints are `POST /api/focus-sessions/upload`,
   `POST /api/web-sessions/upload`, and `POST /api/raw-events/upload`.
 - Server idempotency will be based on `deviceId + clientSessionId` for sessions
   and `deviceId + clientEventId` for raw events.
 - Batch responses use `UploadItemStatus`: `Accepted`, `Duplicate`, or `Error`.
+
+Window titles can expose sensitive context. Windows should send `windowTitle`
+only when the user's privacy setting allows it; process id/name/path and HWND
+metadata are the safe default metadata for process/window duration tracking.
 
 ## Daily Summary Query
 

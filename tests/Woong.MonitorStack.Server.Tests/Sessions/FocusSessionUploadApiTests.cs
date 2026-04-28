@@ -28,7 +28,12 @@ public sealed class FocusSessionUploadApiTests
             localDate: new DateOnly(2026, 4, 28),
             timezoneId: "Asia/Seoul",
             isIdle: false,
-            source: "foreground_window");
+            source: "foreground_window",
+            processId: 4321,
+            processName: "chrome.exe",
+            processPath: @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            windowHandle: 123456,
+            windowTitle: null);
         var request = new UploadFocusSessionsRequest(deviceId, [session]);
 
         HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/focus-sessions/upload", request);
@@ -49,6 +54,11 @@ public sealed class FocusSessionUploadApiTests
         Assert.Equal("chrome.exe", persisted.PlatformAppKey);
         Assert.Equal(600_000, persisted.DurationMs);
         Assert.False(persisted.IsIdle);
+        Assert.Equal(4321, persisted.ProcessId);
+        Assert.Equal("chrome.exe", persisted.ProcessName);
+        Assert.Equal(@"C:\Program Files\Google\Chrome\Application\chrome.exe", persisted.ProcessPath);
+        Assert.Equal(123456, persisted.WindowHandle);
+        Assert.Null(persisted.WindowTitle);
     }
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()

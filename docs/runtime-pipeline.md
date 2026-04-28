@@ -13,8 +13,9 @@ User clicks Start
   -> Foreground reader captures current window metadata
   -> Idle reader captures last input timestamp
   -> FocusSessionizer closes/starts focus sessions on app/window/idle changes
-  -> Closed focus sessions are persisted to Windows local SQLite
-  -> Outbox rows are enqueued for sync
+  -> Closed focus sessions are persisted to Windows local SQLite with safe
+     process/window metadata
+  -> Outbox rows are enqueued for sync with the same metadata
   -> Browser reader/sessionizer creates web sessions when URL/domain is known
   -> Dashboard reads current state plus SQLite-backed period statistics
   -> User clicks Stop
@@ -36,6 +37,11 @@ Required current activity UI:
 
 The WPF app must make collection visible. No Windows tracking should run as a
 hidden background behavior in MVP.
+
+Focus sessions now carry nullable process/window metadata through the local and
+server sync path: process id, process name, executable path, window handle, and
+window title. Window title remains nullable and should be sent only when the
+user's privacy setting allows it.
 
 ## Browser Runtime Pipeline
 

@@ -35,6 +35,9 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(session => session.PlatformAppKey).HasMaxLength(256).IsRequired();
             entity.Property(session => session.TimezoneId).HasMaxLength(128).IsRequired();
             entity.Property(session => session.Source).HasMaxLength(128).IsRequired();
+            entity.Property(session => session.ProcessName).HasMaxLength(256);
+            entity.Property(session => session.ProcessPath).HasMaxLength(1024);
+            entity.Property(session => session.WindowTitle).HasMaxLength(512);
             entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
         });
 

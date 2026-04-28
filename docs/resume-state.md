@@ -4,12 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 23 native messaging host manifest slice. Browser domain tracking now
-has privacy-safe snapshots, URL sanitizer policy enforcement before raw event
-persistence, snapshot-based WebSession creation, local SQLite capture
-provenance, `web_session` outbox payloads, server duplicate handling for
-domain-only payloads with `Url = null`, and a Windows-side generator for the
-Chrome native messaging host manifest JSON.
+Milestone 24 integrated schema restoration slice. Focus sessions now preserve
+safe process/window metadata through Windows sessionization, Windows local
+SQLite, focus-session outbox payloads, shared upload DTOs, and the server
+integrated DB. Web-session nullable URL/title plus capture provenance are
+covered by server schema tests and the new server migration.
 
 ## Completed
 
@@ -180,6 +179,29 @@ Chrome native messaging host manifest JSON.
 - Verified coverage generation with `scripts/test-coverage.ps1`; current
   overall line coverage is 92.7%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 92.4%, Windows.App 85.0%, and Server 96.0%.
+- Added nullable process/window metadata fields to `FocusSession` and
+  `FocusSessionUploadItem`: `ProcessId`, `ProcessName`, `ProcessPath`,
+  `WindowHandle`, and `WindowTitle`.
+- Updated `FocusSessionizer` to preserve safe process id/name/path and window
+  handle from foreground snapshots while leaving `WindowTitle` null until a
+  privacy setting explicitly allows it.
+- Updated `SqliteFocusSessionRepository` to create and backfill local
+  `focus_session` metadata columns and round-trip them in queries.
+- Updated the WPF tracking coordinator's `focus_session` outbox payload to
+  include the same metadata.
+- Updated server `FocusSessionEntity`, EF mapping, and upload service so the
+  integrated DB persists the metadata.
+- Added server schema tests for required focus process/window fields and web
+  nullable URL/title plus capture provenance fields.
+- Generated server migration
+  `20260428165251_AddFocusSessionWindowMetadata`, which also captures prior
+  web-session nullable URL/title and capture provenance schema changes.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
+  -v minimal`; all 154 .NET tests passed.
+- Verified coverage generation with `scripts/test-coverage.ps1`; current
+  overall line coverage is 92.8%, Domain 89.3%, Windows.Presentation 97.6%,
+  Windows 92.5%, Windows.App 85.3%, and Server 96.1%.
 - Added `docs/coding-guide.md` as the project-wide coding guide for future
   slices.
 - Reopened `total_todolist.md` for Original Intent Restoration and changed the
@@ -635,7 +657,9 @@ Chrome native messaging host manifest JSON.
 
 ## Next Highest Priority
 
-Move to Milestone 24 schema restoration/migrations with TDD. The WPF browser
-connection status UI remains deferred per the latest priority decision because
-non-UI tracking/schema correctness is more important right now. Physical
-Android resource measurement remains blocked until a device is connected.
+Continue Milestone 24 with TDD by adding server
+`device_state_sessions` and app family mapping tables/entities/tests. The WPF
+browser connection status UI remains deferred per the latest priority decision
+because non-UI tracking/schema correctness is more important right now.
+Physical Android resource measurement remains blocked until a device is
+connected.
