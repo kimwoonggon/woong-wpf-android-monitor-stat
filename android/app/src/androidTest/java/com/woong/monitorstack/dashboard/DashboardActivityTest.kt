@@ -6,6 +6,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.woong.monitorstack.R
 import org.junit.Rule
 import org.junit.Test
@@ -21,9 +22,13 @@ class DashboardActivityTest {
         onView(withId(R.id.dashboardRoot)).check(matches(isDisplayed()))
         onView(withId(R.id.todayFilterButton)).check(matches(isDisplayed()))
         onView(withId(R.id.totalActiveCard)).check(matches(isDisplayed()))
+        onView(withId(R.id.totalActiveText)).check(matches(isDisplayed()))
         onView(withId(R.id.topAppCard)).check(matches(isDisplayed()))
+        onView(withId(R.id.topAppText)).check(matches(isDisplayed()))
         onView(withId(R.id.idleCard)).check(matches(isDisplayed()))
+        onView(withId(R.id.idleText)).check(matches(isDisplayed()))
         onView(withId(R.id.usageAccessSettingsButton)).check(matches(isDisplayed()))
+        onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
         onView(withId(R.id.recentSessionsList)).check(matches(isDisplayed()))
     }
 }

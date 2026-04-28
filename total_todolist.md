@@ -228,9 +228,10 @@ the finished slice is committed and pushed.
 - [x] Add recent sessions RecyclerView.
 - [x] Test ViewModel state updates.
 - [x] Add Room-backed dashboard aggregation.
+- [x] Bind DashboardActivity to Room-backed dashboard data.
 - [x] Test DashboardActivity display with Espresso.
 - [ ] Test today/yesterday/recent 7 days filters.
-- [ ] Test empty state.
+- [x] Test empty state.
 - [ ] Test usage access guidance.
 - [ ] Commit and push Milestone 9.
 

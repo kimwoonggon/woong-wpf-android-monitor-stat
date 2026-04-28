@@ -1,38 +1,103 @@
 package com.woong.monitorstack.dashboard
 
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 
 class DashboardActivity : AppCompatActivity() {
+    private lateinit var viewModel: DashboardViewModel
+    private val sessionAdapter = SessionsAdapter()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val database = MonitorDatabase.getInstance(this)
+        viewModel = DashboardViewModel(RoomDashboardRepository(database.focusSessionDao()))
+
         binding.recentSessionsList.layoutManager = LinearLayoutManager(this)
-        binding.recentSessionsList.adapter = EmptySessionsAdapter()
+        binding.recentSessionsList.adapter = sessionAdapter
 
         val usageAccessSettings = UsageAccessSettingsIntentFactory()
         binding.usageAccessSettingsButton.setOnClickListener {
             startActivity(usageAccessSettings.createIntent())
         }
-    }
-
-    private class EmptySessionsAdapter : RecyclerView.Adapter<EmptySessionViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmptySessionViewHolder {
-            return EmptySessionViewHolder(TextView(parent.context))
+        binding.todayFilterButton.setOnClickListener { loadPeriod(binding, DashboardPeriod.Today) }
+        binding.yesterdayFilterButton.setOnClickListener { loadPeriod(binding, DashboardPeriod.Yesterday) }
+        binding.recent7DaysFilterButton.setOnClickListener {
+            loadPeriod(binding, DashboardPeriod.Recent7Days)
         }
 
-        override fun onBindViewHolder(holder: EmptySessionViewHolder, position: Int) = Unit
-
-        override fun getItemCount(): Int = 0
+        loadPeriod(binding, DashboardPeriod.Today)
     }
 
-    private class EmptySessionViewHolder(view: TextView) : RecyclerView.ViewHolder(view)
+    private fun loadPeriod(binding: ActivityDashboardBinding, period: DashboardPeriod) {
+        Thread {
+            viewModel.selectPeriod(period)
+            runOnUiThread { render(binding, viewModel.state) }
+        }.start()
+    }
+
+    private fun render(binding: ActivityDashboardBinding, state: DashboardUiState) {
+        binding.totalActiveText.text = formatDuration(state.totalActiveMs)
+        binding.topAppText.text = state.topAppPackageName ?: getString(com.woong.monitorstack.R.string.no_top_app)
+        binding.idleText.text = formatDuration(state.idleMs)
+        binding.emptySessionsText.visibility = if (state.recentSessions.isEmpty()) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+        sessionAdapter.submit(state.recentSessions)
+    }
+
+    private fun formatDuration(durationMs: Long): String {
+        val totalMinutes = durationMs / 60_000
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+
+        return if (hours > 0) {
+            "${hours}h ${minutes}m"
+        } else {
+            "${minutes}m"
+        }
+    }
+
+    private class SessionsAdapter : RecyclerView.Adapter<SessionViewHolder>() {
+        private val sessions = mutableListOf<DashboardSessionRow>()
+
+        fun submit(rows: List<DashboardSessionRow>) {
+            sessions.clear()
+            sessions.addAll(rows)
+            notifyDataSetChanged()
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
+            val textView = TextView(parent.context)
+            textView.setPadding(0, 12, 0, 12)
+
+            return SessionViewHolder(textView)
+        }
+
+        override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
+            holder.bind(sessions[position])
+        }
+
+        override fun getItemCount(): Int = sessions.size
+    }
+
+    private class SessionViewHolder(
+        private val textView: TextView
+    ) : RecyclerView.ViewHolder(textView) {
+        fun bind(row: DashboardSessionRow) {
+            textView.text = "${row.startedAtLocalText}  ${row.packageName}  ${row.durationText}"
+        }
+    }
 }

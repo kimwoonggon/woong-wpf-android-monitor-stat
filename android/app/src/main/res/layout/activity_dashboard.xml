@@ -50,21 +50,36 @@
             android:text="@string/filter_recent_7_days" />
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:id="@+id/totalActiveCard"
         android:layout_width="0dp"
         android:layout_height="72dp"
         android:layout_marginTop="20dp"
         android:background="#F4F7FB"
         android:gravity="center_vertical"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:text="@string/total_active"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toStartOf="@id/topAppCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/periodFilters" />
+        app:layout_constraintTop_toBottomOf="@id/periodFilters">
 
-    <TextView
+        <TextView
+            android:id="@+id/totalActiveLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_active"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/totalActiveText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/zero_duration"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/topAppCard"
         android:layout_width="0dp"
         android:layout_height="72dp"
@@ -72,26 +87,56 @@
         android:layout_marginTop="20dp"
         android:background="#F3F8F5"
         android:gravity="center_vertical"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:text="@string/top_app"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/totalActiveCard"
-        app:layout_constraintTop_toBottomOf="@id/periodFilters" />
+        app:layout_constraintTop_toBottomOf="@id/periodFilters">
 
-    <TextView
+        <TextView
+            android:id="@+id/topAppLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/top_app"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/topAppText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_top_app"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/idleCard"
         android:layout_width="0dp"
         android:layout_height="72dp"
         android:layout_marginTop="8dp"
         android:background="#FFF8E6"
         android:gravity="center_vertical"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:text="@string/idle_time"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/totalActiveCard" />
+        app:layout_constraintTop_toBottomOf="@id/totalActiveCard">
+
+        <TextView
+            android:id="@+id/idleLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/idle_time"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+
+        <TextView
+            android:id="@+id/idleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/zero_duration"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/usageAccessSettingsButton"
@@ -122,5 +167,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recentSessionsTitle" />
+
+    <TextView
+        android:id="@+id/emptySessionsText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/empty_sessions"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+        app:layout_constraintBottom_toBottomOf="@id/recentSessionsList"
+        app:layout_constraintEnd_toEndOf="@id/recentSessionsList"
+        app:layout_constraintStart_toStartOf="@id/recentSessionsList"
+        app:layout_constraintTop_toTopOf="@id/recentSessionsList" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

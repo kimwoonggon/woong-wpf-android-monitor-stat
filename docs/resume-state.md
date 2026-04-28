@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 9 Android DashboardActivity XML surface.
+Milestone 9 Android DashboardActivity data binding and empty state.
 
 ## Completed
 
@@ -199,6 +199,11 @@ Milestone 9 Android DashboardActivity XML surface.
   `RecyclerView`.
 - Added Espresso smoke test for DashboardActivity display and verified the
   androidTest APK compiles.
+- Bound DashboardActivity period buttons to the Room-backed dashboard
+  repository through `DashboardViewModel`.
+- Added visible value fields for active time, top app, and idle time.
+- Added empty recent-session state text and covered it from the Espresso smoke
+  surface.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -212,6 +217,6 @@ Milestone 9 Android DashboardActivity XML surface.
 
 Continue Milestone 9 Android XML Dashboard MVP:
 
-1. Bind DashboardActivity to Room-backed dashboard data.
-2. Add empty-state and usage-access guidance assertions.
-3. Add SessionsActivity or SessionsFragment.
+1. Add explicit usage-access guidance assertion.
+2. Add SessionsActivity or SessionsFragment.
+3. Add MPAndroidChart dependency decision and chart placeholders/data binding.
