@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 6 Windows sync duplicate-safe path.
+Milestone 6 Windows HTTP sync client token placeholder.
 
 ## Completed
 
@@ -130,6 +130,11 @@ Milestone 6 Windows sync duplicate-safe path.
   count, and stores the server error message.
 - Verified server `Duplicate` upload results are treated as synced so retrying
   an already accepted payload does not keep failing locally.
+- Added HTTP Windows sync API client for focus, web, and raw outbox aggregate
+  types.
+- Added `WindowsSyncClientOptions` with a required device token placeholder.
+- Verified the HTTP client posts the raw outbox payload to the matching server
+  endpoint with the `X-Device-Token` header.
 - Added `docs/contracts.md` for time/date, device, upload idempotency, and web
   domain policy.
 - Verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
@@ -140,6 +145,6 @@ Milestone 6 Windows sync duplicate-safe path.
 
 Continue Milestone 6 Windows Sync:
 
-1. Add device token/auth placeholder.
-2. Add sync checkpoint handling.
-3. Add an HTTP sync API client/payload mapper for local outbox payloads.
+1. Add sync checkpoint handling.
+2. Verify Windows local data upload flow through the HTTP sync client.
+3. Mark Milestone 6 committed/pushed, then continue Android project setup.

@@ -170,7 +170,7 @@ the finished slice is committed and pushed.
 - [x] Define sync API client.
 - [x] Implement Windows sync worker.
 - [x] Implement retry policy.
-- [ ] Add device token/auth placeholder.
+- [x] Add device token/auth placeholder.
 - [ ] Add sync checkpoint handling.
 - [x] Test fake API sync success.
 - [x] Test fake API sync failure retry.
