@@ -342,6 +342,19 @@ the finished slice is committed and pushed.
 - [x] Run restore/build/test/coverage/report generation/smoke validation.
 - [x] Commit and push architecture quality gate.
 
+## Milestone 15: Completion Audit
+
+- [x] Check `docs/prd.md` and `total_todolist.md` for conflicts.
+- [x] Confirm the only unchecked TODO is physical Android resource measurement.
+- [x] Search source, tests, tools, Android, and docs for hidden TODO/FIXME/HACK/NotImplemented markers.
+- [x] Check Android device availability with `adb devices -l`.
+- [x] Rerun .NET restore/build/test.
+- [x] Rerun coverage collection and report generation.
+- [x] Rerun Windows smoke tool.
+- [x] Rerun Android unit tests and debug build.
+- [x] Document completion audit and the external physical-device blocker.
+- [ ] Commit and push completion audit.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.
@@ -352,4 +365,4 @@ the finished slice is committed and pushed.
 - [x] Local DB/server integrated DB separation is preserved.
 - [x] Daily integrated summary works across Windows + Android.
 - [x] Final documentation is complete.
-- [x] Final commit is pushed to `origin`.
+- [ ] Final commit is pushed to `origin`.

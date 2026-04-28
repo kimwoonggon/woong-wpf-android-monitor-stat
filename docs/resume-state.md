@@ -35,6 +35,10 @@ Generic Host DI startup, MVVM coverage tests, and coverage reporting.
 - Verified `dotnet restore`, `dotnet build --no-restore`,
   `dotnet test --no-build`, coverage collection/report generation, and Windows
   smoke tool.
+- Added `docs/completion-audit.md` after checking PRD/TODO consistency,
+  hidden TODO/FIXME markers, Android device availability, and the full
+  validation matrix. The only remaining item is physical Android resource
+  measurement, blocked by no attached device.
 - Added root `AGENTS.md` with mandatory installed skill usage and always-on
   todo/test/build/commit/push workflow.
 - Added `total_todolist.md` as the full PRD checklist.

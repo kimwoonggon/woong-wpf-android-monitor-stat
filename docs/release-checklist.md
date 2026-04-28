@@ -59,5 +59,6 @@ Use this checklist for the Milestone 12 release-candidate pass.
   Messaging.
 - [x] Generate production EF Core migrations before production PostgreSQL use.
 - [ ] Repeat Android resource measurements on a physical device.
+  Checked again on 2026-04-28 with `adb devices -l`; no device was attached.
 - [x] Add longer-running Windows collector profiling once continuous background
   tracking is enabled.
