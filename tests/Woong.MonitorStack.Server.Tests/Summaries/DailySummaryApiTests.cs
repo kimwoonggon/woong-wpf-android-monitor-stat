@@ -31,10 +31,8 @@ public sealed class DailySummaryApiTests
         Assert.Equal(240_000, root.GetProperty("totalWebMs").GetInt64());
 
         JsonElement topApps = root.GetProperty("topApps");
-        Assert.Equal("chrome.exe", topApps[0].GetProperty("key").GetString());
-        Assert.Equal(600_000, topApps[0].GetProperty("durationMs").GetInt64());
-        Assert.Equal("com.android.chrome", topApps[1].GetProperty("key").GetString());
-        Assert.Equal(300_000, topApps[1].GetProperty("durationMs").GetInt64());
+        Assert.Equal("Chrome", topApps[0].GetProperty("key").GetString());
+        Assert.Equal(900_000, topApps[0].GetProperty("durationMs").GetInt64());
 
         JsonElement topDomain = root.GetProperty("topDomains")[0];
         Assert.Equal("example.com", topDomain.GetProperty("key").GetString());

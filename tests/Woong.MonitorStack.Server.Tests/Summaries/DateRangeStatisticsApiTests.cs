@@ -32,10 +32,8 @@ public sealed class DateRangeStatisticsApiTests
         Assert.Equal(540_000, root.GetProperty("totalWebMs").GetInt64());
 
         JsonElement topApps = root.GetProperty("topApps");
-        Assert.Equal("chrome.exe", topApps[0].GetProperty("key").GetString());
-        Assert.Equal(900_000, topApps[0].GetProperty("durationMs").GetInt64());
-        Assert.Equal("com.android.chrome", topApps[1].GetProperty("key").GetString());
-        Assert.Equal(600_000, topApps[1].GetProperty("durationMs").GetInt64());
+        Assert.Equal("Chrome", topApps[0].GetProperty("key").GetString());
+        Assert.Equal(1_500_000, topApps[0].GetProperty("durationMs").GetInt64());
 
         JsonElement topDomains = root.GetProperty("topDomains");
         Assert.Equal("example.com", topDomains[0].GetProperty("key").GetString());

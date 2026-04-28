@@ -4,7 +4,7 @@ Updated: 2026-04-28
 
 ## Last Completed Slice
 
-Milestone 11 server daily summary aggregation.
+Milestone 11 server app family mapping.
 
 ## Completed
 
@@ -279,6 +279,12 @@ Milestone 11 server daily summary aggregation.
 - Verified persisted daily summary totals combine Windows + Android devices,
   exclude idle time from active totals, compute top apps/domains, and ignore
   another user's data.
+- Added initial server `AppFamilyMapper` so known Windows/Android platform app
+  keys such as `chrome.exe` and `com.android.chrome` roll up into `Chrome`.
+- Updated daily summary and date-range top app aggregation to group by app
+  family labels.
+- Verified persisted and API summary top apps combine Windows + Android Chrome
+  durations under one `Chrome` row.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace`.
 - Verified `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`.
@@ -294,6 +300,6 @@ Milestone 11 server daily summary aggregation.
 
 Continue Milestone 11 Integrated Daily Summary:
 
-1. Add app family mapping for integrated top apps.
-2. Verify timezone boundary behavior.
-3. Verify duplicate data does not inflate summaries.
+1. Verify timezone boundary behavior.
+2. Verify duplicate data does not inflate summaries.
+3. Verify Windows/Android clients can query the integrated summary.

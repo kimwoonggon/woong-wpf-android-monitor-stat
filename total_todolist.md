@@ -262,7 +262,7 @@ the finished slice is committed and pushed.
 - [x] Implement server daily aggregation job.
 - [x] Aggregate Windows + Android active time.
 - [x] Exclude idle time from active totals.
-- [ ] Add app family mapping.
+- [x] Add app family mapping.
 - [x] Compute top app.
 - [x] Compute top domain.
 - [ ] Respect user timezone local date.

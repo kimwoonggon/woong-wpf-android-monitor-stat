@@ -37,7 +37,7 @@ public sealed class DailySummaryQueryService
 
         List<UsageTotal> topApps = focusSessions
             .Where(session => !session.IsIdle)
-            .GroupBy(session => session.PlatformAppKey)
+            .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
             .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
@@ -98,7 +98,7 @@ public sealed class DailySummaryQueryService
 
         List<UsageTotal> topApps = focusSessions
             .Where(session => !session.IsIdle)
-            .GroupBy(session => session.PlatformAppKey)
+            .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
             .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
