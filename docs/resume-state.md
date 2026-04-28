@@ -39,6 +39,14 @@ Generic Host DI startup, MVVM coverage tests, and coverage reporting.
   hidden TODO/FIXME markers, Android device availability, and the full
   validation matrix. The only remaining item is physical Android resource
   measurement, blocked by no attached device.
+- Added local WPF UI snapshot automation with FlaUI under
+  `tools/Woong.MonitorStack.Windows.UiSnapshots`, stable MainWindow
+  AutomationIds, `scripts/run-ui-snapshots.ps1`, and
+  `docs/ui-snapshot-testing.md`.
+- Verified `scripts/run-ui-snapshots.ps1` locally. It created
+  `artifacts/ui-snapshots/latest/` with `01-startup.png`,
+  `02-dashboard-after-refresh.png`, `03-dashboard-period-change.png`,
+  `04-settings.png`, optional visible crops, and `report.md`.
 - Added root `AGENTS.md` with mandatory installed skill usage and always-on
   todo/test/build/commit/push workflow.
 - Added `total_todolist.md` as the full PRD checklist.

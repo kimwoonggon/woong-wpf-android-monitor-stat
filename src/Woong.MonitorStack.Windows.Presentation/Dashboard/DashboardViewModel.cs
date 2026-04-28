@@ -95,6 +95,10 @@ public sealed partial class DashboardViewModel : ObservableObject
     private void SelectDashboardPeriod(DashboardPeriod period)
         => SelectPeriod(period);
 
+    [RelayCommand]
+    private void RefreshDashboard()
+        => RefreshSummary(ResolveRange(SelectedPeriod));
+
     private void RefreshSummary(TimeRange range)
     {
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);

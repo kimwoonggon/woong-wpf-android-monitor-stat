@@ -7,6 +7,7 @@
         xmlns:dashboard="clr-namespace:Woong.MonitorStack.Windows.Presentation.Dashboard;assembly=Woong.MonitorStack.Windows.Presentation"
         mc:Ignorable="d"
         Title="Woong Monitor Stack"
+        AutomationProperties.AutomationId="MainWindow"
         Width="1040"
         Height="680"
         MinWidth="860"
@@ -34,23 +35,33 @@
 
         <StackPanel Grid.Row="1"
                     Margin="0,20,0,18"
+                    AutomationProperties.AutomationId="PeriodSelector"
                     Orientation="Horizontal">
+            <Button Content="Refresh"
+                    AutomationProperties.AutomationId="RefreshButton"
+                    Command="{Binding RefreshDashboardCommand}"
+                    Padding="14,8"
+                    Margin="0,0,16,0" />
             <Button Content="Today"
+                    AutomationProperties.AutomationId="TodayPeriodButton"
                     Command="{Binding SelectDashboardPeriodCommand}"
                     CommandParameter="{x:Static dashboard:DashboardPeriod.Today}"
                     Padding="14,8"
                     Margin="0,0,8,0" />
             <Button Content="1h"
+                    AutomationProperties.AutomationId="LastHourPeriodButton"
                     Command="{Binding SelectDashboardPeriodCommand}"
                     CommandParameter="{x:Static dashboard:DashboardPeriod.LastHour}"
                     Padding="14,8"
                     Margin="0,0,8,0" />
             <Button Content="6h"
+                    AutomationProperties.AutomationId="Last6HoursPeriodButton"
                     Command="{Binding SelectDashboardPeriodCommand}"
                     CommandParameter="{x:Static dashboard:DashboardPeriod.Last6Hours}"
                     Padding="14,8"
                     Margin="0,0,8,0" />
             <Button Content="24h"
+                    AutomationProperties.AutomationId="Last24HoursPeriodButton"
                     Command="{Binding SelectDashboardPeriodCommand}"
                     CommandParameter="{x:Static dashboard:DashboardPeriod.Last24Hours}"
                     Padding="14,8" />
@@ -63,7 +74,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <ItemsControl ItemsSource="{Binding SummaryCards}">
+            <ItemsControl AutomationProperties.AutomationId="SummaryCardsContainer"
+                          ItemsSource="{Binding SummaryCards}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="3" />
@@ -92,52 +104,54 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Border Grid.Row="1"
-                    Margin="0,22,0,0"
-                    Padding="18"
-                    CornerRadius="8"
-                    Background="White"
-                    BorderBrush="#DCE1E8"
-                    BorderThickness="1">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <ContentControl Grid.Row="1"
+                            Margin="0,22,0,0"
+                            AutomationProperties.AutomationId="ChartArea">
+                <Border Padding="18"
+                        CornerRadius="8"
+                        Background="White"
+                        BorderBrush="#DCE1E8"
+                        BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Activity"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#18202A" />
-                    <TextBlock Grid.Column="1"
-                               Text="Apps"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#18202A" />
-                    <TextBlock Grid.Column="2"
-                               Text="Domains"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               Foreground="#18202A" />
+                        <TextBlock Text="Activity"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#18202A" />
+                        <TextBlock Grid.Column="1"
+                                   Text="Apps"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#18202A" />
+                        <TextBlock Grid.Column="2"
+                                   Text="Domains"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#18202A" />
 
-                    <lvc:CartesianChart Grid.Row="1"
-                                        MinHeight="220"
-                                        Series="{Binding HourlyActivityChart.Series}" />
-                    <lvc:CartesianChart Grid.Row="1"
-                                        Grid.Column="1"
-                                        MinHeight="220"
-                                        Series="{Binding AppUsageChart.Series}" />
-                    <lvc:PieChart Grid.Row="1"
-                                  Grid.Column="2"
-                                  MinHeight="220"
-                                  Series="{Binding DomainUsageSeries}" />
-                </Grid>
-            </Border>
+                        <lvc:CartesianChart Grid.Row="1"
+                                            MinHeight="220"
+                                            Series="{Binding HourlyActivityChart.Series}" />
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Grid.Column="1"
+                                            MinHeight="220"
+                                            Series="{Binding AppUsageChart.Series}" />
+                        <lvc:PieChart Grid.Row="1"
+                                      Grid.Column="2"
+                                      MinHeight="220"
+                                      Series="{Binding DomainUsageSeries}" />
+                    </Grid>
+                </Border>
+            </ContentControl>
 
             <Border Grid.Row="2"
                     Margin="0,16,0,0"
@@ -146,9 +160,11 @@
                     Background="White"
                     BorderBrush="#DCE1E8"
                     BorderThickness="1">
-                <TabControl>
-                    <TabItem Header="App Sessions">
+                <TabControl AutomationProperties.AutomationId="DashboardTabs">
+                    <TabItem Header="App Sessions"
+                             AutomationProperties.AutomationId="AppSessionsTab">
                         <DataGrid Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="RecentAppSessionsList"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
@@ -171,8 +187,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
-                    <TabItem Header="Web Sessions">
+                    <TabItem Header="Web Sessions"
+                             AutomationProperties.AutomationId="WebSessionsTab">
                         <DataGrid Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="RecentWebSessionsList"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
@@ -195,8 +213,10 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
-                    <TabItem Header="Live Event Log">
+                    <TabItem Header="Live Event Log"
+                             AutomationProperties.AutomationId="LiveEventsTab">
                         <DataGrid Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="LiveEventsList"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
@@ -216,7 +236,8 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
-                    <TabItem Header="Settings">
+                    <TabItem Header="Settings"
+                             AutomationProperties.AutomationId="SettingsTab">
                         <Grid Margin="0,12,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />

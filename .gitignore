@@ -14,6 +14,8 @@ TestResults/
 artifacts/logs/
 artifacts/TestResults/
 artifacts/coverage/
+artifacts/ui-snapshots/
+artifacts/ui-diffs/
 coverage/
 
 # IDE

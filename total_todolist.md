@@ -355,6 +355,30 @@ the finished slice is committed and pushed.
 - [x] Document completion audit and the external physical-device blocker.
 - [x] Commit and push completion audit.
 
+## Milestone 16: Local WPF UI Snapshot Automation
+
+- [x] Add stable MainWindow AutomationIds for local UI automation.
+- [x] Add Refresh command/button for snapshot interaction.
+- [x] Add WPF app smoke test that verifies snapshot AutomationIds.
+- [x] Create `tools/Woong.MonitorStack.Windows.UiSnapshots` with FlaUI.
+- [x] Launch the WPF app from the snapshot tool.
+- [x] Capture `01-startup.png`.
+- [x] Click Refresh and capture `02-dashboard-after-refresh.png`.
+- [x] Change period and capture `03-dashboard-period-change.png`.
+- [x] Navigate to Settings and capture `04-settings.png`.
+- [x] Save snapshots under `artifacts/ui-snapshots/<timestamp>/`.
+- [x] Update `artifacts/ui-snapshots/latest/`.
+- [x] Generate `report.md` with pass/fail notes.
+- [x] Add optional region crops where visible.
+- [x] Add `scripts/run-ui-snapshots.ps1`.
+- [x] Ignore UI snapshot and diff artifacts.
+- [x] Document local-only UI snapshot testing in `docs/ui-snapshot-testing.md`.
+- [x] Document remaining UI automation gaps: visual regression gate, CI, installer flow, multi-DPI/theme matrix, strict pixel diffing, and more reliable chart-area crop support.
+- [x] Verify `scripts/run-ui-snapshots.ps1` creates `artifacts/ui-snapshots/latest/report.md` and primary screenshots.
+- [x] Run WPF app tests after AutomationId additions.
+- [x] Run solution restore/build/test after adding the snapshot tool.
+- [ ] Commit and push local WPF UI snapshot automation.
+
 ## Final Definition Of Done
 
 - [x] All PRD requirements reflected in code/tests/docs.
@@ -365,4 +389,4 @@ the finished slice is committed and pushed.
 - [x] Local DB/server integrated DB separation is preserved.
 - [x] Daily integrated summary works across Windows + Android.
 - [x] Final documentation is complete.
-- [x] Final commit is pushed to `origin`.
+- [ ] Final commit is pushed to `origin`.

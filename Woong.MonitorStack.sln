@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Architecture.Tests", "tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj", "{780DBA11-970A-4864-95B3-1A44A6502982}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.UiSnapshots", "tools\Woong.MonitorStack.Windows.UiSnapshots\Woong.MonitorStack.Windows.UiSnapshots.csproj", "{D9B6509A-AC95-4389-A044-154E3A77F9C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -201,6 +203,18 @@ Global
 		{780DBA11-970A-4864-95B3-1A44A6502982}.Release|x64.Build.0 = Release|Any CPU
 		{780DBA11-970A-4864-95B3-1A44A6502982}.Release|x86.ActiveCfg = Release|Any CPU
 		{780DBA11-970A-4864-95B3-1A44A6502982}.Release|x86.Build.0 = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|x64.Build.0 = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Debug|x86.Build.0 = Debug|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|x64.ActiveCfg = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|x64.Build.0 = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|x86.ActiveCfg = Release|Any CPU
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -211,5 +225,6 @@ Global
 		{1F092BC5-C7E0-4D36-92C5-14FCA61B2CC8} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{D24F9D2D-098F-44C5-B20C-B9C519F81E10} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{780DBA11-970A-4864-95B3-1A44A6502982} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D9B6509A-AC95-4389-A044-154E3A77F9C3} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal
