@@ -9,6 +9,10 @@ the active Windows desktop, monitor layout, DPI, focus, rendering timing, and
 installed desktop dependencies. Unit and component tests remain the reliable
 quality gate; UI snapshots are a local visual aid.
 
+Privacy boundary tests verify that this tool captures only the launched Woong
+Monitor WPF window or elements inside it. It must not use desktop-wide,
+arbitrary screen, or other-app capture as telemetry.
+
 ## Why AutomationId Matters
 
 The tool uses stable `AutomationProperties.AutomationId` values instead of only

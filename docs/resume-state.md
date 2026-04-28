@@ -4,13 +4,36 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 26 Android usage restoration aggregate slice. Android UsageStats
-collection, Room persistence, local sync outbox creation, opt-in sync upload,
-WorkManager scheduling gates, Settings permission UX, and Usage Access
-navigation smoke coverage are now represented in code/tests.
+Milestone 28 privacy boundary guardrails plus the first Milestone 25 semantic
+WPF tracking-pipeline UI test. The new WPF App test invokes the real Start/Stop
+buttons through UI Automation peers, drives fake foreground activity through
+the real `WindowsTrackingDashboardCoordinator`, persists focus sessions and
+outbox rows into temp SQLite, and verifies the dashboard renders the persisted
+session back from the SQLite-backed data source.
 
 ## Completed
 
+- Added architecture/privacy boundary tests that fail if product code or
+  manifests introduce keylogging hooks, raw keyboard state APIs, clipboard or
+  screen capture APIs, Android Accessibility/text-input monitoring, or Chrome
+  page-content/history/cookie/capture APIs.
+- Added a WPF snapshot-tool privacy test proving the local screenshot helper
+  captures only the target app window/elements rather than the desktop.
+- Documented the automated privacy guardrails in `docs/privacy-boundaries.md`
+  and `docs/hardening.md`.
+- Added `MainWindowTrackingPipelineTests` for actual WPF Start/Stop behavior:
+  UI Automation invokes the buttons, fake foreground changes are persisted to
+  SQLite, outbox rows are queued, and dashboard cards/session rows are rendered
+  from the SQLite-backed datasource.
+- Disabled parallel execution in `Woong.MonitorStack.Windows.App.Tests` to make
+  WPF XAML/STA window tests more deterministic.
+- Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
+  minimal`, `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
+  minimal`, and `scripts/test-coverage.ps1`; current .NET line coverage is
+  92.9% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.6%,
+  Windows.App 85.3%, and Server 96.3%.
+- Verified `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2` exits
+  successfully with a temp SQLite DB and no server sync.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
   `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,

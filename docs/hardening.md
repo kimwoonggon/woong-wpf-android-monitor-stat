@@ -1,6 +1,6 @@
 # Hardening Notes
 
-Updated: 2026-04-28
+Updated: 2026-04-29
 
 ## Database Migration Review
 
@@ -59,3 +59,19 @@ opts into server sync.
 post notifications on Android 13+. Settings now shows a notification
 permission explanation and an explicit request button. The request is made only
 on Android 13+ when the permission has not already been granted.
+
+## Privacy Boundary Architecture Tests
+
+`tests/Woong.MonitorStack.Architecture.Tests` includes privacy guardrails for
+the metadata-only product boundary:
+
+- Android manifest checks reject invasive permissions such as Accessibility
+  service binding, overlay, camera/microphone, SMS, contacts, broad storage,
+  notification listener, input method, and query-all-packages permissions.
+- Product source scans reject keylogging hooks, raw keyboard-state APIs,
+  clipboard APIs, screen capture APIs, Android Accessibility/text-input hooks,
+  and Chrome page-content/history/cookie/capture APIs.
+- Chrome extension checks reject content scripts, browser debugger/history/
+  cookie/download/clipboard permissions, and tab/desktop capture APIs.
+- WPF snapshot tooling checks require screenshots to come from the target app
+  window or automation elements, not desktop-wide capture.

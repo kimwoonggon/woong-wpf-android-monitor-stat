@@ -496,6 +496,7 @@ milestones below are finished.
 
 ## Milestone 25: WPF Semantic UI Acceptance
 
+- [x] Add WPF App semantic test proving Start/Stop buttons drive fake foreground tracking into temp SQLite/outbox and dashboard renders the persisted session from SQLite.
 - [ ] Create `scripts/run-wpf-ui-acceptance.ps1`.
 - [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
 - [ ] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
@@ -555,12 +556,12 @@ milestones below are finished.
 
 ## Milestone 28: Privacy And Retention Hardening
 
-- [ ] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
+- [x] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
 - [ ] Add browser raw event retention enforcement.
 - [ ] Add client-side raw event retention policy for Windows local SQLite.
 - [ ] Add UI copy for browser URL/domain privacy levels.
 - [ ] Add sync opt-in enforcement tests for Windows and Android.
-- [ ] Verify UI screenshot tools only capture this app's UI.
+- [x] Verify UI screenshot tools only capture this app's UI.
 - [ ] Run full validation matrix.
 - [ ] Commit and push privacy hardening slice.
 

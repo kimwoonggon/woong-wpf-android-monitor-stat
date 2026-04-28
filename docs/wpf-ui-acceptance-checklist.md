@@ -5,6 +5,24 @@ Updated: 2026-04-29
 WPF UI acceptance must verify semantic behavior, not only capture screenshots.
 Screenshots are supporting evidence after FlaUI semantic checks.
 
+## Pass/Fail Standard
+
+The acceptance criterion is actual behavior from a launched WPF process. A UI
+check is only considered passing when automation can invoke the relevant
+control and observe the resulting state, data, persistence, or sync effect.
+XAML structure tests and screenshots are useful regression evidence, but they
+do not by themselves prove the feature works.
+
+Examples:
+
+- Start/Stop must be clicked through FlaUI and change visible tracking state.
+- TrackingPipeline mode must generate fake foreground/browser activity and show
+  the expected apps/domains in the dashboard.
+- Stop must flush sessions into the temp SQLite database.
+- Sync Now must call the fake sync path and update visible sync status.
+- Screenshots must be captured after those semantic checks, not instead of
+  them.
+
 ## Required AutomationIds
 
 - `StartTrackingButton`
@@ -132,3 +150,15 @@ clicks to prove that at least one focus session and one outbox item are
 persisted without uploading to a server. Per the latest product priority, the
 cramped lower App Sessions/Web Sessions area remains deferred while non-UI
 tracking and browser-domain work continues.
+
+Milestone 25 must use semantic FlaUI behavior checks as the automated gate. The
+snapshot package remains visual evidence for humans, not the primary pass/fail
+signal.
+
+Current in-process WPF App coverage now includes the first semantic tracking
+pipeline proof: the actual Start/Stop buttons are invoked through UI Automation
+peers, fake foreground activity is persisted into a temp SQLite database,
+outbox rows are queued, and the dashboard renders the persisted session back
+from the SQLite-backed data source. The remaining Milestone 25 work is to lift
+the same standard into a local FlaUI-launched acceptance tool with reports and
+screenshots.

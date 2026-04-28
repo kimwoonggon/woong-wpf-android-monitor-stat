@@ -27,6 +27,16 @@ environment.
   content, DataGrid columns, and automation IDs.
 - `tools/Woong.MonitorStack.Windows.UiSnapshots` is a local visual review tool
   that launches the real app and captures screenshots.
+- Milestone 25 semantic FlaUI acceptance is the UI pass/fail gate. It must
+  launch the app, click controls, wait for observable changes, and verify the
+  expected dashboard state or SQLite/sync side effect.
+
+## Pass/Fail Principle
+
+UI tests must judge whether the feature actually works, not only whether the
+screen was constructed. XAML-level checks, AutomationIds, and screenshots are
+supporting checks. A behavior is accepted only when the launched app responds
+correctly to user-like interaction.
 
 ## Expected UI Behaviors
 
@@ -82,11 +92,22 @@ powershell -ExecutionPolicy Bypass -File scripts\run-ui-snapshots.ps1
 - CI execution for WPF UI automation.
 - Multi-DPI, high contrast, and Windows theme matrix.
 - Installer-based smoke testing.
+- Full semantic FlaUI TrackingPipeline mode that proves fake app/browser events
+  appear in the dashboard after Start/Stop/Sync interactions.
 
 ## Current Verification
 
 2026-04-29:
 
+- Added `MainWindowTrackingPipelineTests.StartStopButtons_PersistForegroundSessionsAndDashboardRendersFromSqlite`.
+  This test creates the real WPF window with a real SQLite-backed dashboard
+  data source, a real `WindowsTrackingDashboardCoordinator`, fake foreground
+  and clock readers, and temp SQLite repositories. It invokes the actual
+  Start/Stop buttons through WPF UI Automation peers, then verifies
+  `focus_session` persistence, `sync_outbox` enqueueing, visible tracking
+  status, and dashboard rows/cards rendered back from SQLite.
+- Disabled parallel execution for `Woong.MonitorStack.Windows.App.Tests` so
+  WPF XAML loading and STA-window tests run deterministically in one assembly.
 - Added Milestone 21 tests for WPF Start/Stop/Sync controls, current-activity
   AutomationIds, fake coordinator transitions, title privacy masking, structured
   persisted-session display, and a smaller default window width for local
