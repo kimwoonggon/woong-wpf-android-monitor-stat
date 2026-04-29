@@ -3182,6 +3182,35 @@ Verified:
 - Main: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed and generated coverage artifacts; overall line coverage remained 91.3%.
 - Main: `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-020432`. RealStart persisted a focus session into the temp SQLite DB and queued one outbox row. TrackingPipeline UI snapshots and semantic checks passed. Cleanup emitted a non-fatal warning because the process was already closed.
 
+Committed and pushed:
+
+- `87d6a48 Add WPF details pager automation names`
+
+## 2026-04-30 WPF Presentation Pager And Sync Status Slice
+
+- Added RED Presentation tests for three dashboard-state behaviors:
+  chart details actions reset the selected details pager to page 1, rows-per-page
+  changes clamp the current page to the last available page, and sync
+  failure/off transitions update the dashboard sync badge and Current Focus sync
+  status.
+- Updated `DashboardViewModel` to route details actions through pager-aware tab
+  selection, preserve valid pages during rows-per-page changes, and mirror
+  `Settings.SyncStatusLabel` into `LastSyncStatusText`.
+- Updated `DashboardSettingsViewModel` so disabling sync clears a previous sync
+  failure and returns the settings/dashboard copy to safe local-only status.
+- This is a Presentation-only MVVM slice. It does not query WPF controls,
+  Windows APIs, SQLite, HTTP, or server code.
+
+Verified so far:
+
+- Popper: `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 56 tests.
+- Popper: `dotnet build src\Woong.MonitorStack.Windows.Presentation\Woong.MonitorStack.Windows.Presentation.csproj --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Popper: `git diff --check -- src\Woong.MonitorStack.Windows.Presentation tests\Woong.MonitorStack.Windows.Presentation.Tests` reported no whitespace errors, only LF-to-CRLF warnings.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 56 tests.
+- Main: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 341 total .NET tests in the current workspace.
+- Main: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors after rerunning sequentially. A prior parallel test/build attempt hit transient WPF generated-file contention, which is why solution validation should stay sequential with `-maxcpucount:1`.
+- Main: prior coverage command in this workspace passed with overall line coverage at 91.3%.
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain

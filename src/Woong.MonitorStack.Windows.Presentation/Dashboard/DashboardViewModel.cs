@@ -209,11 +209,11 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand]
     private void ShowAppFocusDetails()
-        => SelectedDetailsTab = DetailsTab.AppSessions;
+        => ShowDetailsTab(DetailsTab.AppSessions);
 
     [RelayCommand]
     private void ShowDomainFocusDetails()
-        => SelectedDetailsTab = DetailsTab.WebSessions;
+        => ShowDetailsTab(DetailsTab.WebSessions);
 
     [RelayCommand]
     private void RefreshDashboard()
@@ -313,10 +313,26 @@ public sealed partial class DashboardViewModel : ObservableObject
     private bool CanGoToNextDetailsPage()
         => CurrentDetailsPage < TotalDetailsPages;
 
+    private void ShowDetailsTab(DetailsTab detailsTab)
+    {
+        if (SelectedDetailsTab == detailsTab)
+        {
+            CurrentDetailsPage = 1;
+            UpdateVisibleDetailsRows();
+            return;
+        }
+
+        SelectedDetailsTab = detailsTab;
+    }
+
     partial void OnRowsPerPageChanged(int value)
     {
-        RowsPerPage = RowsPerPageOptions.Contains(value) ? value : 10;
-        CurrentDetailsPage = 1;
+        if (!RowsPerPageOptions.Contains(value))
+        {
+            RowsPerPage = 10;
+            return;
+        }
+
         UpdateVisibleDetailsRows();
     }
 
@@ -343,6 +359,11 @@ public sealed partial class DashboardViewModel : ObservableObject
             or nameof(DashboardSettingsViewModel.HasSyncFailure)
             or nameof(DashboardSettingsViewModel.SyncStatusLabel))
         {
+            if (e.PropertyName == nameof(DashboardSettingsViewModel.SyncStatusLabel))
+            {
+                LastSyncStatusText = Settings.SyncStatusLabel;
+            }
+
             UpdateSyncBadge();
         }
     }

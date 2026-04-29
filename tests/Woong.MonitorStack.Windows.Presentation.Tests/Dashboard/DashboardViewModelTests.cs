@@ -216,6 +216,70 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void ShowAppFocusDetailsCommand_WhenAlreadyOnAppSessions_ResetsPagerToFirstPage()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(0, 12)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index - 1),
+                now.AddMinutes(-index),
+                isIdle: false))
+            .ToArray();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.NextDetailsPageCommand.Execute(null);
+
+        Assert.Equal(2, viewModel.CurrentDetailsPage);
+        Assert.Equal("app-10", viewModel.VisibleAppSessionRows[0].AppName);
+
+        viewModel.ShowAppFocusDetailsCommand.Execute(null);
+
+        Assert.Equal(DetailsTab.AppSessions, viewModel.SelectedDetailsTab);
+        Assert.Equal(1, viewModel.CurrentDetailsPage);
+        Assert.Equal("1 / 2", viewModel.DetailsPageText);
+        Assert.Equal("app-0", viewModel.VisibleAppSessionRows[0].AppName);
+    }
+
+    [Fact]
+    public void DetailsTabs_WhenRowsPerPageShrinksPageCount_ClampsCurrentPageToLastAvailablePage()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(0, 26)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index - 1),
+                now.AddMinutes(-index),
+                isIdle: false))
+            .ToArray();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.NextDetailsPageCommand.Execute(null);
+        viewModel.NextDetailsPageCommand.Execute(null);
+
+        Assert.Equal(3, viewModel.CurrentDetailsPage);
+        Assert.Equal("3 / 3", viewModel.DetailsPageText);
+        Assert.Equal("app-20", viewModel.VisibleAppSessionRows[0].AppName);
+
+        viewModel.RowsPerPage = 25;
+
+        Assert.Equal(2, viewModel.CurrentDetailsPage);
+        Assert.Equal("2 / 2", viewModel.DetailsPageText);
+        DashboardSessionRow row = Assert.Single(viewModel.VisibleAppSessionRows);
+        Assert.Equal("app-25", row.AppName);
+        Assert.False(viewModel.NextDetailsPageCommand.CanExecute(null));
+        Assert.True(viewModel.PreviousDetailsPageCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void SelectPeriod_TodayQueriesCurrentLocalDayRange()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

@@ -45,6 +45,11 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
 
     partial void OnIsSyncEnabledChanged(bool value)
     {
+        if (!value)
+        {
+            HasSyncFailure = false;
+        }
+
         if (!HasSyncFailure)
         {
             SyncStatusLabel = value

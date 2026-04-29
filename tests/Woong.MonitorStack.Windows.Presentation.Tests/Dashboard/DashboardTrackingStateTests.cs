@@ -75,6 +75,35 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void Settings_WhenSyncFailureIsReported_UpdatesDashboardSyncStatusAndBadge()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+        viewModel.Settings.IsSyncEnabled = true;
+
+        viewModel.Settings.ReportSyncFailure("server unavailable");
+
+        Assert.Equal("Sync Error", viewModel.SyncBadgeText);
+        Assert.Equal("Sync failed: server unavailable", viewModel.Settings.SyncStatusLabel);
+        Assert.Equal("Sync failed: server unavailable", viewModel.LastSyncStatusText);
+    }
+
+    [Fact]
+    public void Settings_WhenSyncIsTurnedOffAfterFailure_ReturnsDashboardToLocalOnlyStatus()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+        viewModel.Settings.IsSyncEnabled = true;
+        viewModel.Settings.ReportSyncFailure("server unavailable");
+
+        viewModel.Settings.IsSyncEnabled = false;
+
+        Assert.False(viewModel.Settings.HasSyncFailure);
+        Assert.Equal("Sync Off", viewModel.SyncBadgeText);
+        Assert.Equal("Local only", viewModel.Settings.SyncModeLabel);
+        Assert.Equal("Sync is off. Data stays on this Windows device.", viewModel.Settings.SyncStatusLabel);
+        Assert.Equal("Sync is off. Data stays on this Windows device.", viewModel.LastSyncStatusText);
+    }
+
+    [Fact]
     public void StartTrackingCommand_WhenSyncIsEnabled_AutomaticallyRequestsSync()
     {
         var coordinator = new FakeTrackingCoordinator

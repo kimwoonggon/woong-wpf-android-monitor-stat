@@ -186,6 +186,9 @@ Details pagination:
   largest table. Switching details tabs resets the current page to 1 so a short
   Web Sessions or Live Event tab cannot appear empty after the user paged
   through a longer App Sessions tab.
+- Chart details actions are pager-aware. Selecting the current App/Web details
+  tab again resets the pager to page 1, and changing rows-per-page clamps the
+  current page to the last available page instead of showing an empty grid.
 
 Current details tab implementation:
 
@@ -210,6 +213,10 @@ Current details tab implementation:
   explicit text columns with product-defined MinWidth values.
 - `SettingsPanel` is now hosted inside the Settings tab and inherits the
   existing dashboard `DataContext`.
+- Sync settings are reflected back into dashboard status state. A reported sync
+  failure updates both the sync badge and Current Focus sync status. Turning
+  sync off clears the failure state and returns the dashboard to local-only
+  copy.
 
 Current reusable control implementation:
 
