@@ -2700,6 +2700,29 @@ Verified so far:
 Coverage after this slice: overall line coverage 91.3%; Server line coverage
 96.5%.
 
+## 2026-04-29 Server Integrated HTTP Runtime Flow Slice
+
+- Added `DailySummaryApi_WhenWindowsAndAndroidClientsUploadSessions_ReturnsIntegratedSummary`
+  as a relational HTTP runtime proof. The test registers Windows and Android
+  devices through the public API, uploads focus sessions and a domain-only web
+  session through the upload APIs, then queries the daily summary API.
+- The flow proves Windows + Android active time is integrated for the same
+  user, idle time is excluded from active totals, another user's sessions are
+  ignored, and domain-only browser metadata contributes to `totalWebMs` without
+  persisting full URL or page title.
+- The test uses an in-memory SQLite connection rather than EF InMemory, so
+  relational constraints stay active.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "DailySummaryApi_WhenWindowsAndAndroidClientsUploadSessions_ReturnsIntegratedSummary" -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Coverage after this slice: overall line coverage 91.3%; Server line coverage
+96.5%.
+
 ## 2026-04-29 WPF Close Flush Slice
 
 - Added a WPF behavior test proving that closing `MainWindow` while tracking is

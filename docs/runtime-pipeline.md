@@ -126,6 +126,14 @@ not rely only on a client-provided `FocusSession.LocalDate`, because integrated
 Windows + Android summaries are user/timezone reports and a UTC-midnight
 boundary can otherwise drop valid sessions from the requested day.
 
+The integrated summary public path is covered through a relational HTTP runtime
+test: Windows and Android devices register through `/api/devices/register`,
+upload focus sessions through `/api/focus-sessions/upload`, upload domain-only
+browser web sessions through `/api/web-sessions/upload`, and query
+`/api/daily-summaries/{summaryDate}`. The test uses SQLite relational
+constraints so foreign keys and unique indexes are exercised while keeping URL
+and page-title fields null by default.
+
 ## Acceptance Modes
 
 ### A. EmptyData

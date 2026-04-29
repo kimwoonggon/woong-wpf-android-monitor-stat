@@ -300,6 +300,7 @@ milestones below are finished.
 - [x] Respect user timezone local date.
 - [x] Add relational regression test proving focus sessions are grouped by requested user timezone across UTC midnight.
 - [x] Test mixed Windows + Android data summary.
+- [x] Test public HTTP runtime path: register Windows/Android devices, upload focus/web sessions, and query integrated daily summary with relational constraints.
 - [x] Test timezone boundaries.
 - [x] Test duplicate data does not inflate summary.
 - [x] Verify Windows/Android can query integrated summary.
