@@ -10,6 +10,10 @@ import com.woong.monitorstack.data.local.LocationPermissionState
 import com.woong.monitorstack.settings.AndroidLocationSettings
 import java.util.UUID
 
+interface RuntimeLocationSnapshotProvider {
+    fun captureSnapshot(deviceId: String): LocationContextSnapshotEntity?
+}
+
 data class RuntimeLocationReading(
     val latitude: Double,
     val longitude: Double,
@@ -57,8 +61,8 @@ class RuntimeLocationContextProvider(
     private val locationReader: RuntimeLocationReader,
     private val clock: () -> Long = System::currentTimeMillis,
     private val idFactory: () -> String = { UUID.randomUUID().toString() }
-) {
-    fun captureSnapshot(deviceId: String): LocationContextSnapshotEntity? {
+) : RuntimeLocationSnapshotProvider {
+    override fun captureSnapshot(deviceId: String): LocationContextSnapshotEntity? {
         if (!locationSettings.isLocationCaptureEnabled()) {
             return null
         }

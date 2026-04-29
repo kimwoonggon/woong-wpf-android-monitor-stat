@@ -620,6 +620,7 @@ milestones below are finished.
 - [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
 - [x] Add no-hardware runtime location capture policy/provider seam: no snapshot unless location context is enabled and foreground permission is granted; approximate mode keeps precise coordinates null; precise coordinates require separate precise opt-in.
+- [x] Add no-hardware local location-context collection/persistence runner: provider snapshot writes Room-facing `LocationContextSnapshotEntity` and enqueues `location_context` outbox; null provider writes nothing.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [x] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
@@ -1045,7 +1046,7 @@ milestones below are finished.
 - [x] Tabs style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-135614`.
 - [x] Tabs style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`, `Inputs.xaml`.
-- [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
+- [x] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
   - [x] Add `CompactActionButtonStyle` to `Styles/Buttons.xaml` for reusable chart/card action buttons.
   - [x] Replace duplicate inline compact action button sizing in `ChartsPanel` and `SectionCard`.
   - [x] Compact action style verification: RED `ButtonStyleDictionary_DefinesReadableDashboardButtonStyles` failed first, then passed after the shared style was added.
@@ -1153,6 +1154,13 @@ milestones below are finished.
   - [x] Details DataGrid spacing verification: `.NET` build passed.
   - [x] Details DataGrid spacing verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-213053`.
   - [x] Details DataGrid spacing verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add architecture guard `WpfViewsAndControls_DoNotDefineLocalStyles` so WPF Views/Controls consume shared style dictionaries instead of defining local `Style` resources.
+  - [x] Move `SummaryMetricCardStyle` from `SummaryCardsPanel.xaml` to `Styles/Cards.xaml`.
+  - [x] Move `DetailsTabsPanel` tab header and app-session icon styles to `Styles/Tabs.xaml`.
+  - [x] Local style cleanup verification: RED architecture guard failed first on DetailsTabsPanel/SummaryCardsPanel local styles, then passed.
+  - [x] Local style cleanup verification: focused architecture color/style/root-dictionary guards passed.
+  - [x] Local style cleanup verification: focused WPF App expectation/accessibility tests passed (48 tests).
+  - [x] Local style cleanup verification: `.NET` build passed.
   - [x] Move repeated Settings section-heading bottom margins into `SettingsSectionTitleTextStyle`.
   - [x] Settings section heading spacing verification: RED `SettingsPanel_UsesSharedSectionHeadingTypography` failed first on missing shared `Margin`, then passed.
   - [x] Settings section heading spacing verification: adjacent Settings privacy/sync/readability tests passed.

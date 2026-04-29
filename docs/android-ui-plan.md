@@ -179,6 +179,11 @@ artifacts only. They must not capture other apps as telemetry.
   permission is missing, keeps approximate-mode latitude/longitude null, stores
   precise coordinates only after separate precise opt-in plus precise
   permission, and stays independent from sync opt-in.
+- Dedicated local location-context collection now has no-hardware unit tests:
+  when the provider returns a snapshot, the runner writes
+  `LocationContextSnapshotEntity` to Room-facing storage and enqueues a
+  `location_context` outbox row; when the provider returns null, it writes
+  nothing. Sync opt-in remains an upload gate, not a local capture gate.
 - Server now exposes a dedicated `location_contexts` upload path and PostgreSQL
   table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
   nullable, uses `deviceId + clientContextId` idempotency, and is separate from
@@ -186,5 +191,5 @@ artifacts only. They must not capture other apps as telemetry.
 
 ## Not Implemented Yet
 
-- Hardware-backed runtime location reader and scheduling/persistence wiring.
+- Hardware-backed runtime location reader and scheduling wiring.
 - Connected-device screenshot evidence for location UI.

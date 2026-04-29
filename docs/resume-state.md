@@ -3244,6 +3244,30 @@ Verified:
 - Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.location.RuntimeLocationContextProviderTest" --no-daemon --stacktrace` passed.
 - Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
 
+## 2026-04-30 Android Location Context Collection Runner Slice
+
+- Added `LocationContextCollectionRunner` as a no-hardware local collection and
+  persistence path for location context snapshots.
+- Added `RuntimeLocationSnapshotProvider` so the real provider and tests share a
+  public seam while tests can avoid GPS hardware.
+- When the provider returns a snapshot, the runner writes
+  `LocationContextSnapshotEntity` through the Room-facing DAO and enqueues a
+  pending `location_context` outbox row shaped as
+  `SyncLocationContextUploadItem`.
+- When the provider returns `null`, no local row or outbox item is written.
+- Sync opt-in remains an upload gate only; this path creates local metadata and
+  pending outbox rows without uploading.
+- Updated `docs/android-ui-plan.md` so the remaining location gaps are the
+  hardware-backed reader and scheduling wiring, plus connected-device
+  screenshot evidence.
+
+Verified:
+
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.location.*" --no-daemon --stacktrace` passed.
+- Carver: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.location.*" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+
 ## 2026-04-30 Android SVG UI Flow Alignment Slice
 
 - Checked the planned Figma/SVG flow at
@@ -3453,6 +3477,26 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.6% (3655/3988), branch 70.4% (504/715).
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-031037`. RealStart persisted a focus session into a temp SQLite DB and queued one outbox row; cleanup emitted the known non-fatal already-closed process warning.
+
+## 2026-04-30 WPF Local Style Dictionary Cleanup Slice
+
+- Added RED architecture guard `WpfViewsAndControls_DoNotDefineLocalStyles`
+  so WPF Views/Controls cannot drift back to local `Style` resource blocks.
+- Moved the remaining local `SummaryMetricCardStyle` into
+  `Styles/Cards.xaml` and moved Details tab header/app-session icon styles into
+  `Styles/Tabs.xaml`.
+- The existing color-literal guard remains clean: color literals are still
+  isolated to `Styles/Colors.xaml`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~WpfViewsAndControls_DoNotDefineLocalStyles" -maxcpucount:1 -v minimal` failed RED on DetailsTabsPanel/SummaryCardsPanel local styles.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~WpfViewsAndControls_DoNotDefineLocalStyles|FullyQualifiedName~WpfXaml_DoesNotUseColorLiteralsOutsideColorsDictionary|FullyQualifiedName~AppResources_MergeEverySharedStyleDictionaryAtApplicationRoot" -maxcpucount:1 -v minimal` passed 3 tests.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~MainWindowUiExpectationTests|FullyQualifiedName~DashboardAutomationIdContractTests|FullyQualifiedName~DashboardAccessibilityExpectationTests" -maxcpucount:1 -v minimal` passed 48 tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 348 total `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.6% (3655/3988), branch 70.4% (504/715).
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-032325`. RealStart persisted a focus session into a temp SQLite DB and queued one outbox row; cleanup emitted the known non-fatal already-closed process warning.
 
 ## 2026-04-29 WPF Browser Stop Flush Slice
 

@@ -11,32 +11,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="SummaryMetricCardStyle"
-                   TargetType="{x:Type controls:MetricCard}">
-                <Setter Property="IconText" Value="◎" />
-                <Setter Property="AccentBrush" Value="{StaticResource MetricBlueBrush}" />
-                <Setter Property="IconBackground" Value="{StaticResource MetricBlueBackgroundBrush}" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding Label}" Value="Foreground">
-                        <Setter Property="IconText" Value="◯" />
-                        <Setter Property="AccentBrush" Value="{StaticResource MetricGreenBrush}" />
-                        <Setter Property="IconBackground" Value="{StaticResource MetricGreenBackgroundBrush}" />
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding Label}" Value="Idle">
-                        <Setter Property="IconText" Value="□" />
-                        <Setter Property="AccentBrush" Value="{StaticResource MetricAmberBrush}" />
-                        <Setter Property="IconBackground" Value="{StaticResource MetricAmberBackgroundBrush}" />
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding Label}" Value="Web Focus">
-                        <Setter Property="IconText" Value="◇" />
-                        <Setter Property="AccentBrush" Value="{StaticResource MetricPurpleBrush}" />
-                        <Setter Property="IconBackground" Value="{StaticResource MetricPurpleBackgroundBrush}" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 

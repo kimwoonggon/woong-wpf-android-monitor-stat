@@ -327,6 +327,24 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
+    public void WpfViewsAndControls_DoNotDefineLocalStyles()
+    {
+        string[] xamlRoots =
+        [
+            Path.Combine(RepositoryRoot, "src", "Woong.MonitorStack.Windows.App", "Views"),
+            Path.Combine(RepositoryRoot, "src", "Woong.MonitorStack.Windows.App", "Controls")
+        ];
+
+        string[] violations = xamlRoots
+            .SelectMany(root => Directory.EnumerateFiles(root, "*.xaml", SearchOption.AllDirectories))
+            .SelectMany(FindLocalStyleViolations)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Empty(violations);
+    }
+
+    [Fact]
     public void DashboardView_LaysOutDashboardSectionsAsDirectGridRows()
     {
         XDocument dashboardViewXaml = XDocument.Load(Path.Combine(
@@ -572,6 +590,28 @@ public sealed class ProjectReferenceRulesTests
             : "";
 
         return $"{relativePath}{lineSuffix}: `{attribute.Name.LocalName}` uses color literal `{value}`";
+    }
+
+    private static IEnumerable<string> FindLocalStyleViolations(string xamlPath)
+    {
+        XDocument xaml = XDocument.Load(xamlPath, LoadOptions.SetLineInfo);
+
+        foreach (XElement style in xaml.Descendants().Where(element => element.Name.LocalName == "Style"))
+        {
+            string relativePath = Path.GetRelativePath(RepositoryRoot, xamlPath).Replace('\\', '/');
+            string? key = style
+                .Attributes()
+                .FirstOrDefault(attribute => attribute.Name.LocalName == "Key")
+                ?.Value;
+            string lineSuffix = style is IXmlLineInfo lineInfo && lineInfo.HasLineInfo()
+                ? $":{lineInfo.LineNumber}"
+                : "";
+            string keySuffix = string.IsNullOrWhiteSpace(key)
+                ? ""
+                : $" `{key}`";
+
+            yield return $"{relativePath}{lineSuffix}: local Style{keySuffix} belongs in App/Styles dictionaries";
+        }
     }
 
     private static string? GetXamlAttribute(XElement element, string attributeName)
