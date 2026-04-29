@@ -731,9 +731,15 @@ milestones below are finished.
 - [x] Button style dictionary verification: `.NET` build passed.
 - [x] Button style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-130753`.
 - [x] Button style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Align DashboardView root scrolling with `wpfelements.md`: root scroll is vertical-only and wide session grids keep their own horizontal scroll.
+- [x] Root scrolling verification: `DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll` and `MainWindow_AtMinimumSize_KeepsTabsReachableOrProvidesScrolling` passed.
+- [x] Root scrolling verification: all Windows App tests passed (45 tests).
+- [x] Root scrolling verification: full `.NET` tests passed (199 tests).
+- [x] Root scrolling verification: `.NET` build passed.
+- [x] Root scrolling verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-131541`.
+- [x] Root scrolling verification: coverage report generated successfully with overall line coverage 92.1%.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
-- [ ] Align DashboardView root scrolling with `wpfelements.md`: prefer vertical dashboard scrolling and keep horizontal scrolling inside wide grids/charts where needed.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.
 - [ ] Run full `.NET` tests and build after componentization.

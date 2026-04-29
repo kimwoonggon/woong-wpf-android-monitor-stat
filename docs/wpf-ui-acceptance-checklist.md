@@ -306,6 +306,15 @@ remained green. The latest local WPF acceptance run passed at:
 
 Coverage remains 92.1% overall.
 
+The root scrolling alignment slice changed `DashboardView` to use vertical-only
+root scrolling while keeping horizontal scrolling inside the wide App/Web/Live
+DataGrids. Minimum-size tab reachability remains covered. The latest local WPF
+acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-131541`
+
+Coverage remains 92.1% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

@@ -294,8 +294,11 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
 
                 var scrollViewer = FindVisualDescendant<ScrollViewer>(window);
                 Assert.Equal(ScrollBarVisibility.Auto, scrollViewer.VerticalScrollBarVisibility);
-                Assert.Equal(ScrollBarVisibility.Auto, scrollViewer.HorizontalScrollBarVisibility);
+                Assert.Equal(ScrollBarVisibility.Disabled, scrollViewer.HorizontalScrollBarVisibility);
                 Assert.NotNull(FindByAutomationId<TabControl>(window, "DashboardTabs"));
+
+                DataGrid appSessions = FindByAutomationId<DataGrid>(window, "RecentAppSessionsList");
+                Assert.Equal(ScrollBarVisibility.Auto, ScrollViewer.GetHorizontalScrollBarVisibility(appSessions));
             }
             finally
             {

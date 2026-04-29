@@ -471,6 +471,48 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                DashboardView dashboardView = FindByAutomationId<DashboardView>(window, "DashboardView");
+                ScrollViewer rootScrollViewer = FindVisualDescendants<ScrollViewer>(dashboardView)
+                    .First(scrollViewer => scrollViewer.Content is Grid);
+
+                Assert.Equal(ScrollBarVisibility.Auto, rootScrollViewer.VerticalScrollBarVisibility);
+                Assert.Equal(ScrollBarVisibility.Disabled, rootScrollViewer.HorizontalScrollBarVisibility);
+
+                TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
+
+                tabs.SelectedIndex = 0;
+                window.UpdateLayout();
+                DataGrid appSessions = FindByAutomationId<DataGrid>(window, "RecentAppSessionsList");
+                Assert.Equal(ScrollBarVisibility.Auto, ScrollViewer.GetHorizontalScrollBarVisibility(appSessions));
+
+                tabs.SelectedIndex = 1;
+                window.UpdateLayout();
+                DataGrid webSessions = FindByAutomationId<DataGrid>(window, "RecentWebSessionsList");
+                Assert.Equal(ScrollBarVisibility.Auto, ScrollViewer.GetHorizontalScrollBarVisibility(webSessions));
+
+                tabs.SelectedIndex = 2;
+                window.UpdateLayout();
+                DataGrid liveEvents = FindByAutomationId<DataGrid>(window, "LiveEventsList");
+                Assert.Equal(ScrollBarVisibility.Auto, ScrollViewer.GetHorizontalScrollBarVisibility(liveEvents));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab()
         => RunOnStaThread(() =>
         {

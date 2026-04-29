@@ -4,14 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 button style dictionary slice.
-`ButtonStyleDictionary_DefinesReadableDashboardButtonStyles` proves
-`Styles/Buttons.xaml` exposes shared dashboard, primary, danger, secondary, and
-period button styles with the readable button contract. `ControlBar` and
-`SettingsPanel` now use the shared dictionary instead of duplicate local
-`DashboardButtonStyle` blocks. Verification passed: all `.NET` tests (198),
+Milestone 31 root scrolling alignment slice.
+`DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll` proves the
+dashboard root scroll is vertical-only while App Sessions, Web Sessions, and
+Live Event Log grids keep their own horizontal scrolling. The older
+minimum-size WPF test was updated to the same product rule and still proves the
+details tabs remain reachable. Verification passed: all `.NET` tests (199),
 full `.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-130753`, and coverage generation with
+`artifacts/wpf-ui-acceptance/20260429-131541`, and coverage generation with
 overall line coverage 92.1%.
 
 ## Completed
@@ -954,13 +954,14 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with the next style dictionary slice. Prefer the
-read-only audit order: root scrolling alignment next if reducing layout churn,
-otherwise `Colors.xaml`/`Cards.xaml` before typography and grid/tab styles.
-Preserve the extracted dashboard views, reusable controls, chart `상세보기`
-tab-switch behavior, and keep the `wpfelements.md` audit gaps visible: domain
-chart type decision, Details pagination decision, root scrolling alignment, and
-style dictionary migration away from hard-coded local styles.
+Continue Milestone 31 with the next style dictionary slice. The read-only audit
+recommends `Cards.xaml` next because the duplicated border shape is concentrated
+in `MetricCard`, `SectionCard`, `CurrentFocusPanel`, `DetailsTabsPanel`, and
+the compact `ControlBar` surface. Preserve the extracted dashboard views,
+reusable controls, chart `상세보기` tab-switch behavior, and keep remaining
+`wpfelements.md` audit gaps visible: domain chart type decision, Details
+pagination decision, and style dictionary migration away from hard-coded local
+styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1426,3 +1427,31 @@ audit recommends root scrolling alignment before broader style churn, then
 `Colors.xaml`/`Cards.xaml`, then typography, data grid, and tabs. Keep all
 WPF-only resources in `Windows.App`, preserve current semantic/UI acceptance
 tests, and avoid adding WPF references to `Windows.Presentation`.
+
+## 2026-04-29 WPF Root Scrolling Alignment Slice
+
+- Added the RED layout test
+  `DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll`.
+- Changed `Views/DashboardView.xaml` so the root dashboard `ScrollViewer` keeps
+  vertical scrolling but disables root horizontal scrolling.
+- Updated the minimum-size tracking pipeline UI test to expect the same
+  vertical-only root rule while still proving the App Sessions grid keeps
+  horizontal scrolling and the details tabs remain reachable.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll|MainWindow_AtMinimumSize_KeepsTabsReachableOrProvidesScrolling"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-131541`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is `Cards.xaml` extraction. Keep the slice narrow:
+resource test first, then move only duplicated card `Border` setters before
+the broader color/typography migration.

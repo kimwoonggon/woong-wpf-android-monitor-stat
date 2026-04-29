@@ -221,8 +221,8 @@ Open `wpfelements.md` alignment decisions:
 - SettingsPanel must cover Sync endpoint, Capture page title, Domain-only
   browser storage, runtime controls, storage folder actions, and guarded Clear
   local data.
-- Dashboard root scrolling should prefer vertical scrolling; horizontal
-  scrolling should live in wide grids/charts where practical.
+- Dashboard root scrolling is now vertical-only; horizontal scrolling remains
+  on the wide App Sessions, Web Sessions, and Live Event Log grids.
 - Style dictionary migration should remove hard-coded colors and duplicate
   local styles from extracted panels.
 
