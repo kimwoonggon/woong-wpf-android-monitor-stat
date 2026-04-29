@@ -30,16 +30,45 @@
                        FontSize="16"
                        FontWeight="SemiBold"
                        Foreground="#162033" />
-            <TextBlock Grid.Column="1"
-                       Text="앱별 집중 시간"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="#162033" />
-            <TextBlock Grid.Column="2"
-                       Text="도메인별 집중 시간"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="#162033" />
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="앱별 집중 시간"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#162033"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        AutomationProperties.AutomationId="AppChartDetailsButton"
+                        Content="상세보기"
+                        Command="{Binding ShowAppFocusDetailsCommand}"
+                        MinHeight="28"
+                        MinWidth="72"
+                        Padding="10,0"
+                        FontSize="12"
+                        Margin="8,0,18,0" />
+            </Grid>
+            <Grid Grid.Column="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="도메인별 집중 시간"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#162033"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        AutomationProperties.AutomationId="DomainChartDetailsButton"
+                        Content="상세보기"
+                        Command="{Binding ShowDomainFocusDetailsCommand}"
+                        MinHeight="28"
+                        MinWidth="72"
+                        Padding="10,0"
+                        FontSize="12" />
+            </Grid>
 
             <lvc:CartesianChart Grid.Row="1"
                                 AutomationProperties.AutomationId="HourlyActivityChart"

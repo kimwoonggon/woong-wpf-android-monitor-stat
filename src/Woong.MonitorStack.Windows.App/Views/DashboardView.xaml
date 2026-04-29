@@ -51,8 +51,11 @@
                         Background="White"
                         BorderBrush="#DCE1E8"
                         BorderThickness="1">
-                    <TabControl AutomationProperties.AutomationId="DashboardTabs">
+                    <TabControl AutomationProperties.AutomationId="DashboardTabs"
+                                SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
+                                SelectedValuePath="Tag">
                         <TabItem Header="App Sessions"
+                                 Tag="{x:Static dashboard:DetailsTab.AppSessions}"
                                  AutomationProperties.AutomationId="AppSessionsTab">
                             <DataGrid Margin="0,12,0,0"
                                       AutomationProperties.AutomationId="RecentAppSessionsList"
@@ -101,6 +104,7 @@
                             </DataGrid>
                         </TabItem>
                         <TabItem Header="Web Sessions"
+                                 Tag="{x:Static dashboard:DetailsTab.WebSessions}"
                                  AutomationProperties.AutomationId="WebSessionsTab">
                             <DataGrid Margin="0,12,0,0"
                                       AutomationProperties.AutomationId="RecentWebSessionsList"
@@ -149,6 +153,7 @@
                             </DataGrid>
                         </TabItem>
                         <TabItem Header="Live Event Log"
+                                 Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
                                  AutomationProperties.AutomationId="LiveEventsTab">
                             <DataGrid Margin="0,12,0,0"
                                       AutomationProperties.AutomationId="LiveEventsList"
@@ -185,6 +190,7 @@
                             </DataGrid>
                         </TabItem>
                         <TabItem Header="Settings"
+                                 Tag="{x:Static dashboard:DetailsTab.Settings}"
                                  AutomationProperties.AutomationId="SettingsTab">
                             <Grid Margin="0,12,0,0">
                                 <Grid.ColumnDefinitions>

@@ -87,6 +87,37 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void ShowAppFocusDetailsCommand_SelectsAppSessionsTab()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"))
+        {
+            SelectedDetailsTab = DetailsTab.Settings
+        };
+
+        viewModel.ShowAppFocusDetailsCommand.Execute(null);
+
+        Assert.Equal(DetailsTab.AppSessions, viewModel.SelectedDetailsTab);
+    }
+
+    [Fact]
+    public void ShowDomainFocusDetailsCommand_SelectsWebSessionsTab()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.ShowDomainFocusDetailsCommand.Execute(null);
+
+        Assert.Equal(DetailsTab.WebSessions, viewModel.SelectedDetailsTab);
+    }
+
+    [Fact]
     public void SelectPeriod_TodayQueriesCurrentLocalDayRange()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

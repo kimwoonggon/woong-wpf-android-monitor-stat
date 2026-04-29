@@ -165,6 +165,9 @@ Details chart actions:
 - App chart `상세보기` selects the App Sessions tab.
 - Domain chart `상세보기` selects the Web Sessions tab.
 - Initial behavior should be tab switching, not modal windows.
+- Current implementation: `DashboardViewModel.SelectedDetailsTab` is the
+  presentation state, chart buttons live in `ChartsPanel`, and `DashboardTabs`
+  binds its selected value to this state.
 
 Future pagination:
 

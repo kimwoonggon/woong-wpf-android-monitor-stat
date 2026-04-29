@@ -240,6 +240,16 @@ latest local WPF acceptance run passed at:
 Coverage remains 92.3% overall, with Windows.Presentation at 96.6% and
 Windows.App at 86.3%.
 
+The chart details tab-switch slice added semantic coverage for app/domain chart
+`상세보기` actions. App details now selects App Sessions, domain details now
+selects Web Sessions, and the `DashboardTabs` selected value follows
+`DashboardViewModel.SelectedDetailsTab`. The latest local WPF acceptance run
+passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-114947`
+
+Coverage remains 92.3% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

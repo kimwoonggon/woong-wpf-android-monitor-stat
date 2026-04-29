@@ -21,6 +21,9 @@ public sealed partial class DashboardViewModel : ObservableObject
     private DashboardPeriod _selectedPeriod = DashboardPeriod.Today;
 
     [ObservableProperty]
+    private DetailsTab _selectedDetailsTab = DetailsTab.AppSessions;
+
+    [ObservableProperty]
     private string _trackingStatusText = "Stopped";
 
     [ObservableProperty]
@@ -174,6 +177,14 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void SelectDashboardPeriod(DashboardPeriod period)
         => SelectPeriod(period);
+
+    [RelayCommand]
+    private void ShowAppFocusDetails()
+        => SelectedDetailsTab = DetailsTab.AppSessions;
+
+    [RelayCommand]
+    private void ShowDomainFocusDetails()
+        => SelectedDetailsTab = DetailsTab.WebSessions;
 
     [RelayCommand]
     private void RefreshDashboard()

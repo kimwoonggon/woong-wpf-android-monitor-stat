@@ -679,8 +679,13 @@ milestones below are finished.
 - [x] ChartsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-113407`.
 - [x] ChartsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Resolve `wpfelements.md` Domain Focus chart type mismatch: switch domain focus to a readable Cartesian/ranking chart or document the current PieChart as an intentional exception.
-- [ ] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
-- [ ] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
+- [x] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
+- [x] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
+- [x] Chart details verification: `ShowAppFocusDetailsCommand_SelectsAppSessionsTab`, `ShowDomainFocusDetailsCommand_SelectsWebSessionsTab`, and `DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs` passed.
+- [x] Chart details verification: full `.NET` tests passed (189 tests).
+- [x] Chart details verification: `.NET` build passed.
+- [x] Chart details verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-114947`.
+- [x] Chart details verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Add `Views/DetailsTabsPanel.xaml` while preserving App/Web/Live/Settings tab automation IDs.
 - [ ] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
 - [ ] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.

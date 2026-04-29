@@ -4,15 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 ChartsPanel and EmptyState extraction slice.
-`DashboardView_HostsChartsPanelAndPreservesChartContent` proves `DashboardView`
-hosts `Views/ChartsPanel.xaml` while preserving `ChartArea`, chart
-AutomationIds, empty-state AutomationIds, and Korean chart headings.
-`EmptyState_RendersBoundTextWithTextAutomationId` proves the reusable empty
-state renders a bound message with a stable inner TextBlock AutomationId.
-Verification passed: both focused tests, all Windows App tests (34), full
-`dotnet test`, full `dotnet build`, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-113407`, and coverage generation with
+Milestone 31 chart details tab-switch slice.
+`ShowAppFocusDetailsCommand_SelectsAppSessionsTab` and
+`ShowDomainFocusDetailsCommand_SelectsWebSessionsTab` prove the presentation
+commands select the intended details tabs. `DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs`
+proves the WPF chart `상세보기` buttons are bound to those commands and that the
+`DashboardTabs` `TabControl` follows `SelectedDetailsTab`. Verification passed:
+all `.NET` tests (189), full `.NET` build, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-114947`, and coverage generation with
 overall line coverage 92.3%.
 
 ## Completed
@@ -955,11 +954,12 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with app/domain chart `상세보기` actions that select the
-App Sessions and Web Sessions tabs. Also keep the `wpfelements.md` audit gaps
-visible: domain chart type decision, Details pagination decision, Settings sync
-endpoint/privacy/runtime/storage controls, root scrolling alignment, and style
-dictionary migration away from hard-coded local styles.
+Continue Milestone 31 with `DetailsTabsPanel` extraction, then `SettingsPanel`
+extraction. Preserve the just-added chart `상세보기` tab-switch behavior and
+keep the `wpfelements.md` audit gaps visible: domain chart type decision,
+Details pagination decision, Settings sync endpoint/privacy/runtime/storage
+controls, root scrolling alignment, and style dictionary migration away from
+hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1021,9 +1021,9 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 
 The `DashboardView`, `HeaderStatusBar`, `ControlBar`, `CurrentFocusPanel`,
 `SummaryCardsPanel`, reusable `MetricCard`, `ChartsPanel`, and reusable
-`EmptyState` extractions are now complete, and the runtime poll-tick
-persistence quality gap is covered. The next componentization slice is app and
-domain chart `상세보기` tab-switch actions.
+`EmptyState` extractions are now complete, the runtime poll-tick persistence
+quality gap is covered, and app/domain chart `상세보기` actions now switch to
+the App Sessions and Web Sessions details tabs.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1237,4 +1237,30 @@ Verified:
 - When style dictionaries land, replace hard-coded colors and duplicate local
   styles in extracted panels instead of adding empty dictionaries only.
 
-Next highest priority is app/domain chart `상세보기` tab-switch actions.
+## 2026-04-29 WPF Chart Details Tab-Switch Slice
+
+- Added `DetailsTab` as the presentation-level details tab state enum.
+- Added `DashboardViewModel.SelectedDetailsTab`.
+- Added `ShowAppFocusDetailsCommand` and `ShowDomainFocusDetailsCommand`.
+- Added app/domain chart `상세보기` buttons in `Views/ChartsPanel.xaml`.
+- Bound `DashboardTabs.SelectedValue` to `SelectedDetailsTab` using tab `Tag`
+  values so chart detail actions select App Sessions and Web Sessions without
+  code-behind.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-114947`.
+
+Coverage after this slice: overall line coverage 92.3%.
+
+Next highest priority is `DetailsTabsPanel` extraction, then `SettingsPanel`
+extraction. Preserve `DashboardTabs`, App/Web/Live/Settings tab AutomationIds,
+the new `SelectedDetailsTab` binding, and chart detail button behavior.

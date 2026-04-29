@@ -299,6 +299,41 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Button appDetails = FindByAutomationId<Button>(window, "AppChartDetailsButton");
+                Button domainDetails = FindByAutomationId<Button>(window, "DomainChartDetailsButton");
+                TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
+
+                Assert.Same(dashboard.ViewModel.ShowAppFocusDetailsCommand, appDetails.Command);
+                Assert.Same(dashboard.ViewModel.ShowDomainFocusDetailsCommand, domainDetails.Command);
+
+                Invoke(domainDetails);
+                window.UpdateLayout();
+                Assert.Equal(DetailsTab.WebSessions, dashboard.ViewModel.SelectedDetailsTab);
+                Assert.Equal(1, tabs.SelectedIndex);
+
+                Invoke(appDetails);
+                window.UpdateLayout();
+                Assert.Equal(DetailsTab.AppSessions, dashboard.ViewModel.SelectedDetailsTab);
+                Assert.Equal(0, tabs.SelectedIndex);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void EmptyState_RendersBoundTextWithTextAutomationId()
         => RunOnStaThread(() =>
         {
