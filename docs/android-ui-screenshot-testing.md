@@ -43,27 +43,49 @@ Not allowed:
 - Optional Midscene/android-device-automation flow for visual review when model
   configuration and a device/emulator are available.
 
-## Required Future Tooling
+## Local Script
 
-Add a local-only Android screenshot script that:
+`scripts/run-android-ui-snapshots.ps1` is the repo-level entry point. It writes
+local artifacts under `artifacts/android-ui-snapshots/<timestamp>/`, updates
+`artifacts/android-ui-snapshots/latest/`, and always emits:
 
-- Builds the debug APK.
-- Installs or launches the app on a connected emulator/device.
-- Seeds deterministic sample data when possible.
-- Captures dashboard/settings/sessions screenshots.
-- Writes artifacts under `artifacts/android-ui-snapshots/<timestamp>/`.
-- Updates `artifacts/android-ui-snapshots/latest/`.
-- Writes `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- `report.md`
+- `manifest.json`
+- `visual-review-prompt.md`
 
-The script must clearly state whether it used an emulator or physical device.
+Run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1
+```
+
+If no emulator or physical device is connected, the script exits successfully
+with `Status: BLOCKED` and a clear reason. This is intentional: unavailable
+device evidence should be explicit, not a silent failure.
+
+Current first slice behavior:
+
+- Builds can be skipped with `-SkipBuild` for fast device-availability checks.
+- The script checks `adb devices -l`.
+- When no device is connected, it records the blocked state for dashboard,
+  settings, sessions, and daily summary capture.
+- It does not use Midscene unless a future explicit visual-review slice adds
+  model configuration and device steps.
+
+Future connected-device behavior:
+
+- Build the debug and androidTest APKs.
+- Install or launch the app on a connected emulator/device.
+- Seed deterministic sample data when possible.
+- Capture dashboard/settings/sessions/daily-summary screenshots.
+- State whether it used an emulator or physical device.
 
 ## Current Gaps
 
-- No repo-level Android screenshot script exists yet.
-- UI Automator dependency/tests are missing.
-- WorkManager scheduling needs explicit UX/startup wiring.
-- Collected sessions need a clear path into sync outbox.
-- Sync opt-in must be enforced in persisted settings, not only displayed.
+- Connected-device screenshot capture is not implemented yet.
+- Deterministic sample app-usage seeding for screenshot runs is not implemented
+  yet.
+- Optional Midscene/android-device-automation requires model environment
+  variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is
   connected.
-

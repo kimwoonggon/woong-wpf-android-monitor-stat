@@ -4,6 +4,22 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 27 Android UI snapshot blocked-evidence slice. RED tests first
+required a repo-level `scripts/run-android-ui-snapshots.ps1` contract and a
+fake-ADB execution path that writes `report.md`, `manifest.json`, and
+`visual-review-prompt.md` even when no Android device is connected. The script
+now checks `adb devices -l`, writes artifacts under
+`artifacts/android-ui-snapshots/<timestamp>/`, updates `latest/`, and exits
+with `Status: BLOCKED` when no emulator/physical device is available. Android
+unit tests, debug build, and androidTest APK build passed via Gradle. Full
+`.NET` regression tests passed (249 tests), full `.NET` build passed with 0
+warnings/errors, and coverage generation completed with 91.2% line coverage.
+The local Android snapshot availability run wrote
+`artifacts/android-ui-snapshots/latest/report.md` with blocked evidence because
+no Android device/emulator was connected. Connected screenshot capture and
+`connectedDebugAndroidTest` remain deferred until an emulator or physical device
+is available.
+
 Milestone 25 SampleDashboard acceptance slice. RED tests first required
 `WindowsAppAcceptanceMode.SampleDashboard`, deterministic DI registration for a
 sample dashboard data source, and snapshot-tool support for `--mode

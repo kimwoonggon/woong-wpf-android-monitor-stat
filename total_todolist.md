@@ -579,14 +579,19 @@ milestones below are finished.
 
 ## Milestone 27: Android UI Screenshot And Device Automation
 
-- [ ] Add `docs/android-ui-screenshot-testing.md` follow-up implementation notes after tooling exists.
-- [ ] Add local Android screenshot script/tool that writes `artifacts/android-ui-snapshots/<timestamp>/`.
-- [ ] Generate Android `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [x] Add `docs/android-ui-screenshot-testing.md` follow-up implementation notes after tooling exists.
+- [x] Add local Android screenshot script/tool that writes `artifacts/android-ui-snapshots/<timestamp>/`.
+- [x] Generate Android `report.md`, `manifest.json`, and `visual-review-prompt.md`.
 - [ ] Capture dashboard, settings, sessions, and daily summary screens.
 - [ ] Seed deterministic sample app usage where possible.
-- [ ] Run screenshot flow on emulator when available.
+- [x] Run screenshot flow availability check; blocked because `adb devices -l`
+  reported no connected Android device or running emulator, and the script wrote
+  `artifacts/android-ui-snapshots/latest/report.md` plus manifest evidence.
+- [x] Verified Android snapshot slice with focused architecture tests, full
+  `.NET` tests (249), full `.NET` build, coverage generation (91.2% line),
+  `testDebugUnitTest`, `assembleDebug`, and `assembleDebugAndroidTest`.
 - [ ] Repeat Android resource measurements on a physical device when connected.
-- [ ] Commit and push Android screenshot/device automation slice.
+- [x] Commit and push Android screenshot/device automation slice.
 
 ## Milestone 28: Privacy And Retention Hardening
 
@@ -607,7 +612,7 @@ milestones below are finished.
 - [x] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
 - [ ] Server schema supports required relationships and idempotent integrated storage.
 - [x] WPF semantic UI acceptance passes with expected content.
-- [ ] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
+- [x] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
 - [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.
 - [x] Full .NET tests/build pass.
 - [x] Android tests/build pass.
