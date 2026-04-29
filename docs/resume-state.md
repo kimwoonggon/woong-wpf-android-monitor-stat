@@ -3143,6 +3143,31 @@ Remaining Android location sync work:
 - Wire local location-context outbox/worker processing into the sync runner so
   rows upload only when both sync opt-in and location opt-in are enabled.
 
+Committed and pushed:
+
+- `33ae984 Add Android location context sync client`
+
+## 2026-04-30 Android Location Context Outbox Sync Slice
+
+- Added `location_context` aggregate processing to `AndroidOutboxSyncProcessor`.
+- Pending location-context outbox rows are ignored, left pending, and not
+  uploaded when location context opt-in is off.
+- When location context opt-in is on, accepted and duplicate upload results mark
+  location-context rows synced. Error or missing upload results mark rows failed
+  through the same retry path as focus sessions.
+- `AndroidRoomSyncRunner` now injects `SharedPreferencesAndroidLocationSettings`
+  into the processor. The existing `AndroidSyncWorker` sync-off gate remains the
+  first opt-in barrier, so disabled sync skips all uploads.
+- This preserves the safe privacy model: Android location metadata is still
+  explicit opt-in and sync remains explicit opt-in.
+
+Verified:
+
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.AndroidOutboxSyncProcessorTest" --no-daemon --stacktrace` passed.
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.*" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.AndroidOutboxSyncProcessorTest" --tests "com.woong.monitorstack.sync.AndroidSyncWorkerTest" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+
 ## 2026-04-30 Android SVG UI Flow Alignment Slice
 
 - Checked the planned Figma/SVG flow at

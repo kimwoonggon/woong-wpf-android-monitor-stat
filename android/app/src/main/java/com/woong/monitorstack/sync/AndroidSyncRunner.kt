@@ -3,6 +3,7 @@ package com.woong.monitorstack.sync
 import android.content.Context
 import androidx.work.WorkerParameters
 import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
 import java.io.IOException
 
 interface AndroidSyncRunner {
@@ -27,7 +28,8 @@ class AndroidRoomSyncRunner(
                 AndroidOutboxSyncProcessor(
                     deviceId = deviceId,
                     outbox = database.syncOutboxDao(),
-                    syncApi = AndroidSyncClient(baseUrl)
+                    syncApi = AndroidSyncClient(baseUrl),
+                    locationSettings = SharedPreferencesAndroidLocationSettings(context)
                 )
             )
         }

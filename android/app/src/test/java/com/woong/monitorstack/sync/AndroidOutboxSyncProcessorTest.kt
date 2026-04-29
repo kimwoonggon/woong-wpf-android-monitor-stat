@@ -3,6 +3,7 @@ package com.woong.monitorstack.sync
 import com.woong.monitorstack.data.local.SyncOutboxEntity
 import com.woong.monitorstack.data.local.SyncOutboxStatus
 import com.woong.monitorstack.data.local.SyncOutboxStore
+import com.woong.monitorstack.settings.AndroidLocationSettings
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -62,6 +63,139 @@ class AndroidOutboxSyncProcessorTest {
         )
     }
 
+    @Test
+    fun processPendingLeavesLocationContextPendingWhenLocationOptInIsOff() {
+        val outbox = FakeSyncOutboxStore(
+            listOf(locationOutboxItem("location-outbox-1", "location-context-1"))
+        )
+        val syncApi = FakeAndroidSyncApi(
+            focusResult = SyncUploadBatchResult(items = emptyList()),
+            locationResult = SyncUploadBatchResult(items = emptyList())
+        )
+        val processor = AndroidOutboxSyncProcessor(
+            deviceId = "device-1",
+            outbox = outbox,
+            syncApi = syncApi,
+            locationSettings = FakeLocationSettings(isLocationEnabled = false),
+            clock = { 9_000L }
+        )
+
+        val result = processor.processPending(limit = 10)
+
+        assertEquals(null, syncApi.locationRequest)
+        assertEquals(emptyList<String>(), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+        assertEquals(
+            AndroidOutboxSyncResult(syncedCount = 0, failedCount = 0),
+            result
+        )
+    }
+
+    @Test
+    fun processPendingUploadsLocationContextsAndMarksAcceptedRowsSyncedWhenLocationOptInIsOn() {
+        val outbox = FakeSyncOutboxStore(
+            listOf(
+                locationOutboxItem("location-outbox-1", "location-context-1"),
+                locationOutboxItem(
+                    clientItemId = "location-outbox-2",
+                    clientContextId = "location-context-2",
+                    latitude = null,
+                    longitude = null,
+                    accuracyMeters = null
+                )
+            )
+        )
+        val syncApi = FakeAndroidSyncApi(
+            focusResult = SyncUploadBatchResult(items = emptyList()),
+            locationResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "location-context-1",
+                        status = SyncUploadItemStatus.Accepted,
+                        errorMessage = null
+                    ),
+                    SyncUploadItemResult(
+                        clientId = "location-context-2",
+                        status = SyncUploadItemStatus.Duplicate,
+                        errorMessage = null
+                    )
+                )
+            )
+        )
+        val processor = AndroidOutboxSyncProcessor(
+            deviceId = "device-1",
+            outbox = outbox,
+            syncApi = syncApi,
+            locationSettings = FakeLocationSettings(isLocationEnabled = true),
+            clock = { 9_000L }
+        )
+
+        val result = processor.processPending(limit = 10)
+
+        val request = requireNotNull(syncApi.locationRequest)
+        assertEquals("device-1", request.deviceId)
+        assertEquals(
+            listOf("location-context-1", "location-context-2"),
+            request.contexts.map { it.clientContextId }
+        )
+        assertEquals("2026-04-28T00:00:00Z", request.contexts[0].capturedAtUtc)
+        assertEquals("2026-04-28", request.contexts[0].localDate)
+        assertEquals("Asia/Seoul", request.contexts[0].timezoneId)
+        assertEquals(37.5665, request.contexts[0].latitude ?: 0.0, 0.0001)
+        assertEquals(126.9780, request.contexts[0].longitude ?: 0.0, 0.0001)
+        assertEquals(35.5f, request.contexts[0].accuracyMeters ?: 0f, 0.0001f)
+        assertEquals("AppUsageContext", request.contexts[0].captureMode)
+        assertEquals("GrantedApproximate", request.contexts[0].permissionState)
+        assertEquals("android_location_context", request.contexts[0].source)
+        assertEquals(null, request.contexts[1].latitude)
+        assertEquals(null, request.contexts[1].longitude)
+        assertEquals(null, request.contexts[1].accuracyMeters)
+        assertEquals(listOf("location-outbox-1", "location-outbox-2"), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+        assertEquals(
+            AndroidOutboxSyncResult(syncedCount = 2, failedCount = 0),
+            result
+        )
+    }
+
+    @Test
+    fun processPendingMarksRejectedLocationContextRowsAsRetryableFailure() {
+        val outbox = FakeSyncOutboxStore(
+            listOf(locationOutboxItem("location-outbox-error", "location-context-error"))
+        )
+        val syncApi = FakeAndroidSyncApi(
+            focusResult = SyncUploadBatchResult(items = emptyList()),
+            locationResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "location-context-error",
+                        status = SyncUploadItemStatus.Error,
+                        errorMessage = "location rejected"
+                    )
+                )
+            )
+        )
+        val processor = AndroidOutboxSyncProcessor(
+            deviceId = "device-1",
+            outbox = outbox,
+            syncApi = syncApi,
+            locationSettings = FakeLocationSettings(isLocationEnabled = true),
+            clock = { 9_000L }
+        )
+
+        val result = processor.processPending(limit = 10)
+
+        assertEquals(emptyList<String>(), outbox.syncedClientItemIds)
+        assertEquals(
+            listOf(FailedOutboxItem("location-outbox-error", "location rejected", 9_000L)),
+            outbox.failedItems
+        )
+        assertEquals(
+            AndroidOutboxSyncResult(syncedCount = 0, failedCount = 1),
+            result
+        )
+    }
+
     private fun focusOutboxItem(
         clientItemId: String,
         clientSessionId: String
@@ -80,6 +214,41 @@ class AndroidOutboxSyncProcessorTest {
                   "timezoneId": "Asia/Seoul",
                   "isIdle": false,
                   "source": "usage_stats"
+                }
+            """.trimIndent(),
+            status = SyncOutboxStatus.Pending,
+            retryCount = 0,
+            lastError = null,
+            createdAtUtcMillis = 1_000,
+            updatedAtUtcMillis = 1_000
+        )
+    }
+
+    private fun locationOutboxItem(
+        clientItemId: String,
+        clientContextId: String,
+        latitude: Double? = 37.5665,
+        longitude: Double? = 126.9780,
+        accuracyMeters: Float? = 35.5f
+    ): SyncOutboxEntity {
+        val latitudeJson = latitude?.toString() ?: "null"
+        val longitudeJson = longitude?.toString() ?: "null"
+        val accuracyJson = accuracyMeters?.toString() ?: "null"
+        return SyncOutboxEntity(
+            clientItemId = clientItemId,
+            aggregateType = "location_context",
+            payloadJson = """
+                {
+                  "clientContextId": "$clientContextId",
+                  "capturedAtUtc": "2026-04-28T00:00:00Z",
+                  "localDate": "2026-04-28",
+                  "timezoneId": "Asia/Seoul",
+                  "latitude": $latitudeJson,
+                  "longitude": $longitudeJson,
+                  "accuracyMeters": $accuracyJson,
+                  "captureMode": "AppUsageContext",
+                  "permissionState": "GrantedApproximate",
+                  "source": "android_location_context"
                 }
             """.trimIndent(),
             status = SyncOutboxStatus.Pending,
@@ -115,23 +284,36 @@ class AndroidOutboxSyncProcessorTest {
     }
 
     private class FakeAndroidSyncApi(
-        private val result: SyncUploadBatchResult
+        private val focusResult: SyncUploadBatchResult,
+        private val locationResult: SyncUploadBatchResult = SyncUploadBatchResult(items = emptyList())
     ) : AndroidSyncApi {
         lateinit var request: SyncFocusSessionUploadRequest
+            private set
+
+        var locationRequest: SyncLocationContextUploadRequest? = null
             private set
 
         override fun uploadFocusSessions(
             request: SyncFocusSessionUploadRequest
         ): SyncUploadBatchResult {
             this.request = request
-            return result
+            return focusResult
         }
 
         override fun uploadLocationContexts(
             request: SyncLocationContextUploadRequest
         ): SyncUploadBatchResult {
-            throw AssertionError("Location context upload is not expected in this test.")
+            locationRequest = request
+            return locationResult
         }
+    }
+
+    private class FakeLocationSettings(
+        private val isLocationEnabled: Boolean
+    ) : AndroidLocationSettings {
+        override fun isLocationCaptureEnabled(): Boolean = isLocationEnabled
+        override fun isPreciseLatitudeLongitudeEnabled(): Boolean = false
+        override fun isApproximateLocationPreferred(): Boolean = true
     }
 
     private data class FailedOutboxItem(

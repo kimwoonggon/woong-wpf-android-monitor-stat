@@ -4,11 +4,13 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.woong.monitorstack.data.local.SyncOutboxEntity
 import com.woong.monitorstack.data.local.SyncOutboxStore
+import com.woong.monitorstack.settings.AndroidLocationSettings
 
 class AndroidOutboxSyncProcessor(
     private val deviceId: String,
     private val outbox: SyncOutboxStore,
     private val syncApi: AndroidSyncApi,
+    private val locationSettings: AndroidLocationSettings = DisabledLocationSettings,
     private val clock: () -> Long = { System.currentTimeMillis() }
 ) {
     private val moshi = Moshi.Builder()
@@ -16,51 +18,66 @@ class AndroidOutboxSyncProcessor(
         .add(KotlinJsonAdapterFactory())
         .build()
     private val focusSessionAdapter = moshi.adapter(SyncFocusSessionUploadItem::class.java)
+    private val locationContextAdapter = moshi.adapter(SyncLocationContextUploadItem::class.java)
 
     fun processPending(limit: Int = DefaultLimit): AndroidOutboxSyncResult {
-        val pendingFocusSessions = outbox.queryPending(limit)
+        val pendingItems = outbox.queryPending(limit)
+        val pendingFocusSessions = pendingItems
             .filter { it.aggregateType == FocusSessionAggregateType }
             .map { PendingFocusSessionOutbox(it, parseFocusSession(it)) }
+        val pendingLocationContexts = if (locationSettings.isLocationCaptureEnabled()) {
+            pendingItems
+                .filter { it.aggregateType == LocationContextAggregateType }
+                .map { PendingLocationContextOutbox(it, parseLocationContext(it)) }
+        } else {
+            emptyList()
+        }
 
-        if (pendingFocusSessions.isEmpty()) {
+        if (pendingFocusSessions.isEmpty() && pendingLocationContexts.isEmpty()) {
             return AndroidOutboxSyncResult(syncedCount = 0, failedCount = 0)
         }
 
-        val uploadResult = syncApi.uploadFocusSessions(
-            SyncFocusSessionUploadRequest(
-                deviceId = deviceId,
-                sessions = pendingFocusSessions.map { it.session }
-            )
-        )
-        val resultsByClientId = uploadResult.items.associateBy { it.clientId }
         val updatedAtUtcMillis = clock()
         var syncedCount = 0
         var failedCount = 0
 
-        pendingFocusSessions.forEach { pending ->
-            val itemResult = resultsByClientId[pending.session.clientSessionId]
-            when (itemResult?.status) {
-                SyncUploadItemStatus.Accepted,
-                SyncUploadItemStatus.Duplicate -> {
-                    outbox.markSynced(pending.outboxItem.clientItemId, updatedAtUtcMillis)
-                    syncedCount += 1
-                }
-                SyncUploadItemStatus.Error -> {
-                    outbox.markFailed(
-                        pending.outboxItem.clientItemId,
-                        itemResult.errorMessage ?: DefaultUploadError,
-                        updatedAtUtcMillis
-                    )
-                    failedCount += 1
-                }
-                null -> {
-                    outbox.markFailed(
-                        pending.outboxItem.clientItemId,
-                        "Missing upload result for ${pending.session.clientSessionId}.",
-                        updatedAtUtcMillis
-                    )
-                    failedCount += 1
-                }
+        if (pendingFocusSessions.isNotEmpty()) {
+            val uploadResult = syncApi.uploadFocusSessions(
+                SyncFocusSessionUploadRequest(
+                    deviceId = deviceId,
+                    sessions = pendingFocusSessions.map { it.session }
+                )
+            )
+            val resultsByClientId = uploadResult.items.associateBy { it.clientId }
+            pendingFocusSessions.forEach { pending ->
+                val result = applyUploadResult(
+                    outboxItem = pending.outboxItem,
+                    itemResult = resultsByClientId[pending.session.clientSessionId],
+                    missingResultMessage = "Missing upload result for ${pending.session.clientSessionId}.",
+                    updatedAtUtcMillis = updatedAtUtcMillis
+                )
+                syncedCount += result.syncedCount
+                failedCount += result.failedCount
+            }
+        }
+
+        if (pendingLocationContexts.isNotEmpty()) {
+            val uploadResult = syncApi.uploadLocationContexts(
+                SyncLocationContextUploadRequest(
+                    deviceId = deviceId,
+                    contexts = pendingLocationContexts.map { it.context }
+                )
+            )
+            val resultsByClientId = uploadResult.items.associateBy { it.clientId }
+            pendingLocationContexts.forEach { pending ->
+                val result = applyUploadResult(
+                    outboxItem = pending.outboxItem,
+                    itemResult = resultsByClientId[pending.context.clientContextId],
+                    missingResultMessage = "Missing upload result for ${pending.context.clientContextId}.",
+                    updatedAtUtcMillis = updatedAtUtcMillis
+                )
+                syncedCount += result.syncedCount
+                failedCount += result.failedCount
             }
         }
 
@@ -70,10 +87,48 @@ class AndroidOutboxSyncProcessor(
         )
     }
 
+    private fun applyUploadResult(
+        outboxItem: SyncOutboxEntity,
+        itemResult: SyncUploadItemResult?,
+        missingResultMessage: String,
+        updatedAtUtcMillis: Long
+    ): AndroidOutboxSyncResult {
+        return when (itemResult?.status) {
+            SyncUploadItemStatus.Accepted,
+            SyncUploadItemStatus.Duplicate -> {
+                outbox.markSynced(outboxItem.clientItemId, updatedAtUtcMillis)
+                AndroidOutboxSyncResult(syncedCount = 1, failedCount = 0)
+            }
+            SyncUploadItemStatus.Error -> {
+                outbox.markFailed(
+                    outboxItem.clientItemId,
+                    itemResult.errorMessage ?: DefaultUploadError,
+                    updatedAtUtcMillis
+                )
+                AndroidOutboxSyncResult(syncedCount = 0, failedCount = 1)
+            }
+            null -> {
+                outbox.markFailed(
+                    outboxItem.clientItemId,
+                    missingResultMessage,
+                    updatedAtUtcMillis
+                )
+                AndroidOutboxSyncResult(syncedCount = 0, failedCount = 1)
+            }
+        }
+    }
+
     private fun parseFocusSession(outboxItem: SyncOutboxEntity): SyncFocusSessionUploadItem {
         return focusSessionAdapter.fromJson(outboxItem.payloadJson)
             ?: throw IllegalArgumentException(
                 "Focus session outbox payload is empty: ${outboxItem.clientItemId}"
+            )
+    }
+
+    private fun parseLocationContext(outboxItem: SyncOutboxEntity): SyncLocationContextUploadItem {
+        return locationContextAdapter.fromJson(outboxItem.payloadJson)
+            ?: throw IllegalArgumentException(
+                "Location context outbox payload is empty: ${outboxItem.clientItemId}"
             )
     }
 
@@ -82,10 +137,22 @@ class AndroidOutboxSyncProcessor(
         val session: SyncFocusSessionUploadItem
     )
 
+    private data class PendingLocationContextOutbox(
+        val outboxItem: SyncOutboxEntity,
+        val context: SyncLocationContextUploadItem
+    )
+
     companion object {
         const val FocusSessionAggregateType = "focus_session"
+        const val LocationContextAggregateType = "location_context"
         private const val DefaultLimit = 50
         private const val DefaultUploadError = "Upload failed."
+    }
+
+    private object DisabledLocationSettings : AndroidLocationSettings {
+        override fun isLocationCaptureEnabled(): Boolean = false
+        override fun isPreciseLatitudeLongitudeEnabled(): Boolean = false
+        override fun isApproximateLocationPreferred(): Boolean = true
     }
 }
 
