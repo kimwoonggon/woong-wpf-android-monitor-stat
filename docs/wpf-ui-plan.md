@@ -183,12 +183,12 @@ Future pagination:
 Current details tab implementation:
 
 - `DashboardView` hosts `DetailsTabsPanel`.
-- `DetailsTabsPanel` owns the `DashboardTabs` `TabControl`, App/Web/Live/Settings
-  tabs, and tab content for now.
+- `DetailsTabsPanel` owns the `DashboardTabs` `TabControl` and App/Web/Live
+  tab content.
 - `DashboardTabs.SelectedValue` binds two-way to
   `DashboardViewModel.SelectedDetailsTab`.
-- `SettingsPanel` extraction is the next intended child slice; it must inherit
-  the existing dashboard `DataContext`.
+- `SettingsPanel` is now hosted inside the Settings tab and inherits the
+  existing dashboard `DataContext`.
 
 Open `wpfelements.md` alignment decisions:
 

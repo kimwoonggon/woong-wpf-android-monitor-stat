@@ -4,16 +4,16 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 DetailsTabsPanel extraction slice.
-`DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding` proves
-`DashboardView` hosts `Views/DetailsTabsPanel.xaml`, preserves `DashboardTabs`,
-App/Web/Live/Settings tab headers, and keeps `SelectedDetailsTab` two-way tab
-selection. A previously brittle whole-window visual-tree test was narrowed to
-stable Header/Summary/Charts/Details AutomationId scopes while preserving the
-same observable UI expectations. Verification passed: all `.NET` tests (190),
-full `.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-121155`, and coverage generation with
-overall line coverage 92.3%.
+Milestone 31 SettingsPanel extraction slice.
+`DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab` proves the Settings tab
+hosts `Views/SettingsPanel.xaml` while preserving `DetailsTab.Settings`.
+`SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`,
+`SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and
+`SettingsPanel_PreservesRuntimeAndStorageActions` prove privacy-safe defaults,
+sync opt-in/local-only behavior, and runtime/storage disabled actions survived
+the extraction. Verification passed: all `.NET` tests (194), full `.NET` build,
+WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-122321`, and coverage
+generation with overall line coverage 92.4%.
 
 ## Completed
 
@@ -955,12 +955,12 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with `SettingsPanel` extraction. Preserve the extracted
-`DetailsTabsPanel`, the chart `상세보기` tab-switch behavior, and keep the
-`wpfelements.md` audit gaps visible: domain chart type decision, Details
-pagination decision, Settings sync endpoint/privacy/runtime/storage controls,
-root scrolling alignment, and style dictionary migration away from hard-coded
-local styles.
+Continue Milestone 31 with reusable `StatusBadge` extraction. Preserve the
+extracted `DetailsTabsPanel`/`SettingsPanel`, the chart `상세보기` tab-switch
+behavior, and keep the `wpfelements.md` audit gaps visible: domain chart type
+decision, Details pagination decision, Settings sync endpoint/privacy/runtime
+storage controls, root scrolling alignment, and style dictionary migration away
+from hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1053,10 +1053,9 @@ Verified:
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
   completed successfully and generated the coverage report.
 
-Remaining Milestone 31 componentization work stays open, including
-`SettingsPanel`, remaining reusable controls, style dictionaries,
-`wpfelements.md` alignment decisions, final componentization verification, and
-commit/push.
+Remaining Milestone 31 componentization work stays open, including remaining
+reusable controls, style dictionaries, `wpfelements.md` alignment decisions,
+final componentization verification, and commit/push.
 
 ## 2026-04-29 WPF HeaderStatusBar Extraction Slice
 
@@ -1292,6 +1291,32 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.3%.
 
-Next highest priority is `SettingsPanel` extraction. Preserve inherited
-`DashboardViewModel` `DataContext`, `SettingsTab`, all privacy/sync/runtime
-AutomationIds, and safe privacy/sync defaults.
+## 2026-04-29 WPF SettingsPanel Extraction Slice
+
+- Added the RED componentization test
+  `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`.
+- Added Settings behavior tests for privacy-safe defaults, sync two-way binding,
+  and runtime/storage disabled actions.
+- Extracted the Settings tab content from `Views/DetailsTabsPanel.xaml` into
+  `Views/SettingsPanel.xaml`.
+- Added `Views/SettingsPanel.xaml.cs`.
+- Preserved inherited dashboard `DataContext`, `SettingsTab`, all existing
+  Settings child AutomationIds, safe privacy defaults, and sync opt-in behavior.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-122321`.
+
+Coverage after this slice: overall line coverage 92.4%.
+
+Next highest priority is reusable `StatusBadge` extraction. Keep all WPF-only
+controls in `Windows.App`, preserve `TrackingStatusBadge`, `SyncStatusBadge`,
+and `PrivacyStatusBadge`, and avoid adding WPF references to
+`Windows.Presentation`.

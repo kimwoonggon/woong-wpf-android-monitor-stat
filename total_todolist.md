@@ -694,8 +694,14 @@ milestones below are finished.
 - [x] DetailsTabsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-121155`.
 - [x] DetailsTabsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
-- [ ] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
-- [ ] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
+- [x] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
+- [x] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
+- [x] SettingsPanel extraction verification: `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`, `SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`, `SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and `SettingsPanel_PreservesRuntimeAndStorageActions` passed.
+- [x] SettingsPanel extraction verification: all Windows App tests passed (40 tests).
+- [x] SettingsPanel extraction verification: full `.NET` tests passed (194 tests).
+- [x] SettingsPanel extraction verification: `.NET` build passed.
+- [x] SettingsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-122321`.
+- [x] SettingsPanel extraction verification: coverage report generated successfully with overall line coverage 92.4%.
 - [ ] Add reusable `Controls/StatusBadge.xaml`, `Controls/SectionCard.xaml`, and `Controls/DetailRow.xaml`.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.

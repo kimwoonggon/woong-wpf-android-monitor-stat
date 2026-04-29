@@ -364,6 +364,125 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
+                tabs.SelectedIndex = 3;
+                window.UpdateLayout();
+
+                Assert.Equal(DetailsTab.Settings, dashboard.ViewModel.SelectedDetailsTab);
+                Assert.NotNull(FindByAutomationId<TabItem>(window, "SettingsTab"));
+                Assert.NotNull(FindByAutomationId<SettingsPanel>(window, "SettingsPanel"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void SettingsPanel_PreservesPrivacyControlsAndSafeDefaults()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+
+                CheckBox collectionVisible = FindByAutomationId<CheckBox>(panel, "CollectionVisibleCheckBox");
+                CheckBox windowTitleVisible = FindByAutomationId<CheckBox>(panel, "WindowTitleVisibleCheckBox");
+                CheckBox fullUrlCapture = FindByAutomationId<CheckBox>(panel, "FullUrlCaptureCheckBox");
+                TextBlock browserUrlPrivacy = FindByAutomationId<TextBlock>(panel, "BrowserUrlPrivacyText");
+
+                Assert.Equal("Collection visible", collectionVisible.Content);
+                Assert.True(collectionVisible.IsChecked);
+                Assert.Equal("Capture window title", windowTitleVisible.Content);
+                Assert.False(windowTitleVisible.IsChecked);
+                Assert.Equal("Full URL capture (off)", fullUrlCapture.Content);
+                Assert.False(fullUrlCapture.IsEnabled);
+                Assert.False(fullUrlCapture.IsChecked);
+                Assert.Equal(
+                    "Browser URL storage is domain-only by default. Full URLs require explicit future opt-in.",
+                    browserUrlPrivacy.Text);
+                Assert.True(dashboard.ViewModel.Settings.IsCollectionVisible);
+                Assert.False(dashboard.ViewModel.Settings.IsWindowTitleVisible);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void SettingsPanel_PreservesSyncControlsAndTwoWayBinding()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+
+                CheckBox syncEnabled = FindByAutomationId<CheckBox>(panel, "SyncEnabledCheckBox");
+                TextBlock syncMode = FindByAutomationId<TextBlock>(panel, "SyncModeLabel");
+                TextBlock syncStatus = FindByAutomationId<TextBlock>(panel, "SyncStatusLabel");
+
+                Assert.Equal("Sync enabled", syncEnabled.Content);
+                Assert.False(syncEnabled.IsChecked);
+                Assert.Equal("Local only", syncMode.Text);
+                Assert.Equal("Sync is off. Data stays on this Windows device.", syncStatus.Text);
+
+                syncEnabled.IsChecked = true;
+                window.UpdateLayout();
+
+                Assert.True(dashboard.ViewModel.Settings.IsSyncEnabled);
+                Assert.Equal("Sync enabled", syncMode.Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void SettingsPanel_PreservesRuntimeAndStorageActions()
+        => RunOnStaThread(() =>
+        {
+            var window = new MainWindow(CreateDashboard().ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+                IReadOnlySet<string> text = CollectText(panel);
+
+                Assert.Contains("Poll interval: 1 second", text);
+                Assert.Contains("Idle threshold: 5 minutes", text);
+                Button openDbFolder = FindByAutomationId<Button>(panel, "OpenLocalDbFolderButton");
+                Button openLogsFolder = FindByAutomationId<Button>(panel, "OpenLogsFolderButton");
+                Assert.False(openDbFolder.IsEnabled);
+                Assert.False(openLogsFolder.IsEnabled);
+                AssertReadableButton(openDbFolder);
+                AssertReadableButton(openLogsFolder);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void EmptyState_RendersBoundTextWithTextAutomationId()
         => RunOnStaThread(() =>
         {
@@ -664,6 +783,18 @@ public sealed class MainWindowUiExpectationTests
                 dataGrid.Columns[index].MinWidth >= expectedMinWidths[index],
                 $"{dataGrid.Columns[index].Header} MinWidth should be >= {expectedMinWidths[index]}.");
         }
+    }
+
+    private static SettingsPanel ShowSettingsPanel(Window window)
+    {
+        window.Show();
+        window.UpdateLayout();
+
+        TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
+        tabs.SelectedIndex = 3;
+        window.UpdateLayout();
+
+        return FindByAutomationId<SettingsPanel>(window, "SettingsPanel");
     }
 
     private static void Invoke(Button button)

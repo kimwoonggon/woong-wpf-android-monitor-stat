@@ -259,6 +259,15 @@ run passed at:
 
 Coverage remains 92.3% overall.
 
+The SettingsPanel extraction slice moved the Settings tab body into
+`Views/SettingsPanel.xaml` while preserving privacy-safe defaults, sync opt-in
+behavior, runtime/storage disabled actions, and inherited dashboard
+`DataContext`. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-122321`
+
+Coverage is 92.4% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic
