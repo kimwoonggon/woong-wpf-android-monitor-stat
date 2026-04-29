@@ -2781,6 +2781,34 @@ device).
 Coverage after this slice: overall line coverage 91.3%; Server line coverage
 96.7%.
 
+## 2026-04-29 Android UI Snapshot Seed Slice
+
+- Added `SnapshotSeedTest` under androidTest. The test clears the app Room DB
+  and seeds deterministic local focus sessions for Chrome, YouTube, Slack, plus
+  a Chrome idle interval for screenshot review.
+- Updated `scripts/run-android-ui-snapshots.ps1` so connected-device runs
+  install both debug and androidTest APKs, execute the seed instrumentation
+  test, then capture Dashboard, Settings, Sessions, and Daily Summary screens.
+- The seed path is test-only and local. It does not add product telemetry,
+  background screen capture, typed text capture, or cross-app content capture.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens" -v minimal`
+- `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace` from `android/`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -SkipBuild`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` from `android/`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest Android UI snapshot artifact:
+`artifacts/android-ui-snapshots/20260429-231430` (`BLOCKED`, no connected
+device).
+
+Coverage after this slice: overall line coverage 91.3%; Server line coverage
+96.7%.
+
 ## 2026-04-29 WPF Close Flush Slice
 
 - Added a WPF behavior test proving that closing `MainWindow` while tracking is

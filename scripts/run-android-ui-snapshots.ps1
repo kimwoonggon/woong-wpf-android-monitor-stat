@@ -182,17 +182,28 @@ try {
 
     if (-not $SkipBuild) {
         $debugApk = Join-Path $androidRoot "app\build\outputs\apk\debug\app-debug.apk"
+        $debugAndroidTestApk = Join-Path $androidRoot "app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk"
         if (-not (Test-Path $debugApk)) {
             throw "Debug APK not found after build: $debugApk"
+        }
+        if (-not (Test-Path $debugAndroidTestApk)) {
+            throw "Debug androidTest APK not found after build: $debugAndroidTestApk"
         }
 
         $notes.Add("Installing debug APK: $debugApk")
         Invoke-AdbChecked -Arguments @("install", "-r", $debugApk) -Description "Install debug APK"
+        $notes.Add("Installing debug androidTest APK: $debugAndroidTestApk")
+        Invoke-AdbChecked -Arguments @("install", "-r", $debugAndroidTestApk) -Description "Install debug androidTest APK"
     } else {
-        $notes.Add("Install skipped by -SkipBuild; assuming the debug app is already installed on the connected device.")
+        $notes.Add("Install skipped by -SkipBuild; assuming the debug app and androidTest APK are already installed on the connected device.")
     }
 
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")
+    $seedTestClass = "com.woong.monitorstack.snapshots.SnapshotSeedTest"
+    $testRunner = "com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner"
+    $notes.Add("Seeding deterministic sample sessions with $seedTestClass.")
+    Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $seedTestClass, $testRunner) -Description "Seed Android snapshot sample data"
+
     foreach ($target in $screenTargets) {
         $notes.Add("Capturing $($target.Name) via $($target.Activity).")
         Invoke-AdbChecked -Arguments @("shell", "am", "start", "-W", "-n", $target.Activity) -Description "Launch $($target.Name)"

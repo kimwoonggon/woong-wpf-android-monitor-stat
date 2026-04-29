@@ -139,6 +139,7 @@ exit /b 0
             Assert.Contains("daily-summary.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
+            Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
             Assert.Contains("com.woong.monitorstack/.dashboard.DashboardActivity", commands);
             Assert.Contains("com.woong.monitorstack/.settings.SettingsActivity", commands);
             Assert.Contains("com.woong.monitorstack/.sessions.SessionsActivity", commands);

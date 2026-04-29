@@ -70,7 +70,12 @@ Current behavior:
 - When no device is connected, it records the blocked state for dashboard,
   settings, sessions, and daily summary capture.
 - When a device is connected and `-SkipBuild` is not used, it builds and
-  installs the debug APK before launching screens.
+  installs the debug APK and debug androidTest APK before launching screens.
+- Before capturing screenshots, it runs
+  `com.woong.monitorstack.snapshots.SnapshotSeedTest` through instrumentation
+  to seed deterministic Room focus sessions for Chrome, YouTube, Slack, and an
+  idle interval. This keeps sample dashboard/session evidence local and
+  test-only.
 - When a device is connected, it launches Dashboard, Settings, Sessions, and
   Daily Summary activities and captures local PNG screenshots into the artifact
   folder.
@@ -79,7 +84,6 @@ Current behavior:
 
 Future connected-device improvements:
 
-- Seed deterministic sample data when possible.
 - State whether it used an emulator or physical device.
 - Add optional Midscene visual review when model environment variables are
   configured.
@@ -89,8 +93,8 @@ Future connected-device improvements:
 - This environment currently has no connected Android device or emulator, so
   the connected-device capture path is covered with fake-adb tests and remains
   blocked for real visual evidence.
-- Deterministic sample app-usage seeding for screenshot runs is not implemented
-  yet.
+- Real seeded screenshots still require an attached emulator or physical
+  device.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

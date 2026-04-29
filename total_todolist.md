@@ -595,7 +595,7 @@ milestones below are finished.
 - [x] Generate Android `report.md`, `manifest.json`, and `visual-review-prompt.md`.
 - [x] Implement connected-device script branch that installs/launches the app and captures dashboard/settings/sessions/daily-summary screenshots when a device is available.
 - [ ] Capture dashboard, settings, sessions, and daily summary screens.
-- [ ] Seed deterministic sample app usage where possible.
+- [x] Seed deterministic sample app usage where possible through androidTest `SnapshotSeedTest`.
 - [x] Run screenshot flow availability check; blocked because `adb devices -l`
   reported no connected Android device or running emulator, and the script wrote
   `artifacts/android-ui-snapshots/latest/report.md` plus manifest evidence.
