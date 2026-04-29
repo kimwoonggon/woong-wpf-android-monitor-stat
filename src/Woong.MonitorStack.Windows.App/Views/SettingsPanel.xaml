@@ -57,8 +57,7 @@
                       Margin="0,0,0,10" />
             <TextBlock AutomationProperties.AutomationId="BrowserUrlPrivacyText"
                        Text="Browser URL storage is domain-only by default. Full URLs require explicit future opt-in."
-                       Foreground="#5A6472"
-                       FontSize="13"
+                       Style="{StaticResource SettingsMutedTextStyle}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
@@ -74,8 +73,7 @@
                       Margin="0,0,0,10" />
             <TextBlock AutomationProperties.AutomationId="SyncModeLabel"
                        Text="{Binding Settings.SyncModeLabel}"
-                       Foreground="#5A6472"
-                       FontSize="13" />
+                       Style="{StaticResource SettingsMutedTextStyle}" />
             <TextBlock AutomationProperties.AutomationId="SyncStatusLabel"
                        Text="{Binding Settings.SyncStatusLabel}"
                        Foreground="#8A4B00"
@@ -94,12 +92,10 @@
                        Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,0,0,10" />
             <TextBlock Text="Poll interval: 1 second"
-                       Foreground="#5A6472"
-                       FontSize="13"
+                       Style="{StaticResource SettingsMutedTextStyle}"
                        Margin="0,0,0,8" />
             <TextBlock Text="Idle threshold: 5 minutes"
-                       Foreground="#5A6472"
-                       FontSize="13"
+                       Style="{StaticResource SettingsMutedTextStyle}"
                        Margin="0,0,0,8" />
             <Button Content="Open local DB folder"
                     AutomationProperties.AutomationId="OpenLocalDbFolderButton"

@@ -2254,3 +2254,32 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should continue in `SettingsPanel`, preferably
 muted body text and sync warning/status brush resources, one RED/GREEN slice at
 a time.
+
+## 2026-04-29 WPF Settings Muted Text Typography Slice
+
+- Added a RED WPF assertion that Settings muted helper text uses a shared
+  typography resource.
+- Added `SettingsMutedTextStyle` to `Styles/Typography.xaml`.
+- Replaced inline Foreground/FontSize setters on the browser URL privacy note,
+  sync mode label, poll interval label, and idle threshold label.
+- Left the sync warning/status color as a separate future slice so the status
+  color policy can be tested independently.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter SettingsPanel_UsesSharedMutedTextTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_UsesSharedMutedTextTypography|SettingsPanel_PreservesPrivacyControlsAndSafeDefaults|SettingsPanel_PreservesSyncControlsAndTwoWayBinding"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-201406`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should test and extract the Settings sync warning
+text brush/style, then audit remaining inline settings font setters such as the
+sync endpoint TextBox.

@@ -775,6 +775,29 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void SettingsPanel_UsesSharedMutedTextTypography()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+
+                Assert.IsType<Style>(panel.FindResource("SettingsMutedTextStyle"));
+                AssertSettingsMutedTextStyle(FindByAutomationId<TextBlock>(panel, "BrowserUrlPrivacyText"));
+                AssertSettingsMutedTextStyle(FindByAutomationId<TextBlock>(panel, "SyncModeLabel"));
+                AssertSettingsMutedTextStyle(FindTextBlock(panel, "Poll interval: 1 second"));
+                AssertSettingsMutedTextStyle(FindTextBlock(panel, "Idle threshold: 5 minutes"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void SettingsPanel_PreservesSyncControlsAndTwoWayBinding()
         => RunOnStaThread(() =>
         {
@@ -1197,6 +1220,16 @@ public sealed class MainWindowUiExpectationTests
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
         Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
+    }
+
+    private static void AssertSettingsMutedTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 13.0);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x5A, 0x64, 0x72), foregroundBrush.Color);
     }
 
     private static void AssertColumnMinWidths(DataGrid dataGrid, IReadOnlyList<double> expectedMinWidths)

@@ -1027,6 +1027,13 @@ milestones below are finished.
   - [x] Settings heading typography verification: `.NET` build passed.
   - [x] Settings heading typography verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-200823`.
   - [x] Settings heading typography verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `SettingsMutedTextStyle` to `Styles/Typography.xaml` and replace Settings panel muted helper text inline color/font setters.
+  - [x] Settings muted text verification: RED `SettingsPanel_UsesSharedMutedTextTypography` failed first, then passed.
+  - [x] Settings muted text verification: all Windows App tests passed (81 tests).
+  - [x] Settings muted text verification: full `.NET` tests passed (285 tests).
+  - [x] Settings muted text verification: `.NET` build passed.
+  - [x] Settings muted text verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-201406`.
+  - [x] Settings muted text verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
