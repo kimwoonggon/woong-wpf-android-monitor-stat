@@ -268,6 +268,15 @@ behavior, runtime/storage disabled actions, and inherited dashboard
 
 Coverage is 92.4% overall.
 
+The StatusBadge extraction slice moved header badges into
+`Controls/StatusBadge.xaml` while preserving `TrackingStatusBadge`,
+`SyncStatusBadge`, and `PrivacyStatusBadge`. The latest local WPF acceptance run
+passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-123308`
+
+Coverage is 92.3% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

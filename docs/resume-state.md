@@ -4,16 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 SettingsPanel extraction slice.
-`DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab` proves the Settings tab
-hosts `Views/SettingsPanel.xaml` while preserving `DetailsTab.Settings`.
-`SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`,
-`SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and
-`SettingsPanel_PreservesRuntimeAndStorageActions` prove privacy-safe defaults,
-sync opt-in/local-only behavior, and runtime/storage disabled actions survived
-the extraction. Verification passed: all `.NET` tests (194), full `.NET` build,
-WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-122321`, and coverage
-generation with overall line coverage 92.4%.
+Milestone 31 StatusBadge extraction slice.
+`StatusBadge_RendersTextAndPreservesAutomationId` proves the reusable WPF
+badge renders bound text under a stable AutomationId. The header test now
+asserts `TrackingStatusBadge`, `SyncStatusBadge`, and `PrivacyStatusBadge` are
+`StatusBadge` controls rather than raw `Border`s, while preserving the visible
+header content. Verification passed: all `.NET` tests (195), full `.NET` build,
+WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-123308`, and coverage
+generation with overall line coverage 92.3%.
 
 ## Completed
 
@@ -955,12 +953,13 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with reusable `StatusBadge` extraction. Preserve the
-extracted `DetailsTabsPanel`/`SettingsPanel`, the chart `상세보기` tab-switch
-behavior, and keep the `wpfelements.md` audit gaps visible: domain chart type
-decision, Details pagination decision, Settings sync endpoint/privacy/runtime
-storage controls, root scrolling alignment, and style dictionary migration away
-from hard-coded local styles.
+Continue Milestone 31 with reusable `DetailRow` extraction, then `SectionCard`
+extraction. Preserve the extracted `DetailsTabsPanel`/`SettingsPanel` and
+`StatusBadge`, the chart `상세보기` tab-switch behavior, and keep the
+`wpfelements.md` audit gaps visible: domain chart type decision, Details
+pagination decision, Settings sync endpoint/privacy/runtime storage controls,
+root scrolling alignment, and style dictionary migration away from hard-coded
+local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1316,7 +1315,30 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.4%.
 
-Next highest priority is reusable `StatusBadge` extraction. Keep all WPF-only
-controls in `Windows.App`, preserve `TrackingStatusBadge`, `SyncStatusBadge`,
-and `PrivacyStatusBadge`, and avoid adding WPF references to
-`Windows.Presentation`.
+## 2026-04-29 WPF StatusBadge Extraction Slice
+
+- Added the RED reusable-control test
+  `StatusBadge_RendersTextAndPreservesAutomationId`.
+- Updated the header regression test to assert the three status badges are
+  `StatusBadge` controls while preserving `HeaderArea`, badge AutomationIds,
+  header title/subtitle, and no current-process leakage in the header.
+- Added `Controls/StatusBadge.xaml` and `Controls/StatusBadge.xaml.cs`.
+- Replaced raw header badge `Border`s in `Views/HeaderStatusBar.xaml` with
+  `controls:StatusBadge`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-123308`.
+
+Coverage after this slice: overall line coverage 92.3%.
+
+Next highest priority is reusable `DetailRow` extraction, then `SectionCard`
+extraction. Keep all WPF-only controls in `Windows.App` and avoid adding WPF
+references to `Windows.Presentation`.

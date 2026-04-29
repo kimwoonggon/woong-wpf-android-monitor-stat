@@ -190,6 +190,14 @@ Current details tab implementation:
 - `SettingsPanel` is now hosted inside the Settings tab and inherits the
   existing dashboard `DataContext`.
 
+Current reusable control implementation:
+
+- `MetricCard` renders summary card label/value/subtitle.
+- `EmptyState` renders chart empty-state text with a stable inner TextBlock
+  AutomationId.
+- `StatusBadge` renders header tracking/sync/privacy badges and preserves the
+  original badge AutomationIds.
+
 Open `wpfelements.md` alignment decisions:
 
 - Domain Focus chart: `wpfelements.md` suggests a Cartesian/ranking chart,

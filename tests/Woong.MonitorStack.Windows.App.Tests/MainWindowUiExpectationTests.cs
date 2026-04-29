@@ -109,9 +109,35 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("Sync Off", headerText);
                 Assert.Contains("Privacy Safe", headerText);
                 Assert.DoesNotContain("chrome.exe", headerText);
-                Assert.NotNull(FindByAutomationId<Border>(header, "TrackingStatusBadge"));
-                Assert.NotNull(FindByAutomationId<Border>(header, "SyncStatusBadge"));
-                Assert.NotNull(FindByAutomationId<Border>(header, "PrivacyStatusBadge"));
+                Assert.NotNull(FindByAutomationId<StatusBadge>(header, "TrackingStatusBadge"));
+                Assert.NotNull(FindByAutomationId<StatusBadge>(header, "SyncStatusBadge"));
+                Assert.NotNull(FindByAutomationId<StatusBadge>(header, "PrivacyStatusBadge"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void StatusBadge_RendersTextAndPreservesAutomationId()
+        => RunOnStaThread(() =>
+        {
+            var badge = new StatusBadge
+            {
+                Text = "Tracking Stopped"
+            };
+            AutomationProperties.SetAutomationId(badge, "TestStatusBadge");
+            var window = new Window { Content = badge };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                StatusBadge renderedBadge = FindByAutomationId<StatusBadge>(window, "TestStatusBadge");
+                Assert.Same(badge, renderedBadge);
+                Assert.Contains("Tracking Stopped", CollectText(renderedBadge));
             }
             finally
             {

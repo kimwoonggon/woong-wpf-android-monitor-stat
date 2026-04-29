@@ -702,7 +702,14 @@ milestones below are finished.
 - [x] SettingsPanel extraction verification: `.NET` build passed.
 - [x] SettingsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-122321`.
 - [x] SettingsPanel extraction verification: coverage report generated successfully with overall line coverage 92.4%.
-- [ ] Add reusable `Controls/StatusBadge.xaml`, `Controls/SectionCard.xaml`, and `Controls/DetailRow.xaml`.
+- [x] Add reusable `Controls/StatusBadge.xaml` and replace Header badges while preserving `TrackingStatusBadge`, `SyncStatusBadge`, and `PrivacyStatusBadge`.
+- [x] StatusBadge extraction verification: focused `StatusBadge_RendersTextAndPreservesAutomationId` and `DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent` passed.
+- [x] StatusBadge extraction verification: all Windows App tests passed (41 tests).
+- [x] StatusBadge extraction verification: full `.NET` tests passed (195 tests).
+- [x] StatusBadge extraction verification: `.NET` build passed.
+- [x] StatusBadge extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-123308`.
+- [x] StatusBadge extraction verification: coverage report generated successfully with overall line coverage 92.3%.
+- [ ] Add reusable `Controls/SectionCard.xaml` and `Controls/DetailRow.xaml`.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Align DashboardView root scrolling with `wpfelements.md`: prefer vertical dashboard scrolling and keep horizontal scrolling inside wide grids/charts where needed.
