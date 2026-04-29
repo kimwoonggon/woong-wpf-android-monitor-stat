@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
@@ -23,7 +24,7 @@ internal static class UiSnapshotRunner
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             Console.Error.WriteLine($"[FAIL] {exception.Message}");
-            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--db <path>] [--mode EmptyData|TrackingPipeline] [--timeout-seconds <seconds>] [--allow-server-sync]");
+            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--db <path>] [--mode EmptyData|TrackingPipeline] [--timeout-seconds <seconds>] [--viewport-widths <csv>] [--allow-server-sync]");
             return 2;
         }
 
@@ -144,6 +145,7 @@ internal static class UiSnapshotRunner
         InvokeIfAvailable(mainWindow, "Last6HoursPeriodButton", "Last 6 hours period", context);
         Thread.Sleep(500);
         CaptureWindow(mainWindow, "03-dashboard-period-change.png", context);
+        CaptureViewportMatrix(mainWindow, context);
 
         SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
         Thread.Sleep(500);
@@ -177,6 +179,7 @@ internal static class UiSnapshotRunner
         context.Pass("StopTrackingButton", "Invoked", "Invoked");
         context.CheckContains("TrackingStatusText stopped", "Stopped", GetElementName(mainWindow, "TrackingStatusText"));
         CaptureWindow(mainWindow, "04-after-stop.png", context);
+        CaptureViewportMatrix(mainWindow, context);
 
         SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
         Thread.Sleep(300);
@@ -290,6 +293,7 @@ internal static class UiSnapshotRunner
             return;
         }
 
+        TryBringElementIntoViewBeforeCapture(element, context);
         element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
         context.Screenshots.Add(fileName);
         context.Notes.Add($"Captured optional crop `{fileName}` from `{automationId}`.");
@@ -304,6 +308,7 @@ internal static class UiSnapshotRunner
         AutomationElement? element = window.FindFirstDescendant(automationId);
         if (element is not null)
         {
+            TryBringElementIntoViewBeforeCapture(element, context);
             element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
             context.Screenshots.Add(fileName);
             context.Notes.Add($"Captured `{fileName}` from `{automationId}`.");
@@ -370,6 +375,94 @@ internal static class UiSnapshotRunner
 
         element.AsTabItem().Select();
         context.Pass(tabName, "Tab selected", "Tab selected");
+    }
+
+    private static void CaptureViewportMatrix(Window mainWindow, UiSnapshotContext context)
+    {
+        foreach (int viewportWidth in context.Options.ViewportWidths)
+        {
+            ApplyViewport(mainWindow, viewportWidth, context);
+            Thread.Sleep(300);
+            CaptureWindow(mainWindow, GetViewportDashboardFileName(viewportWidth), context);
+            CaptureViewportSection(mainWindow, "SummaryCardsContainer", viewportWidth, "summary-cards", context);
+            CaptureViewportSection(mainWindow, "ChartArea", viewportWidth, "chart-area", context);
+
+            SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
+            Thread.Sleep(150);
+            CaptureViewportSection(mainWindow, "RecentAppSessionsList", viewportWidth, "recent-sessions", context);
+
+            SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
+            Thread.Sleep(150);
+            CaptureViewportSection(mainWindow, "RecentWebSessionsList", viewportWidth, "recent-web-sessions", context);
+
+            SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
+            Thread.Sleep(150);
+            CaptureViewportSection(mainWindow, "LiveEventsList", viewportWidth, "live-events", context);
+        }
+    }
+
+    private static void CaptureViewportSection(
+        Window mainWindow,
+        string automationId,
+        int viewportWidth,
+        string sectionName,
+        UiSnapshotContext context)
+        => CaptureElementIfAvailable(
+            mainWindow,
+            automationId,
+            $"viewport-{viewportWidth}-{sectionName}.png",
+            context);
+
+    private static string GetViewportDashboardFileName(int viewportWidth)
+        => viewportWidth switch
+        {
+            1920 => "viewport-1920-dashboard.png",
+            1366 => "viewport-1366-dashboard.png",
+            1024 => "viewport-1024-dashboard.png",
+            _ => $"viewport-{viewportWidth}-dashboard.png"
+        };
+
+    private static void ApplyViewport(Window mainWindow, int viewportWidth, UiSnapshotContext context)
+    {
+        int viewportHeight = viewportWidth <= 1024 ? 768 : 900;
+
+        try
+        {
+            var handle = new IntPtr(mainWindow.Properties.NativeWindowHandle.Value);
+            if (handle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Native window handle is zero.");
+            }
+
+            bool moved = NativeMethods.MoveWindow(handle, 0, 0, viewportWidth, viewportHeight, repaint: true);
+            if (!moved)
+            {
+                throw new InvalidOperationException($"MoveWindow failed with Win32 error {Marshal.GetLastWin32Error()}.");
+            }
+
+            context.Notes.Add($"Applied viewport {viewportWidth}x{viewportHeight}.");
+        }
+        catch (Exception exception)
+        {
+            context.Warn(
+                $"Viewport {viewportWidth}",
+                $"Window resized to {viewportWidth}x{viewportHeight}",
+                $"Resize skipped: {exception.Message}",
+                "Viewport screenshot may use the previous window size.");
+        }
+    }
+
+    private static void TryBringElementIntoViewBeforeCapture(AutomationElement element, UiSnapshotContext context)
+    {
+        try
+        {
+            element.Focus();
+            context.Notes.Add($"Brought `{element.AutomationId}` into view before capture.");
+        }
+        catch (Exception exception)
+        {
+            context.Notes.Add($"Could not bring `{element.AutomationId}` into view before capture: {exception.Message}");
+        }
     }
 
     private static string GetElementName(Window window, string automationId)
@@ -484,8 +577,14 @@ internal static class UiSnapshotRunner
             mode = context.Options.Mode.ToString(),
             appPath = context.Options.AppPath,
             databasePath = context.Options.DatabasePath,
+            viewportWidths = context.Options.ViewportWidths.ToArray(),
             screenshots = context.Screenshots.Distinct(StringComparer.Ordinal).ToArray(),
             skippedScreenshots = context.SkippedScreenshots.ToArray(),
+            skippedScreenshotReasons = context.SkippedScreenshots.Select(skipped => new
+            {
+                ViewportWidth = (int?)null,
+                Reason = skipped
+            }).ToArray(),
             checks = context.Results.Select(result => new
             {
                 result.Name,
@@ -610,6 +709,7 @@ internal sealed record UiSnapshotOptions(
     string? DatabasePath,
     UiSnapshotMode Mode,
     TimeSpan Timeout,
+    IReadOnlyList<int> ViewportWidths,
     bool AllowServerSync)
 {
     private const string AppFileName = "Woong.MonitorStack.Windows.App.exe";
@@ -623,6 +723,7 @@ internal sealed record UiSnapshotOptions(
         UiSnapshotMode mode = UiSnapshotMode.EmptyData;
         var timeout = TimeSpan.FromSeconds(20);
         var allowServerSync = false;
+        IReadOnlyList<int> viewportWidths = [];
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -654,6 +755,9 @@ internal sealed record UiSnapshotOptions(
                     }
 
                     timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                    break;
+                case "--viewport-widths":
+                    viewportWidths = ParseViewportWidths(ReadValue(args, ref index, arg));
                     break;
                 case "--allow-server-sync":
                     allowServerSync = true;
@@ -687,7 +791,31 @@ internal sealed record UiSnapshotOptions(
             databasePath is null ? null : Path.GetFullPath(databasePath),
             mode,
             timeout,
+            viewportWidths,
             allowServerSync);
+    }
+
+    private static IReadOnlyList<int> ParseViewportWidths(string value)
+    {
+        int[] widths = value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(width =>
+            {
+                if (!int.TryParse(width, out int parsedWidth) || parsedWidth <= 0)
+                {
+                    throw new ArgumentException($"Invalid viewport width: {width}.");
+                }
+
+                return parsedWidth;
+            })
+            .ToArray();
+
+        if (widths.Length == 0)
+        {
+            throw new ArgumentException("--viewport-widths must include at least one positive integer.");
+        }
+
+        return widths;
     }
 
     private static string ReadValue(string[] args, ref int index, string argumentName)
@@ -722,4 +850,17 @@ internal enum UiSnapshotMode
 {
     EmptyData = 0,
     TrackingPipeline = 1
+}
+
+internal static class NativeMethods
+{
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool MoveWindow(
+        IntPtr hWnd,
+        int x,
+        int y,
+        int width,
+        int height,
+        [MarshalAs(UnmanagedType.Bool)] bool repaint);
 }

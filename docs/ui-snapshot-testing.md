@@ -42,6 +42,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run-ui-snapshots.ps1
 ```
 
 The script builds the WPF app and the snapshot tool, then runs the tool.
+By default it also requests the local viewport matrix `1920,1366,1024`.
 
 You can pass an explicit app executable if needed:
 
@@ -71,11 +72,24 @@ Optional region crops may also be present:
 - `summary-cards.png`
 - `chart-area.png`
 - `recent-sessions.png`
+- `recent-web-sessions.png`
 - `live-events.png`
 
+Viewport matrix screenshots are also produced when `--viewport-widths` is used
+by the tool or by the scripts:
+
+- `viewport-1920-dashboard.png`
+- `viewport-1366-dashboard.png`
+- `viewport-1024-dashboard.png`
+- `viewport-<width>-summary-cards.png`
+- `viewport-<width>-chart-area.png`
+- `viewport-<width>-recent-sessions.png`
+- `viewport-<width>-recent-web-sessions.png`
+- `viewport-<width>-live-events.png`
+
 Some WPF/LiveCharts regions may not expose a reliable UI Automation element in
-every environment. In that case the tool records a note in `report.md` and keeps
-the primary full-window screenshots.
+every environment. In that case the tool records a skipped screenshot reason in
+`report.md` and `manifest.json`, then keeps the primary full-window screenshots.
 
 Open `artifacts/ui-snapshots/latest/report.md` first. It links the screenshots
 and includes pass/fail notes from the run.
@@ -86,15 +100,17 @@ and includes pass/fail notes from the run.
 2. Launches the app with FlaUI.
 3. Waits for `MainWindow`.
 4. Moves the window to a stable screen position when possible.
-5. Captures startup.
-6. Clicks Refresh when available.
-7. Captures after refresh.
-8. Selects the 6-hour period when available.
-9. Captures the changed dashboard.
-10. Selects Live Event Log and captures an optional crop.
-11. Selects Settings.
-12. Captures Settings.
-13. Closes the app cleanly.
+5. Applies requested viewport widths when provided.
+6. Captures startup.
+7. Clicks Refresh when available.
+8. Captures after refresh.
+9. Selects the 6-hour period when available.
+10. Captures the changed dashboard.
+11. Brings known sections into view before optional crop captures.
+12. Selects Live Event Log and captures an optional crop.
+13. Selects Settings.
+14. Captures Settings.
+15. Closes the app cleanly.
 
 ## Not Implemented Yet
 
@@ -104,7 +120,7 @@ and includes pass/fail notes from the run.
 - Multi-DPI, multi-theme, or multi-monitor matrix.
 - Mandatory pixel comparison.
 - Baseline/diff images with mismatch percentage.
-- More reliable chart-area crop support if LiveCharts UI Automation exposure is
-  inconsistent on a local machine.
+- Automated human/GPT visual review upload. The generated prompt remains
+  local-only unless a user explicitly reviews the artifacts.
 
 Those can be added later once the local snapshot flow is stable and useful.

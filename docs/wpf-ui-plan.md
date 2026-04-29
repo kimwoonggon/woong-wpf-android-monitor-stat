@@ -606,6 +606,16 @@ The script must never use the user's production/local database and must never
 upload to a real server unless a future explicit opt-in flag is added and
 documented.
 
+Current implementation:
+
+- `scripts/run-wpf-ui-acceptance.ps1` passes `--viewport-widths "1920,1366,1024"`
+  to the local UI snapshot tool.
+- The snapshot tool captures dashboard screenshots plus summary, chart,
+  app-session, web-session, and live-event section screenshots for each
+  requested viewport width.
+- `manifest.json` records `viewportWidths` and `skippedScreenshotReasons` so
+  reviewers can distinguish missing crops from successful captures.
+
 ## Test Inventory
 
 Add or maintain tests in these groups before each implementation slice:

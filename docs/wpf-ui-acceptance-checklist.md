@@ -387,7 +387,16 @@ local WPF acceptance run passed at:
 
 Coverage after this slice is 91.9% overall.
 
-Remaining UI acceptance gap: the snapshot tool still does not capture explicit
-1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
-when the chart area is below the current UI Automation viewport. The semantic
-pipeline gate passed and remains the primary automated evidence.
+The viewport-aware acceptance slice added `--viewport-widths` support to the
+local UI snapshot tool and now captures dashboard plus section screenshots at
+1920, 1366, and 1024 widths. The manifest records `viewportWidths` and skipped
+screenshot reasons. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-144429`
+
+Coverage after this slice is 91.9% overall. The run generated all viewport
+dashboard, summary, chart, app-session, web-session, and live-event screenshots
+with no skipped screenshots.
+
+Remaining UI acceptance gap: strict visual regression and CI execution remain
+future work. The semantic pipeline gate remains the primary automated evidence.

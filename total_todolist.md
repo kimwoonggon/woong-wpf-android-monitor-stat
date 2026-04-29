@@ -612,8 +612,13 @@ milestones below are finished.
 - [x] Add Settings tests for Capture page title off by default, domain-only browser storage on by default, sync endpoint disabled until opt-in, and guarded Clear local data disabled.
 - [x] Update Settings tab with privacy, sync, and runtime controls/copy while keeping safe defaults.
 - [x] Make the main layout usable at 1024 width with reachable tabs and no clipped grid headers.
-- [ ] Make the main layout explicitly verified at 1920 and 1366 widths with screenshots.
-- [ ] Update `scripts/run-wpf-ui-acceptance.ps1` and/or UI snapshot tool to capture 1920/1366/1024 screenshots and section screenshots.
+- [x] Make the main layout explicitly verified at 1920 and 1366 widths with screenshots.
+- [x] Update `scripts/run-wpf-ui-acceptance.ps1` and/or UI snapshot tool to capture 1920/1366/1024 screenshots and section screenshots.
+- [x] Viewport acceptance verification: RED script/tool contract tests failed first on missing `--viewport-widths`, viewport screenshot names, bring-into-view path, and manifest metadata.
+- [x] Viewport acceptance verification: `tools/Woong.MonitorStack.Windows.UiSnapshots` supports `--viewport-widths` and captures 1920/1366/1024 dashboard plus section screenshots.
+- [x] Viewport acceptance verification: manifest includes `viewportWidths` and `skippedScreenshotReasons`.
+- [x] Viewport acceptance verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-144429` with no skipped screenshots.
+- [x] Viewport acceptance verification: full `.NET` tests passed (210 tests), `.NET` build passed, and coverage report generated successfully with overall line coverage 91.9%.
 - [x] Ensure WPF semantic acceptance verifies SQLite focus/web/outbox rows plus UI values for VS Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.

@@ -23,6 +23,8 @@ try {
         $toolArgs += "--output-root"
         $toolArgs += $OutputRoot
     }
+    $toolArgs += "--viewport-widths"
+    $toolArgs += "1920,1366,1024"
 
     dotnet run --project $toolProject --no-build -- @toolArgs
 

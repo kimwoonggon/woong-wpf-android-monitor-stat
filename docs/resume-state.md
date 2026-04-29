@@ -1696,3 +1696,37 @@ Coverage after this slice: overall line coverage 91.9%.
 Next highest priority is viewport-aware WPF acceptance/snapshot automation:
 add RED script/tool contract tests for 1920/1366/1024 screenshots, section
 scroll/crops, manifest viewport metadata, and skipped screenshot reasons.
+
+## 2026-04-29 WPF Viewport Acceptance Slice
+
+- Added RED WPF App contract tests for viewport-aware UI acceptance. They
+  failed first on missing `--viewport-widths`, required viewport screenshot
+  names, section bring-into-view support, and manifest metadata.
+- Added `--viewport-widths` support to
+  `tools/Woong.MonitorStack.Windows.UiSnapshots`.
+- Updated `scripts/run-wpf-ui-acceptance.ps1` and
+  `scripts/run-ui-snapshots.ps1` to request the `1920,1366,1024` viewport
+  matrix.
+- The snapshot tool now captures viewport dashboard screenshots plus summary,
+  chart, app-session, web-session, and live-event section screenshots for each
+  viewport width.
+- The snapshot tool records `viewportWidths` and `skippedScreenshotReasons` in
+  `manifest.json`; the latest run had no skipped screenshots.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter WpfUiAcceptanceScriptTests`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-144429`.
+
+Coverage after this slice: overall line coverage 91.9%.
+
+Next highest priority is the WPF runtime tracking pipeline gap audit returned
+by the subagent: continue with the next TDD vertical slice that proves
+Start/Stop/Poll persistence and dashboard refresh behavior through SQLite and
+outbox.

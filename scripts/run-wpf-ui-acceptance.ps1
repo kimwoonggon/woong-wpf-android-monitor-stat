@@ -57,7 +57,7 @@ try {
     $previousAcceptanceMode = $env:WOONG_MONITOR_ACCEPTANCE_MODE
     try {
         $env:WOONG_MONITOR_ACCEPTANCE_MODE = "TrackingPipeline"
-        dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot --db $trackingPipelineDbPath --mode TrackingPipeline
+        dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot --db $trackingPipelineDbPath --mode TrackingPipeline --viewport-widths "1920,1366,1024"
         if ($LASTEXITCODE -ne 0) { throw "TrackingPipeline UI snapshot acceptance failed." }
     }
     finally {

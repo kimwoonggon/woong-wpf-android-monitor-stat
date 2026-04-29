@@ -51,6 +51,71 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("PASS/FAIL/WARN", tool);
     }
 
+    [Fact]
+    public void UiAcceptanceScript_RequestsRequiredViewportSnapshotMatrix()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("--viewport-widths", script);
+        Assert.Contains("1920,1366,1024", script);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_SupportsRequiredViewportMatrixAndArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("--viewport-widths", tool);
+        Assert.Contains("ViewportWidths", tool);
+        Assert.Contains("viewport-1920-dashboard.png", tool);
+        Assert.Contains("viewport-1366-dashboard.png", tool);
+        Assert.Contains("viewport-1024-dashboard.png", tool);
+        Assert.Contains("manifest.json", tool);
+        Assert.Contains("summary-cards", tool);
+        Assert.Contains("recent-sessions", tool);
+        Assert.Contains("recent-web-sessions", tool);
+        Assert.Contains("live-events", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_BringsSectionsIntoViewBeforeCapturingCrops()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("TryBringElementIntoViewBeforeCapture", tool);
+        Assert.Contains("ChartArea", tool);
+        Assert.Contains("RecentAppSessionsList", tool);
+        Assert.Contains("RecentWebSessionsList", tool);
+        Assert.Contains("LiveEventsList", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_ManifestIncludesViewportAndSkippedScreenshotReasons()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("viewportWidths", tool);
+        Assert.Contains("skippedScreenshotReasons", tool);
+        Assert.Contains("ViewportWidth", tool);
+        Assert.Contains("Reason", tool);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);
