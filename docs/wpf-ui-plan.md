@@ -241,9 +241,9 @@ Open `wpfelements.md` alignment decisions:
 - Domain Focus chart now uses the same Cartesian/ranking chart shape as App
   Focus. This replaced the earlier `PieChart` mismatch and keeps domain labels
   and durations readable.
-- SettingsPanel must cover Sync endpoint, Capture page title, Domain-only
-  browser storage, runtime controls, storage folder actions, and guarded Clear
-  local data.
+- SettingsPanel now exposes safe privacy/sync/storage controls for Capture page
+  title, Domain-only browser storage, full URL opt-in disabled, sync endpoint
+  disabled until opt-in, and guarded Clear local data disabled.
 - Dashboard root scrolling is now vertical-only; horizontal scrolling remains
   on the wide App Sessions, Web Sessions, and Live Event Log grids.
 - Follow-up style migration should remove remaining repeated chart/settings text

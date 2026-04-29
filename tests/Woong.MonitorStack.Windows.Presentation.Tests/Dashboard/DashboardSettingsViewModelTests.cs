@@ -10,8 +10,13 @@ public sealed class DashboardSettingsViewModelTests
         var viewModel = new DashboardSettingsViewModel();
 
         Assert.True(viewModel.IsCollectionVisible);
+        Assert.False(viewModel.IsPageTitleCaptureEnabled);
+        Assert.False(viewModel.IsFullUrlCaptureEnabled);
+        Assert.True(viewModel.IsDomainOnlyBrowserStorageEnabled);
         Assert.False(viewModel.IsSyncEnabled);
         Assert.Equal("Local only", viewModel.SyncModeLabel);
+        Assert.Equal("No sync endpoint configured", viewModel.SyncEndpointText);
+        Assert.False(viewModel.CanClearLocalData);
     }
 
     [Fact]

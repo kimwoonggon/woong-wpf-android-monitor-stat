@@ -11,8 +11,23 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     private bool _isWindowTitleVisible;
 
     [ObservableProperty]
+    private bool _isPageTitleCaptureEnabled;
+
+    [ObservableProperty]
+    private bool _isFullUrlCaptureEnabled;
+
+    [ObservableProperty]
+    private bool _isDomainOnlyBrowserStorageEnabled = true;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SyncModeLabel))]
     private bool _isSyncEnabled;
+
+    [ObservableProperty]
+    private string _syncEndpointText = "No sync endpoint configured";
+
+    [ObservableProperty]
+    private bool _canClearLocalData;
 
     [ObservableProperty]
     private bool _hasSyncFailure;

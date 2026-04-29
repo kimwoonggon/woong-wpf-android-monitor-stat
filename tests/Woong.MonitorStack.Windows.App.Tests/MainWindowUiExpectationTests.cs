@@ -643,21 +643,31 @@ public sealed class MainWindowUiExpectationTests
 
                 CheckBox collectionVisible = FindByAutomationId<CheckBox>(panel, "CollectionVisibleCheckBox");
                 CheckBox windowTitleVisible = FindByAutomationId<CheckBox>(panel, "WindowTitleVisibleCheckBox");
+                CheckBox pageTitleCapture = FindByAutomationId<CheckBox>(panel, "PageTitleCaptureCheckBox");
                 CheckBox fullUrlCapture = FindByAutomationId<CheckBox>(panel, "FullUrlCaptureCheckBox");
+                CheckBox domainOnlyStorage = FindByAutomationId<CheckBox>(panel, "DomainOnlyBrowserStorageCheckBox");
                 TextBlock browserUrlPrivacy = FindByAutomationId<TextBlock>(panel, "BrowserUrlPrivacyText");
 
                 Assert.Equal("Collection visible", collectionVisible.Content);
                 Assert.True(collectionVisible.IsChecked);
                 Assert.Equal("Capture window title", windowTitleVisible.Content);
                 Assert.False(windowTitleVisible.IsChecked);
+                Assert.Equal("Capture page title", pageTitleCapture.Content);
+                Assert.False(pageTitleCapture.IsChecked);
                 Assert.Equal("Full URL capture (off)", fullUrlCapture.Content);
                 Assert.False(fullUrlCapture.IsEnabled);
                 Assert.False(fullUrlCapture.IsChecked);
+                Assert.Equal("Domain-only browser storage", domainOnlyStorage.Content);
+                Assert.False(domainOnlyStorage.IsEnabled);
+                Assert.True(domainOnlyStorage.IsChecked);
                 Assert.Equal(
                     "Browser URL storage is domain-only by default. Full URLs require explicit future opt-in.",
                     browserUrlPrivacy.Text);
                 Assert.True(dashboard.ViewModel.Settings.IsCollectionVisible);
                 Assert.False(dashboard.ViewModel.Settings.IsWindowTitleVisible);
+                Assert.False(dashboard.ViewModel.Settings.IsPageTitleCaptureEnabled);
+                Assert.False(dashboard.ViewModel.Settings.IsFullUrlCaptureEnabled);
+                Assert.True(dashboard.ViewModel.Settings.IsDomainOnlyBrowserStorageEnabled);
             }
             finally
             {
@@ -679,17 +689,21 @@ public sealed class MainWindowUiExpectationTests
                 CheckBox syncEnabled = FindByAutomationId<CheckBox>(panel, "SyncEnabledCheckBox");
                 TextBlock syncMode = FindByAutomationId<TextBlock>(panel, "SyncModeLabel");
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(panel, "SyncStatusLabel");
+                TextBox syncEndpoint = FindByAutomationId<TextBox>(panel, "SyncEndpointTextBox");
 
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
                 Assert.Equal("Local only", syncMode.Text);
                 Assert.Equal("Sync is off. Data stays on this Windows device.", syncStatus.Text);
+                Assert.Equal("No sync endpoint configured", syncEndpoint.Text);
+                Assert.False(syncEndpoint.IsEnabled);
 
                 syncEnabled.IsChecked = true;
                 window.UpdateLayout();
 
                 Assert.True(dashboard.ViewModel.Settings.IsSyncEnabled);
                 Assert.Equal("Sync enabled", syncMode.Text);
+                Assert.True(syncEndpoint.IsEnabled);
             }
             finally
             {
@@ -712,10 +726,14 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("Idle threshold: 5 minutes", text);
                 Button openDbFolder = FindByAutomationId<Button>(panel, "OpenLocalDbFolderButton");
                 Button openLogsFolder = FindByAutomationId<Button>(panel, "OpenLogsFolderButton");
+                Button clearLocalData = FindByAutomationId<Button>(panel, "ClearLocalDataButton");
                 Assert.False(openDbFolder.IsEnabled);
                 Assert.False(openLogsFolder.IsEnabled);
+                Assert.Equal("Clear local data (disabled)", clearLocalData.Content);
+                Assert.False(clearLocalData.IsEnabled);
                 AssertReadableButton(openDbFolder);
                 AssertReadableButton(openLogsFolder);
+                AssertReadableButton(clearLocalData);
             }
             finally
             {
@@ -927,15 +945,22 @@ public sealed class MainWindowUiExpectationTests
                 window.UpdateLayout();
                 CheckBox collectionVisible = FindByAutomationId<CheckBox>(window, "CollectionVisibleCheckBox");
                 CheckBox windowTitleVisible = FindByAutomationId<CheckBox>(window, "WindowTitleVisibleCheckBox");
+                CheckBox pageTitleCapture = FindByAutomationId<CheckBox>(window, "PageTitleCaptureCheckBox");
+                CheckBox domainOnlyStorage = FindByAutomationId<CheckBox>(window, "DomainOnlyBrowserStorageCheckBox");
                 CheckBox syncEnabled = FindByAutomationId<CheckBox>(window, "SyncEnabledCheckBox");
                 TextBlock syncMode = FindByAutomationId<TextBlock>(window, "SyncModeLabel");
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(window, "SyncStatusLabel");
+                TextBox syncEndpoint = FindByAutomationId<TextBox>(window, "SyncEndpointTextBox");
                 TextBlock browserUrlPrivacy = FindByAutomationId<TextBlock>(window, "BrowserUrlPrivacyText");
 
                 Assert.Equal("Collection visible", collectionVisible.Content);
                 Assert.True(collectionVisible.IsChecked);
                 Assert.Equal("Capture window title", windowTitleVisible.Content);
                 Assert.False(windowTitleVisible.IsChecked);
+                Assert.Equal("Capture page title", pageTitleCapture.Content);
+                Assert.False(pageTitleCapture.IsChecked);
+                Assert.Equal("Domain-only browser storage", domainOnlyStorage.Content);
+                Assert.True(domainOnlyStorage.IsChecked);
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
                 Assert.Equal(
@@ -943,6 +968,8 @@ public sealed class MainWindowUiExpectationTests
                     browserUrlPrivacy.Text);
                 Assert.Equal("Local only", syncMode.Text);
                 Assert.Equal("Sync is off. Data stays on this Windows device.", syncStatus.Text);
+                Assert.Equal("No sync endpoint configured", syncEndpoint.Text);
+                Assert.False(syncEndpoint.IsEnabled);
             }
             finally
             {

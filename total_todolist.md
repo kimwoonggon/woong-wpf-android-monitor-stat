@@ -607,7 +607,8 @@ milestones below are finished.
 - [x] Update Web Sessions grid columns: Domain, Title, URL Mode, Start, End, Duration, Browser, Confidence with required MinWidths.
 - [ ] Add Live Event Log tests for Tracking started, FocusSession closed/started, WebSession closed/started, persisted/outbox, sync skipped, and stopped events.
 - [x] Update Live Event Log columns: Time, Event Type, App, Domain, Message.
-- [ ] Add Settings tests for readable privacy controls, full URL off by default, sync off by default, local-only status, and local DB/log folder commands disabled or available.
+- [x] Add Settings tests for readable privacy controls, full URL off by default, sync off by default, local-only status, and local DB/log folder commands disabled or available.
+- [x] Add Settings tests for Capture page title off by default, domain-only browser storage on by default, sync endpoint disabled until opt-in, and guarded Clear local data disabled.
 - [x] Update Settings tab with privacy, sync, and runtime controls/copy while keeping safe defaults.
 - [x] Make the main layout usable at 1024 width with reachable tabs and no clipped grid headers.
 - [ ] Make the main layout explicitly verified at 1920 and 1366 widths with screenshots.
@@ -684,6 +685,13 @@ milestones below are finished.
 - [x] Domain chart verification: `.NET` build passed.
 - [x] Domain chart verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-140652`.
 - [x] Domain chart verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Settings privacy coverage verification: RED compile failures exposed missing Settings VM safety properties and missing UI controls.
+- [x] Settings privacy coverage verification: added visible/disabled page title capture, domain-only browser storage, sync endpoint, and guarded clear local data controls.
+- [x] Settings privacy coverage verification: focused Settings VM and WPF SettingsPanel tests passed.
+- [x] Settings privacy coverage verification: full `.NET` tests passed (204 tests).
+- [x] Settings privacy coverage verification: `.NET` build passed.
+- [x] Settings privacy coverage verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-141606`.
+- [x] Settings privacy coverage verification: coverage report generated successfully with overall line coverage 92.1%.
 - [x] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
 - [x] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
 - [x] Chart details verification: `ShowAppFocusDetailsCommand_SelectsAppSessionsTab`, `ShowDomainFocusDetailsCommand_SelectsWebSessionsTab`, and `DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs` passed.

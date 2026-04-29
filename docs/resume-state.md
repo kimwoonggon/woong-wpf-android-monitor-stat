@@ -4,14 +4,16 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 Domain Focus chart mismatch slice.
-`DashboardView_HostsChartsPanelAndPreservesChartContent` first failed because
-`DomainUsageChart` was still a `PieChart`. The domain chart now uses the same
-Cartesian/ranking `DashboardLiveChartsData` shape as App Focus, with readable
-domain labels/durations and no Presentation exposure of WPF chart controls.
-Verification passed: all `.NET` tests (204), full `.NET` build, WPF acceptance
-at `artifacts/wpf-ui-acceptance/20260429-140652`, and coverage generation with
-overall line coverage 92.1%.
+Milestone 31 Settings privacy coverage slice.
+Focused Settings tests first failed because `DashboardSettingsViewModel` lacked
+explicit safety properties for page-title capture, full URL capture,
+domain-only browser storage, sync endpoint, and guarded clear-local-data state.
+The Settings tab now exposes those states with safe defaults: page-title capture
+off/disabled, full URL capture off/disabled, domain-only storage on, sync
+endpoint disabled until sync opt-in, and clear local data disabled until a
+guarded flow exists. Verification passed: all `.NET` tests (204), full `.NET`
+build, WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-141606`, and
+coverage generation with overall line coverage 92.1%.
 
 ## Completed
 
@@ -954,10 +956,9 @@ Remaining Milestone 30 work:
 ## Next Highest Priority
 
 Continue with the next product/UI correctness gap from the read-only audits:
-complete Settings privacy coverage before Details pagination. Settings should
-make Capture page title, domain-only browser storage, sync endpoint state, and
-guarded clear-local-data behavior visible or explicitly disabled without
-weakening safe defaults. Acceptance viewport variants remain open.
+decide Details rows-per-page pagination for Milestone 31 versus a future slice.
+If implementing now, add visible row collections and page commands in
+Presentation before changing XAML. Acceptance viewport variants remain open.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1629,3 +1630,34 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is Settings privacy/safety coverage. Add RED tests for
 Capture page title off by default, domain-only browser storage on by default,
 sync endpoint disabled/absent until opt-in, and guarded clear local data.
+
+## 2026-04-29 WPF Settings Privacy Coverage Slice
+
+- Added RED Settings tests that failed first because the ViewModel did not
+  expose explicit safety properties for page-title capture, full URL capture,
+  domain-only browser storage, sync endpoint text, and clear-local-data state.
+- Added `DashboardSettingsViewModel` safe defaults:
+  page-title capture off, full URL capture off, domain-only browser storage on,
+  sync endpoint unconfigured, and clear local data disabled.
+- Updated `SettingsPanel` to show page title capture, full URL capture,
+  domain-only browser storage, sync endpoint, and clear local data controls.
+- Kept risky controls disabled by default; sync endpoint only becomes editable
+  after sync opt-in.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter Constructor_DefaultsToVisibleCollectionAndSyncOptOut`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_PreservesPrivacyControlsAndSafeDefaults|SettingsPanel_PreservesSyncControlsAndTwoWayBinding|SettingsPanel_PreservesRuntimeAndStorageActions"`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-141606`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is the Details pagination decision. Decide whether rows
+per page belongs in Milestone 31; if yes, start with ViewModel visible row
+collections and page command behavior tests before XAML.
