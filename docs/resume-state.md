@@ -950,9 +950,10 @@ Remaining Milestone 30 work:
 ## Next Highest Priority
 
 Continue Milestone 31 with the next component extraction slice, starting with
-`HeaderStatusBar`, while preserving existing automation IDs, behavior tests, and
-semantic WPF acceptance. Do not mark later Milestone 31 component items complete
-until their own tested slices pass.
+`ControlBar`, while preserving existing automation IDs, command bindings,
+behavior tests, and semantic WPF acceptance. Separately prioritize the runtime
+confidence gap noted by the QA subagent: prove WPF poll-tick foreground changes
+persist SQLite/outbox rows and refresh the dashboard before Stop.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1044,7 +1045,39 @@ Verified:
   completed successfully and generated the coverage report.
 
 Remaining Milestone 31 componentization work stays open, including
-`HeaderStatusBar`, `ControlBar`, `CurrentFocusPanel`, `SummaryCardsPanel`,
+`ControlBar`, `CurrentFocusPanel`, `SummaryCardsPanel`,
 `ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
 dictionaries, chart details commands, final componentization verification, and
 commit/push.
+
+## 2026-04-29 WPF HeaderStatusBar Extraction Slice
+
+- Added a RED componentization test,
+  `DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent`, proving the
+  dashboard hosts a `HeaderStatusBar` while preserving header title/subtitle,
+  tracking/sync/privacy badges, and the absence of current process text in the
+  header.
+- Extracted the header markup from `Views/DashboardView.xaml` into
+  `Views/HeaderStatusBar.xaml`.
+- Added `Views/HeaderStatusBar.xaml.cs`.
+- Kept existing AutomationIds: `HeaderArea`, `TrackingStatusBadge`,
+  `SyncStatusBadge`, and `PrivacyStatusBadge`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent`
+  failed before implementation and passed after extraction.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+  passed all 27 Windows App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+  passed and wrote WPF acceptance evidence at
+  `artifacts/wpf-ui-acceptance/20260429-103315`.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+  completed successfully; overall line coverage is 92.3%.
+
+Next componentization slice is `ControlBar`, unless the runtime confidence gap
+is selected first for product-risk reasons.

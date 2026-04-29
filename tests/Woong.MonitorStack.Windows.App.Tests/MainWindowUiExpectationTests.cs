@@ -88,6 +88,37 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                HeaderStatusBar header = FindByAutomationId<HeaderStatusBar>(window, "HeaderArea");
+                IReadOnlySet<string> headerText = CollectText(header);
+
+                Assert.Contains("Woong Monitor Stack", headerText);
+                Assert.Contains("Windows Focus Tracker", headerText);
+                Assert.Contains("Tracking Stopped", headerText);
+                Assert.Contains("Sync Off", headerText);
+                Assert.Contains("Privacy Safe", headerText);
+                Assert.DoesNotContain("chrome.exe", headerText);
+                Assert.NotNull(FindByAutomationId<Border>(header, "TrackingStatusBadge"));
+                Assert.NotNull(FindByAutomationId<Border>(header, "SyncStatusBadge"));
+                Assert.NotNull(FindByAutomationId<Border>(header, "PrivacyStatusBadge"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_TrackingButtonsUpdateVisibleStatus()
         => RunOnStaThread(() =>
         {

@@ -5,6 +5,7 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dashboard="clr-namespace:Woong.MonitorStack.Windows.Presentation.Dashboard;assembly=Woong.MonitorStack.Windows.Presentation"
+             xmlns:views="clr-namespace:Woong.MonitorStack.Windows.App.Views"
              mc:Ignorable="d"
              AutomationProperties.AutomationId="DashboardView"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
@@ -18,12 +19,6 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
-        <Style x:Key="StatusBadgeStyle" TargetType="{x:Type Border}">
-            <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Padding" Value="14,8" />
-            <Setter Property="Margin" Value="8,0,0,8" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -37,54 +32,8 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0"
-                  AutomationProperties.AutomationId="HeaderArea"
-                  Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock Text="Woong Monitor Stack"
-                               FontSize="24"
-                               FontWeight="SemiBold"
-                               Foreground="#162033" />
-                    <TextBlock Text="Windows Focus Tracker"
-                               FontSize="13"
-                               Foreground="#5A6472"
-                               Margin="0,4,0,0" />
-                </StackPanel>
-
-                <WrapPanel Grid.Column="1"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center">
-                    <Border AutomationProperties.AutomationId="TrackingStatusBadge"
-                            Style="{StaticResource StatusBadgeStyle}"
-                            Background="#EEF8F1"
-                            BorderBrush="#BFE8CC">
-                        <TextBlock Text="{Binding TrackingBadgeText}"
-                                   Foreground="#087A34"
-                                   FontWeight="SemiBold" />
-                    </Border>
-                    <Border AutomationProperties.AutomationId="SyncStatusBadge"
-                            Style="{StaticResource StatusBadgeStyle}"
-                            Background="#FFF6E8"
-                            BorderBrush="#FFDDA8">
-                        <TextBlock Text="{Binding SyncBadgeText}"
-                                   Foreground="#A45B00"
-                                   FontWeight="SemiBold" />
-                    </Border>
-                    <Border AutomationProperties.AutomationId="PrivacyStatusBadge"
-                            Style="{StaticResource StatusBadgeStyle}"
-                            Background="#EEF5FF"
-                            BorderBrush="#BFD8FF">
-                        <TextBlock Text="{Binding PrivacyBadgeText}"
-                                   Foreground="#0B63CE"
-                                   FontWeight="SemiBold" />
-                    </Border>
-                </WrapPanel>
-            </Grid>
+            <views:HeaderStatusBar Grid.Row="0"
+                                   Margin="0,0,0,12" />
 
             <Border Grid.Row="1"
                     Margin="0,0,0,16"

@@ -633,7 +633,13 @@ milestones below are finished.
 - [x] DashboardView extraction verification: `.NET` build passed.
 - [x] DashboardView extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-102017`.
 - [x] DashboardView extraction verification: coverage report generated successfully with `scripts/test-coverage.ps1`.
-- [ ] Add `Views/HeaderStatusBar.xaml` while preserving Header automation IDs and behavior tests.
+- [x] Add `Views/HeaderStatusBar.xaml` while preserving Header automation IDs and behavior tests.
+- [x] HeaderStatusBar extraction verification: focused `DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent` passed.
+- [x] HeaderStatusBar extraction verification: all Windows App tests passed (27 tests).
+- [x] HeaderStatusBar extraction verification: full `.NET` tests passed.
+- [x] HeaderStatusBar extraction verification: `.NET` build passed.
+- [x] HeaderStatusBar extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-103315`.
+- [x] HeaderStatusBar extraction verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Add `Views/ControlBar.xaml` while preserving button commands and readable sizing tests.
 - [ ] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
 - [ ] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
