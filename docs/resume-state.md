@@ -2176,6 +2176,22 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.3%.
 
+## 2026-04-29 Completion Audit Refresh
+
+- Refreshed `docs/completion-audit.md` for the current repository state after
+  WPF runtime flush, sync-off, and Chrome cleanup-only sandbox hardening.
+- Re-ran Android local unit/build/androidTest APK validation with Gradle
+  wrapper; it succeeded, while connected device evidence remains blocked
+  because `adb devices -l` reported no attached devices.
+- Rechecked hidden work markers and forbidden tracking capability indicators.
+  No forbidden product implementation was found; remaining matches are
+  documentation/test policy text or benign metadata fields.
+
+Verified:
+
+- `adb devices -l`
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`
+
 ## 2026-04-29 WPF Sync-Off Pending Outbox Slice
 
 - Added WPF runtime integration coverage for Sync Now after local outbox rows

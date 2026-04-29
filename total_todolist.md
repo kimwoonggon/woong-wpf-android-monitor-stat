@@ -609,7 +609,7 @@ milestones below are finished.
 - [x] Add UI copy for browser URL/domain privacy levels.
 - [x] Add sync opt-in enforcement tests for Windows and Android.
 - [x] Verify UI screenshot tools only capture this app's UI.
-- [ ] Run full validation matrix.
+- [x] Run full validation matrix.
 - [x] Commit and push privacy hardening slice.
 
 ## Milestone 29: Original Intent Completion Gate
@@ -642,10 +642,10 @@ milestones below are finished.
   generated at 91.3% line coverage.
 - [x] WPF semantic UI acceptance passes with expected content.
 - [x] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
-- [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.
+- [x] Unsafe/impossible/out-of-scope features are documented and not implemented.
 - [x] Full .NET tests/build pass.
 - [x] Android tests/build pass.
-- [ ] Completion audit updated.
+- [x] Completion audit updated.
 - [ ] Commit and push Original Intent completion.
 
 ## Milestone 30: WPF Product UI Goal Implementation
