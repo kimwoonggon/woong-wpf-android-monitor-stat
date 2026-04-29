@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
 
@@ -19,6 +20,7 @@ public sealed class FocusSessionUploadApiTests
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
         string deviceId = Guid.NewGuid().ToString("N");
+        await SeedDeviceAsync(factory, Guid.Parse(deviceId));
         var session = new FocusSessionUploadItem(
             clientSessionId: "client-session-1",
             platformAppKey: "chrome.exe",
@@ -59,6 +61,24 @@ public sealed class FocusSessionUploadApiTests
         Assert.Equal(@"C:\Program Files\Google\Chrome\Application\chrome.exe", persisted.ProcessPath);
         Assert.Equal(123456, persisted.WindowHandle);
         Assert.Null(persisted.WindowTitle);
+    }
+
+    private static async Task SeedDeviceAsync(WebApplicationFactory<Program> factory, Guid deviceId)
+    {
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        dbContext.Devices.Add(new DeviceEntity
+        {
+            Id = deviceId,
+            UserId = "user-1",
+            Platform = Platform.Windows,
+            DeviceKey = "windows-upload-key",
+            DeviceName = "Windows Workstation",
+            TimezoneId = "Asia/Seoul",
+            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
+            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
+        });
+        await dbContext.SaveChangesAsync();
     }
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()

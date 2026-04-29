@@ -184,6 +184,7 @@ milestones below are finished.
 - [x] Implement web session upload API.
 - [x] Implement raw event upload API.
 - [x] Enforce device/client session idempotency.
+- [x] Return controlled upload errors for unregistered devices and missing web-session focus links under relational constraints.
 - [x] Add daily summary calculator.
 - [x] Add summary query API.
 - [x] Add date range statistics query API.

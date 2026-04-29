@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
 
@@ -19,6 +20,7 @@ public sealed class WebSessionUploadApiTests
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
         string deviceId = Guid.NewGuid().ToString("N");
+        await SeedDeviceAndFocusSessionAsync(factory, Guid.Parse(deviceId), "client-session-1");
         var session = new WebSessionUploadItem(
             clientSessionId: "web-session-1",
             focusSessionId: "client-session-1",
@@ -58,6 +60,7 @@ public sealed class WebSessionUploadApiTests
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
         string deviceId = Guid.NewGuid().ToString("N");
+        await SeedDeviceAndFocusSessionAsync(factory, Guid.Parse(deviceId), "domain-only-session-1");
         var session = new WebSessionUploadItem(
             clientSessionId: "domain-only-web-session-1",
             focusSessionId: "domain-only-session-1",
@@ -93,6 +96,40 @@ public sealed class WebSessionUploadApiTests
         Assert.Equal("UIAutomationAddressBar", persisted.CaptureMethod);
         Assert.Equal("High", persisted.CaptureConfidence);
         Assert.False(persisted.IsPrivateOrUnknown);
+    }
+
+    private static async Task SeedDeviceAndFocusSessionAsync(
+        WebApplicationFactory<Program> factory,
+        Guid deviceId,
+        string focusSessionId)
+    {
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        dbContext.Devices.Add(new DeviceEntity
+        {
+            Id = deviceId,
+            UserId = "user-1",
+            Platform = Platform.Windows,
+            DeviceKey = $"windows-web-upload-key-{focusSessionId}",
+            DeviceName = "Windows Workstation",
+            TimezoneId = "Asia/Seoul",
+            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
+            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
+        });
+        dbContext.FocusSessions.Add(new FocusSessionEntity
+        {
+            DeviceId = deviceId,
+            ClientSessionId = focusSessionId,
+            PlatformAppKey = "chrome.exe",
+            StartedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            EndedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
+            DurationMs = 600_000,
+            LocalDate = new DateOnly(2026, 4, 28),
+            TimezoneId = "Asia/Seoul",
+            IsIdle = false,
+            Source = "test"
+        });
+        await dbContext.SaveChangesAsync();
     }
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()

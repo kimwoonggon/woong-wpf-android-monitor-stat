@@ -134,6 +134,12 @@ browser web sessions through `/api/web-sessions/upload`, and query
 constraints so foreign keys and unique indexes are exercised while keeping URL
 and page-title fields null by default.
 
+Server upload endpoints validate foreign-key preconditions before writing:
+focus-session uploads require a registered device, and web-session uploads
+require both a registered device and a matching focus session on that device.
+Invalid items return `UploadItemStatus.Error` in the normal batch response and
+do not persist orphan rows or leak relational provider exceptions.
+
 ## Acceptance Modes
 
 ### A. EmptyData

@@ -2723,6 +2723,33 @@ Verified so far:
 Coverage after this slice: overall line coverage 91.3%; Server line coverage
 96.5%.
 
+## 2026-04-29 Server Upload Relational Error Slice
+
+- Added a shared `RelationalServerFactory` for API tests that need SQLite
+  relational behavior through `WebApplicationFactory`.
+- Added relational API tests proving focus uploads with an unregistered device,
+  web uploads with an unregistered device, and web uploads with a missing
+  focus-session link return controlled batch `Error` items and do not persist
+  orphan rows.
+- Updated `FocusSessionUploadService` and `WebSessionUploadService` to validate
+  foreign-key preconditions before `SaveChangesAsync`, avoiding raw relational
+  provider exceptions while keeping duplicate retry behavior unchanged.
+- Updated older upload API test fixtures so successful uploads first seed the
+  required device/focus rows instead of relying on EF InMemory's missing FK
+  enforcement.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "UploadFocusSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows|UploadWebSessions_WhenFocusSessionIsMissing_ReturnsControlledErrorAndDoesNotPersistRows" -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~Sessions" -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "UploadWebSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows|UploadWebSessions_WhenFocusSessionIsMissing_ReturnsControlledErrorAndDoesNotPersistRows|UploadFocusSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows" -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Coverage after this slice: overall line coverage 91.3%; Server line coverage
+96.7%.
+
 ## 2026-04-29 WPF Close Flush Slice
 
 - Added a WPF behavior test proving that closing `MainWindow` while tracking is

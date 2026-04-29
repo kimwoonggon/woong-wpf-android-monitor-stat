@@ -20,6 +20,17 @@ public sealed class WebSessionUploadService
         Guid deviceId = Guid.Parse(request.DeviceId);
         var results = new List<UploadItemResult>();
 
+        bool deviceExists = await _dbContext.Devices.AnyAsync(device => device.Id == deviceId);
+        if (!deviceExists)
+        {
+            return new UploadBatchResult(request.Sessions
+                .Select(item => new UploadItemResult(
+                    item.ClientSessionId,
+                    UploadItemStatus.Error,
+                    ErrorMessage: $"Device '{request.DeviceId}' is not registered."))
+                .ToList());
+        }
+
         foreach (WebSessionUploadItem item in request.Sessions)
         {
             bool exists = await _dbContext.WebSessions.AnyAsync(session =>
@@ -29,6 +40,19 @@ public sealed class WebSessionUploadService
             if (exists)
             {
                 results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Duplicate, ErrorMessage: null));
+                continue;
+            }
+
+            bool focusSessionExists = await _dbContext.FocusSessions.AnyAsync(session =>
+                session.DeviceId == deviceId &&
+                session.ClientSessionId == item.FocusSessionId);
+
+            if (!focusSessionExists)
+            {
+                results.Add(new UploadItemResult(
+                    item.ClientSessionId,
+                    UploadItemStatus.Error,
+                    ErrorMessage: $"Focus session '{item.FocusSessionId}' is not registered for device '{request.DeviceId}'."));
                 continue;
             }
 

@@ -20,6 +20,17 @@ public sealed class FocusSessionUploadService
         Guid deviceId = Guid.Parse(request.DeviceId);
         var results = new List<UploadItemResult>();
 
+        bool deviceExists = await _dbContext.Devices.AnyAsync(device => device.Id == deviceId);
+        if (!deviceExists)
+        {
+            return new UploadBatchResult(request.Sessions
+                .Select(item => new UploadItemResult(
+                    item.ClientSessionId,
+                    UploadItemStatus.Error,
+                    ErrorMessage: $"Device '{request.DeviceId}' is not registered."))
+                .ToList());
+        }
+
         foreach (FocusSessionUploadItem item in request.Sessions)
         {
             bool exists = await _dbContext.FocusSessions.AnyAsync(session =>
