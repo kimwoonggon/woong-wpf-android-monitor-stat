@@ -455,6 +455,11 @@ milestones below are finished.
 - [x] Enqueue focus session outbox records after persistence.
 - [x] Replace `EmptyDashboardDataSource` with a SQLite-backed dashboard data source.
 - [x] Show current and recently persisted activity in WPF.
+- [x] Add real coordinator timestamp evidence: Start/Poll/Stop snapshots expose `LastPollAtUtc`, and persistence snapshots expose `LastDbWriteAtUtc`.
+- [x] Runtime timestamp verification: RED `PollOnce_WhenForegroundChanges_ReturnsLastPollAndLastDbWriteTimes` failed first on missing `LastPollAtUtc`.
+- [x] Runtime timestamp verification: focused coordinator tests passed (5 tests).
+- [x] Runtime timestamp verification: all Windows App tests passed (55 tests).
+- [x] Runtime timestamp verification: full `.NET` tests passed (211 tests), `.NET` build passed, WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-145334`, and coverage report generated successfully with overall line coverage 92.0%.
 - [x] Add RealStart local validation script `scripts/run-wpf-real-start-acceptance.ps1` with the required privacy warning.
 - [x] Ensure RealStart uses a temp DB and does not upload unless `--AllowServerSync` is provided.
 - [x] Run focused tests, WPF smoke, solution build/test.

@@ -147,6 +147,12 @@ The latest local RealStart run launched the WPF app with real Windows readers,
 clicked Start/Stop through FlaUI, and verified that the temp DB contained one
 `focus_session` row and one `sync_outbox` row.
 
+`WindowsTrackingDashboardCoordinator` now returns runtime evidence timestamps
+in each `DashboardTrackingSnapshot`. `LastPollAtUtc` is set on Start/Poll/Stop
+from the same clock used by the polling pipeline. `LastDbWriteAtUtc` is set
+when a focus session is persisted to SQLite and an outbox row is queued. The
+WPF Current Focus panel formats those timestamps in the display timezone.
+
 The WPF product UI now keeps the last persisted session and last DB write time
 visible until a newer persistence event replaces them. A later poll without a
 closed session must not reset the display to "No session persisted"; this is

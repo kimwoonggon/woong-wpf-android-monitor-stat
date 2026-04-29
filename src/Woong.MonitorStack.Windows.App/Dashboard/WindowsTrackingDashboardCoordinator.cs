@@ -17,6 +17,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     private readonly ISystemClock _clock;
     private TrackingPoller? _trackingPoller;
     private bool _isRunning;
+    private DateTimeOffset? _lastDbWriteAtUtc;
 
     public WindowsTrackingDashboardCoordinator(
         Func<TrackingPoller> trackingPollerFactory,
@@ -34,10 +35,11 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     {
         _trackingPoller = _trackingPollerFactory();
         _isRunning = true;
+        DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = _trackingPoller.Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
 
-        return ToSnapshot(result.CurrentSession, persisted);
+        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, persisted is null ? null : _lastDbWriteAtUtc);
     }
 
     public DashboardTrackingSnapshot StopTracking()
@@ -47,13 +49,14 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             return DashboardTrackingSnapshot.Empty;
         }
 
+        DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
         persisted = Persist(result.CurrentSession);
         _isRunning = false;
         _trackingPoller = null;
 
-        return ToSnapshot(result.CurrentSession, persisted);
+        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, _lastDbWriteAtUtc);
     }
 
     public DashboardTrackingSnapshot PollOnce()
@@ -63,10 +66,11 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             return DashboardTrackingSnapshot.Empty;
         }
 
+        DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
 
-        return ToSnapshot(result.CurrentSession, persisted);
+        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, persisted is null ? null : _lastDbWriteAtUtc);
     }
 
     public DashboardSyncResult SyncNow(bool syncEnabled)
@@ -83,12 +87,13 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     private DashboardPersistedSessionSnapshot Persist(FocusSession session)
     {
         _focusSessionRepository.Save(session);
+        _lastDbWriteAtUtc = _clock.UtcNow;
         _outboxRepository.Add(SyncOutboxItem.Pending(
             id: $"focus-session:{session.ClientSessionId}",
             aggregateType: "focus_session",
             aggregateId: session.ClientSessionId,
             payloadJson: CreatePayload(session),
-            createdAtUtc: _clock.UtcNow));
+            createdAtUtc: _lastDbWriteAtUtc.Value));
 
         return new DashboardPersistedSessionSnapshot(
             AppName: session.PlatformAppKey,
@@ -99,13 +104,17 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private static DashboardTrackingSnapshot ToSnapshot(
         FocusSession session,
-        DashboardPersistedSessionSnapshot? persistedSession)
+        DashboardPersistedSessionSnapshot? persistedSession,
+        DateTimeOffset lastPollAtUtc,
+        DateTimeOffset? lastDbWriteAtUtc)
         => new(
             AppName: session.PlatformAppKey,
             ProcessName: session.ProcessName ?? session.PlatformAppKey,
             WindowTitle: session.WindowTitle,
             CurrentSessionDuration: TimeSpan.FromMilliseconds(session.DurationMs),
-            LastPersistedSession: persistedSession);
+            LastPersistedSession: persistedSession,
+            LastPollAtUtc: lastPollAtUtc,
+            LastDbWriteAtUtc: lastDbWriteAtUtc);
 
     private static string CreatePayload(FocusSession session)
     {

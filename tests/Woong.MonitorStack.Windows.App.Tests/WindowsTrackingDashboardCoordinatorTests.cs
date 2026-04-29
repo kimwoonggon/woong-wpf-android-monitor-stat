@@ -66,6 +66,46 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void PollOnce_WhenForegroundChanges_ReturnsLastPollAndLastDbWriteTimes()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 100,
+            processId: 10,
+            processName: "Code.exe",
+            executablePath: "C:\\Apps\\Code.exe",
+            windowTitle: "Project - Visual Studio Code"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            outboxRepository,
+            clock);
+
+        var startSnapshot = coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(10);
+        foregroundReader.ForegroundWindow = new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "GitHub - Chrome");
+
+        var pollSnapshot = coordinator.PollOnce();
+
+        Assert.Equal(startedAtUtc, startSnapshot.LastPollAtUtc);
+        Assert.Null(startSnapshot.LastDbWriteAtUtc);
+        Assert.Equal(clock.UtcNow, pollSnapshot.LastPollAtUtc);
+        Assert.Equal(clock.UtcNow, pollSnapshot.LastDbWriteAtUtc);
+    }
+
+    [Fact]
     public void StopTracking_FlushesCurrentSessionToSqliteAndOutbox()
     {
         var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));

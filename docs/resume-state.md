@@ -1730,3 +1730,34 @@ Next highest priority is the WPF runtime tracking pipeline gap audit returned
 by the subagent: continue with the next TDD vertical slice that proves
 Start/Stop/Poll persistence and dashboard refresh behavior through SQLite and
 outbox.
+
+## 2026-04-29 WPF Runtime Poll/DB Timestamp Slice
+
+- Added RED WPF App coordinator test
+  `PollOnce_WhenForegroundChanges_ReturnsLastPollAndLastDbWriteTimes`; it
+  failed first because real coordinator snapshots did not populate
+  `LastPollAtUtc`.
+- Updated `WindowsTrackingDashboardCoordinator` so Start/Poll/Stop snapshots
+  include the poll timestamp.
+- Updated focus-session persistence so snapshots include `LastDbWriteAtUtc`
+  when SQLite persistence and focus-session outbox enqueue happen.
+- Documented the runtime timestamp evidence in `docs/runtime-pipeline.md`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter PollOnce_WhenForegroundChanges_ReturnsLastPollAndLastDbWriteTimes`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter WindowsTrackingDashboardCoordinatorTests`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-145334`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority is the web persistence refresh signal gap:
+`DashboardViewModel.PollTrackingCommand` should refresh when a web session
+persists even if no focus session closed.
