@@ -500,6 +500,14 @@ milestones below are finished.
 - [x] Add WPF browser connection/status UI that distinguishes extension
   connected, UI Automation fallback active, unavailable, and error states.
 - [x] Add URL sanitizer/redaction policy before storing raw browser events.
+- [x] Harden Chrome native acceptance cleanup-only path so it runs before Chrome for Testing resolution and does not require browser discovery.
+- [x] Prevent cleanup-only native-host restore/remove from running twice; the `finally` cleanup now skips native-host uninstall if the cleanup-only branch already performed it.
+- [x] Chrome cleanup-only verification: RED `AcceptanceScript_CleanupOnlyRunsBeforeChromeResolution` failed first, then passed.
+- [x] Chrome cleanup-only verification: RED `AcceptanceScript_CleanupOnlyDoesNotRunNativeHostCleanupTwice` failed first, then passed.
+- [x] Chrome cleanup-only dry run passed with scoped HKCU test key output and sandbox temp-profile-only Chrome process cleanup.
+- [x] Chrome cleanup-only verification: full `.NET` tests passed (303 tests).
+- [x] Chrome cleanup-only verification: `.NET` build passed.
+- [x] Chrome cleanup-only verification: coverage report generated successfully with overall line coverage 91.3%.
 - [x] Run browser/domain tests, Windows tests, solution build/test.
 - [x] Commit and push browser domain tracking non-UI slice through native manifest generation.
 

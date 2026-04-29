@@ -99,6 +99,12 @@ Cleanup only:
 powershell -ExecutionPolicy Bypass -File scripts/run-chrome-native-message-acceptance.ps1 -CleanupOnly
 ```
 
+`-CleanupOnly` is a cleanup path, not a browser acceptance run. It executes
+before Chrome for Testing discovery, so manual cleanup is not blocked when the
+sandbox browser is missing. The script also records that native-host cleanup
+has already run so the `finally` block does not uninstall/restore the scoped
+HKCU key a second time.
+
 ## Current Status
 
 The safety harness, dry-run path, scoped HKCU registration, scoped cleanup,

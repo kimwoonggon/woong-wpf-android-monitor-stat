@@ -155,6 +155,35 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
     }
 
     [Fact]
+    public void AcceptanceScript_CleanupOnlyRunsBeforeChromeResolution()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        int cleanupOnlyIndex = script.IndexOf("if ($CleanupOnly)", StringComparison.Ordinal);
+        int chromeResolutionIndex = script.IndexOf("$resolvedChromePath = Find-Chrome", StringComparison.Ordinal);
+
+        Assert.True(cleanupOnlyIndex >= 0, "CleanupOnly branch must exist.");
+        Assert.True(chromeResolutionIndex >= 0, "Chrome resolution must remain explicit for non-cleanup acceptance runs.");
+        Assert.True(
+            cleanupOnlyIndex < chromeResolutionIndex,
+            "CleanupOnly must not require Chrome for Testing or installed Chrome discovery.");
+    }
+
+    [Fact]
+    public void AcceptanceScript_CleanupOnlyDoesNotRunNativeHostCleanupTwice()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$nativeHostCleanupAlreadyRan", script, StringComparison.Ordinal);
+        Assert.Contains("$nativeHostCleanupAlreadyRan = $true", script, StringComparison.Ordinal);
+        Assert.Contains("if (-not $nativeHostCleanupAlreadyRan)", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AcceptanceScript_EnumeratesSqliteJsonRowsForWaitCondition()
     {
         string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");

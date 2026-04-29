@@ -2176,6 +2176,27 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.3%.
 
+## 2026-04-29 Chrome Cleanup-Only Sandbox Slice
+
+- Hardened `scripts/run-chrome-native-message-acceptance.ps1 -CleanupOnly` so
+  it runs before Chrome for Testing resolution. Manual cleanup no longer
+  depends on Chrome for Testing or installed Chrome discovery.
+- Added a native-host cleanup guard so cleanup-only uninstall/restore runs once
+  and the `finally` block does not remove a key that was just restored.
+- Confirmed the cleanup-only dry run prints only the scoped HKCU test host key
+  and only scans/stops Chrome processes tied to the generated temp profile
+  sandbox.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "AcceptanceScript_CleanupOnlyRunsBeforeChromeResolution|AcceptanceScript_CleanupOnlyDoesNotRunNativeHostCleanupTwice"`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -CleanupOnly -DryRun`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Coverage after this slice: overall line coverage 91.3%.
+
 Next componentization work remains the larger hard-coded color/brush cleanup
 and any child ViewModel/adaptor extraction that improves testability without
 moving behavior into code-behind.

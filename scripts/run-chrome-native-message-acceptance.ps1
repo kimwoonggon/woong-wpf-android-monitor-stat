@@ -48,6 +48,7 @@ $httpServerProcess = $null
 $extensionId = ""
 $resolvedChromePath = ""
 $cleanupStatus = "Not started"
+$nativeHostCleanupAlreadyRan = $false
 $status = "PASS"
 $blockedReason = ""
 $notes = New-Object System.Collections.Generic.List[string]
@@ -409,6 +410,26 @@ try {
     Write-Host "Chrome for Testing is required by default so user Chrome windows/profiles stay outside this acceptance sandbox."
     Write-Host "Official Google Chrome stable builds can also block command-line unpacked extension loading."
 
+    if ($CleanupOnly) {
+        & (Join-Path $repoRoot "scripts\uninstall-chrome-native-host.ps1") `
+            -Browser Chrome `
+            -HostName $hostName `
+            -HadPreviousValue:$HadPreviousValue `
+            -PreviousDefaultValue $PreviousDefaultValue `
+            -DryRun:$DryRun
+        $nativeHostCleanupAlreadyRan = $true
+        $cleanupStatus = if ($DryRun) {
+            "Dry run cleanup completed for scoped test host key $($registryPath.Replace('HKCU:', 'HKCU'))."
+        } elseif ($HadPreviousValue) {
+            "Restored previous default value for $($registryPath.Replace('HKCU:', 'HKCU'))."
+        } else {
+            "Removed only scoped test host key $($registryPath.Replace('HKCU:', 'HKCU'))."
+        }
+        Write-AcceptanceArtifacts "PASS" "" "" "" @() @() @() $cleanupStatus
+        Write-Host "Chrome native messaging cleanup-only run completed."
+        exit 0
+    }
+
     $resolvedChromePath = Find-Chrome
     if ([string]::IsNullOrWhiteSpace($resolvedChromePath)) {
         $status = "BLOCKED"
@@ -426,18 +447,6 @@ try {
         $notes.Add("Install Python or add a PowerShell-only fixture server/query implementation.")
         Write-AcceptanceArtifacts $status $blockedReason "" $resolvedChromePath @() @() @() $cleanupStatus
         Write-Host "Chrome native messaging acceptance blocked: $blockedReason"
-        exit 0
-    }
-
-    if ($CleanupOnly) {
-        & (Join-Path $repoRoot "scripts\uninstall-chrome-native-host.ps1") `
-            -Browser Chrome `
-            -HostName $hostName `
-            -HadPreviousValue:$HadPreviousValue `
-            -PreviousDefaultValue $PreviousDefaultValue `
-            -DryRun:$DryRun
-        Write-AcceptanceArtifacts "PASS" "" "" "" @() @() @() $cleanupStatus
-        Write-Host "Chrome native messaging cleanup-only run completed."
         exit 0
     }
 
@@ -573,16 +582,18 @@ finally {
     } catch {}
 
     try {
-        & (Join-Path $repoRoot "scripts\uninstall-chrome-native-host.ps1") `
-            -Browser Chrome `
-            -HostName $hostName `
-            -HadPreviousValue:$previousHostKeyExisted `
-            -PreviousDefaultValue "$previousDefaultValue" `
-            -DryRun:$DryRun | Out-Null
-        $cleanupStatus = if ($previousHostKeyExisted) {
-            "Restored previous default value for $($registryPath.Replace('HKCU:', 'HKCU'))."
-        } else {
-            "Removed only scoped test host key $($registryPath.Replace('HKCU:', 'HKCU'))."
+        if (-not $nativeHostCleanupAlreadyRan) {
+            & (Join-Path $repoRoot "scripts\uninstall-chrome-native-host.ps1") `
+                -Browser Chrome `
+                -HostName $hostName `
+                -HadPreviousValue:$previousHostKeyExisted `
+                -PreviousDefaultValue "$previousDefaultValue" `
+                -DryRun:$DryRun | Out-Null
+            $cleanupStatus = if ($previousHostKeyExisted) {
+                "Restored previous default value for $($registryPath.Replace('HKCU:', 'HKCU'))."
+            } else {
+                "Removed only scoped test host key $($registryPath.Replace('HKCU:', 'HKCU'))."
+            }
         }
     } catch {
         $cleanupStatus = "Cleanup failed for $($registryPath.Replace('HKCU:', 'HKCU')): $($_.Exception.Message)"
