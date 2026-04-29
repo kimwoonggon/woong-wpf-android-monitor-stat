@@ -27,6 +27,7 @@
                            VerticalAlignment="Center" />
                 <Button Grid.Column="1"
                         AutomationProperties.AutomationId="SectionCardActionButton"
+                        AutomationProperties.Name="{Binding ActionText, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                         Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                         Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                         Style="{StaticResource CompactActionButtonStyle}"

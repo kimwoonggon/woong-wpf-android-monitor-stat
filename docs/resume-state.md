@@ -3238,6 +3238,40 @@ Verified so far:
 - Main: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors after rerunning sequentially. A prior parallel test/build attempt hit transient WPF generated-file contention, which is why solution validation should stay sequential with `-maxcpucount:1`.
 - Main: prior coverage command in this workspace passed with overall line coverage at 91.3%.
 
+Committed and pushed:
+
+- `dc2a85e Harden WPF presentation pager and sync status`
+
+## 2026-04-30 WPF Settings And Action Automation Names Slice
+
+- Added RED WPF App accessibility tests for readable automation names on
+  SettingsPanel primary controls, ChartsPanel app/domain details buttons, and
+  the reusable SectionCard action button.
+- Updated SettingsPanel controls so privacy/sync fields expose semantic names
+  instead of relying only on visible content and AutomationIds.
+- Updated chart details buttons to expose `Show app focus details` and
+  `Show domain focus details`.
+- Updated SectionCard so a card action button uses its `ActionText` as the
+  readable automation name.
+- This is a WPF App-only accessibility and semantic UI automation slice. It
+  does not change product tracking, SQLite, sync, browser capture, Android, or
+  server behavior.
+
+Verified so far:
+
+- Popper: `SettingsPanel_PrimarySettingsControlsExposeReadableAutomationNames` failed RED on empty name, then passed.
+- Popper: `ChartsPanel_DetailActionButtonsExposeReadableAutomationNames` failed RED on empty name, then passed.
+- Popper: `SectionCard_ActionButtonUsesActionTextAsReadableAutomationName` failed RED on empty name, then passed.
+- Popper: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~MainWindowUiExpectationTests" -maxcpucount:1 -v minimal` passed 47 tests.
+- Popper: `DashboardAutomationIdContractTests` passed.
+- Popper: `git diff --check -- src\Woong.MonitorStack.Windows.App tests\Woong.MonitorStack.Windows.App.Tests` passed with only LF-to-CRLF warnings.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~SettingsPanelAccessibilityTests|FullyQualifiedName~ChartsPanelAccessibilityTests|FullyQualifiedName~SectionCardAccessibilityTests"` passed 3 tests.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 110 WPF App tests.
+- Main: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 343 total .NET tests.
+- Main: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed and generated coverage: line 91.5% (3582/3913), branch 71.1% (496/697).
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-022502`. RealStart and TrackingPipeline passed against a temp SQLite DB; cleanup emitted the known non-fatal already-closed process warning.
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain

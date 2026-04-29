@@ -94,6 +94,7 @@
                                VerticalAlignment="Center" />
                     <Button Grid.Column="2"
                             AutomationProperties.AutomationId="AppChartDetailsButton"
+                            AutomationProperties.Name="Show app focus details"
                             Content="상세보기"
                             Command="{Binding ShowAppFocusDetailsCommand}"
                             Margin="8,0,0,0"
@@ -143,6 +144,7 @@
                                VerticalAlignment="Center" />
                     <Button Grid.Column="2"
                             AutomationProperties.AutomationId="DomainChartDetailsButton"
+                            AutomationProperties.Name="Show domain focus details"
                             Content="상세보기"
                             Command="{Binding ShowDomainFocusDetailsCommand}"
                             Margin="8,0,0,0"

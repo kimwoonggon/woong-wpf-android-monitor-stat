@@ -29,24 +29,29 @@
                        Style="{StaticResource SettingsSectionTitleTextStyle}" />
             <CheckBox Content="Collection visible"
                       AutomationProperties.AutomationId="CollectionVisibleCheckBox"
+                      AutomationProperties.Name="Collection visible"
                       IsChecked="{Binding Settings.IsCollectionVisible}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
             <CheckBox Content="Capture window title"
                       AutomationProperties.AutomationId="WindowTitleVisibleCheckBox"
+                      AutomationProperties.Name="Capture window title"
                       IsChecked="{Binding Settings.IsWindowTitleVisible}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
             <CheckBox Content="Capture page title"
                       AutomationProperties.AutomationId="PageTitleCaptureCheckBox"
+                      AutomationProperties.Name="Capture page title"
                       IsEnabled="False"
                       IsChecked="{Binding Settings.IsPageTitleCaptureEnabled}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
             <CheckBox Content="Full URL capture (off)"
                       AutomationProperties.AutomationId="FullUrlCaptureCheckBox"
+                      AutomationProperties.Name="Full URL capture"
                       IsEnabled="False"
                       IsChecked="{Binding Settings.IsFullUrlCaptureEnabled}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
             <CheckBox Content="Domain-only browser storage"
                       AutomationProperties.AutomationId="DomainOnlyBrowserStorageCheckBox"
+                      AutomationProperties.Name="Domain-only browser storage"
                       IsEnabled="False"
                       IsChecked="{Binding Settings.IsDomainOnlyBrowserStorageEnabled}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
@@ -62,6 +67,7 @@
                        Style="{StaticResource SettingsSectionTitleTextStyle}" />
             <CheckBox Content="Sync enabled"
                       AutomationProperties.AutomationId="SyncEnabledCheckBox"
+                      AutomationProperties.Name="Sync enabled"
                       IsChecked="{Binding Settings.IsSyncEnabled}"
                       Style="{StaticResource SettingsCheckBoxStyle}" />
             <TextBlock AutomationProperties.AutomationId="SyncModeLabel"
@@ -73,6 +79,7 @@
                        TextWrapping="Wrap"
                        Margin="0,8,0,0" />
             <TextBox AutomationProperties.AutomationId="SyncEndpointTextBox"
+                     AutomationProperties.Name="Sync endpoint"
                      Text="{Binding Settings.SyncEndpointText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      IsEnabled="{Binding Settings.IsSyncEnabled}"
                      Style="{StaticResource SettingsInputTextBoxStyle}"

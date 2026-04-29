@@ -217,6 +217,9 @@ Current details tab implementation:
   failure updates both the sync badge and Current Focus sync status. Turning
   sync off clears the failure state and returns the dashboard to local-only
   copy.
+- Settings controls, chart details action buttons, and reusable `SectionCard`
+  action buttons expose readable automation names. This keeps compact visual
+  controls usable for semantic UI acceptance and assistive technology.
 
 Current reusable control implementation:
 
