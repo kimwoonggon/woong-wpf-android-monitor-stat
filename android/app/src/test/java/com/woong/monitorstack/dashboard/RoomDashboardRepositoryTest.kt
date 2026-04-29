@@ -3,6 +3,9 @@ package com.woong.monitorstack.dashboard
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.data.local.LocationCaptureMode
+import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
+import com.woong.monitorstack.data.local.LocationPermissionState
 import com.woong.monitorstack.data.local.MonitorDatabase
 import java.time.Instant
 import java.time.LocalDate
@@ -64,6 +67,42 @@ class RoomDashboardRepositoryTest {
         assertEquals(45 * 60_000L, snapshot.chartData.appUsage.single().durationMs)
     }
 
+    @Test
+    fun loadTodayShowsLatestOptInLocationContextFromRoom() {
+        val locationDao = database.locationContextSnapshotDao()
+        locationDao.insert(
+            locationSnapshot(
+                id = "old-location",
+                capturedLocal = "2026-04-28T08:15:00",
+                latitude = 35.1796,
+                longitude = 129.0756
+            )
+        )
+        locationDao.insert(
+            locationSnapshot(
+                id = "latest-location",
+                capturedLocal = "2026-04-28T09:30:00",
+                latitude = 37.5665,
+                longitude = 126.9780
+            )
+        )
+        val repository = RoomDashboardRepository(
+            dao = database.focusSessionDao(),
+            locationDao = locationDao,
+            deviceId = "android-device-1",
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) }
+        )
+
+        val snapshot = repository.load(DashboardPeriod.Today)
+
+        assertEquals("Location context enabled", snapshot.locationContext.statusText)
+        assertEquals("37.5665", snapshot.locationContext.latitudeText)
+        assertEquals("126.9780", snapshot.locationContext.longitudeText)
+        assertEquals("±36m", snapshot.locationContext.accuracyText)
+        assertEquals("09:30", snapshot.locationContext.capturedAtLocalText)
+    }
+
     private fun session(
         id: String,
         packageName: String,
@@ -91,6 +130,30 @@ class RoomDashboardRepositoryTest {
             timezoneId = timezoneId.id,
             isIdle = isIdle,
             source = "usage_stats"
+        )
+    }
+
+    private fun locationSnapshot(
+        id: String,
+        capturedLocal: String,
+        latitude: Double?,
+        longitude: Double?
+    ): LocationContextSnapshotEntity {
+        val capturedAtUtcMillis = LocalDateTime.parse(capturedLocal)
+            .atZone(timezoneId)
+            .toInstant()
+            .toEpochMilli()
+
+        return LocationContextSnapshotEntity(
+            id = id,
+            deviceId = "android-device-1",
+            capturedAtUtcMillis = capturedAtUtcMillis,
+            latitude = latitude,
+            longitude = longitude,
+            accuracyMeters = 35.5f,
+            permissionState = LocationPermissionState.GrantedApproximate,
+            captureMode = LocationCaptureMode.AppUsageContext,
+            createdAtUtcMillis = capturedAtUtcMillis
         )
     }
 }

@@ -28,7 +28,12 @@ class DashboardActivity : AppCompatActivity() {
         val binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val database = MonitorDatabase.getInstance(this)
-        viewModel = DashboardViewModel(RoomDashboardRepository(database.focusSessionDao()))
+        viewModel = DashboardViewModel(
+            RoomDashboardRepository(
+                dao = database.focusSessionDao(),
+                locationDao = database.locationContextSnapshotDao()
+            )
+        )
 
         binding.recentSessionsList.layoutManager = LinearLayoutManager(this)
         binding.recentSessionsList.adapter = sessionAdapter
@@ -78,6 +83,11 @@ class DashboardActivity : AppCompatActivity() {
         binding.totalActiveText.text = formatDuration(state.totalActiveMs)
         binding.topAppText.text = state.topAppPackageName ?: getString(com.woong.monitorstack.R.string.no_top_app)
         binding.idleText.text = formatDuration(state.idleMs)
+        binding.locationStatusText.text = state.locationContext.statusText
+        binding.locationLatitudeText.text = state.locationContext.latitudeText
+        binding.locationLongitudeText.text = state.locationContext.longitudeText
+        binding.locationAccuracyText.text = state.locationContext.accuracyText
+        binding.locationCapturedAtText.text = state.locationContext.capturedAtLocalText
         binding.emptySessionsText.visibility = if (state.recentSessions.isEmpty()) {
             View.VISIBLE
         } else {

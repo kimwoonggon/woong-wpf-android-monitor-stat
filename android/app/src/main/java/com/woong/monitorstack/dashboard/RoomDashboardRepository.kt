@@ -2,13 +2,22 @@ package com.woong.monitorstack.dashboard
 
 import com.woong.monitorstack.data.local.FocusSessionDao
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.data.local.LocationCaptureMode
+import com.woong.monitorstack.data.local.LocationContextSnapshotDao
+import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
+import com.woong.monitorstack.data.local.LocationPermissionState
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.roundToInt
 
 class RoomDashboardRepository(
     private val dao: FocusSessionDao,
+    private val locationDao: LocationContextSnapshotDao? = null,
+    private val deviceId: String = DefaultDeviceId,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
     private val todayProvider: () -> LocalDate = { LocalDate.now(timezoneId) }
 ) : DashboardRepository {
@@ -26,7 +35,8 @@ class RoomDashboardRepository(
             topAppPackageName = activeSessions.topPackageName(),
             idleMs = sessions.filter { it.isIdle }.sumOf { it.durationMs },
             recentSessions = sessions.toRecentRows(),
-            chartData = activeSessions.toChartData()
+            chartData = activeSessions.toChartData(),
+            locationContext = loadLocationContext(dateRange)
         )
     }
 
@@ -92,6 +102,48 @@ class RoomDashboardRepository(
         )
     }
 
+    private fun loadLocationContext(dateRange: Pair<LocalDate, LocalDate>): DashboardLocationContext {
+        val locationDao = locationDao ?: return DashboardLocationContext()
+        val fromUtcMillis = dateRange.first
+            .atStartOfDay(timezoneId)
+            .toInstant()
+            .toEpochMilli()
+        val toUtcMillis = dateRange.second
+            .atTime(LocalTime.MAX)
+            .atZone(timezoneId)
+            .toInstant()
+            .toEpochMilli()
+        val latest = locationDao.queryByCapturedRange(
+            deviceId = deviceId,
+            fromUtcMillis = fromUtcMillis,
+            toUtcMillis = toUtcMillis
+        )
+            .lastOrNull()
+
+        return latest?.toLocationContext() ?: DashboardLocationContext()
+    }
+
+    private fun LocationContextSnapshotEntity.toLocationContext(): DashboardLocationContext {
+        val hasCoordinate = latitude != null && longitude != null
+        val canDisplayCoordinate = captureMode == LocationCaptureMode.AppUsageContext
+            && permissionState != LocationPermissionState.NotGranted
+            && hasCoordinate
+
+        if (!canDisplayCoordinate) {
+            return DashboardLocationContext()
+        }
+
+        return DashboardLocationContext(
+            statusText = "Location context enabled",
+            latitudeText = String.format(Locale.US, "%.4f", latitude),
+            longitudeText = String.format(Locale.US, "%.4f", longitude),
+            accuracyText = accuracyMeters?.let { "±${it.roundToInt()}m" } ?: "Accuracy unavailable",
+            capturedAtLocalText = Instant.ofEpochMilli(capturedAtUtcMillis)
+                .atZone(timezoneId)
+                .format(TimeFormatter)
+        )
+    }
+
     private fun formatDuration(durationMs: Long): String {
         val totalMinutes = durationMs / 60_000
         val hours = totalMinutes / 60
@@ -105,6 +157,7 @@ class RoomDashboardRepository(
     }
 
     companion object {
+        const val DefaultDeviceId = "local-android-device"
         private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }

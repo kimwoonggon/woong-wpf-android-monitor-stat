@@ -2875,6 +2875,54 @@ Focused validation completed so far:
 - `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~DashboardView_ComposesReusableSectionsInsideVerticalScrollViewer" -maxcpucount:1 -v minimal`
 - `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~DashboardComponentXaml_ExposesStableAutomationIdsForUiAcceptance|FullyQualifiedName~MainWindow_ExposesStableAutomationIdsForSnapshotAutomation" -maxcpucount:1 -v minimal`
 
+## 2026-04-29 Android Optional Location Dashboard Slice
+
+- Added dashboard state for optional location context with safe defaults:
+  `Location capture off`, nullable latitude/longitude display text, unavailable
+  accuracy, and no captured time.
+- `RoomDashboardRepository` now reads the latest local
+  `location_context_snapshots` row for the selected device/date range and
+  formats fake opt-in coordinates for dashboard display.
+- Added a Dashboard XML location card with status, latitude, longitude,
+  accuracy, and captured-at fields.
+- This remains local-only and opt-in-scoped; no runtime location collector,
+  server upload, or background location tracking was added.
+
+Focused validation completed so far:
+
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.dashboard.DashboardViewModelTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.dashboard.RoomDashboardRepositoryTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.dashboard.DashboardActivityRobolectricTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`
+
+## 2026-04-29 WPF Snapshot Runtime Selector Evidence Slice
+
+- Added WPF App tests proving the UI snapshot/acceptance tool keeps using the
+  stable existing DashboardView AutomationIds and records runtime selector
+  evidence for Start/Stop/Sync and app/web/live-event lists.
+- Updated the snapshot tool so TrackingPipeline mode treats recent app and web
+  session lists as required semantic evidence rather than optional crop-only
+  selectors.
+
+Focused validation completed so far:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_UsesStableDashboardViewAutomationIdsForAcceptanceSelectors" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_ReportManifestAndVisualPromptIncludeRuntimeSelectorEvidence" -maxcpucount:1 -v minimal`
+
+Full validation after integrating the Android location dashboard slice and WPF
+snapshot selector-evidence slice:
+
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260430-005505`.
+
+Coverage after this slice: overall line coverage 91.3%; branch coverage 70.2%.
+
 Full validation after integrating the Android Room slice and WPF guard slices:
 
 - `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`

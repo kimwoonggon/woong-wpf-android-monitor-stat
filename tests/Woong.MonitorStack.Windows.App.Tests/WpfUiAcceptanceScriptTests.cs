@@ -131,6 +131,62 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_UsesStableDashboardViewAutomationIdsForAcceptanceSelectors()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        string[] stableAcceptanceAutomationIds =
+        [
+            "SummaryCardsContainer",
+            "ChartArea",
+            "CurrentActivityPanel",
+            "RecentAppSessionsList",
+            "RecentWebSessionsList",
+            "LiveEventsList"
+        ];
+
+        foreach (string automationId in stableAcceptanceAutomationIds)
+        {
+            Assert.Contains(automationId, tool);
+        }
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_ReportManifestAndVisualPromptIncludeRuntimeSelectorEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("WriteReport(context, isSuccess);", tool);
+        Assert.Contains("WriteManifest(context, isSuccess);", tool);
+        Assert.Contains("WriteVisualReviewPrompt(context);", tool);
+        Assert.Contains("visual-review-prompt.md", tool);
+        Assert.Contains("## PASS/FAIL/WARN Table", tool);
+        Assert.Contains("checks = context.Results.Select", tool);
+
+        string[] requiredRuntimeSelectorChecks =
+        [
+            "RequireExists(mainWindow, \"StartTrackingButton\", context);",
+            "RequireExists(mainWindow, \"StopTrackingButton\", context);",
+            "RequireExists(mainWindow, \"SyncNowButton\", context);",
+            "RequireExists(mainWindow, \"RecentAppSessionsList\", context);",
+            "RequireExists(mainWindow, \"RecentWebSessionsList\", context);"
+        ];
+
+        foreach (string requiredRuntimeSelectorCheck in requiredRuntimeSelectorChecks)
+        {
+            Assert.Contains(requiredRuntimeSelectorCheck, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_ManifestIncludesViewportAndSkippedScreenshotReasons()
     {
         string repoRoot = FindRepositoryRoot();

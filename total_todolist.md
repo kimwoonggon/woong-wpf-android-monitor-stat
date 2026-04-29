@@ -548,6 +548,7 @@ milestones below are finished.
 - [x] Add WPF architecture guard that `MainWindow.xaml` remains a thin `DashboardView` shell.
 - [x] Add WPF architecture guard that `DashboardView.xaml` composes reusable section controls inside a vertical `ScrollViewer`.
 - [x] Add WPF App guard for stable dashboard AutomationIds used by UI acceptance.
+- [x] Add WPF snapshot-tool guard that runtime selectors are present in semantic pass/fail evidence.
 - [x] Verify Start changes tracking status to Running.
 - [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Verify Stop changes tracking status to Stopped.
@@ -619,7 +620,7 @@ milestones below are finished.
 - [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
-- [ ] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
+- [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [ ] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
 - [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
 - [x] Commit and push Android optional location context slices.

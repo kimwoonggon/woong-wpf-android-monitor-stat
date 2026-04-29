@@ -17,6 +17,13 @@ class DashboardViewModelTest {
                         startedAtLocalText = "09:00",
                         durationText = "1h 0m"
                     )
+                ),
+                locationContext = DashboardLocationContext(
+                    statusText = "Location context enabled",
+                    latitudeText = "37.5665",
+                    longitudeText = "126.9780",
+                    accuracyText = "±36m",
+                    capturedAtLocalText = "09:30"
                 )
             )
         )
@@ -30,6 +37,11 @@ class DashboardViewModelTest {
         assertEquals("com.android.chrome", viewModel.state.topAppPackageName)
         assertEquals(300_000, viewModel.state.idleMs)
         assertEquals("1h 0m", viewModel.state.recentSessions.single().durationText)
+        assertEquals("Location context enabled", viewModel.state.locationContext.statusText)
+        assertEquals("37.5665", viewModel.state.locationContext.latitudeText)
+        assertEquals("126.9780", viewModel.state.locationContext.longitudeText)
+        assertEquals("±36m", viewModel.state.locationContext.accuracyText)
+        assertEquals("09:30", viewModel.state.locationContext.capturedAtLocalText)
     }
 
     private class FakeDashboardRepository(

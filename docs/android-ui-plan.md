@@ -163,10 +163,12 @@ artifacts only. They must not capture other apps as telemetry.
   Component tests prove nullable `latitude`, `longitude`, `accuracyMeters`,
   and `capturedAtUtcMillis` are preserved, and that snapshots can be queried by
   device plus captured UTC range.
+- Dashboard ViewModel, Room repository, and XML layout tests now cover a
+  `Location context` card with safe default text plus fake opt-in
+  latitude/longitude display from local Room data.
 
 ## Not Implemented Yet
 
 - Runtime location collector/provider.
-- Dashboard location card.
 - Server location DTO/storage.
 - Connected-device screenshot evidence for location UI.

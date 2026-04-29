@@ -14,7 +14,8 @@ class DashboardViewModel(
             topAppPackageName = snapshot.topAppPackageName,
             idleMs = snapshot.idleMs,
             recentSessions = snapshot.recentSessions,
-            chartData = snapshot.chartData
+            chartData = snapshot.chartData,
+            locationContext = snapshot.locationContext
         )
     }
 }

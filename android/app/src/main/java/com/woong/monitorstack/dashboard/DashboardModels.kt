@@ -11,7 +11,8 @@ data class DashboardSnapshot(
     val topAppPackageName: String?,
     val idleMs: Long,
     val recentSessions: List<DashboardSessionRow>,
-    val chartData: DashboardChartData = DashboardChartData()
+    val chartData: DashboardChartData = DashboardChartData(),
+    val locationContext: DashboardLocationContext = DashboardLocationContext()
 )
 
 data class DashboardUiState(
@@ -20,5 +21,14 @@ data class DashboardUiState(
     val topAppPackageName: String? = null,
     val idleMs: Long = 0,
     val recentSessions: List<DashboardSessionRow> = emptyList(),
-    val chartData: DashboardChartData = DashboardChartData()
+    val chartData: DashboardChartData = DashboardChartData(),
+    val locationContext: DashboardLocationContext = DashboardLocationContext()
+)
+
+data class DashboardLocationContext(
+    val statusText: String = "Location capture off",
+    val latitudeText: String = "Latitude not stored",
+    val longitudeText: String = "Longitude not stored",
+    val accuracyText: String = "Accuracy unavailable",
+    val capturedAtLocalText: String = "No location captured"
 )

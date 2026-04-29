@@ -235,6 +235,7 @@ internal static class UiSnapshotRunner
 
         SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
         Thread.Sleep(300);
+        RequireExists(mainWindow, "RecentAppSessionsList", context);
         CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", "recent-sessions.png", context);
         string appText = GetAllVisibleText(mainWindow);
         context.CheckContains("TrackingPipeline shows Visual Studio Code process", "Code.exe", appText);
@@ -243,6 +244,7 @@ internal static class UiSnapshotRunner
 
         SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
         Thread.Sleep(300);
+        RequireExists(mainWindow, "RecentWebSessionsList", context);
         CaptureElementIfAvailable(mainWindow, "RecentWebSessionsList", "recent-web-sessions.png", context);
         string webText = GetAllVisibleText(mainWindow);
         context.CheckContains("TrackingPipeline shows github.com", "github.com", webText);
