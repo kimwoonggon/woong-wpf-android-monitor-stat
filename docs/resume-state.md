@@ -3048,6 +3048,46 @@ visual cleanup. Good candidates are proving stop/close flush behavior through
 the manual ticker path, or tightening Chrome native messaging acceptance
 without touching the user's real Chrome profile or real local DB.
 
+## 2026-04-29 Android Location Sync Payload Gate
+
+- Added a test-first Android sync payload factory for optional location
+  context. The factory returns an empty upload payload when sync is off or when
+  location context is off.
+- When both sync and location context are explicitly enabled, the factory maps
+  local Room `LocationContextSnapshotEntity` rows into upload DTO items with
+  nullable `latitude`, `longitude`, and `accuracyMeters` preserved.
+- This slice does not add a runtime location collector, server location
+  storage, or default upload. Location metadata remains opt-in and sync remains
+  opt-in.
+
+Verified:
+
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.LocationContextSyncPayloadFactoryTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`
+
+## 2026-04-29 WPF Live Event And Details Visual Evidence Slice
+
+- Added WPF App expectation coverage for chart header icon text, Details tab
+  icon headers, compact details pager icon buttons, and an App Sessions
+  template column with a visible app glyph plus app name.
+- Updated the local WPF UI snapshot acceptance tool so TrackingPipeline checks
+  Live Event Log runtime evidence across reachable details pages instead of
+  only the current 10-row page.
+- The latest WPF acceptance artifact is
+  `artifacts/wpf-ui-acceptance/20260430-012621` with RealStart and
+  TrackingPipeline both passing against temp SQLite databases.
+- Coverage after this slice remains overall line coverage 91.3% and branch
+  coverage 70.2%.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~WpfUiAcceptanceScriptTests" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "MainWindow_TabsExposeExpectedListsAndSettingsControls|DetailsTabsPanel_RendersSvgLikeTabIconsAndIconPager"`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain

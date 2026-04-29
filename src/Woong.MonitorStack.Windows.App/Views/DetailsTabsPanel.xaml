@@ -11,12 +11,65 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/DataGrid.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="TabHeaderIconTextStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,0,6,0" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryActionBrush}" />
+            </Style>
+
+            <Style x:Key="AppSessionIconCircleStyle" TargetType="{x:Type Border}">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="22" />
+                <Setter Property="CornerRadius" Value="11" />
+                <Setter Property="Background" Value="{StaticResource MetricBlueBackgroundBrush}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding AppName}" Value="Chrome">
+                        <Setter Property="Background" Value="{StaticResource MetricGreenBackgroundBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding AppName}" Value="Visual Studio Code">
+                        <Setter Property="Background" Value="{StaticResource MetricBlueBackgroundBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding AppName}" Value="Woong Monitor Stack">
+                        <Setter Property="Background" Value="{StaticResource MetricAmberBackgroundBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="AppSessionIconTextStyle" TargetType="{x:Type TextBlock}">
+                <Setter Property="Text" Value="A" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource MetricBlueBrush}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding AppName}" Value="Chrome">
+                        <Setter Property="Text" Value="C" />
+                        <Setter Property="Foreground" Value="{StaticResource MetricGreenBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding AppName}" Value="Visual Studio Code">
+                        <Setter Property="Text" Value="V" />
+                        <Setter Property="Foreground" Value="{StaticResource MetricBlueBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding AppName}" Value="Woong Monitor Stack">
+                        <Setter Property="Text" Value="W" />
+                        <Setter Property="Foreground" Value="{StaticResource MetricAmberBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -32,18 +85,40 @@
                         ItemContainerStyle="{StaticResource DashboardTabItemStyle}"
                         SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
                         SelectedValuePath="Tag">
-                <TabItem Header="App Sessions"
-                         Tag="{x:Static dashboard:DetailsTab.AppSessions}"
+                <TabItem Tag="{x:Static dashboard:DetailsTab.AppSessions}"
                          AutomationProperties.AutomationId="AppSessionsTab">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock AutomationProperties.AutomationId="AppSessionsTabIcon"
+                                       Text="▦"
+                                       Style="{StaticResource TabHeaderIconTextStyle}" />
+                            <TextBlock Text="App Sessions" />
+                        </StackPanel>
+                    </TabItem.Header>
                     <Grid AutomationProperties.AutomationId="AppSessionsList">
                         <DataGrid AutomationProperties.AutomationId="RecentAppSessionsList"
                                   Style="{StaticResource SessionDataGridStyle}"
                                   ItemsSource="{Binding VisibleAppSessionRows}">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="App"
-                                                    Binding="{Binding AppName}"
-                                                    MinWidth="160"
-                                                    Width="160" />
+                                <DataGridTemplateColumn Header="App"
+                                                        MinWidth="160"
+                                                        Width="160">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <Border AutomationProperties.AutomationId="AppSessionAppIcon"
+                                                        Style="{StaticResource AppSessionIconCircleStyle}">
+                                                    <TextBlock AutomationProperties.AutomationId="AppSessionAppIconText"
+                                                               Style="{StaticResource AppSessionIconTextStyle}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding AppName}"
+                                                           Margin="8,0,0,0"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Process"
                                                     Binding="{Binding ProcessName}"
                                                     MinWidth="180"
@@ -77,9 +152,16 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Web Sessions"
-                         Tag="{x:Static dashboard:DetailsTab.WebSessions}"
+                <TabItem Tag="{x:Static dashboard:DetailsTab.WebSessions}"
                          AutomationProperties.AutomationId="WebSessionsTab">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock AutomationProperties.AutomationId="WebSessionsTabIcon"
+                                       Text="◎"
+                                       Style="{StaticResource TabHeaderIconTextStyle}" />
+                            <TextBlock Text="Web Sessions" />
+                        </StackPanel>
+                    </TabItem.Header>
                     <Grid AutomationProperties.AutomationId="WebSessionsList">
                         <DataGrid AutomationProperties.AutomationId="RecentWebSessionsList"
                                   Style="{StaticResource SessionDataGridStyle}"
@@ -122,9 +204,16 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Live Event Log"
-                         Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
+                <TabItem Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
                          AutomationProperties.AutomationId="LiveEventsTab">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock AutomationProperties.AutomationId="LiveEventsTabIcon"
+                                       Text="≡"
+                                       Style="{StaticResource TabHeaderIconTextStyle}" />
+                            <TextBlock Text="Live Event Log" />
+                        </StackPanel>
+                    </TabItem.Header>
                     <DataGrid AutomationProperties.AutomationId="LiveEventsList"
                               Style="{StaticResource SessionDataGridStyle}"
                               ItemsSource="{Binding VisibleLiveEventRows}">
@@ -153,9 +242,16 @@
                     </DataGrid>
                 </TabItem>
 
-                <TabItem Header="Settings"
-                         Tag="{x:Static dashboard:DetailsTab.Settings}"
+                <TabItem Tag="{x:Static dashboard:DetailsTab.Settings}"
                          AutomationProperties.AutomationId="SettingsTab">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock AutomationProperties.AutomationId="SettingsTabIcon"
+                                       Text="⚙"
+                                       Style="{StaticResource TabHeaderIconTextStyle}" />
+                            <TextBlock Text="Settings" />
+                        </StackPanel>
+                    </TabItem.Header>
                     <views:SettingsPanel />
                 </TabItem>
             </TabControl>
@@ -180,18 +276,18 @@
                             DockPanel.Dock="Right"
                             HorizontalAlignment="Right">
                     <Button AutomationProperties.AutomationId="DetailsPreviousPageButton"
-                            Content="Previous"
+                            Content="‹"
                             Command="{Binding PreviousDetailsPageCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}" />
+                            Style="{StaticResource PagerIconButtonStyle}" />
                     <TextBlock AutomationProperties.AutomationId="DetailsPageStatusText"
                                Text="{Binding DetailsPageText}"
                                VerticalAlignment="Center"
                                Style="{StaticResource BodyTextStyle}"
                                Margin="8,0" />
                     <Button AutomationProperties.AutomationId="DetailsNextPageButton"
-                            Content="Next"
+                            Content="›"
                             Command="{Binding NextDetailsPageCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}" />
+                            Style="{StaticResource PagerIconButtonStyle}" />
                 </StackPanel>
             </DockPanel>
         </Grid>

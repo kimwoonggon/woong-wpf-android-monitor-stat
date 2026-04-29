@@ -758,6 +758,30 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_ChartsPanelRendersSvgLikeHeaderIcons()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                ChartsPanel panel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
+
+                Assert.Equal("▥", FindByAutomationId<TextBlock>(panel, "HourlyChartIconText").Text);
+                Assert.Equal("▰", FindByAutomationId<TextBlock>(panel, "AppUsageChartIconText").Text);
+                Assert.Equal("◇", FindByAutomationId<TextBlock>(panel, "DomainUsageChartIconText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_ChartsPanelUsesSharedSectionTitleTypography()
         => RunOnStaThread(() =>
         {
@@ -812,6 +836,33 @@ public sealed class MainWindowUiExpectationTests
                 window.UpdateLayout();
                 Assert.Equal(DetailsTab.AppSessions, dashboard.ViewModel.SelectedDetailsTab);
                 Assert.Equal(0, tabs.SelectedIndex);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void DetailsTabsPanel_RendersSvgLikeTabIconsAndIconPager()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                DetailsTabsPanel panel = FindByAutomationId<DetailsTabsPanel>(window, "DetailsTabsPanel");
+
+                Assert.Equal("▦", FindByAutomationId<TextBlock>(panel, "AppSessionsTabIcon").Text);
+                Assert.Equal("◎", FindByAutomationId<TextBlock>(panel, "WebSessionsTabIcon").Text);
+                Assert.Equal("≡", FindByAutomationId<TextBlock>(panel, "LiveEventsTabIcon").Text);
+                Assert.Equal("⚙", FindByAutomationId<TextBlock>(panel, "SettingsTabIcon").Text);
+                Assert.Equal("‹", FindByAutomationId<Button>(panel, "DetailsPreviousPageButton").Content);
+                Assert.Equal("›", FindByAutomationId<Button>(panel, "DetailsNextPageButton").Content);
             }
             finally
             {
@@ -1330,6 +1381,7 @@ public sealed class MainWindowUiExpectationTests
                 AssertSessionDataGridContract(appSessions);
                 Assert.Equal(["App", "Process", "Start", "End", "Duration", "State", "Window", "Source"], ColumnHeaders(appSessions));
                 AssertColumnMinWidths(appSessions, [160, 180, 90, 90, 100, 80, 260, 100]);
+                Assert.IsType<DataGridTemplateColumn>(appSessions.Columns[0]);
                 Assert.Same(dashboard.ViewModel.VisibleAppSessionRows, appSessions.ItemsSource);
 
                 tabs.SelectedIndex = 1;
@@ -1662,7 +1714,16 @@ public sealed class MainWindowUiExpectationTests
     private static IReadOnlyList<string> TabHeaders(TabControl tabs)
         => tabs.Items
             .OfType<TabItem>()
-            .Select(tab => tab.Header?.ToString() ?? "")
+            .Select(tab => tab.Header switch
+            {
+                string text => text,
+                DependencyObject header => FindVisualDescendants<TextBlock>(header)
+                    .Select(textBlock => textBlock.Text)
+                    .FirstOrDefault(text => text is "App Sessions" or "Web Sessions" or "Live Event Log" or "Settings")
+                    ?? string.Join(" ", CollectText(header)),
+                null => "",
+                object header => header.ToString() ?? ""
+            })
             .ToList();
 
     private static IReadOnlyList<string> ColumnHeaders(DataGrid dataGrid)

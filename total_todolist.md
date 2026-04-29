@@ -621,7 +621,7 @@ milestones below are finished.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
-- [ ] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
+- [x] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
 - [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
 - [x] Commit and push Android optional location context slices.
 
@@ -1190,16 +1190,19 @@ milestones below are finished.
   - [x] Dashboard componentization guard: RED `DashboardView_LaysOutDashboardSectionsAsDirectGridRows` failed first, then passed after making chart/details sections direct `DashboardView` grid rows.
   - [x] WPF UI automation stability: RED `DashboardView_DirectSectionsExposeStableAutomationIds` failed first, then passed after adding stable section AutomationIds.
   - [x] WPF acceptance clock hardening: RED `AcceptanceScenarioClock_DefaultStartUsesLocalNoonToAvoidMidnightFilterFlakes` failed first at the local midnight boundary, then passed after pinning fake TrackingPipeline data to local noon.
+  - [x] WPF chart/details visual evidence: RED App tests required chart header icons, Details tab icons, compact pager icon buttons, and an App Sessions template column, then passed after XAML/resource updates.
+  - [x] WPF Live Event acceptance evidence: RED snapshot-tool guard required Live Event Log checks across reachable details pages, then passed after the tool aggregated paged `LiveEventsList` text.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
 - [x] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during current component/style guard extraction.
 - [x] Run full `.NET` tests and build after current component/style guard extraction.
-- [x] Run WPF UI acceptance after current component/style guard extraction at `artifacts/wpf-ui-acceptance/20260430-001723`.
-- [ ] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
+- [x] Run WPF UI acceptance after current component/style guard extraction at `artifacts/wpf-ui-acceptance/20260430-012621`.
+- [x] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
   - [x] Compact action style slice docs/TODO updated.
   - [x] App root style merge slice docs/TODO updated.
   - [x] WPF color/direct-section/AutomationId/acceptance-clock guard slice docs/TODO updated.
+  - [x] WPF chart/details icon and Live Event paged acceptance docs/TODO updated.
 - [ ] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done

@@ -187,6 +187,39 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("SelectTabIfAvailable(mainWindow, \"LiveEventsTab\", \"Live Event Log\", context);", tool);
+        Assert.Contains("CaptureElementIfAvailable(mainWindow, \"LiveEventsList\", \"live-events.png\", context);", tool);
+        Assert.Contains("ReadLiveEventLogTextAcrossPages(mainWindow, context)", tool);
+        Assert.Contains("DetailsNextPageButton", tool);
+        Assert.Contains("GetElementVisibleText(window, \"LiveEventsList\")", tool);
+
+        string[] requiredLiveEventChecks =
+        [
+            "context.CheckContains(\"LiveEventLog shows tracking started\", \"Tracking started\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows focus session semantics\", \"FocusSession\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows web session semantics\", \"Web\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows github.com web event\", \"github.com\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows chatgpt.com web event\", \"chatgpt.com\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows outbox semantics\", \"Outbox\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows sync skipped\", \"Sync skipped\", liveEventEvidenceText);",
+            "context.CheckContains(\"LiveEventLog shows tracking stopped\", \"Tracking stopped\", liveEventEvidenceText);"
+        ];
+
+        foreach (string requiredLiveEventCheck in requiredLiveEventChecks)
+        {
+            Assert.Contains(requiredLiveEventCheck, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_ManifestIncludesViewportAndSkippedScreenshotReasons()
     {
         string repoRoot = FindRepositoryRoot();

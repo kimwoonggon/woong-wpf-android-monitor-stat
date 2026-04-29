@@ -249,6 +249,10 @@ public partial class MainWindow : Window
 - Add AutomationIds for controls that are user-visible or automation-relevant:
   refresh button, period selector, summary cards, charts, tabs, grids, settings
   controls.
+- Keep visual-only WPF details such as tab icons, compact pager icons, and
+  DataGrid cell templates in `Windows.App` XAML/resources. Presentation should
+  expose row values and selected tab state, not WPF `DataTemplate` or control
+  types.
 - Preserve current smoke and snapshot selectors when changing names.
 
 ## Testing Matrix

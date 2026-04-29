@@ -250,12 +250,24 @@ internal static class UiSnapshotRunner
         context.CheckContains("TrackingPipeline shows github.com", "github.com", webText);
         context.CheckContains("TrackingPipeline shows chatgpt.com", "chatgpt.com", webText);
 
+        InvokeRequired(mainWindow, "SyncNowButton");
+        Thread.Sleep(500);
+        context.CheckContains("SyncNow local-only skipped status", "Sync skipped", GetElementName(mainWindow, "LastSyncStatusText"));
+
         SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
         Thread.Sleep(300);
         CaptureElementIfAvailable(mainWindow, "LiveEventsList", "live-events.png", context);
-        string liveEventText = GetAllVisibleText(mainWindow);
-        context.CheckContains("LiveEventLog shows focus activity", "Focus", liveEventText);
-        context.CheckContains("LiveEventLog shows browser visit", "Web", liveEventText);
+        string liveEventEvidenceText = ReadLiveEventLogTextAcrossPages(mainWindow, context);
+        context.CheckContains("LiveEventLog shows focus activity", "Focus", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows browser visit", "Web", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows tracking started", "Tracking started", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows focus session semantics", "FocusSession", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows web session semantics", "Web", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows github.com web event", "github.com", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows chatgpt.com web event", "chatgpt.com", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows outbox semantics", "Outbox", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows sync skipped", "Sync skipped", liveEventEvidenceText);
+        context.CheckContains("LiveEventLog shows tracking stopped", "Tracking stopped", liveEventEvidenceText);
 
         CaptureElementIfAvailable(mainWindow, "SummaryCardsContainer", "summary-cards.png", context);
         CaptureElementIfAvailable(mainWindow, "ChartArea", "chart-area.png", context);
@@ -557,10 +569,43 @@ internal static class UiSnapshotRunner
         return element?.Name ?? "";
     }
 
+    private static string ReadLiveEventLogTextAcrossPages(Window window, UiSnapshotContext context)
+    {
+        var pageTexts = new List<string> { GetElementVisibleText(window, "LiveEventsList") };
+
+        const int maximumAdditionalPages = 5;
+        for (var pageIndex = 0; pageIndex < maximumAdditionalPages; pageIndex++)
+        {
+            AutomationElement? nextButton = window.FindFirstDescendant("DetailsNextPageButton");
+            if (nextButton is null || !nextButton.IsEnabled)
+            {
+                break;
+            }
+
+            nextButton.AsButton().Invoke();
+            Thread.Sleep(300);
+            context.Pass("LiveEventLog details pagination", "Older live events reachable", "Selected next page");
+            pageTexts.Add(GetElementVisibleText(window, "LiveEventsList"));
+        }
+
+        return string.Join(
+            Environment.NewLine,
+            pageTexts.Where(text => !string.IsNullOrWhiteSpace(text)));
+    }
+
+    private static string GetElementVisibleText(Window window, string automationId)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        return element is null ? "" : GetVisibleText(element);
+    }
+
     private static string GetAllVisibleText(Window window)
+        => GetVisibleText(window);
+
+    private static string GetVisibleText(AutomationElement root)
         => string.Join(
             Environment.NewLine,
-            window
+            root
                 .FindAllDescendants()
                 .Select(element => element.Name)
                 .Where(name => !string.IsNullOrWhiteSpace(name))

@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -32,8 +33,23 @@
                     <RowDefinition Height="230" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="시간대별 Active Focus"
-                           Style="{StaticResource SectionTitleTextStyle}" />
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="28"
+                            Height="28"
+                            CornerRadius="14"
+                            Background="{StaticResource MetricBlueBackgroundBrush}"
+                            Margin="0,0,8,0">
+                        <TextBlock AutomationProperties.AutomationId="HourlyChartIconText"
+                                   Text="▥"
+                                   Foreground="{StaticResource MetricBlueBrush}"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="시간대별 Active Focus"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
                 <lvc:CartesianChart Grid.Row="1"
                                     AutomationProperties.AutomationId="HourlyActivityChart"
                                     Margin="0,12,0,0"
@@ -56,13 +72,27 @@
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="앱별 집중 시간"
+                    <Border Width="28"
+                            Height="28"
+                            CornerRadius="14"
+                            Background="{StaticResource MetricGreenBackgroundBrush}"
+                            Margin="0,0,8,0">
+                        <TextBlock AutomationProperties.AutomationId="AppUsageChartIconText"
+                                   Text="▰"
+                                   Foreground="{StaticResource MetricGreenBrush}"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1"
+                               Text="앱별 집중 시간"
                                Style="{StaticResource SectionTitleTextStyle}"
                                VerticalAlignment="Center" />
-                    <Button Grid.Column="1"
+                    <Button Grid.Column="2"
                             AutomationProperties.AutomationId="AppChartDetailsButton"
                             Content="상세보기"
                             Command="{Binding ShowAppFocusDetailsCommand}"
@@ -91,13 +121,27 @@
                 </Grid.RowDefinitions>
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="도메인별 집중 시간"
+                    <Border Width="28"
+                            Height="28"
+                            CornerRadius="14"
+                            Background="{StaticResource MetricPurpleBackgroundBrush}"
+                            Margin="0,0,8,0">
+                        <TextBlock AutomationProperties.AutomationId="DomainUsageChartIconText"
+                                   Text="◇"
+                                   Foreground="{StaticResource MetricPurpleBrush}"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1"
+                               Text="도메인별 집중 시간"
                                Style="{StaticResource SectionTitleTextStyle}"
                                VerticalAlignment="Center" />
-                    <Button Grid.Column="1"
+                    <Button Grid.Column="2"
                             AutomationProperties.AutomationId="DomainChartDetailsButton"
                             Content="상세보기"
                             Command="{Binding ShowDomainFocusDetailsCommand}"

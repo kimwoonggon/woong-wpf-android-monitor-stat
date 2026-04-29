@@ -166,9 +166,13 @@ artifacts only. They must not capture other apps as telemetry.
 - Dashboard ViewModel, Room repository, and XML layout tests now cover a
   `Location context` card with safe default text plus fake opt-in
   latitude/longitude display from local Room data.
+- Sync payload factory tests now prove location snapshots are excluded while
+  sync is off or location context is off. Nullable `latitude`, `longitude`, and
+  accuracy values are included only when both sync and location context are
+  explicitly enabled.
 
 ## Not Implemented Yet
 
 - Runtime location collector/provider.
-- Server location DTO/storage.
+- Server location DTO/storage and upload endpoint persistence.
 - Connected-device screenshot evidence for location UI.

@@ -192,6 +192,12 @@ Current details tab implementation:
   `DashboardViewModel.SelectedDetailsTab`.
 - The App/Web/Live DataGrids bind to visible paged row collections and share a
   footer with rows-per-page and previous/next controls.
+- Details tab headers include compact icon text elements with stable
+  AutomationIds. The pager uses icon-sized previous/next buttons so the footer
+  stays compact at 1024px while remaining automation-addressable.
+- The App Sessions `App` column is a template column with a compact app glyph
+  plus the app name. The process, time, state, window, and source columns remain
+  explicit text columns with product-defined MinWidth values.
 - `SettingsPanel` is now hosted inside the Settings tab and inherits the
   existing dashboard `DataContext`.
 
@@ -261,12 +267,15 @@ Current style dictionary implementation:
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in
   the view and preserving grid-level horizontal scrolling at 1024px. The shared
-  style also owns the common top spacing for the three session grids, while the
-  column widths remain in the view because they encode product readability
-  requirements for each table.
+  style also owns the common top spacing, row height, column header height, and
+  grid-line brushes for the three session grids, while the column widths remain
+  in the view because they encode product readability requirements for each
+  table.
 - `Styles/Tabs.xaml` defines shared dashboard tab styles. `DetailsTabsPanel`
   uses them for `DashboardTabs` while preserving selected-value binding, four
   tab headers, and minimum-size reachability.
+- `Styles/Buttons.xaml` defines `PagerIconButtonStyle` for compact details
+  pagination controls.
 
 Open `wpfelements.md` alignment decisions:
 
@@ -652,6 +661,12 @@ Current implementation:
 The script must never use the user's production/local database and must never
 upload to a real server unless a future explicit opt-in flag is added and
 documented.
+
+TrackingPipeline semantic acceptance reads the Live Event Log across reachable
+details pages before checking runtime evidence. This keeps the default 10-row
+page size while still proving that Tracking started, FocusSession,
+Web/domain, Outbox, Sync skipped, and Tracking stopped evidence is present in
+the UI.
 
 Current implementation:
 
