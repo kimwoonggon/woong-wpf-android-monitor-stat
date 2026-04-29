@@ -1,6 +1,11 @@
 namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 public sealed record DashboardEventLogRow(
-    string Kind,
+    string EventType,
     string OccurredAtLocal,
-    string Message);
+    string AppName,
+    string Domain,
+    string Message)
+{
+    public string Kind => EventType;
+}

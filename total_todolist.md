@@ -584,6 +584,43 @@ milestones below are finished.
 - [ ] Completion audit updated.
 - [ ] Commit and push Original Intent completion.
 
+## Milestone 30: WPF Product UI Goal Implementation
+
+- [x] Save the 2026-04-29 WPF product UI goal as `docs/wpf-ui-plan.md`.
+- [x] Preserve the provided UI goal image intent in durable docs and use it as the visual reference for review.
+- [x] Add failing Header tests: `Header_DoesNotOverlapTitleAndCurrentProcess`, `Header_ShowsTrackingSyncPrivacyBadges`, and `Header_At1024Width_RemainsReadable`.
+- [x] Remove current process/top app text from the Header and move runtime focus state into the Current Focus panel.
+- [x] Add Header tracking/sync/privacy badges with stable AutomationIds and responsive layout.
+- [x] Add failing Control Bar tests for readable button sizing, wrapping/reachability, and the visible Custom period control.
+- [x] Update Control Bar buttons to readable product labels: Start Tracking, Stop Tracking, Refresh, Sync Now, Today, 1h, 6h, 24h, Custom.
+- [x] Add Current Focus panel tests for current domain, last poll time, last DB write time, last persisted session, and privacy-aware window title.
+- [x] Add Current Focus UI fields for tracking status, current app, current process, current window title, current browser domain, current duration, last persisted session, last poll, last DB write, and sync state.
+- [x] Add or verify testable ticker behavior proving current session duration advances while tracking is Running.
+- [x] Add Summary Card tests for Active Focus, Foreground, Idle, and Web Focus labels and SQLite-backed non-zero/empty behavior.
+- [x] Replace summary cards with Active Focus, Foreground, Idle, and Web Focus using clear values and subtitles.
+- [ ] Add Chart mapper tests for meaningful hour labels, minute axis labels, app/domain labels, durations, and empty states.
+- [ ] Update charts to avoid meaningless `-0.5 / 0 / 0.5` axes and show useful empty states.
+- [x] Add App Sessions grid tests for required columns, readable widths, horizontal scrolling, and fake pipeline VS Code/Chrome rows.
+- [x] Update App Sessions grid columns: App, Process, Start, End, Duration, State, Window, Source with required MinWidths.
+- [x] Add Web Sessions grid tests for required columns, readable widths, domain-only privacy, empty state, and fake github/chatgpt rows.
+- [x] Update Web Sessions grid columns: Domain, Title, URL Mode, Start, End, Duration, Browser, Confidence with required MinWidths.
+- [ ] Add Live Event Log tests for Tracking started, FocusSession closed/started, WebSession closed/started, persisted/outbox, sync skipped, and stopped events.
+- [x] Update Live Event Log columns: Time, Event Type, App, Domain, Message.
+- [ ] Add Settings tests for readable privacy controls, full URL off by default, sync off by default, local-only status, and local DB/log folder commands disabled or available.
+- [x] Update Settings tab with privacy, sync, and runtime controls/copy while keeping safe defaults.
+- [x] Make the main layout usable at 1024 width with reachable tabs and no clipped grid headers.
+- [ ] Make the main layout explicitly verified at 1920 and 1366 widths with screenshots.
+- [ ] Update `scripts/run-wpf-ui-acceptance.ps1` and/or UI snapshot tool to capture 1920/1366/1024 screenshots and section screenshots.
+- [x] Ensure WPF semantic acceptance verifies SQLite focus/web/outbox rows plus UI values for VS Code, Chrome, `github.com`, and `chatgpt.com`.
+- [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
+- [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
+- [ ] Update `docs/browser-tracking-policy.md` for any new browser UI state labels.
+- [x] Update `docs/resume-state.md` after each completed WPF UI slice.
+- [x] Run focused WPF/App tests for each slice.
+- [x] Run full `.NET` tests and build.
+- [x] Run WPF UI acceptance when the slice touches runtime/UI behavior.
+- [x] Commit and push each completed WPF product UI slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

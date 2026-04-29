@@ -5,7 +5,10 @@ public sealed record DashboardTrackingSnapshot(
     string? ProcessName,
     string? WindowTitle,
     TimeSpan CurrentSessionDuration,
-    DashboardPersistedSessionSnapshot? LastPersistedSession)
+    DashboardPersistedSessionSnapshot? LastPersistedSession,
+    string? CurrentBrowserDomain = null,
+    DateTimeOffset? LastPollAtUtc = null,
+    DateTimeOffset? LastDbWriteAtUtc = null)
 {
     public static DashboardTrackingSnapshot Empty { get; } = new(
         AppName: null,

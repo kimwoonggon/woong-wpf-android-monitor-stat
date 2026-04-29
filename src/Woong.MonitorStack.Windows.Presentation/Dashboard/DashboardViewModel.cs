@@ -24,6 +24,15 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _trackingStatusText = "Stopped";
 
     [ObservableProperty]
+    private string _trackingBadgeText = "Tracking Stopped";
+
+    [ObservableProperty]
+    private string _syncBadgeText = "Sync Off";
+
+    [ObservableProperty]
+    private string _privacyBadgeText = "Privacy Safe";
+
+    [ObservableProperty]
     private string _currentAppNameText = "No current app";
 
     [ObservableProperty]
@@ -33,16 +42,28 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _currentWindowTitleText = "Window title hidden by privacy settings";
 
     [ObservableProperty]
+    private string _currentBrowserDomainText = "Browser metadata unavailable";
+
+    [ObservableProperty]
     private string _currentSessionDurationText = "00:00:00";
 
     [ObservableProperty]
     private string _lastPersistedSessionText = "No session persisted";
 
     [ObservableProperty]
+    private string _lastPollTimeText = "No poll yet";
+
+    [ObservableProperty]
+    private string _lastDbWriteTimeText = "No DB write yet";
+
+    [ObservableProperty]
     private string _lastSyncStatusText = "Sync is off. Data stays on this Windows device.";
 
     [ObservableProperty]
     private long _totalActiveMs;
+
+    [ObservableProperty]
+    private long _totalForegroundMs;
 
     [ObservableProperty]
     private long _totalIdleMs;
@@ -59,9 +80,10 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<DashboardSummaryCard> _summaryCards =
     [
-        new("Active", "0m"),
-        new("Idle", "0m"),
-        new("Web", "0m")
+        new("Active Focus", "0m", "Today's focused foreground time"),
+        new("Foreground", "0m", "Today's foreground time"),
+        new("Idle", "0m", "Today's idle foreground time"),
+        new("Web Focus", "0m", "Today's browser domain time")
     ];
 
     [ObservableProperty]
@@ -113,10 +135,25 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
         CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
+        CurrentBrowserDomainText = TextOrDefault(snapshot.CurrentBrowserDomain, "Browser metadata unavailable");
         _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
         UpdateCurrentWindowTitleText();
         CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
-        LastPersistedSessionText = FormatPersistedSession(snapshot.LastPersistedSession);
+        if (snapshot.LastPersistedSession is not null)
+        {
+            LastPersistedSessionText = FormatPersistedSession(snapshot.LastPersistedSession);
+        }
+
+        if (snapshot.LastPollAtUtc is not null)
+        {
+            LastPollTimeText = FormatLocalTime(snapshot.LastPollAtUtc.Value, _timeZone);
+        }
+
+        DateTimeOffset? lastDbWriteAtUtc = snapshot.LastDbWriteAtUtc ?? snapshot.LastPersistedSession?.EndedAtUtc;
+        if (lastDbWriteAtUtc is not null)
+        {
+            LastDbWriteTimeText = FormatLocalTime(lastDbWriteAtUtc.Value, _timeZone);
+        }
     }
 
     public void SelectPeriod(DashboardPeriod period)
@@ -144,6 +181,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         _isTrackingRunning = true;
         TrackingStatusText = "Running";
+        TrackingBadgeText = "Tracking Running";
         UpdateCurrentActivity(_trackingCoordinator.StartTracking());
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
@@ -155,6 +193,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         _isTrackingRunning = false;
         TrackingStatusText = "Stopped";
+        TrackingBadgeText = "Tracking Stopped";
         UpdateCurrentActivity(_trackingCoordinator.StopTracking());
         RefreshSummary(ResolveRange(SelectedPeriod));
         StartTrackingCommand.NotifyCanExecuteChanged();
@@ -178,6 +217,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         LastSyncStatusText = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled).StatusText;
         Settings.SyncStatusLabel = LastSyncStatusText;
+        UpdateSyncBadge();
     }
 
     private bool CanStartTracking()
@@ -196,6 +236,14 @@ public sealed partial class DashboardViewModel : ObservableObject
             }
 
             UpdateCurrentWindowTitleText();
+            UpdatePrivacyBadge();
+        }
+
+        if (e.PropertyName is nameof(DashboardSettingsViewModel.IsSyncEnabled)
+            or nameof(DashboardSettingsViewModel.HasSyncFailure)
+            or nameof(DashboardSettingsViewModel.SyncStatusLabel))
+        {
+            UpdateSyncBadge();
         }
     }
 
@@ -212,17 +260,20 @@ public sealed partial class DashboardViewModel : ObservableObject
         IReadOnlyList<WebSession> webSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
         DateOnly summaryDate = LocalDateCalculator.GetLocalDate(_clock.UtcNow, _timeZone.Id);
         DailySummary summary = DailySummaryCalculator.Calculate(focusSessions, webSessions, summaryDate, _timeZone.Id);
+        long totalForegroundMs = focusSessions.Sum(session => session.DurationMs);
 
         TotalActiveMs = summary.TotalActiveMs;
+        TotalForegroundMs = totalForegroundMs;
         TotalIdleMs = summary.TotalIdleMs;
         TotalWebMs = summary.TotalWebMs;
         TopAppName = summary.TopApps.FirstOrDefault()?.Key ?? "";
         TopDomainName = summary.TopDomains.FirstOrDefault()?.Key ?? "";
         SummaryCards =
         [
-            new("Active", FormatDuration(summary.TotalActiveMs)),
-            new("Idle", FormatDuration(summary.TotalIdleMs)),
-            new("Web", FormatDuration(summary.TotalWebMs))
+            new("Active Focus", FormatDuration(summary.TotalActiveMs), "Today's focused foreground time"),
+            new("Foreground", FormatDuration(totalForegroundMs), "Today's foreground time"),
+            new("Idle", FormatDuration(summary.TotalIdleMs), "Today's idle foreground time"),
+            new("Web Focus", FormatDuration(summary.TotalWebMs), "Today's browser domain time")
         ];
         HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
         AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
@@ -264,8 +315,15 @@ public sealed partial class DashboardViewModel : ObservableObject
             .OrderByDescending(session => session.StartedAtUtc)
             .Select(session => new DashboardSessionRow(
                 session.PlatformAppKey,
+                TextOrDefault(session.ProcessName, session.PlatformAppKey),
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 FormatDuration(session.DurationMs),
+                session.IsIdle ? "Idle" : "Active",
+                Settings.IsWindowTitleVisible
+                    ? TextOrDefault(session.WindowTitle, "No window title")
+                    : "Hidden by privacy setting",
+                session.Source,
                 session.IsIdle))
             .ToList();
     }
@@ -279,8 +337,12 @@ public sealed partial class DashboardViewModel : ObservableObject
                 Settings.IsWindowTitleVisible
                     ? TextOrDefault(session.PageTitle, "No page title")
                     : "Page title hidden by privacy settings",
+                session.Url is null ? "Domain only" : "Full URL disabled",
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                FormatDuration(session.DurationMs)))
+                TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
+                FormatDuration(session.DurationMs),
+                session.BrowserFamily,
+                TextOrDefault(session.CaptureConfidence, "Unknown")))
             .ToList();
     }
 
@@ -294,6 +356,8 @@ public sealed partial class DashboardViewModel : ObservableObject
                 new DashboardEventLogRow(
                     "Focus",
                     FormatLocalTime(session.StartedAtUtc, _timeZone),
+                    session.PlatformAppKey,
+                    "",
                     session.PlatformAppKey)));
         IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> webRows = webSessions
             .Select(session => (
@@ -301,6 +365,8 @@ public sealed partial class DashboardViewModel : ObservableObject
                 new DashboardEventLogRow(
                     "Web",
                     FormatLocalTime(session.StartedAtUtc, _timeZone),
+                    "",
+                    session.Domain,
                     session.Domain)));
 
         return focusRows
@@ -312,6 +378,20 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private static string FormatLocalTime(DateTimeOffset utcValue, TimeZoneInfo timeZone)
         => TimeZoneInfo.ConvertTime(utcValue, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    private void UpdateSyncBadge()
+    {
+        SyncBadgeText = Settings.HasSyncFailure
+            ? "Sync Error"
+            : Settings.IsSyncEnabled ? "Sync On" : "Sync Off";
+    }
+
+    private void UpdatePrivacyBadge()
+    {
+        PrivacyBadgeText = Settings.IsWindowTitleVisible
+            ? "Privacy Custom"
+            : "Privacy Safe";
+    }
 
     private static string TextOrDefault(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value;

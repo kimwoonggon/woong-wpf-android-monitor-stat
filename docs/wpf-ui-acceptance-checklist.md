@@ -197,3 +197,31 @@ because required app/web/session content is semantically checked.
 Still to do: add richer EmptyData and SampleDashboard acceptance modes so a
 beginner can separately verify no-data and deterministic sample dashboard
 states without relying on the TrackingPipeline scenario.
+
+## 2026-04-29 Product UI Goal Slice
+
+The WPF dashboard has been moved closer to the provided product UI goal image:
+
+- Header now separates the title/subtitle from runtime process text.
+- Header exposes tracking, sync, and privacy badges.
+- Control Bar uses readable product labels: Start Tracking, Stop Tracking,
+  Refresh, Sync Now, Today, 1h, 6h, 24h, and Custom.
+- Current Focus exposes current domain, last poll, last DB write, and last
+  persisted session fields.
+- Summary cards now distinguish Active Focus, Foreground, Idle, and Web Focus.
+- App Sessions, Web Sessions, and Live Event Log grids expose the required
+  product columns with minimum widths.
+- Settings shows privacy, sync, and runtime sections with safe defaults.
+
+New/updated tests verify these WPF UI semantics through public window/ViewModel
+behavior. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-095154`
+
+Coverage after this slice: overall line coverage 92.2%, Windows.Presentation
+95.7%, and Windows.App 86.3%.
+
+Remaining UI acceptance gap: the snapshot tool still does not capture explicit
+1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
+when the chart area is below the current UI Automation viewport. The semantic
+pipeline gate passed and remains the primary automated evidence.

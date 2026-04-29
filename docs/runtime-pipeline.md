@@ -30,9 +30,12 @@ Required current activity UI:
 - Current app name.
 - Current process name.
 - Current window title, privacy-aware.
+- Current browser domain, when metadata is available.
 - Current session duration.
 - Tracking status.
 - Last persisted session.
+- Last poll time.
+- Last DB write time.
 - Last sync status.
 
 The WPF app must make collection visible. No Windows tracking should run as a
@@ -143,3 +146,8 @@ server sync disabled unless `--AllowServerSync` is explicitly passed.
 The latest local RealStart run launched the WPF app with real Windows readers,
 clicked Start/Stop through FlaUI, and verified that the temp DB contained one
 `focus_session` row and one `sync_outbox` row.
+
+The WPF product UI now keeps the last persisted session and last DB write time
+visible until a newer persistence event replaces them. A later poll without a
+closed session must not reset the display to "No session persisted"; this is
+covered by `UpdateCurrentActivity_WhenLaterPollHasNoPersistedSession_KeepsLastPersistedSession`.

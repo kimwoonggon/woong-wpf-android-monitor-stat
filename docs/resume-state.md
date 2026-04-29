@@ -899,12 +899,61 @@ browser URL storage is domain-only by default.
 - Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
   minimal`.
 
+## 2026-04-29 WPF Product UI Goal Slice
+
+- Added `docs/wpf-ui-plan.md` as the durable text version of the provided WPF
+  UI goal image and instructions.
+- Reopened `total_todolist.md` with Milestone 30 for the WPF product UI goal.
+- Updated `MainWindow.xaml` with a larger product dashboard layout:
+  header title/subtitle, tracking/sync/privacy badges, readable control bar,
+  Current Focus panel, four metric cards, chart titles, wider App/Web/Live grids,
+  and clearer Settings sections.
+- Moved current process/top app text out of the Header.
+- Added Current Focus fields for browser domain, last poll time, and last DB
+  write time.
+- Updated ViewModel display state for `TrackingBadgeText`, `SyncBadgeText`,
+  `PrivacyBadgeText`, `CurrentBrowserDomainText`, `LastPollTimeText`, and
+  `LastDbWriteTimeText`.
+- Updated summary cards to the product metric vocabulary: Active Focus,
+  Foreground, Idle, and Web Focus.
+- Expanded dashboard row models so the UI can show process, start/end, state,
+  window/source, URL mode, browser, confidence, app, and domain columns.
+- Fixed a runtime UI bug: a later poll with no newly persisted session no
+  longer clears the last persisted session text.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindowUiExpectationTests`
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter UpdateCurrentActivity_WhenLaterPollHasNoPersistedSession_KeepsLastPersistedSession`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Current .NET test count is 177 passing tests. Coverage report generated at
+`artifacts/coverage/SummaryGithub.md`; current overall line coverage is 92.2%,
+Windows.Presentation is 95.7%, and Windows.App is 86.3%.
+
+Latest WPF acceptance artifact:
+
+`artifacts/wpf-ui-acceptance/20260429-095154`
+
+Remaining Milestone 30 work:
+
+- Add chart mapper/axis tests for hour labels, minute axes, duration labels, and
+  empty states.
+- Improve chart rendering/empty states so axis labels are guaranteed meaningful.
+- Add richer Live Event Log semantic tests for start/close/persist/outbox/sync
+  event names.
+- Add explicit Settings tests for full URL off, sync off, and folder command
+  availability/disabled state.
+- Capture explicit 1920/1366/1024 WPF snapshots.
+- Update browser UI docs if new browser connection/status labels are added.
+
 ## Next Highest Priority
 
-Move to Milestone 27 Android screenshot/device automation if an emulator/device
-is available; otherwise continue Milestone 28 privacy retention hardening
-(forbidden-scope tests and raw-event retention). The WPF browser connection
-status UI and cramped lower dashboard layout remain deferred per the latest
-priority decision because non-UI tracking/schema correctness is more important
-right now. Physical Android resource measurement remains blocked until a device
-is connected.
+Continue Milestone 30 with chart mapper/axis tests and chart empty-state/UI
+label fixes. After the WPF product UI goal is complete, return to Milestone 27
+Android screenshot/device automation if an emulator/device is available;
+physical Android resource measurement remains blocked until a device is
+connected.

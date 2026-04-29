@@ -81,7 +81,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 Assert.Equal("Stopped", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
                 Assert.Equal("chrome.exe", FindByAutomationId<TextBlock>(window, "CurrentAppNameText").Text);
                 Assert.Equal("Code.exe", viewModel.TopAppName);
-                Assert.Contains(viewModel.SummaryCards, card => card.Label == "Active" && card.Value == "5m");
+                Assert.Contains(viewModel.SummaryCards, card => card.Label == "Active Focus" && card.Value == "5m");
+                Assert.Contains(viewModel.SummaryCards, card => card.Label == "Foreground" && card.Value == "5m");
                 Assert.Contains(viewModel.RecentSessions, row => row.AppName == "Code.exe" && row.Duration == "5m");
                 Assert.Contains(
                     FindByAutomationId<DataGrid>(window, "RecentAppSessionsList").ItemsSource.Cast<DashboardSessionRow>(),

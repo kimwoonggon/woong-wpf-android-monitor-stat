@@ -51,8 +51,13 @@ public sealed class DashboardViewModelTests
             viewModel.SummaryCards,
             card =>
             {
-                Assert.Equal("Active", card.Label);
+                Assert.Equal("Active Focus", card.Label);
                 Assert.Equal("20m", card.Value);
+            },
+            card =>
+            {
+                Assert.Equal("Foreground", card.Label);
+                Assert.Equal("30m", card.Value);
             },
             card =>
             {
@@ -61,7 +66,7 @@ public sealed class DashboardViewModelTests
             },
             card =>
             {
-                Assert.Equal("Web", card.Label);
+                Assert.Equal("Web Focus", card.Label);
                 Assert.Equal("10m", card.Value);
             });
     }
@@ -289,6 +294,37 @@ public sealed class DashboardViewModelTests
                 Assert.Equal("11:30", row.OccurredAtLocal);
                 Assert.Equal("chrome.exe", row.Message);
             });
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenLaterPollHasNoPersistedSession_KeepsLastPersistedSession()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "chrome.exe",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.Zero,
+            LastPersistedSession: new DashboardPersistedSessionSnapshot(
+                AppName: "Code.exe",
+                ProcessName: "Code.exe",
+                EndedAtUtc: now,
+                Duration: TimeSpan.FromMinutes(5))));
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "chrome.exe",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromMinutes(1),
+            LastPersistedSession: null));
+
+        Assert.Contains("Code.exe", viewModel.LastPersistedSessionText);
+        Assert.Contains("5m", viewModel.LastPersistedSessionText);
     }
 
     [Fact]

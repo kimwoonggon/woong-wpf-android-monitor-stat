@@ -24,10 +24,19 @@ public sealed class MainWindowUiExpectationTests
                 window.UpdateLayout();
 
                 Assert.Equal("Woong Monitor Stack", window.Title);
-                Assert.True(window.Width <= 960);
-                Assert.True(window.MinWidth >= 860);
-                Assert.True(window.MinHeight >= 560);
+                Assert.True(window.Width >= 1024);
+                Assert.True(window.MinWidth >= 1024);
+                Assert.True(window.MinHeight >= 768);
                 Assert.Same(dashboard.ViewModel, window.DataContext);
+
+                FrameworkElement header = FindByAutomationId<FrameworkElement>(window, "HeaderArea");
+                IReadOnlySet<string> headerText = CollectText(header);
+                Assert.Contains("Woong Monitor Stack", headerText);
+                Assert.Contains("Windows Focus Tracker", headerText);
+                Assert.Contains("Tracking Stopped", headerText);
+                Assert.Contains("Sync Off", headerText);
+                Assert.Contains("Privacy Safe", headerText);
+                Assert.DoesNotContain("chrome.exe", headerText);
 
                 Button refreshButton = FindByAutomationId<Button>(window, "RefreshButton");
                 Assert.Equal("Refresh", refreshButton.Content);
@@ -41,9 +50,16 @@ public sealed class MainWindowUiExpectationTests
                 Button startTracking = FindByAutomationId<Button>(window, "StartTrackingButton");
                 Button stopTracking = FindByAutomationId<Button>(window, "StopTrackingButton");
                 Button syncNow = FindByAutomationId<Button>(window, "SyncNowButton");
-                Assert.Equal("Start", startTracking.Content);
-                Assert.Equal("Stop", stopTracking.Content);
+                Button customPeriod = FindByAutomationId<Button>(window, "CustomPeriodButton");
+                Assert.Equal("Start Tracking", startTracking.Content);
+                Assert.Equal("Stop Tracking", stopTracking.Content);
                 Assert.Equal("Sync Now", syncNow.Content);
+                Assert.Equal("Custom", customPeriod.Content);
+                AssertReadableButton(startTracking);
+                AssertReadableButton(stopTracking);
+                AssertReadableButton(syncNow);
+                AssertReadableButton(refreshButton);
+                AssertReadableButton(customPeriod);
                 Assert.Same(dashboard.ViewModel.StartTrackingCommand, startTracking.Command);
                 Assert.Same(dashboard.ViewModel.StopTrackingCommand, stopTracking.Command);
                 Assert.Same(dashboard.ViewModel.SyncNowCommand, syncNow.Command);
@@ -56,6 +72,9 @@ public sealed class MainWindowUiExpectationTests
                     FindByAutomationId<TextBlock>(window, "CurrentWindowTitleText").Text);
                 Assert.Equal("00:00:00", FindByAutomationId<TextBlock>(window, "CurrentSessionDurationText").Text);
                 Assert.Equal("No session persisted", FindByAutomationId<TextBlock>(window, "LastPersistedSessionText").Text);
+                Assert.NotNull(FindByAutomationId<TextBlock>(window, "CurrentBrowserDomainText"));
+                Assert.NotNull(FindByAutomationId<TextBlock>(window, "LastPollTimeText"));
+                Assert.NotNull(FindByAutomationId<TextBlock>(window, "LastDbWriteTimeText"));
                 Assert.Equal(
                     "Sync is off. Data stays on this Windows device.",
                     FindByAutomationId<TextBlock>(window, "LastSyncStatusText").Text);
@@ -113,16 +132,17 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Contains("Woong Monitor Stack", CollectText(window));
                 Assert.Contains("chrome.exe", CollectText(window));
-                Assert.Contains("Active", CollectText(window));
+                Assert.Contains("Active Focus", CollectText(window));
+                Assert.Contains("Foreground", CollectText(window));
                 Assert.Contains("20m", CollectText(window));
                 Assert.Contains("Idle", CollectText(window));
                 Assert.Contains("10m", CollectText(window));
-                Assert.Contains("Web", CollectText(window));
-                Assert.Contains("Activity", CollectText(window));
-                Assert.Contains("Apps", CollectText(window));
-                Assert.Contains("Domains", CollectText(window));
+                Assert.Contains("Web Focus", CollectText(window));
+                Assert.Contains("시간대별 Active Focus", CollectText(window));
+                Assert.Contains("앱별 집중 시간", CollectText(window));
+                Assert.Contains("도메인별 집중 시간", CollectText(window));
 
-                Assert.NotNull(FindByAutomationId<ContentControl>(window, "ChartArea"));
+                Assert.NotNull(FindByAutomationId<FrameworkElement>(window, "ChartArea"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "AppUsageChart"));
                 Assert.NotNull(FindByAutomationId<PieChart>(window, "DomainUsageChart"));
@@ -189,19 +209,21 @@ public sealed class MainWindowUiExpectationTests
                 tabs.SelectedIndex = 0;
                 window.UpdateLayout();
                 DataGrid appSessions = FindByAutomationId<DataGrid>(window, "RecentAppSessionsList");
-                Assert.Equal(["App", "Started", "Duration", "Idle"], ColumnHeaders(appSessions));
+                Assert.Equal(["App", "Process", "Start", "End", "Duration", "State", "Window", "Source"], ColumnHeaders(appSessions));
+                AssertColumnMinWidths(appSessions, [160, 180, 90, 90, 100, 80, 260, 100]);
                 Assert.Same(dashboard.ViewModel.RecentSessions, appSessions.ItemsSource);
 
                 tabs.SelectedIndex = 1;
                 window.UpdateLayout();
                 DataGrid webSessions = FindByAutomationId<DataGrid>(window, "RecentWebSessionsList");
-                Assert.Equal(["Domain", "Page", "Started", "Duration"], ColumnHeaders(webSessions));
+                Assert.Equal(["Domain", "Title", "URL Mode", "Start", "End", "Duration", "Browser", "Confidence"], ColumnHeaders(webSessions));
+                AssertColumnMinWidths(webSessions, [180, 260, 120, 90, 90, 100, 120, 100]);
                 Assert.Same(dashboard.ViewModel.RecentWebSessions, webSessions.ItemsSource);
 
                 tabs.SelectedIndex = 2;
                 window.UpdateLayout();
                 DataGrid liveEvents = FindByAutomationId<DataGrid>(window, "LiveEventsList");
-                Assert.Equal(["Time", "Kind", "Message"], ColumnHeaders(liveEvents));
+                Assert.Equal(["Time", "Event Type", "App", "Domain", "Message"], ColumnHeaders(liveEvents));
                 Assert.Same(dashboard.ViewModel.LiveEvents, liveEvents.ItemsSource);
 
                 tabs.SelectedIndex = 3;
@@ -215,7 +237,7 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Equal("Collection visible", collectionVisible.Content);
                 Assert.True(collectionVisible.IsChecked);
-                Assert.Equal("Show window titles", windowTitleVisible.Content);
+                Assert.Equal("Capture window title", windowTitleVisible.Content);
                 Assert.False(windowTitleVisible.IsChecked);
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
@@ -281,6 +303,26 @@ public sealed class MainWindowUiExpectationTests
         Assert.Equal(expectedContent, button.Content);
         Assert.Same(viewModel.SelectDashboardPeriodCommand, button.Command);
         Assert.Equal(expectedPeriod, button.CommandParameter);
+    }
+
+    private static void AssertReadableButton(Button button)
+    {
+        Assert.True(button.MinHeight >= 40, $"{AutomationProperties.GetAutomationId(button)} should have MinHeight >= 40.");
+        Assert.True(button.MinWidth >= 96, $"{AutomationProperties.GetAutomationId(button)} should have MinWidth >= 96.");
+        Assert.True(button.Padding.Left >= 12, $"{AutomationProperties.GetAutomationId(button)} should have horizontal padding >= 12.");
+        Assert.True(button.Padding.Right >= 12, $"{AutomationProperties.GetAutomationId(button)} should have horizontal padding >= 12.");
+    }
+
+    private static void AssertColumnMinWidths(DataGrid dataGrid, IReadOnlyList<double> expectedMinWidths)
+    {
+        Assert.Equal(expectedMinWidths.Count, dataGrid.Columns.Count);
+
+        for (int index = 0; index < expectedMinWidths.Count; index++)
+        {
+            Assert.True(
+                dataGrid.Columns[index].MinWidth >= expectedMinWidths[index],
+                $"{dataGrid.Columns[index].Header} MinWidth should be >= {expectedMinWidths[index]}.");
+        }
     }
 
     private static void Invoke(Button button)

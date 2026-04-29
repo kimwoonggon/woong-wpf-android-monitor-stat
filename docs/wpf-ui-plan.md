@@ -1,0 +1,513 @@
+# WPF UI Plan
+
+Updated: 2026-04-29
+
+This document is the durable implementation plan for the Windows WPF dashboard
+UI. It is based on the provided UI goal image and the product requirement that
+the UI prove the real runtime tracking pipeline, not just render a polished
+shell.
+
+The reference image was provided in the Codex conversation on 2026-04-29. This
+repository stores the textual implementation target here so future agents can
+continue without relying on transient chat context.
+
+## Product Metric
+
+Primary metric: **Active Focus Time**.
+
+Definitions:
+
+- `FocusSession`: OS foreground app/window interval. It is not process running
+  time and does not include background apps.
+- Active Focus Time: non-idle `FocusSession` duration.
+- Foreground Time: total foreground `FocusSession` duration including idle.
+- Idle Time: foreground time where the user is idle.
+- `WebSession`: browser tab/domain/url interval inside a browser
+  `FocusSession`.
+
+Dashboard values must aggregate persisted SQLite `FocusSession` and
+`WebSession` rows. Production dashboard values must not come from fake
+in-memory rows.
+
+## UI Questions
+
+The WPF dashboard must answer these questions at a glance:
+
+1. Is tracking currently running?
+2. What app/window/domain is currently focused?
+3. How long has the current focus session lasted?
+4. Was the last closed session persisted to SQLite?
+5. How much Active Focus Time did I have today?
+6. Which apps consumed the most focus time?
+7. Which browser domains consumed the most web focus time?
+8. Is sync off/local-only or enabled?
+9. Are privacy settings safe?
+10. Are App/Web sessions actually visible in the grids?
+
+## Target Structure
+
+```text
+MainWindow
+  Header
+    App title
+    Subtitle
+    Tracking status badge
+    Sync status badge
+    Privacy status badge
+  Control Bar
+    Start Tracking
+    Stop Tracking
+    Refresh
+    Sync Now
+    Today
+    1h
+    6h
+    24h
+    Custom
+  Current Focus Panel
+    Tracking status
+    Current app
+    Current process
+    Current window title
+    Current browser domain
+    Current session duration
+    Last persisted session
+    Last poll time
+    Last DB write time
+    Sync state
+  Summary Cards
+    Active Focus
+    Foreground
+    Idle
+    Web Focus
+  Charts
+    Hourly Active Focus
+    Top Apps by Focus Time
+    Top Domains by Web Focus Time
+  Details Tabs
+    App Sessions
+    Web Sessions
+    Live Event Log
+    Settings
+```
+
+The target visual language is a modern desktop dashboard: spacious sections,
+clear cards, readable command buttons, useful chart labels, and data grids that
+remain usable instead of looking like clipped debug output.
+
+## Current Problems
+
+- Header text can overlap with current process text.
+- Buttons are too small and cramped.
+- App Sessions grid columns are clipped.
+- Chart axes can show meaningless labels such as `-0.5`, `0`, `0.5`.
+- Summary cards do not clearly distinguish Active Focus, Foreground, Idle, and
+  Web Focus.
+- SQLite persistence status is not visible enough.
+- Bottom tabs and grids are hard to read.
+- Layout needs to remain usable at 1920, 1366, and 1024 widths.
+- Current Focus lacks last poll time and last DB write time.
+- The visual surface still feels closer to a debug screen than a product
+  dashboard.
+- App/Web session tables can be pushed below the initially visible area without
+  enough affordance that they are reachable.
+
+## Header
+
+Title: `Woong Monitor Stack`
+
+Subtitle: `Windows Focus Tracker`
+
+Do not show the current process beside the title. Current process belongs in
+the Current Focus panel.
+
+Badges:
+
+- Tracking Running / Tracking Stopped
+- Sync Off / Sync On / Sync Error
+- Privacy Safe / Privacy Custom
+
+Badge colors:
+
+- Running: green
+- Stopped: gray
+- Sync Off: orange or gray
+- Sync Error: red
+- Privacy Safe: blue or green
+
+Acceptance:
+
+- `Header_DoesNotOverlapTitleAndCurrentProcess`
+- `Header_ShowsTrackingSyncPrivacyBadges`
+- `Header_At1024Width_RemainsReadable`
+
+## Control Bar
+
+Required buttons:
+
+- Start Tracking
+- Stop Tracking
+- Refresh
+- Sync Now
+- Today
+- 1h
+- 6h
+- 24h
+- Custom
+
+Rules:
+
+- Height >= 40.
+- Text buttons MinWidth >= 96.
+- Horizontal padding >= 12.
+- Margin >= 6 between buttons.
+- Buttons wrap or remain reachable at narrow widths.
+- Sync Now attempts upload only when sync is enabled. When sync is off, the UI
+  must show a clear local-only/skipped state.
+
+Acceptance:
+
+- `ControlBar_ButtonsHaveReadableMinimumSize`
+- `ControlBar_ButtonsWrapOrRemainReachableAt1024Width`
+- `StartButton_ChangesTrackingStatusToRunning`
+- `StopButton_ChangesTrackingStatusToStopped`
+- `RefreshButton_ReloadsSqliteDashboard`
+- `SyncNow_WhenSyncOff_DoesNotUploadAndShowsSkippedStatus`
+
+The `Custom` button may remain disabled until the custom range picker is
+implemented, but it must be visible, readable, and clearly part of the period
+selector.
+
+## Current Focus Panel
+
+Required fields:
+
+- Tracking status
+- Current app
+- Current process
+- Current window title
+- Current browser domain
+- Current session duration
+- Last persisted session
+- Last poll time
+- Last DB write time
+- Sync state
+
+Privacy behavior:
+
+- Window title is hidden by default.
+- Browser domain can display when available.
+- Full URL is not shown unless explicit future opt-in exists.
+
+Acceptance:
+
+- `CurrentFocusPanel_ShowsCurrentAppProcessAndDuration`
+- `CurrentFocusPanel_CurrentSessionDurationAdvancesBeyondZero`
+- `CurrentFocusPanel_ShowsLastPollTime`
+- `CurrentFocusPanel_ShowsLastDbWriteTime`
+- `CurrentFocusPanel_ShowsLastPersistedSession`
+- `CurrentFocusPanel_RespectsWindowTitlePrivacy`
+
+## Summary Cards
+
+Required cards:
+
+- Active Focus: foreground time excluding idle. This is the primary product
+  metric.
+- Foreground: total foreground app/window time including idle.
+- Idle: foreground time where the user was idle.
+- Web Focus: total web session time where browser domain metadata is available.
+
+Each card must have a clear title, large value, short subtitle, and consistent
+spacing.
+
+Acceptance:
+
+- `SummaryCards_ShowActiveForegroundIdleWebLabels`
+- `SummaryCards_AfterSqliteSessionsPersisted_ShowNonZeroValues`
+- `SummaryCards_DoNotUseFakeDataWhenSqliteHasNoRows`
+
+## Charts
+
+Required charts:
+
+- Hourly Active Focus: hour labels such as `09`, `10`, `11`; Y labels in
+  minutes such as `0m`, `30m`, `60m`.
+- Top Apps by Focus Time: readable app labels and durations.
+- Top Domains by Web Focus Time: readable domain labels and durations.
+
+Rules:
+
+- No meaningless axes such as `-0.5 / 0 / 0.5`.
+- Empty data shows an empty state, not broken axes.
+- Chart mapping must remain testable without WPF UI.
+
+Acceptance:
+
+- `Charts_ShowMeaningfulAxisLabels`
+- `HourlyActiveFocusChart_UsesHourLabelsAndMinuteAxis`
+- `TopAppsChart_ShowsAppLabelsAndDurations`
+- `TopDomainsChart_ShowsDomainLabelsAndDurations`
+- `Charts_WhenNoData_ShowEmptyState`
+- `Charts_AfterFakePipeline_ShowNonZeroData`
+
+## Details Tabs
+
+Required tabs:
+
+- App Sessions
+- Web Sessions
+- Live Event Log
+- Settings
+
+Tabs must remain reachable at minimum window size. Vertical scrolling is
+allowed and preferred over clipped content.
+
+## App Sessions Grid
+
+Columns:
+
+- App, MinWidth >= 160
+- Process, MinWidth >= 180
+- Start, MinWidth >= 90
+- End, MinWidth >= 90
+- Duration, MinWidth >= 100
+- State, MinWidth >= 80
+- Window, MinWidth >= 260
+- Source, MinWidth >= 100
+
+Rows come from persisted SQLite `FocusSession` rows. Show active/idle state and
+privacy-hidden title text when window title capture is disabled.
+
+Acceptance:
+
+- `AppSessionsGrid_ColumnsHaveReadableWidths`
+- `AppSessionsGrid_AfterStop_ShowsPersistedFocusSession`
+- `AppSessionsGrid_ShowsChromeAndVSCodeFromFakePipeline`
+- `AppSessionsGrid_DoesNotClipHeadersAt1024Width`
+
+## Web Sessions Grid
+
+Columns:
+
+- Domain, MinWidth >= 180
+- Title, MinWidth >= 260
+- URL Mode, MinWidth >= 120
+- Start, MinWidth >= 90
+- End, MinWidth >= 90
+- Duration, MinWidth >= 100
+- Browser, MinWidth >= 120
+- Confidence, MinWidth >= 100
+
+Rows come from persisted SQLite `WebSession` rows. Domain-only mode must not
+show full URLs.
+
+Acceptance:
+
+- `WebSessionsGrid_ColumnsHaveReadableWidths`
+- `WebSessionsGrid_ShowsGithubAndChatgptFromFakePipeline`
+- `WebSessionsGrid_DomainOnlyMode_DoesNotShowFullUrl`
+- `WebSessionsGrid_WhenNoWebData_ShowsReadableEmptyState`
+
+## Live Event Log
+
+Columns:
+
+- Time
+- Event Type
+- App
+- Domain
+- Message
+
+Expected events:
+
+- Tracking started
+- Foreground captured
+- FocusSession started
+- FocusSession closed
+- FocusSession persisted
+- WebSession started
+- WebSession closed
+- WebSession persisted
+- Outbox row created
+- Sync skipped because sync is off
+- Tracking stopped
+
+Acceptance:
+
+- `LiveEventLog_AfterTrackingStart_ShowsTrackingStarted`
+- `LiveEventLog_AfterAppSwitch_ShowsFocusSessionClosedAndStarted`
+- `LiveEventLog_AfterBrowserDomainChange_ShowsWebSessionClosedAndStarted`
+- `LiveEventLog_AfterStop_ShowsFlushEvents`
+
+## Settings
+
+Required settings:
+
+- Capture window title: off by default.
+- Capture page title: off by default or privacy-aware.
+- Full URL capture: off by default; explicit opt-in only.
+- Domain-only browser storage: on by default.
+- Sync enabled: off by default.
+- Sync status: Local only.
+- Device/server status placeholder.
+- Poll interval.
+- Idle threshold.
+- Open local DB folder.
+- Open logs folder.
+- Clear local data, guarded by confirmation.
+
+Acceptance:
+
+- `Settings_PrivacyControlsAreReadable`
+- `Settings_DefaultPrivacyStateIsSafe`
+- `Settings_FullUrlCaptureIsOffByDefault`
+- `Settings_SyncIsOffByDefault`
+- `Settings_OpenLocalDbFolderCommandExistsOrIsClearlyDisabled`
+
+## Layout Rules
+
+Preferred WPF primitives:
+
+- `Grid`
+- `DockPanel`
+- `ScrollViewer`
+- `WrapPanel`
+- `UniformGrid` where useful
+- `DataGrid` with `MinWidth` columns
+
+Avoid:
+
+- Hard-coded fixed width/height for the main layout.
+- Tiny default buttons.
+- Full-window `ViewBox`.
+- Controls that push tabs off-screen.
+- `DataGrid` columns without `MinWidth`.
+
+Responsive targets:
+
+- 1920 width: spacious dashboard.
+- 1366 width: readable without clipping.
+- 1024 width: buttons and tabs remain reachable.
+- Minimum readable window: 1024 x 768.
+
+## MVVM And Runtime Rules
+
+Keep MVVM. Do not move data aggregation logic into code-behind.
+
+All dashboard display state must be testable from ViewModel tests.
+
+Tracking must update the UI while Running through a testable ticker abstraction:
+
+```csharp
+public interface ITrackingTicker
+{
+    event EventHandler? Tick;
+    bool IsRunning { get; }
+    void Start();
+    void Stop();
+}
+```
+
+Runtime implementation can wrap `DispatcherTimer`. Tests should use a manual
+fake ticker.
+
+## SQLite Rules
+
+- Refresh reads `FocusSession` rows from SQLite by selected range.
+- Refresh reads linked `WebSession` rows for the selected focus sessions.
+- Active Focus = non-idle focus duration.
+- Foreground = all focus duration.
+- Idle = idle focus duration.
+- Web Focus = web-session duration.
+- App chart groups focus sessions by app/process.
+- Domain chart groups web sessions by domain.
+- Hourly chart splits focus sessions into hour buckets.
+
+## Acceptance Script
+
+`scripts/run-wpf-ui-acceptance.ps1` must:
+
+1. Launch WPF with a temp SQLite DB.
+2. Use fake TrackingPipeline mode.
+3. Start tracking.
+4. Simulate VS Code foreground, Chrome foreground, `github.com`, and
+   `chatgpt.com`.
+5. Stop tracking.
+6. Run Sync Now while sync is off or prove opt-in behavior clearly.
+7. Verify SQLite focus/web/outbox rows.
+8. Verify UI contents.
+9. Capture screenshots at 1920, 1366, and 1024 widths, plus focused regions.
+10. Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+
+The script must never use the user's production/local database and must never
+upload to a real server unless a future explicit opt-in flag is added and
+documented.
+
+## Test Inventory
+
+Add or maintain tests in these groups before each implementation slice:
+
+- ViewModel/UI state: badges, commands, current focus values, last poll/DB
+  write, summary cards, SQLite refresh, and period selection.
+- Layout semantics: header separation, readable button sizes, reachable
+  controls at 1024 width, required labels, readable DataGrid columns, and
+  settings controls.
+- Chart mapping: hour labels, minute axes, app/domain labels, durations, and
+  empty states.
+- Runtime-to-UI: Start starts tracking, ticker advances duration, foreground
+  changes persist sessions, browser domain changes persist web sessions, Stop
+  flushes, and Sync Now stays local-only when sync is off.
+- FlaUI/semantic acceptance: 1920/1366/1024 readability plus fake
+  VS Code/Chrome/github.com/chatgpt.com pipeline evidence.
+
+## Implementation Order
+
+1. Keep this plan and `total_todolist.md` updated before UI code changes.
+2. Add one failing behavior/layout test at a time.
+3. Fix Header and Control Bar first.
+4. Add Current Focus fields for domain, last poll, last DB write, and last
+   persisted session.
+5. Replace summary cards with Active Focus, Foreground, Idle, and Web Focus.
+6. Fix chart mapper labels and empty states.
+7. Fix App Sessions and Web Sessions grids with readable columns and scroll.
+8. Improve Live Event Log and Settings readability.
+9. Update acceptance script screenshots and semantic checks.
+10. Run full tests/build/acceptance, update docs/TODO/resume, commit, and push.
+
+## Prohibitions
+
+Do not:
+
+- Replace WPF with WebView for MVP.
+- Move business logic into code-behind.
+- Hard-code fake chart data in the production dashboard.
+- Use the user's real local DB in tests.
+- Capture key input, typed text, page contents, passwords, forms, messages, or
+  clipboard contents.
+- Enable full URL capture by default.
+- Upload to a real server during UI acceptance.
+- Weaken tests to pass.
+- Mark UI work complete if grids are still clipped or charts still show
+  meaningless axes.
+
+## Definition Of Done
+
+This WPF UI slice is complete only when:
+
+- Header no longer overlaps title/current process.
+- Buttons are readable and reachable.
+- Current Focus shows current app/process/duration/domain, last poll, last DB
+  write, and last persisted session.
+- Summary cards show Active Focus, Foreground, Idle, and Web Focus.
+- Charts have meaningful labels.
+- App/Web grids and Live Event Log are readable.
+- Settings privacy controls are readable.
+- UI remains usable at 1920, 1366, and 1024 widths.
+- Dashboard values come from SQLite-backed aggregation.
+- Fake TrackingPipeline acceptance shows VS Code, Chrome, `github.com`, and
+  `chatgpt.com`.
+- Sync remains opt-in and local-only by default.
+- Privacy defaults remain safe.
+- Tests pass, build succeeds, acceptance artifacts are generated, docs/TODO are
+  updated, commit is created, and push is attempted.
