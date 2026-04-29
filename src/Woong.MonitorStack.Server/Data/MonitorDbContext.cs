@@ -20,6 +20,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<AppFamilyMappingEntity> AppFamilyMappings => Set<AppFamilyMappingEntity>();
 
+    public DbSet<LocationContextEntity> LocationContexts => Set<LocationContextEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -138,6 +140,22 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.HasOne(mapping => mapping.AppFamily)
                 .WithMany()
                 .HasForeignKey(mapping => mapping.AppFamilyId);
+        });
+
+        modelBuilder.Entity<LocationContextEntity>(entity =>
+        {
+            entity.ToTable("location_contexts");
+            entity.HasKey(context => context.Id);
+            entity.Property(context => context.ClientContextId).HasMaxLength(128).IsRequired();
+            entity.Property(context => context.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.Property(context => context.CaptureMode).HasMaxLength(64).IsRequired();
+            entity.Property(context => context.PermissionState).HasMaxLength(64).IsRequired();
+            entity.Property(context => context.Source).HasMaxLength(128).IsRequired();
+            entity.HasIndex(context => new { context.DeviceId, context.ClientContextId }).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(context => context.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -122,6 +122,28 @@ public sealed class ServerDbContextModelTests
     }
 
     [Fact]
+    public void LocationContextEntity_HasNullableCoordinatesAndDeviceClientContextUniqueIndex()
+    {
+        using var dbContext = CreateModelContext();
+
+        var entityType = dbContext.Model.FindEntityType(typeof(LocationContextEntity));
+        var uniqueIndex = Assert.Single(entityType!.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(LocationContextEntity.DeviceId), nameof(LocationContextEntity.ClientContextId)]));
+
+        Assert.Equal("location_contexts", entityType.GetTableName());
+        Assert.True(uniqueIndex.IsUnique);
+        Assert.Equal(128, entityType.FindProperty(nameof(LocationContextEntity.ClientContextId))!.GetMaxLength());
+        Assert.True(entityType.FindProperty(nameof(LocationContextEntity.Latitude))!.IsNullable);
+        Assert.True(entityType.FindProperty(nameof(LocationContextEntity.Longitude))!.IsNullable);
+        Assert.True(entityType.FindProperty(nameof(LocationContextEntity.AccuracyMeters))!.IsNullable);
+        Assert.Equal(64, entityType.FindProperty(nameof(LocationContextEntity.CaptureMode))!.GetMaxLength());
+        Assert.Equal(64, entityType.FindProperty(nameof(LocationContextEntity.PermissionState))!.GetMaxLength());
+        Assert.Equal(128, entityType.FindProperty(nameof(LocationContextEntity.Source))!.GetMaxLength());
+    }
+
+    [Fact]
     public void ServerSessionEntities_HaveRequiredDeviceForeignKeys()
     {
         using var dbContext = CreateModelContext();
@@ -138,6 +160,9 @@ public sealed class ServerDbContextModelTests
         AssertForeignKey<DeviceStateSessionEntity, DeviceEntity>(
             dbContext,
             nameof(DeviceStateSessionEntity.DeviceId));
+        AssertForeignKey<LocationContextEntity, DeviceEntity>(
+            dbContext,
+            nameof(LocationContextEntity.DeviceId));
     }
 
     [Fact]

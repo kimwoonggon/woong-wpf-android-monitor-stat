@@ -66,6 +66,29 @@ public sealed class ProductionMigrationFilesTests
         Assert.Contains("ReferentialAction.Restrict", migrationText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LocationContextMigration_AddsPrivacySafeNullableCoordinateTable()
+    {
+        var migrationsDirectory = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Server",
+            "Data",
+            "Migrations");
+        var migrationFile = Directory
+            .EnumerateFiles(migrationsDirectory, "*_AddLocationContextTable.cs")
+            .Single();
+        string migrationText = File.ReadAllText(migrationFile);
+
+        Assert.Contains("location_contexts", migrationText, StringComparison.Ordinal);
+        Assert.Contains("Latitude", migrationText, StringComparison.Ordinal);
+        Assert.Contains("Longitude", migrationText, StringComparison.Ordinal);
+        Assert.Contains("AccuracyMeters", migrationText, StringComparison.Ordinal);
+        Assert.Contains("nullable: true", migrationText, StringComparison.Ordinal);
+        Assert.Contains("IX_location_contexts_DeviceId_ClientContextId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_location_contexts_devices_DeviceId", migrationText, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

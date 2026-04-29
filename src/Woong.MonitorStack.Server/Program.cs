@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Devices;
 using Woong.MonitorStack.Server.Events;
+using Woong.MonitorStack.Server.Locations;
 using Woong.MonitorStack.Server.Sessions;
 using Woong.MonitorStack.Server.Summaries;
 
@@ -21,6 +22,7 @@ builder.Services.AddScoped<DeviceRegistrationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
 builder.Services.AddScoped<RawEventUploadService>();
+builder.Services.AddScoped<LocationContextUploadService>();
 builder.Services.AddScoped<DailySummaryQueryService>();
 builder.Services.AddScoped<DailySummaryAggregationService>();
 
@@ -61,6 +63,15 @@ app.MapPost("/api/web-sessions/upload", async (
 app.MapPost("/api/raw-events/upload", async (
     UploadRawEventsRequest request,
     RawEventUploadService uploads) =>
+{
+    UploadBatchResult response = await uploads.UploadAsync(request);
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/api/location-contexts/upload", async (
+    UploadLocationContextsRequest request,
+    LocationContextUploadService uploads) =>
 {
     UploadBatchResult response = await uploads.UploadAsync(request);
 

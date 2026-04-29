@@ -3092,6 +3092,30 @@ Committed and pushed:
 
 - `72c5928 Add location sync gate and WPF runtime UI evidence`
 
+## 2026-04-29 Server Location Context Upload Slice
+
+- Added a TDD-first server upload path for optional Android location context
+  metadata. The endpoint is `/api/location-contexts/upload`.
+- Added domain contracts for `LocationContextUploadItem` and
+  `UploadLocationContextsRequest`.
+- Added `location_contexts` server storage with nullable `Latitude`,
+  `Longitude`, and `AccuracyMeters`, plus `deviceId + clientContextId`
+  idempotency.
+- Generated the PostgreSQL migration `AddLocationContextTable`.
+- This server slice does not make Android upload location by default. Android
+  sync runner integration remains a separate TODO and must preserve both sync
+  opt-in and location-context opt-in.
+
+Verified so far:
+
+- RED: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~LocationContextUploadApiTests"` failed first on missing contracts/entity.
+- RED: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~LocationContextMigration_AddsPrivacySafeNullableCoordinateTable"` failed first on missing migration.
+- GREEN: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~LocationContext"` passed 6 tests.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 40 server tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 335 total .NET tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.3% (3559/3895), branch 70.3% (486/691).
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain

@@ -113,6 +113,31 @@ public sealed class RelationalMonitorDbContextTests
     }
 
     [Fact]
+    public async Task LocationContextClientContextUniqueIndex_IsEnforcedByRelationalProvider()
+    {
+        await using var database = await RelationalTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        database.Context.LocationContexts.Add(CreateLocationContext(deviceId, "location-context-1"));
+        await database.Context.SaveChangesAsync();
+
+        database.Context.LocationContexts.Add(CreateLocationContext(deviceId, "location-context-1"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task LocationContextForeignKey_IsEnforcedByRelationalProvider()
+    {
+        await using var database = await RelationalTestDatabase.CreateAsync();
+        Guid missingDeviceId = Guid.NewGuid();
+        database.Context.LocationContexts.Add(CreateLocationContext(missingDeviceId, "location-without-device"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
+    }
+
+    [Fact]
     public async Task SessionForeignKeys_AreEnforcedByRelationalProvider()
     {
         await using var database = await RelationalTestDatabase.CreateAsync();
@@ -188,6 +213,23 @@ public sealed class RelationalMonitorDbContextTests
             CaptureMethod = "BrowserExtensionFuture",
             CaptureConfidence = "High",
             IsPrivateOrUnknown = false
+        };
+
+    private static LocationContextEntity CreateLocationContext(Guid deviceId, string clientContextId)
+        => new()
+        {
+            DeviceId = deviceId,
+            ClientContextId = clientContextId,
+            CapturedAtUtc = new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero),
+            LocalDate = new DateOnly(2026, 4, 28),
+            TimezoneId = "Asia/Seoul",
+            Latitude = null,
+            Longitude = null,
+            AccuracyMeters = null,
+            CaptureMode = "location_unavailable",
+            PermissionState = "denied",
+            Source = "android_location_context",
+            CreatedAtUtc = DateTimeOffset.UtcNow
         };
 
     private static AppFamilyMappingEntity CreateAppFamilyMapping(long appFamilyId, string mappingType, string matchKey)

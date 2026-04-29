@@ -622,6 +622,9 @@ milestones below are finished.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [x] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
+- [x] Add server `location_contexts` upload contract, nullable coordinate storage, idempotency tests, and PostgreSQL migration.
+  - [x] Verify server location context tests, full `.NET` tests/build, and coverage generation at 91.3% line coverage.
+- [ ] Integrate Android sync runner/client with server `location_contexts` upload endpoint while preserving sync/location opt-in gates.
 - [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
 - [x] Commit and push Android optional location context slices.
 
@@ -1204,6 +1207,15 @@ milestones below are finished.
   - [x] WPF color/direct-section/AutomationId/acceptance-clock guard slice docs/TODO updated.
   - [x] WPF chart/details icon and Live Event paged acceptance docs/TODO updated.
 - [x] Commit and push WPF componentization slices.
+
+## Milestone 32: Android SVG UI Flow Alignment
+
+- [x] Compare `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` against the current Android XML dashboard.
+- [x] Add a failing Robolectric layout test for the planned dashboard core surface.
+- [x] Update `activity_dashboard.xml` and Android string resources so the SVG-planned status chips, Current Focus panel, summary cards, chart/list sections, and bottom navigation exist in XML/ViewBinding.
+- [x] Run focused Android dashboard UI tests.
+- [x] Run Android debug build.
+- [x] Update resume state after Android SVG UI alignment.
 
 ## Final Definition Of Done
 

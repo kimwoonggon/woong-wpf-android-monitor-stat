@@ -118,7 +118,7 @@ existing `focus_session` rows remain valid without location.
 
 Suggested server direction:
 
-- Add optional DTO fields only after the local privacy UX and tests exist.
+- Add optional DTO/upload contracts only after the local privacy UX and tests exist.
 - Keep `latitude` and `longitude` nullable.
 - Do not include location fields in default upload payloads.
 - Do not integrate Windows and Android local DBs directly.
@@ -170,9 +170,14 @@ artifacts only. They must not capture other apps as telemetry.
   sync is off or location context is off. Nullable `latitude`, `longitude`, and
   accuracy values are included only when both sync and location context are
   explicitly enabled.
+- Server now exposes a dedicated `location_contexts` upload path and PostgreSQL
+  table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
+  nullable, uses `deviceId + clientContextId` idempotency, and is separate from
+  app usage sessions so location remains optional metadata.
 
 ## Not Implemented Yet
 
 - Runtime location collector/provider.
-- Server location DTO/storage and upload endpoint persistence.
+- Android sync runner integration for uploading location contexts to the new
+  server endpoint.
 - Connected-device screenshot evidence for location UI.
