@@ -1,6 +1,6 @@
 # Resume State
 
-Updated: 2026-04-29
+Updated: 2026-04-30
 
 ## 2026-04-29 WPF App Root Style Merge Slice
 
@@ -3115,6 +3115,25 @@ Verified so far:
 - `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 335 total .NET tests.
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.3% (3559/3895), branch 70.3% (486/691).
+
+## 2026-04-30 Android SVG UI Flow Alignment Slice
+
+- Checked the planned Figma/SVG flow at
+  `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg`
+  against the current Android dashboard XML.
+- Added a Robolectric layout test that requires the SVG-planned dashboard core:
+  Usage/Sync/Privacy status chips, Current Focus rows, 1h/6h/24h/7d filters,
+  Screen On and Web Focus summary cards, top apps surface, and bottom nav labels.
+- Updated `activity_dashboard.xml` so the planned dashboard surface exists as
+  XML/ViewBinding IDs while preserving the existing Room-backed dashboard IDs.
+- Added missing string resources and lightweight built-in icon drawables for the
+  summary labels and bottom navigation. No Compose migration or new telemetry
+  scope was added.
+
+Verified:
+
+- `.\gradlew.bat :app:testDebugUnitTest --tests "com.woong.monitorstack.dashboard.DashboardActivityRobolectricTest" --no-daemon`
+- `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug --no-daemon`
 
 ## 2026-04-29 WPF Browser Stop Flush Slice
 

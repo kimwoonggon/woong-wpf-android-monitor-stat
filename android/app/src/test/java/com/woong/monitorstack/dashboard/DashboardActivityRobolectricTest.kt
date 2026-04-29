@@ -17,6 +17,35 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class DashboardActivityRobolectricTest {
     @Test
+    fun dashboardLayoutCoversPlannedAndroidSvgCoreSurface() {
+        val context = ContextThemeWrapper(
+            ApplicationProvider.getApplicationContext<Context>(),
+            R.style.Theme_WoongMonitor
+        )
+        val binding = ActivityDashboardBinding.inflate(LayoutInflater.from(context))
+
+        assertEquals("Usage OK", binding.usageAccessStatusChip.text.toString())
+        assertEquals("Sync Off", binding.syncStatusChip.text.toString())
+        assertEquals("Privacy Safe", binding.privacyStatusChip.text.toString())
+        assertEquals("Current Focus", binding.currentFocusTitle.text.toString())
+        assertEquals("Current app", binding.currentAppLabel.text.toString())
+        assertEquals("Package", binding.currentPackageLabel.text.toString())
+        assertEquals("Session duration", binding.currentSessionDurationLabel.text.toString())
+        assertNotNull(binding.screenOnCard)
+        assertNotNull(binding.webFocusCard)
+        assertEquals("1h", binding.oneHourFilterButton.text.toString())
+        assertEquals("6h", binding.sixHourFilterButton.text.toString())
+        assertEquals("24h", binding.twentyFourHourFilterButton.text.toString())
+        assertEquals("7d", binding.recent7DaysFilterButton.text.toString())
+        assertNotNull(binding.topAppsCard)
+        assertNotNull(binding.bottomNavigationRow)
+        assertEquals("Dashboard", binding.navDashboardText.text.toString())
+        assertEquals("Sessions", binding.navSessionsText.text.toString())
+        assertEquals("Report", binding.navReportText.text.toString())
+        assertEquals("Settings", binding.navSettingsText.text.toString())
+    }
+
+    @Test
     fun dashboardLayoutShowsLocationStatusCardWithSafeDefaults() {
         val context = ContextThemeWrapper(
             ApplicationProvider.getApplicationContext<Context>(),
