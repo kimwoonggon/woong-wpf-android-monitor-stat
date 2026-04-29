@@ -172,6 +172,23 @@ Future pagination:
   implemented.
 - Keep the current SQLite-backed row source as the truth; pagination should
   bind to visible row collections derived from those rows.
+- Milestone 31 must explicitly decide whether rows-per-page pagination is in
+  scope now or deferred. If it is in scope, add `RowsPerPageOptions`,
+  `CurrentPage`, visible row collections, and tests for
+  `DetailsTabs_ShowRowsPerPageRows`.
+
+Open `wpfelements.md` alignment decisions:
+
+- Domain Focus chart: `wpfelements.md` suggests a Cartesian/ranking chart,
+  while the current WPF app uses a `PieChart`. Either switch it in a tested
+  slice or document the PieChart as an intentional exception.
+- SettingsPanel must cover Sync endpoint, Capture page title, Domain-only
+  browser storage, runtime controls, storage folder actions, and guarded Clear
+  local data.
+- Dashboard root scrolling should prefer vertical scrolling; horizontal
+  scrolling should live in wide grids/charts where practical.
+- Style dictionary migration should remove hard-coded colors and duplicate
+  local styles from extracted panels.
 
 ## Current Problems
 

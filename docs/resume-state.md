@@ -4,15 +4,16 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 SummaryCardsPanel and MetricCard extraction slice.
-`DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent` proves
-`DashboardView` hosts `Views/SummaryCardsPanel.xaml` while preserving
-`SummaryCardsContainer` and the summary card content.
-`MetricCard_RendersLabelValueAndSubtitle` proves the reusable metric card
-renders its label, value, and subtitle. Verification passed: both focused
-tests, all Windows App tests (32), full `dotnet test`, full `dotnet build`,
-WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-112103`, and coverage
-generation with overall line coverage 92.3%.
+Milestone 31 ChartsPanel and EmptyState extraction slice.
+`DashboardView_HostsChartsPanelAndPreservesChartContent` proves `DashboardView`
+hosts `Views/ChartsPanel.xaml` while preserving `ChartArea`, chart
+AutomationIds, empty-state AutomationIds, and Korean chart headings.
+`EmptyState_RendersBoundTextWithTextAutomationId` proves the reusable empty
+state renders a bound message with a stable inner TextBlock AutomationId.
+Verification passed: both focused tests, all Windows App tests (34), full
+`dotnet test`, full `dotnet build`, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-113407`, and coverage generation with
+overall line coverage 92.3%.
 
 ## Completed
 
@@ -954,9 +955,11 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with `ChartsPanel` and reusable
-`Controls/EmptyState.xaml` extraction while preserving chart AutomationIds,
-empty-state overlays, bindings, behavior tests, and semantic WPF acceptance.
+Continue Milestone 31 with app/domain chart `상세보기` actions that select the
+App Sessions and Web Sessions tabs. Also keep the `wpfelements.md` audit gaps
+visible: domain chart type decision, Details pagination decision, Settings sync
+endpoint/privacy/runtime/storage controls, root scrolling alignment, and style
+dictionary migration away from hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1017,9 +1020,10 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
 The `DashboardView`, `HeaderStatusBar`, `ControlBar`, `CurrentFocusPanel`,
-`SummaryCardsPanel`, and reusable `MetricCard` extractions are now complete,
-and the runtime poll-tick persistence quality gap is covered. The next
-componentization slice is `ChartsPanel` plus reusable `EmptyState` extraction.
+`SummaryCardsPanel`, reusable `MetricCard`, `ChartsPanel`, and reusable
+`EmptyState` extractions are now complete, and the runtime poll-tick
+persistence quality gap is covered. The next componentization slice is app and
+domain chart `상세보기` tab-switch actions.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1049,9 +1053,9 @@ Verified:
   completed successfully and generated the coverage report.
 
 Remaining Milestone 31 componentization work stays open, including
-`ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
-dictionaries, chart details commands, final componentization verification, and
-commit/push.
+`DetailsTabsPanel`, `SettingsPanel`, remaining reusable controls, style
+dictionaries, chart details commands, `wpfelements.md` alignment decisions,
+final componentization verification, and commit/push.
 
 ## 2026-04-29 WPF HeaderStatusBar Extraction Slice
 
@@ -1192,3 +1196,45 @@ Verified:
 Next highest priority is `ChartsPanel` plus reusable `EmptyState` extraction
 while preserving chart AutomationIds, chart empty states, bindings, behavior
 tests, and semantic WPF acceptance.
+
+## 2026-04-29 WPF ChartsPanel Extraction Slice
+
+- Added the RED componentization test
+  `DashboardView_HostsChartsPanelAndPreservesChartContent`.
+- Added the reusable-control test
+  `EmptyState_RendersBoundTextWithTextAutomationId`.
+- Extracted the chart markup from `Views/DashboardView.xaml` into
+  `Views/ChartsPanel.xaml`.
+- Added `Views/ChartsPanel.xaml.cs`.
+- Added reusable `Controls/EmptyState.xaml` and `Controls/EmptyState.xaml.cs`.
+- Kept `DashboardView` hosting `<views:ChartsPanel>`.
+- Preserved `ChartArea`, chart AutomationIds, empty-state TextBlock
+  AutomationIds, LiveCharts bindings, and Korean chart headings.
+
+Verified:
+
+- Focused `DashboardView_HostsChartsPanelAndPreservesChartContent` and
+  `EmptyState_RendersBoundTextWithTextAutomationId` passed.
+- All Windows App tests passed (34 tests).
+- Full `dotnet test` passed.
+- Full `dotnet build` passed.
+- WPF acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-113407`.
+- `scripts/test-coverage.ps1` generated the coverage report with overall line
+  coverage 92.3%.
+
+`wpfelements.md` audit notes still to resolve:
+
+- Decide whether Domain Focus should become a Cartesian/ranking chart or keep
+  the current PieChart as a documented exception.
+- Decide whether Details rows-per-page pagination is part of Milestone 31 or a
+  future slice.
+- Make SettingsPanel explicit about Sync endpoint, page-title capture,
+  domain-only browser storage, runtime controls, storage actions, and guarded
+  Clear local data.
+- Align root scrolling with vertical dashboard scrolling and keep horizontal
+  scrolling inside wide grids/charts where needed.
+- When style dictionaries land, replace hard-coded colors and duplicate local
+  styles in extracted panels instead of adding empty dictionaries only.
+
+Next highest priority is app/domain chart `상세보기` tab-switch actions.

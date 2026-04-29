@@ -1,0 +1,12 @@
+<UserControl x:Class="Woong.MonitorStack.Windows.App.Controls.EmptyState"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False">
+    <TextBlock AutomationProperties.AutomationId="{Binding TextAutomationId, ElementName=Root}"
+               Text="{Binding Text, ElementName=Root}"
+               Foreground="#5A6472"
+               FontSize="13"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+</UserControl>

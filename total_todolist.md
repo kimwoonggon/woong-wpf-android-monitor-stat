@@ -670,14 +670,25 @@ milestones below are finished.
 - [x] SummaryCardsPanel extraction verification: `.NET` build passed.
 - [x] SummaryCardsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-112103`.
 - [x] SummaryCardsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.
+- [x] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.
+- [x] ChartsPanel extraction verification: focused `DashboardView_HostsChartsPanelAndPreservesChartContent` and `EmptyState_RendersBoundTextWithTextAutomationId` passed.
+- [x] ChartsPanel extraction verification: `ChartArea`, chart AutomationIds, and empty-state TextBlock AutomationIds were preserved.
+- [x] ChartsPanel extraction verification: all Windows App tests passed (34 tests).
+- [x] ChartsPanel extraction verification: full `.NET` tests passed.
+- [x] ChartsPanel extraction verification: `.NET` build passed.
+- [x] ChartsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-113407`.
+- [x] ChartsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
+- [ ] Resolve `wpfelements.md` Domain Focus chart type mismatch: switch domain focus to a readable Cartesian/ranking chart or document the current PieChart as an intentional exception.
 - [ ] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
 - [ ] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
 - [ ] Add `Views/DetailsTabsPanel.xaml` while preserving App/Web/Live/Settings tab automation IDs.
+- [ ] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
 - [ ] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
+- [ ] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
 - [ ] Add reusable `Controls/StatusBadge.xaml`, `Controls/SectionCard.xaml`, and `Controls/DetailRow.xaml`.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
-- [ ] Merge style dictionaries from `App.xaml`.
+- [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
+- [ ] Align DashboardView root scrolling with `wpfelements.md`: prefer vertical dashboard scrolling and keep horizontal scrolling inside wide grids/charts where needed.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.
 - [ ] Run full `.NET` tests and build after componentization.

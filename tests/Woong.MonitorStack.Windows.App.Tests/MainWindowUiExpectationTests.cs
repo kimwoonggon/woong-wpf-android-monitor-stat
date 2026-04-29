@@ -265,6 +265,65 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_HostsChartsPanelAndPreservesChartContent()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Invoke(FindByAutomationId<Button>(window, "RefreshButton"));
+                window.UpdateLayout();
+
+                ChartsPanel panel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
+                IReadOnlySet<string> panelText = CollectText(panel);
+
+                Assert.Contains("시간대별 Active Focus", panelText);
+                Assert.Contains("앱별 집중 시간", panelText);
+                Assert.Contains("도메인별 집중 시간", panelText);
+                Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "HourlyActivityChart"));
+                Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "AppUsageChart"));
+                Assert.NotNull(FindByAutomationId<PieChart>(panel, "DomainUsageChart"));
+                Assert.NotNull(FindByAutomationId<TextBlock>(panel, "HourlyActivityEmptyStateText"));
+                Assert.NotNull(FindByAutomationId<TextBlock>(panel, "AppUsageEmptyStateText"));
+                Assert.NotNull(FindByAutomationId<TextBlock>(panel, "DomainUsageEmptyStateText"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void EmptyState_RendersBoundTextWithTextAutomationId()
+        => RunOnStaThread(() =>
+        {
+            var emptyState = new EmptyState
+            {
+                Text = "No data for selected period",
+                TextAutomationId = "TestEmptyStateText"
+            };
+            var window = new Window { Content = emptyState };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                TextBlock text = FindByAutomationId<TextBlock>(emptyState, "TestEmptyStateText");
+                Assert.Equal("No data for selected period", text.Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_TrackingButtonsUpdateVisibleStatus()
         => RunOnStaThread(() =>
         {
