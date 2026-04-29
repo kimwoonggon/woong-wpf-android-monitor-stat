@@ -26,8 +26,7 @@
 
         <StackPanel Margin="0,0,18,0">
             <TextBlock Text="Privacy"
-                       Style="{StaticResource SettingsSectionTitleTextStyle}"
-                       Margin="0,0,0,10" />
+                       Style="{StaticResource SettingsSectionTitleTextStyle}" />
             <CheckBox Content="Collection visible"
                       AutomationProperties.AutomationId="CollectionVisibleCheckBox"
                       IsChecked="{Binding Settings.IsCollectionVisible}"
@@ -60,8 +59,7 @@
         <StackPanel Grid.Column="1"
                     Margin="0,0,18,0">
             <TextBlock Text="Sync"
-                       Style="{StaticResource SettingsSectionTitleTextStyle}"
-                       Margin="0,0,0,10" />
+                       Style="{StaticResource SettingsSectionTitleTextStyle}" />
             <CheckBox Content="Sync enabled"
                       AutomationProperties.AutomationId="SyncEnabledCheckBox"
                       IsChecked="{Binding Settings.IsSyncEnabled}"
@@ -83,8 +81,7 @@
 
         <StackPanel Grid.Column="2">
             <TextBlock Text="Runtime"
-                       Style="{StaticResource SettingsSectionTitleTextStyle}"
-                       Margin="0,0,0,10" />
+                       Style="{StaticResource SettingsSectionTitleTextStyle}" />
             <TextBlock Text="Poll interval: 1 second"
                        Style="{StaticResource SettingsMutedTextStyle}"
                        Margin="0,0,0,8" />

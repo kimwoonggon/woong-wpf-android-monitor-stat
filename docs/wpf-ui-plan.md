@@ -245,7 +245,8 @@ Current style dictionary implementation:
   and `ChartsPanel` uses `SectionTitleTextStyle` for the three chart headings.
   `SettingsPanel` uses
   `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings and
-  `SettingsMutedTextStyle` for muted privacy/sync/runtime helper text.
+  shared heading bottom spacing, and `SettingsMutedTextStyle` for muted
+  privacy/sync/runtime helper text.
   `SettingsWarningTextStyle` plus `WarningTextBrush` carry the local-only sync
   warning/status color. `CurrentFocusPanel` now uses shared typography for its
   section title, last DB write value, and sync status helper text through

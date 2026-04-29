@@ -2551,3 +2551,31 @@ Coverage after this slice: overall line coverage 91.3%.
 
 Next componentization work should move the Settings section-heading bottom
 spacing into `SettingsSectionTitleTextStyle`.
+
+## 2026-04-29 WPF Settings Section Heading Spacing Slice
+
+- Extended the existing Settings heading typography expectation so
+  `SettingsSectionTitleTextStyle` owns the common bottom spacing.
+- Moved the repeated `Margin="0,0,0,10"` from the Privacy, Sync, and Runtime
+  heading `TextBlock` elements into `SettingsSectionTitleTextStyle`.
+- Preserved Settings privacy-safe defaults, sync-local-only defaults, disabled
+  full URL opt-in, and existing command/control bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter SettingsPanel_UsesSharedSectionHeadingTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_UsesSharedSectionHeadingTypography|SettingsPanel_UsesSharedMutedTextTypography|SettingsPanel_UsesSharedWarningTextTypography|SettingsPanel_PrivacyDefaultsAreSafeAndReadable|SettingsPanel_SyncDefaultsAreLocalOnly"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-213752`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next work should leave minor visual style cleanup alone if it starts delaying
+runtime confidence, and prioritize the next real tracking/browser pipeline
+behavior recommended by the priority audit.

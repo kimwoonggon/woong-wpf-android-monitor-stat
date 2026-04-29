@@ -1107,6 +1107,14 @@ milestones below are finished.
   - [x] Details DataGrid spacing verification: `.NET` build passed.
   - [x] Details DataGrid spacing verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-213053`.
   - [x] Details DataGrid spacing verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Move repeated Settings section-heading bottom margins into `SettingsSectionTitleTextStyle`.
+  - [x] Settings section heading spacing verification: RED `SettingsPanel_UsesSharedSectionHeadingTypography` failed first on missing shared `Margin`, then passed.
+  - [x] Settings section heading spacing verification: adjacent Settings privacy/sync/readability tests passed.
+  - [x] Settings section heading spacing verification: all Windows App tests passed (89 tests).
+  - [x] Settings section heading spacing verification: full `.NET` tests passed (294 tests).
+  - [x] Settings section heading spacing verification: `.NET` build passed.
+  - [x] Settings section heading spacing verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-213752`.
+  - [x] Settings section heading spacing verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

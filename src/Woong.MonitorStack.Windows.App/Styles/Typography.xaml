@@ -23,6 +23,7 @@
 
     <Style x:Key="SettingsSectionTitleTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SectionTitleTextStyle}">
         <Setter Property="FontSize" Value="15" />
+        <Setter Property="Margin" Value="0,0,0,10" />
     </Style>
 
     <Style x:Key="BodyTextStyle" TargetType="{x:Type TextBlock}">

@@ -1422,6 +1422,7 @@ public sealed class MainWindowUiExpectationTests
         Style style = Assert.IsType<Style>(textBlock.Style);
         AssertStyleSetter(style, TextBlock.FontSizeProperty, 15.0);
         AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+        AssertStyleSetter(style, FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 10));
 
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
