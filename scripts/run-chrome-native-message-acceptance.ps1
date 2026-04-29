@@ -133,12 +133,32 @@ function Get-FreeTcpPort {
     }
 }
 
+function Assert-SandboxChromeProfilePath {
+    param([string]$ProfilePath)
+
+    $tempBase = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd("\")
+    $resolvedTempRoot = [System.IO.Path]::GetFullPath($tempWorkRoot).TrimEnd("\")
+    $resolvedProfile = [System.IO.Path]::GetFullPath($ProfilePath).TrimEnd("\")
+    $tempRootName = Split-Path -Leaf $resolvedTempRoot
+
+    if (-not $resolvedTempRoot.StartsWith($tempBase, [System.StringComparison]::OrdinalIgnoreCase) -or
+        $tempRootName -notlike "woong-chrome-native-*") {
+        throw "Refusing to stop Chrome because the profile path is not the acceptance temp sandbox: $ProfilePath"
+    }
+
+    if (-not $resolvedProfile.StartsWith("$resolvedTempRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to stop Chrome because the profile path is not the acceptance temp sandbox: $ProfilePath"
+    }
+}
+
 function Stop-SandboxChromeProcesses {
     param([string]$ProfilePath)
 
     if ([string]::IsNullOrWhiteSpace($ProfilePath)) {
         return
     }
+
+    Assert-SandboxChromeProfilePath $ProfilePath
 
     $escapedProfile = $ProfilePath.Replace("\", "\\")
     Write-Host "Stopping only sandbox Chrome processes for temp profile: $ProfilePath"

@@ -760,6 +760,12 @@ milestones below are finished.
   `artifacts/chrome-native-acceptance/20260429-190639`, scoped HKCU test key
   was absent after cleanup, full `.NET` tests passed (273), `.NET` build passed
   with 0 warnings/errors, and coverage generated at 91.2% line coverage.
+- [x] Chrome acceptance sandbox guard follow-up: RED test now requires cleanup
+  to refuse non-temp Chrome profile paths before process enumeration, and
+  `scripts/run-chrome-native-message-acceptance.ps1` verifies the profile lives
+  under the `woong-chrome-native-*` acceptance temp root before stopping any
+  Chrome process; focused Chrome script tests, dry-run acceptance, full `.NET`
+  tests (289), `.NET` build, and coverage generation (91.3%) passed.
 - [x] Browser capture docs-only clarification: `docs/browser-tracking-policy.md`
   and `docs/runtime-pipeline.md` now state that Administrator rights are not a
   reliable active-tab URL capture path, Chrome is the installed

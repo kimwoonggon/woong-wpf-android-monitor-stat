@@ -66,6 +66,19 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
     }
 
     [Fact]
+    public void AcceptanceScript_RefusesToCleanupNonTempChromeProfiles()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("Assert-SandboxChromeProfilePath", script, StringComparison.Ordinal);
+        Assert.Contains("woong-chrome-native-", script, StringComparison.Ordinal);
+        Assert.Contains("Refusing to stop Chrome because the profile path is not the acceptance temp sandbox", script, StringComparison.Ordinal);
+        Assert.Contains("Assert-SandboxChromeProfilePath $ProfilePath", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AcceptanceScript_WritesChromeAndNativeHostDiagnosticsToArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

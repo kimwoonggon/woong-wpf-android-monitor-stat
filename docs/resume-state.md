@@ -4,6 +4,17 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Chrome acceptance sandbox guard follow-up. RED test
+`AcceptanceScript_RefusesToCleanupNonTempChromeProfiles` now requires the
+native-message acceptance cleanup path to reject ordinary Chrome profile paths
+before process enumeration. `run-chrome-native-message-acceptance.ps1` now
+verifies the cleanup profile is under the acceptance temp root
+`woong-chrome-native-*`, so user Chrome windows cannot be closed by a mistaken
+profile path. Focused Chrome acceptance script tests and dry-run acceptance
+passed without launching Chrome or changing HKCU values. Full `.NET` tests
+passed (289), full `.NET` build passed with 0 warnings/errors, and coverage
+generation completed with 91.3% line coverage.
+
 Server WebSession idempotency hardening slice. RED tests first required
 `WebSessionUploadItem.clientSessionId`, a server unique index on `(DeviceId,
 ClientSessionId)`, relational duplicate enforcement for domain-only web

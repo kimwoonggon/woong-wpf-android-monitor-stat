@@ -25,6 +25,11 @@ Cleanup searches Windows processes for that exact temporary profile path and
 stops only matching Chrome processes. Existing user Chrome windows and profiles
 are outside the sandbox and must not be closed by this test.
 
+As an extra guard, cleanup first verifies that the profile path belongs under
+the acceptance temp root named `woong-chrome-native-*`. If a normal Chrome
+profile path, a blank path, or any non-acceptance path is passed to cleanup, the
+script refuses to stop Chrome before enumerating processes.
+
 The script must not fall back to the user's installed Chrome automatically. If
 Chrome for Testing is not already in `.cache/chrome-for-testing/`, run the
 helper installer or pass `-InstallChromeForTesting`. Installed Chrome fallback
@@ -97,7 +102,8 @@ powershell -ExecutionPolicy Bypass -File scripts/run-chrome-native-message-accep
 ## Current Status
 
 The safety harness, dry-run path, scoped HKCU registration, scoped cleanup,
-temp-profile Chrome cleanup, and full headed Chrome for Testing acceptance are
-covered locally. The latest passing acceptance wrote domain-only
+temp-profile Chrome cleanup, non-temp-profile cleanup refusal, and full headed
+Chrome for Testing acceptance are covered locally. The latest passing
+acceptance wrote domain-only
 `github.example` and `chatgpt.example` web sessions plus pending outbox rows to
 the temp SQLite DB, with full URL and page title values redacted by default.

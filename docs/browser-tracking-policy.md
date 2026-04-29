@@ -263,7 +263,9 @@ Testing with a temporary `--user-data-dir` profile, uses the scoped test host
 `com.woong.monitorstack.chrome_test`, registers only an HKCU child native-host
 key, and cleans up only that key. The cleanup process stops only Chrome
 processes whose command line contains the temporary profile path, so existing
-user Chrome windows must not be closed. Acceptance writes to a temp SQLite DB
+user Chrome windows must not be closed. Cleanup also refuses to stop Chrome if
+the profile path is not under the acceptance temp root named
+`woong-chrome-native-*`. Acceptance writes to a temp SQLite DB
 under `artifacts/chrome-native-acceptance/` and sets
 `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so a missing explicit test DB fails
 instead of falling back to the user's real local DB. Chrome for Testing is used
