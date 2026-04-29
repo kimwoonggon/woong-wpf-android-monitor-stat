@@ -841,6 +841,31 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void SettingsPanel_UsesSharedCheckBoxStyle()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+
+                Assert.IsType<Style>(panel.FindResource("SettingsCheckBoxStyle"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "CollectionVisibleCheckBox"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "WindowTitleVisibleCheckBox"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "PageTitleCaptureCheckBox"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "FullUrlCaptureCheckBox"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "DomainOnlyBrowserStorageCheckBox"));
+                AssertSettingsCheckBoxStyle(FindByAutomationId<CheckBox>(panel, "SyncEnabledCheckBox"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void SettingsPanel_PreservesSyncControlsAndTwoWayBinding()
         => RunOnStaThread(() =>
         {
@@ -1283,6 +1308,13 @@ public sealed class MainWindowUiExpectationTests
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
         Assert.Equal(Color.FromRgb(0x8A, 0x4B, 0x00), foregroundBrush.Color);
+    }
+
+    private static void AssertSettingsCheckBoxStyle(CheckBox checkBox)
+    {
+        Style style = Assert.IsType<Style>(checkBox.Style);
+        AssertStyleSetter(style, Control.FontSizeProperty, 14.0);
+        AssertStyleSetter(style, FrameworkElement.MarginProperty, new Thickness(0, 0, 0, 10));
     }
 
     private static void AssertColumnMinWidths(DataGrid dataGrid, IReadOnlyList<double> expectedMinWidths)

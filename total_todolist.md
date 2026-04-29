@@ -1048,6 +1048,13 @@ milestones below are finished.
   - [x] Settings input style verification: `.NET` build passed.
   - [x] Settings input style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-202524`.
   - [x] Settings input style verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `SettingsCheckBoxStyle` to `Styles/Inputs.xaml` and replace Settings checkbox inline font/margin setters.
+  - [x] Settings checkbox style verification: RED `SettingsPanel_UsesSharedCheckBoxStyle` failed first, then passed.
+  - [x] Settings checkbox style verification: all Windows App tests passed (84 tests).
+  - [x] Settings checkbox style verification: full `.NET` tests passed (288 tests).
+  - [x] Settings checkbox style verification: `.NET` build passed.
+  - [x] Settings checkbox style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-203158`.
+  - [x] Settings checkbox style verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

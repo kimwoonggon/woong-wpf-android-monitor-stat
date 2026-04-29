@@ -215,7 +215,8 @@ Current style dictionary implementation:
 - `ChartsPanel` and `SectionCard` use `CompactActionButtonStyle` for small
   top-right action buttons instead of inline sizing setters.
 - `Styles/Inputs.xaml` defines shared input styles such as
-  `SettingsInputTextBoxStyle` for Settings text inputs.
+  `SettingsInputTextBoxStyle` for Settings text inputs and
+  `SettingsCheckBoxStyle` for Settings privacy/sync checkboxes.
 - `Styles/Cards.xaml` defines the shared dashboard card and compact surface
   border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.
