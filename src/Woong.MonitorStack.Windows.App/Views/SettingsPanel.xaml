@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Inputs.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -82,7 +83,7 @@
             <TextBox AutomationProperties.AutomationId="SyncEndpointTextBox"
                      Text="{Binding Settings.SyncEndpointText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      IsEnabled="{Binding Settings.IsSyncEnabled}"
-                     FontSize="13"
+                     Style="{StaticResource SettingsInputTextBoxStyle}"
                      Margin="0,12,0,0" />
         </StackPanel>
 

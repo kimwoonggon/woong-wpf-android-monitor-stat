@@ -214,6 +214,8 @@ Current style dictionary implementation:
   dictionary instead of duplicate local button style definitions.
 - `ChartsPanel` and `SectionCard` use `CompactActionButtonStyle` for small
   top-right action buttons instead of inline sizing setters.
+- `Styles/Inputs.xaml` defines shared input styles such as
+  `SettingsInputTextBoxStyle` for Settings text inputs.
 - `Styles/Cards.xaml` defines the shared dashboard card and compact surface
   border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.
@@ -232,8 +234,7 @@ Current style dictionary implementation:
   `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings and
   `SettingsMutedTextStyle` for muted privacy/sync/runtime helper text.
   `SettingsWarningTextStyle` plus `WarningTextBrush` carry the local-only sync
-  warning/status color. Remaining typography work is to migrate the sync
-  endpoint TextBox font setter or extract it into an input style.
+  warning/status color.
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in

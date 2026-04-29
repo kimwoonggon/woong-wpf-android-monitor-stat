@@ -992,7 +992,7 @@ milestones below are finished.
 - [x] Tabs style dictionary verification: `.NET` build passed.
 - [x] Tabs style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-135614`.
 - [x] Tabs style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
-- [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
+- [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`, `Inputs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
   - [x] Add `CompactActionButtonStyle` to `Styles/Buttons.xaml` for reusable chart/card action buttons.
   - [x] Replace duplicate inline compact action button sizing in `ChartsPanel` and `SectionCard`.
@@ -1041,6 +1041,13 @@ milestones below are finished.
   - [x] Settings warning text verification: `.NET` build passed.
   - [x] Settings warning text verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-201950`.
   - [x] Settings warning text verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `Styles/Inputs.xaml` with `SettingsInputTextBoxStyle` and replace Settings sync endpoint TextBox inline font setter.
+  - [x] Settings input style verification: RED `SettingsPanel_UsesSharedInputStyle` failed first, then passed.
+  - [x] Settings input style verification: all Windows App tests passed (83 tests).
+  - [x] Settings input style verification: full `.NET` tests passed (287 tests).
+  - [x] Settings input style verification: `.NET` build passed.
+  - [x] Settings input style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-202524`.
+  - [x] Settings input style verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

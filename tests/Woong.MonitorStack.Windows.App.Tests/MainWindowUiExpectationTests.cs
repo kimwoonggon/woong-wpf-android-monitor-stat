@@ -819,6 +819,28 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void SettingsPanel_UsesSharedInputStyle()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+                TextBox syncEndpoint = FindByAutomationId<TextBox>(panel, "SyncEndpointTextBox");
+
+                Assert.IsType<Style>(panel.FindResource("SettingsInputTextBoxStyle"));
+                Style style = Assert.IsType<Style>(syncEndpoint.Style);
+                AssertStyleSetter(style, Control.FontSizeProperty, 13.0);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void SettingsPanel_PreservesSyncControlsAndTwoWayBinding()
         => RunOnStaThread(() =>
         {

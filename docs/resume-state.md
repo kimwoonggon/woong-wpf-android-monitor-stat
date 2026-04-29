@@ -2311,3 +2311,32 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should address the remaining Settings TextBox font
 setter with a shared input style, then re-audit XAML for remaining inline
 colors and duplicated typography.
+
+## 2026-04-29 WPF Settings Input Style Slice
+
+- Added a RED WPF assertion that the Settings sync endpoint TextBox uses a
+  shared input style.
+- Added `Styles/Inputs.xaml` with `SettingsInputTextBoxStyle`.
+- Merged the input style dictionary into `SettingsPanel`.
+- Replaced the sync endpoint TextBox inline FontSize setter with the shared
+  input style while preserving two-way binding and disabled-by-default sync
+  behavior.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter SettingsPanel_UsesSharedInputStyle`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_UsesSharedInputStyle|SettingsPanel_PreservesSyncControlsAndTwoWayBinding"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-202524`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should re-audit WPF XAML for remaining inline
+colors/typography and then decide whether the Milestone 31 style-dictionary
+cleanup item can be closed or needs one more targeted slice.
