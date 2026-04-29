@@ -1136,6 +1136,12 @@ milestones below are finished.
   - [x] Stop flush verification: `.NET` build passed.
   - [x] Stop flush verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-220702`.
   - [x] Stop flush verification: coverage report generated successfully with overall line coverage 91.2%.
+  - [x] Add WPF close flush behavior so closing the window while tracking is Running executes the same Stop flush path before ticker disposal.
+  - [x] Close flush verification: RED `MainWindow_WhenClosedWhileTracking_FlushesCurrentSessionToSqliteOutboxAndStopsTicker` failed first on missing SQLite focus session, then passed.
+  - [x] Close flush verification: full `.NET` tests passed (301 tests).
+  - [x] Close flush verification: `.NET` build passed.
+  - [x] Close flush verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-221314`.
+  - [x] Close flush verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

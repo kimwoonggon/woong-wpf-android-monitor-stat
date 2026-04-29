@@ -2614,6 +2614,32 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.2%.
 
+## 2026-04-29 WPF Close Flush Slice
+
+- Added a WPF behavior test proving that closing `MainWindow` while tracking is
+  Running flushes the current foreground FocusSession to Windows local SQLite,
+  queues a pending `focus_session` outbox item, stops the ticker, and leaves the
+  dashboard state stopped with a non-zero Active Focus value.
+- Updated `MainWindow` so `Closing` reuses the existing
+  `StopTrackingCommand` path when tracking is active. `Closed` still stops the
+  injected ticker and detaches its tick handler.
+- This keeps collection visible and user-scoped: it does not add hidden
+  background tracking or new data capture; it only prevents data loss during
+  normal app exit.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_WhenClosedWhileTracking_FlushesCurrentSessionToSqliteOutboxAndStopsTicker`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-221314`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
 Next work should continue runtime confidence slices before returning to minor
 visual cleanup. Good candidates are proving stop/close flush behavior through
 the manual ticker path, or tightening Chrome native messaging acceptance

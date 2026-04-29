@@ -198,6 +198,12 @@ visible until a newer persistence event replaces them. A later poll without a
 closed session must not reset the display to "No session persisted"; this is
 covered by `UpdateCurrentActivity_WhenLaterPollHasNoPersistedSession_KeepsLastPersistedSession`.
 
+Closing the WPF window while tracking is still Running now executes the same
+Stop flush path before the ticker is stopped and detached. This prevents the
+currently open focus session from being lost when the user exits without
+pressing Stop first; the session is persisted to Windows local SQLite and a
+pending `focus_session` outbox row is queued.
+
 The tracking snapshot also carries a web-persistence refresh signal. When a
 browser domain change persists only a `web_session` and no focus session closes,
 `DashboardTrackingSnapshot.HasPersistedWebSession` tells the WPF dashboard to

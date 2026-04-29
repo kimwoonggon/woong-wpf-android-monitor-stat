@@ -391,6 +391,58 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void MainWindow_WhenClosedWhileTracking_FlushesCurrentSessionToSqliteOutboxAndStopsTicker()
+        => RunOnStaThread(() =>
+        {
+            var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 100,
+                processId: 10,
+                processName: "Code.exe",
+                executablePath: "C:\\Apps\\Code.exe",
+                windowTitle: "Project - Visual Studio Code"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                outboxRepository,
+                clock);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, CreateWebRepository()),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            window.Show();
+            DrainDispatcher();
+            InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+            clock.UtcNow = clock.UtcNow.AddMinutes(4);
+
+            window.Close();
+            DrainDispatcher();
+
+            Assert.False(ticker.IsRunning);
+            Woong.MonitorStack.Domain.Common.FocusSession saved = Assert.Single(focusRepository.QueryByRange(
+                new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero)));
+            Assert.Equal("Code.exe", saved.PlatformAppKey);
+            Assert.Equal(240_000, saved.DurationMs);
+
+            SyncOutboxItem outbox = Assert.Single(outboxRepository.QueryAll());
+            Assert.Equal("focus_session", outbox.AggregateType);
+            Assert.Equal(saved.ClientSessionId, outbox.AggregateId);
+            Assert.Equal("Stopped", viewModel.TrackingStatusText);
+            Assert.Contains(viewModel.SummaryCards, card => card.Label == "Active Focus" && card.Value == "4m");
+        });
+
+    [Fact]
     public void PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop()
         => RunOnStaThread(() =>
         {

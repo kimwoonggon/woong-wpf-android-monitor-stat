@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         _trackingTicker = trackingTicker ?? throw new ArgumentNullException(nameof(trackingTicker));
         DataContext = viewModel;
         _trackingTicker.Tick += OnTrackingTickerTick;
+        Closing += (_, _) => FlushTrackingBeforeClose();
         Loaded += (_, _) =>
         {
             ApplyStartupOptions();
@@ -54,6 +55,14 @@ public partial class MainWindow : Window
             _trackingTicker.Stop();
             _trackingTicker.Tick -= OnTrackingTickerTick;
         };
+    }
+
+    private void FlushTrackingBeforeClose()
+    {
+        if (_viewModel.StopTrackingCommand.CanExecute(null))
+        {
+            _viewModel.StopTrackingCommand.Execute(null);
+        }
     }
 
     private void OnTrackingTickerTick(object? sender, EventArgs e)
