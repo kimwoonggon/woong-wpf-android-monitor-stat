@@ -2493,3 +2493,33 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should decide whether `StatusBadge` intrinsic
 padding/font weight should stay as a reusable control default or be moved to a
 style resource before closing Milestone 31 style cleanup.
+
+## 2026-04-29 WPF Status Badge Style Slice
+
+- Added RED WPF expectation `StatusBadge_UsesSharedShapeAndTextStyles`.
+- Added color-free `Styles/Badges.xaml` with `StatusBadgeBorderStyle` and
+  `StatusBadgeTextStyle`.
+- Updated `StatusBadge` to consume the shared badge style dictionary instead
+  of carrying inline border padding/corner radius/border thickness/font weight.
+- Kept tracking/sync/privacy badge colors owned by `HeaderStatusBar` resources;
+  the adjacent header badge test confirmed the brush resource identity remains
+  stable after the style extraction.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter StatusBadge_UsesSharedShapeAndTextStyles`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "StatusBadge_UsesSharedShapeAndTextStyles|StatusBadge_RendersTextAndPreservesAutomationId|HeaderStatusBar_UsesSharedBadgeColorResources|DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-212314`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should address `DetailsTabsPanel` DataGrid outer
+spacing (`DataGrid Margin="0,12,0,0"`) through `SessionDataGridStyle`, then
+continue the remaining style/resource cleanup audit in small TDD slices.

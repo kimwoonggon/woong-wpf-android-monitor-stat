@@ -97,6 +97,7 @@ src/Woong.MonitorStack.Windows.App/
     Typography.xaml
     Buttons.xaml
     Cards.xaml
+    Badges.xaml
     DataGrid.xaml
     Tabs.xaml
 ```
@@ -157,6 +158,8 @@ Styles/resource dictionaries:
 - `Buttons.xaml` for base, primary, danger, secondary, period, and small link
   button styles.
 - `Cards.xaml` for section/card surfaces.
+- `Badges.xaml` for status badge shape and badge text typography without
+  redefining tracking/sync/privacy color resources.
 - `DataGrid.xaml` for session grid readability.
 - `Tabs.xaml` for details tabs.
 
@@ -220,13 +223,19 @@ Current style dictionary implementation:
 - `Styles/Cards.xaml` defines the shared dashboard card and compact surface
   border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.
+- `Styles/Badges.xaml` defines `StatusBadgeBorderStyle` and
+  `StatusBadgeTextStyle`. `StatusBadge` imports this color-free badge
+  dictionary so its shape and text emphasis are reusable while
+  `HeaderStatusBar` remains the owner of tracking/sync/privacy brush
+  resources. This avoids duplicate brush instances for the same color policy.
 - `Styles/Colors.xaml` defines the core app background, surface, border,
   primary text, and muted text brushes. `Cards.xaml` now consumes surface and
   border brushes, and both `MainWindow` and the dashboard shell content use the
   app background brush.
   Header tracking/sync/privacy badge brushes are also named resources so the
   status color policy stays centralized. Remaining color work includes
-  replacing repeated settings text/status hard-coded brushes.
+  replacing any newly discovered hard-coded status colors outside the shared
+  resource dictionaries.
 - `Styles/Typography.xaml` defines shared heading, subtitle, section title,
   body, muted, and metric-value `TextBlock` styles. `HeaderStatusBar`,
   `SectionCard`, `DetailRow`, and `MetricCard` consume those styles while

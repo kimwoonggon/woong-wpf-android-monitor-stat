@@ -1090,6 +1090,15 @@ milestones below are finished.
   - [x] Metric card typography verification: `.NET` build passed.
   - [x] Metric card typography verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-211007`.
   - [x] Metric card typography verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add color-free `Styles/Badges.xaml` with `StatusBadgeBorderStyle` and `StatusBadgeTextStyle`.
+  - [x] Replace `StatusBadge` inline shape/typography setters with shared badge styles while preserving parent-owned tracking/sync/privacy brush resources.
+  - [x] Status badge style verification: RED `StatusBadge_UsesSharedShapeAndTextStyles` failed first, then passed.
+  - [x] Status badge style verification: adjacent badge/header tests passed and confirmed brush resource identity was preserved.
+  - [x] Status badge style verification: all Windows App tests passed (89 tests).
+  - [x] Status badge style verification: full `.NET` tests passed (294 tests).
+  - [x] Status badge style verification: `.NET` build passed.
+  - [x] Status badge style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-212314`.
+  - [x] Status badge style verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

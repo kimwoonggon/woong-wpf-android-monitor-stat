@@ -184,6 +184,42 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void StatusBadge_UsesSharedShapeAndTextStyles()
+        => RunOnStaThread(() =>
+        {
+            var uniqueBackground = new SolidColorBrush(Color.FromRgb(0x11, 0x22, 0x33));
+            var badge = new StatusBadge
+            {
+                Text = "Tracking Running",
+                Background = uniqueBackground
+            };
+            var window = new Window { Content = badge };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Border border = Assert.Single(
+                    FindVisualDescendants<Border>(badge).Distinct(),
+                    candidate => ReferenceEquals(candidate.Background, uniqueBackground)
+                        && candidate.Child is TextBlock textBlock
+                        && string.Equals(textBlock.Text, "Tracking Running", StringComparison.Ordinal));
+                Style borderStyle = Assert.IsType<Style>(border.Style);
+                AssertStyleSetter(borderStyle, Border.CornerRadiusProperty, new CornerRadius(16));
+                AssertStyleSetter(borderStyle, Border.PaddingProperty, new Thickness(14, 8, 14, 8));
+                AssertStyleSetter(borderStyle, Border.BorderThicknessProperty, new Thickness(1));
+
+                TextBlock label = FindTextBlock(badge, "Tracking Running");
+                AssertStatusBadgeTextStyle(label);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DetailRow_RendersLabelAndValueWithStableValueAutomationId()
         => RunOnStaThread(() =>
         {
@@ -1460,6 +1496,13 @@ public sealed class MainWindowUiExpectationTests
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
         Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
+    }
+
+    private static void AssertStatusBadgeTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 13.0);
     }
 
     private static void AssertSettingsCheckBoxStyle(CheckBox checkBox)
