@@ -621,6 +621,7 @@ milestones below are finished.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
 - [x] Add no-hardware runtime location capture policy/provider seam: no snapshot unless location context is enabled and foreground permission is granted; approximate mode keeps precise coordinates null; precise coordinates require separate precise opt-in.
 - [x] Add no-hardware local location-context collection/persistence runner: provider snapshot writes Room-facing `LocationContextSnapshotEntity` and enqueues `location_context` outbox; null provider writes nothing.
+- [x] Wire no-hardware WorkManager scheduling through the existing usage collection worker so it invokes the local location-context collector, reports captured/skipped, and leaves sync upload to the sync worker.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [x] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
@@ -1220,7 +1221,12 @@ milestones below are finished.
   - [x] WPF web persistence extraction: RED Windows infrastructure test required `WindowsWebSessionPersistenceService` to save domain-only web sessions, queue `web_session` outbox payloads, keep full URLs/page titles null by default, and preserve client session ids/durations.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [x] Extract WPF focus/web session SQLite and outbox payload creation from `Windows.App` coordinator into Windows infrastructure services.
-- [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
+- [x] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
+  - [x] Startup lifecycle extraction rationale: `App.xaml.cs` had grown past simple host glue by resolving `MainWindow`, selecting the dashboard Today period, and showing the window directly.
+  - [x] Startup lifecycle extraction verification: RED `WindowsAppStartupService_Start_SelectsTodayAndShowsMainWindow` failed first on missing service, then passed after moving initial dashboard refresh/show orchestration into `WindowsAppStartupService`.
+  - [x] Startup lifecycle extraction verification: `AppStartup_CodeBehindDelegatesWindowInitializationToStartupService` guards `App.xaml.cs` as Generic Host + DI glue with no direct `MainWindow`, `SelectPeriod`, or `Show` orchestration.
+  - [x] Startup lifecycle extraction verification: focused Windows App composition tests and architecture startup guard passed.
+  - [x] Startup lifecycle extraction verification: `.NET` build passed.
 - [x] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during current component/style guard extraction.
 - [x] Run full `.NET` tests and build after current component/style guard extraction.
 - [x] Run WPF UI acceptance after current component/style guard extraction at `artifacts/wpf-ui-acceptance/20260430-012621`.

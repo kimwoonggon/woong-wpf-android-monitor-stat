@@ -19,13 +19,7 @@ public partial class App : Application
             .Build();
         await _host.StartAsync();
 
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        if (mainWindow.DataContext is DashboardViewModel dashboardViewModel)
-        {
-            dashboardViewModel.SelectPeriod(DashboardPeriod.Today);
-        }
-
-        mainWindow.Show();
+        _host.Services.GetRequiredService<IWindowsAppStartupService>().Start();
     }
 
     protected override async void OnExit(ExitEventArgs e)

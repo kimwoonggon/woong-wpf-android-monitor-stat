@@ -40,6 +40,7 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<DashboardViewModel>(),
             new MainWindowStartupOptions(provider.GetRequiredService<WindowsAppOptions>().AutoStartTracking),
             provider.GetRequiredService<ITrackingTicker>()));
+        services.AddSingleton<IWindowsAppStartupService, WindowsAppStartupService>();
 
         return services;
     }

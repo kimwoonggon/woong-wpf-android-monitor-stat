@@ -24,6 +24,10 @@ interface RuntimeLocationReader {
     fun readCurrentLocation(): RuntimeLocationReading?
 }
 
+object NoopRuntimeLocationReader : RuntimeLocationReader {
+    override fun readCurrentLocation(): RuntimeLocationReading? = null
+}
+
 interface ForegroundLocationPermissionChecker {
     fun foregroundLocationPermissionState(): LocationPermissionState
 }

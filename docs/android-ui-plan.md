@@ -184,6 +184,11 @@ artifacts only. They must not capture other apps as telemetry.
   `LocationContextSnapshotEntity` to Room-facing storage and enqueues a
   `location_context` outbox row; when the provider returns null, it writes
   nothing. Sync opt-in remains an upload gate, not a local capture gate.
+- The existing WorkManager usage collection worker now invokes the local
+  location-context collector with a device id and reports whether a local
+  snapshot was captured. Tests use fake collectors and do not require a device;
+  the default runtime path still uses a no-op location reader until a
+  hardware-backed reader is implemented.
 - Server now exposes a dedicated `location_contexts` upload path and PostgreSQL
   table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
   nullable, uses `deviceId + clientContextId` idempotency, and is separate from
@@ -191,5 +196,5 @@ artifacts only. They must not capture other apps as telemetry.
 
 ## Not Implemented Yet
 
-- Hardware-backed runtime location reader and scheduling wiring.
+- Hardware-backed runtime location reader.
 - Connected-device screenshot evidence for location UI.

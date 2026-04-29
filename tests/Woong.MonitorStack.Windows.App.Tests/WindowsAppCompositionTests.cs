@@ -1,5 +1,6 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -22,6 +23,72 @@ public sealed class WindowsAppCompositionTests
             {
                 Assert.IsType<DashboardViewModel>(window.DataContext);
                 Assert.Equal("Woong Monitor Stack", window.Title);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void AppStartup_CodeBehindDelegatesWindowInitializationToStartupService()
+    {
+        string appStartupSource = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "App.xaml.cs"));
+
+        Assert.Contains("Host", appStartupSource, StringComparison.Ordinal);
+        Assert.Contains("GetRequiredService<IWindowsAppStartupService>()", appStartupSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("GetRequiredService<MainWindow>", appStartupSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("SelectPeriod", appStartupSource, StringComparison.Ordinal);
+        Assert.DoesNotContain(".Show()", appStartupSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WindowsAppStartupService_Start_SelectsTodayAndShowsMainWindow()
+        => RunOnStaThread(() =>
+        {
+            var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+            var dataSource = new RecordingDashboardDataSource();
+            var viewModel = new DashboardViewModel(
+                dataSource,
+                new FixedDashboardClock(now),
+                new DashboardOptions("Asia/Seoul"));
+            viewModel.SelectPeriod(DashboardPeriod.LastHour);
+            var window = new MainWindow(viewModel, new NoopTrackingTicker());
+            var startupService = new WindowsAppStartupService(window);
+
+            try
+            {
+                startupService.Start();
+
+                Assert.True(window.IsVisible);
+                Assert.Equal(DashboardPeriod.Today, viewModel.SelectedPeriod);
+                Assert.Equal(new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero), dataSource.LastFocusQueryStartedAtUtc);
+                Assert.Equal(now, dataSource.LastFocusQueryEndedAtUtc);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void AddWindowsApp_RegistersStartupService()
+        => RunOnStaThread(() =>
+        {
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new DashboardOptions("Asia/Seoul"));
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+            var window = provider.GetRequiredService<MainWindow>();
+
+            try
+            {
+                Assert.IsType<WindowsAppStartupService>(
+                    provider.GetRequiredService<IWindowsAppStartupService>());
             }
             finally
             {
@@ -176,6 +243,67 @@ public sealed class WindowsAppCompositionTests
         if (failure is not null)
         {
             throw failure;
+        }
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        DirectoryInfo? current = new(AppContext.BaseDirectory);
+
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "Woong.MonitorStack.sln")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate repository root.");
+    }
+
+    private sealed class RecordingDashboardDataSource : IDashboardDataSource
+    {
+        public DateTimeOffset LastFocusQueryStartedAtUtc { get; private set; }
+
+        public DateTimeOffset LastFocusQueryEndedAtUtc { get; private set; }
+
+        public IReadOnlyList<FocusSession> QueryFocusSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+        {
+            LastFocusQueryStartedAtUtc = startedAtUtc;
+            LastFocusQueryEndedAtUtc = endedAtUtc;
+
+            return [];
+        }
+
+        public IReadOnlyList<WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+            => [];
+    }
+
+    private sealed class FixedDashboardClock(DateTimeOffset utcNow) : IDashboardClock
+    {
+        public DateTimeOffset UtcNow { get; } = utcNow;
+    }
+
+    private sealed class NoopTrackingTicker : ITrackingTicker
+    {
+        public event EventHandler? Tick
+        {
+            add { }
+            remove { }
+        }
+
+        public bool IsRunning { get; private set; }
+
+        public void Start()
+        {
+            IsRunning = true;
+        }
+
+        public void Stop()
+        {
+            IsRunning = false;
         }
     }
 }

@@ -7,6 +7,9 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
+import com.woong.monitorstack.location.LocationContextCollectionResult
+import com.woong.monitorstack.location.LocationContextCollector
+import com.woong.monitorstack.location.NoopLocationContextCollector
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +39,67 @@ class CollectUsageWorkerTest {
         assertEquals(3_000L, runner.toUtcMillis)
         assertEquals(
             ListenableWorker.Result.success(
-                workDataOf(CollectUsageWorker.KEY_STORED_SESSION_COUNT to 2)
+                workDataOf(
+                    CollectUsageWorker.KEY_STORED_SESSION_COUNT to 2,
+                    CollectUsageWorker.KEY_LOCATION_CONTEXT_CAPTURED to false
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkCollectsLocationContextWithDeviceIdAfterUsageCollection() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeUsageCollectionRunner(storedCount = 2)
+        val locationCollector = FakeLocationContextCollector(
+            result = LocationContextCollectionResult.Captured
+        )
+        val worker = TestListenableWorkerBuilder.from(context, CollectUsageWorker::class.java)
+            .setInputData(
+                workDataOf(
+                    CollectUsageWorker.KEY_FROM_UTC_MILLIS to 1_000L,
+                    CollectUsageWorker.KEY_TO_UTC_MILLIS to 3_000L,
+                    CollectUsageWorker.KEY_DEVICE_ID to "android-device-1"
+                )
+            )
+            .setWorkerFactory(FakeWorkerFactory(runner, locationCollector))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(listOf("android-device-1"), locationCollector.deviceIds)
+        assertEquals(
+            ListenableWorker.Result.success(
+                workDataOf(
+                    CollectUsageWorker.KEY_STORED_SESSION_COUNT to 2,
+                    CollectUsageWorker.KEY_LOCATION_CONTEXT_CAPTURED to true
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkReportsLocationContextSkippedWhenCollectorWritesNothing() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeUsageCollectionRunner(storedCount = 0)
+        val locationCollector = FakeLocationContextCollector(
+            result = LocationContextCollectionResult.Skipped
+        )
+        val worker = TestListenableWorkerBuilder.from(context, CollectUsageWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, locationCollector))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(listOf(CollectUsageWorker.DEFAULT_DEVICE_ID), locationCollector.deviceIds)
+        assertEquals(
+            ListenableWorker.Result.success(
+                workDataOf(
+                    CollectUsageWorker.KEY_STORED_SESSION_COUNT to 0,
+                    CollectUsageWorker.KEY_LOCATION_CONTEXT_CAPTURED to false
+                )
             ),
             result
         )
@@ -59,8 +122,20 @@ class CollectUsageWorkerTest {
         }
     }
 
+    private class FakeLocationContextCollector(
+        private val result: LocationContextCollectionResult
+    ) : LocationContextCollector {
+        val deviceIds = mutableListOf<String>()
+
+        override fun collect(deviceId: String): LocationContextCollectionResult {
+            deviceIds += deviceId
+            return result
+        }
+    }
+
     private class FakeWorkerFactory(
-        private val runner: UsageCollectionRunner
+        private val runner: UsageCollectionRunner,
+        private val locationCollector: LocationContextCollector = NoopLocationContextCollector
     ) : WorkerFactory() {
         override fun createWorker(
             appContext: Context,
@@ -68,7 +143,7 @@ class CollectUsageWorkerTest {
             workerParameters: WorkerParameters
         ): ListenableWorker? {
             return if (workerClassName == CollectUsageWorker::class.java.name) {
-                CollectUsageWorker(appContext, workerParameters, runner)
+                CollectUsageWorker(appContext, workerParameters, runner, locationCollector)
             } else {
                 null
             }
