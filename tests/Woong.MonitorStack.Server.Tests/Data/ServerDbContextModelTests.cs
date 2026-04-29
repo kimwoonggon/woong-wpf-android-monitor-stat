@@ -57,6 +57,25 @@ public sealed class ServerDbContextModelTests
     }
 
     [Fact]
+    public void WebSessionEntity_HasDeviceClientSessionUniqueIndex()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseNpgsql("Host=localhost;Database=woong_monitor_test;Username=test;Password=test")
+            .Options;
+        using var dbContext = new MonitorDbContext(options);
+
+        var entityType = dbContext.Model.FindEntityType(typeof(WebSessionEntity));
+        var uniqueIndex = Assert.Single(entityType!.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(WebSessionEntity.DeviceId), nameof(WebSessionEntity.ClientSessionId)]));
+
+        Assert.Equal("web_sessions", entityType.GetTableName());
+        Assert.True(uniqueIndex.IsUnique);
+        Assert.Equal(128, entityType.FindProperty(nameof(WebSessionEntity.ClientSessionId))!.GetMaxLength());
+    }
+
+    [Fact]
     public void DeviceStateSessionEntity_HasDeviceClientSessionUniqueIndex()
     {
         var options = new DbContextOptionsBuilder<MonitorDbContext>()

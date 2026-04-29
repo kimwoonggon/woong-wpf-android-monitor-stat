@@ -610,7 +610,17 @@ milestones below are finished.
 - [x] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
 - [x] Browser domain tracking is explicit, privacy-aware, and covered by tests.
 - [x] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
-- [ ] Server schema supports required relationships and idempotent integrated storage.
+- [x] Server schema supports required relationships and idempotent integrated storage.
+- [x] Server WebSession idempotency hardening: `WebSessionUploadItem` now
+  requires `clientSessionId`, server `web_sessions` has required
+  `ClientSessionId`, upload duplicate detection uses `deviceId +
+  clientSessionId`, and production migration
+  `20260429101507_AddWebSessionClientSessionId` backfills legacy rows before
+  enforcing unique `(DeviceId, ClientSessionId)`.
+- [x] Server idempotency verification: RED contract/model/migration tests were
+  added first, relational SQLite duplicate enforcement passed for domain-only
+  web sessions, full `.NET` tests passed (277), `.NET` build passed with 0
+  warnings/errors, and coverage generated at 91.2% line coverage.
 - [x] WPF semantic UI acceptance passes with expected content.
 - [x] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
 - [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.

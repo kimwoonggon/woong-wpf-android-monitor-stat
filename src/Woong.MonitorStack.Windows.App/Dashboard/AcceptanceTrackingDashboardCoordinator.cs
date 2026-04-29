@@ -251,6 +251,7 @@ public sealed class AcceptanceTrackingDashboardCoordinator : IDashboardTrackingC
                     _deviceId,
                     [
                         new WebSessionUploadItem(
+                            outboxId,
                             session.FocusSessionId,
                             session.BrowserFamily,
                             session.Url,

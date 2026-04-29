@@ -31,6 +31,9 @@ Updated: 2026-04-29
   `processId`, `processName`, `processPath`, `windowHandle`, and `windowTitle`.
   These fields are nullable so Android app-usage sessions and privacy-masked
   Windows sessions can use the same endpoint.
+- Web session uploads must include `clientSessionId`. Browser clients should
+  generate it from the local web-session/outbox aggregate id so retry uploads
+  remain idempotent even when `Url` is null in domain-only privacy mode.
 - Raw event uploads must include `clientEventId`.
 - Current upload endpoints are `POST /api/focus-sessions/upload`,
   `POST /api/web-sessions/upload`, and `POST /api/raw-events/upload`.

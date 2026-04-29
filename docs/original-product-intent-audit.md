@@ -85,25 +85,23 @@ Gaps to restore original intent:
 Already present:
 
 - ASP.NET Core Web API.
-- EF Core relational schema for devices, focus sessions, web sessions, raw
-  events, and daily summaries.
+- EF Core relational schema for devices, focus sessions, web sessions, device
+  state sessions, raw events, daily summaries, app families, and app-family
+  mappings.
 - Device registration, focus/web/raw upload endpoints, date-range statistics,
   and daily summary query.
 - Idempotency tests for key upload flows.
+- Web session DTO/entity idempotency through `deviceId + clientSessionId`,
+  including domain-only retries where `Url` is null.
 - Server app family mapper for known Windows/Android app keys.
 
 Gaps to restore original intent:
 
-- Server schema does not yet model all requested process/window/browser fields
-  on focus/web sessions.
-- `device_state_sessions`, `app_families`, and `app_family_mappings` are not
-  first-class server tables yet.
-- Web session DTO/entity needs capture method, confidence, privacy/private
-  indicators, nullable full URL handling, and client session idempotency.
-- Focus session DTO/entity needs explicit process id/path/window handle/window
-  title fields where privacy settings allow.
 - Android app usage may remain represented as focus sessions, but the contract
   must document that mapping clearly or add a dedicated app usage DTO/table.
+- PostgreSQL/Testcontainers remains the preferred final provider-specific test
+  target when Docker is available; current relational idempotency coverage uses
+  SQLite fallback plus Npgsql model tests.
 
 ## Explicitly Reopened Work
 
@@ -116,4 +114,3 @@ The highest-priority next implementation slice is:
 1. Add WPF Start/Stop/Sync UI tests for the required AutomationIds.
 2. Add minimal presentation state and XAML controls.
 3. Then wire fake tracking pipeline acceptance before real-start validation.
-

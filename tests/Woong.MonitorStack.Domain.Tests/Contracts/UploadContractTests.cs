@@ -20,6 +20,21 @@ public sealed class UploadContractTests
     }
 
     [Fact]
+    public void WebSessionUploadItem_RequiresClientSessionIdForIdempotency()
+    {
+        Assert.Throws<ArgumentException>(() => new WebSessionUploadItem(
+            clientSessionId: "",
+            focusSessionId: "focus-session-1",
+            browserFamily: "Chrome",
+            url: null,
+            domain: "github.com",
+            pageTitle: null,
+            startedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+            durationMs: 600_000));
+    }
+
+    [Fact]
     public void UploadFocusSessionsRequest_RejectsNullSessions()
     {
         Assert.Throws<ArgumentNullException>(() => new UploadFocusSessionsRequest(

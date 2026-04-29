@@ -292,6 +292,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             deviceId,
             [
                 new WebSessionUploadItem(
+                    CreateWebSessionAggregateId(session),
                     session.FocusSessionId,
                     session.BrowserFamily,
                     session.Url,

@@ -4,6 +4,19 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Server WebSession idempotency hardening slice. RED tests first required
+`WebSessionUploadItem.clientSessionId`, a server unique index on `(DeviceId,
+ClientSessionId)`, relational duplicate enforcement for domain-only web
+sessions, and a migration that backfills legacy rows before enforcing the new
+non-null unique key. The server upload service now detects duplicate web
+uploads by `deviceId + clientSessionId` instead of nullable URL fields, Windows
+outbox/native-host payloads include the same stable aggregate id as
+`clientSessionId`, and production migration
+`20260429101507_AddWebSessionClientSessionId` updates PostgreSQL schema safely.
+Verification passed: domain tests (22), server tests (25), Chrome-native
+focused tests (33), full `.NET` tests (277), full `.NET` build with 0 warnings
+and 0 errors, and coverage generation with 91.2% line coverage.
+
 Chrome native messaging acceptance safety hardening slice. RED/focused tests
 now guard against closing the user's normal Chrome and against dangerous HKCU
 native-messaging cleanup. The acceptance script launches Chrome with a temp

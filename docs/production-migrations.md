@@ -7,6 +7,7 @@ Updated: 2026-04-29
 - Migration: `20260428131352_InitialCreate`
 - Migration: `20260428165251_AddFocusSessionWindowMetadata`
 - Migration: `20260428170042_AddDeviceStateAndAppFamilyTables`
+- Migration: `20260429101507_AddWebSessionClientSessionId`
 - Context: `MonitorDbContext`
 - Provider: Npgsql / PostgreSQL
 - Local tool: `dotnet-ef` 10.0.4 in `dotnet-tools.json`
@@ -45,12 +46,21 @@ relationship tables needed before richer integration:
 - `app_family_mappings` maps platform app keys or domains to a family through a
   unique `(MappingType, MatchKey)` index.
 
+`20260429101507_AddWebSessionClientSessionId` aligns web-session upload
+idempotency with the PRD:
+
+- Adds required `web_sessions.ClientSessionId`.
+- Backfills legacy rows as `legacy-web-session-{Id}` before enforcing
+  non-null and unique constraints.
+- Replaces the prior nullable-URL-based duplicate key with unique
+  `(DeviceId, ClientSessionId)`.
+
 ## Idempotency Indexes
 
 - `devices`: unique `(UserId, Platform, DeviceKey)`
 - `focus_sessions`: unique `(DeviceId, ClientSessionId)`
 - `raw_events`: unique `(DeviceId, ClientEventId)`
-- `web_sessions`: unique `(DeviceId, FocusSessionId, StartedAtUtc, EndedAtUtc, Url)`
+- `web_sessions`: unique `(DeviceId, ClientSessionId)`
 - `daily_summaries`: unique `(UserId, SummaryDate, TimezoneId)`
 - `device_state_sessions`: unique `(DeviceId, ClientSessionId)`
 - `app_families`: unique `(Key)`

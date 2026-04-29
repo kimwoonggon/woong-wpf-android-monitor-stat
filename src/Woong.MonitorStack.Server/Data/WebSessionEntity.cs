@@ -6,6 +6,8 @@ public sealed class WebSessionEntity
 
     public Guid DeviceId { get; set; }
 
+    public string ClientSessionId { get; set; } = "";
+
     public string FocusSessionId { get; set; } = "";
 
     public string BrowserFamily { get; set; } = "";

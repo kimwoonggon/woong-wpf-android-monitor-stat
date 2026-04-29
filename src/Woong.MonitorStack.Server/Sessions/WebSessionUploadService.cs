@@ -24,20 +24,18 @@ public sealed class WebSessionUploadService
         {
             bool exists = await _dbContext.WebSessions.AnyAsync(session =>
                 session.DeviceId == deviceId &&
-                session.FocusSessionId == item.FocusSessionId &&
-                session.StartedAtUtc == item.StartedAtUtc &&
-                session.EndedAtUtc == item.EndedAtUtc &&
-                session.Url == item.Url);
+                session.ClientSessionId == item.ClientSessionId);
 
             if (exists)
             {
-                results.Add(new UploadItemResult(item.FocusSessionId, UploadItemStatus.Duplicate, ErrorMessage: null));
+                results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Duplicate, ErrorMessage: null));
                 continue;
             }
 
             _dbContext.WebSessions.Add(new WebSessionEntity
             {
                 DeviceId = deviceId,
+                ClientSessionId = item.ClientSessionId,
                 FocusSessionId = item.FocusSessionId,
                 BrowserFamily = item.BrowserFamily,
                 Url = item.Url,
@@ -50,7 +48,7 @@ public sealed class WebSessionUploadService
                 CaptureConfidence = item.CaptureConfidence,
                 IsPrivateOrUnknown = item.IsPrivateOrUnknown
             });
-            results.Add(new UploadItemResult(item.FocusSessionId, UploadItemStatus.Accepted, ErrorMessage: null));
+            results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Accepted, ErrorMessage: null));
         }
 
         await _dbContext.SaveChangesAsync();

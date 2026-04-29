@@ -11,13 +11,13 @@ Current persistence surfaces:
 - Android Room is at database version 2 with the v1 to v2 migration adding
   `sync_outbox`.
 - Server PostgreSQL is represented by EF Core entities in
-  `MonitorDbContext`; production EF migrations have not been generated yet.
+  `MonitorDbContext`; production EF migrations are generated and reviewed in
+  `docs/production-migrations.md`.
 
 Release-candidate requirement:
 
-- Generate and review EF Core migrations before production database use.
-- Initial production migration review is documented in
-  `docs/production-migrations.md`.
+- Review EF Core migrations before production database use.
+- Production migration review is documented in `docs/production-migrations.md`.
 - Server relational behavior must be tested with a relational provider. See
   `docs/server-test-db-strategy.md` for the current SQLite fallback and the
   PostgreSQL/Testcontainers target strategy.
@@ -25,7 +25,7 @@ Release-candidate requirement:
   separate; no local database may depend on another device database.
 - Verify unique indexes remain in place for idempotency:
   `(UserId, Platform, DeviceKey)`, `(DeviceId, ClientSessionId)`,
-  duplicate-safe web session key, `(DeviceId, ClientEventId)`, and
+  `(DeviceId, ClientSessionId)` for web sessions, `(DeviceId, ClientEventId)`, and
   `(UserId, SummaryDate, TimezoneId)`.
 - Treat `daily_summaries` as a derived table. It may be rebuilt from
   `focus_sessions` and `web_sessions`.

@@ -101,16 +101,17 @@ public sealed class ChromeNativeMessageIngestionFlow
             id: $"web-session:{aggregateId}",
             aggregateType: "web_session",
             aggregateId,
-            payloadJson: CreatePayload(session),
+            payloadJson: CreatePayload(session, aggregateId),
             createdAtUtc: session.EndedAtUtc));
     }
 
-    private string CreatePayload(WebSession session)
+    private string CreatePayload(WebSession session, string aggregateId)
     {
         var request = new UploadWebSessionsRequest(
             _deviceId!,
             [
                 new WebSessionUploadItem(
+                    aggregateId,
                     session.FocusSessionId,
                     session.BrowserFamily,
                     session.Url,

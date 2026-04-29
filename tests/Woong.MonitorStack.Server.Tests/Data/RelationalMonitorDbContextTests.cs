@@ -94,6 +94,19 @@ public sealed class RelationalMonitorDbContextTests
         await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
     }
 
+    [Fact]
+    public async Task WebSessionClientSessionUniqueIndex_IsEnforcedForDomainOnlySessions()
+    {
+        await using var database = await RelationalTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.WebSessions.Add(CreateWebSession(deviceId, "web-session-1"));
+        await database.Context.SaveChangesAsync();
+
+        database.Context.WebSessions.Add(CreateWebSession(deviceId, "web-session-1"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
+    }
+
     private static DeviceStateSessionEntity CreateDeviceStateSession(Guid deviceId, string clientSessionId)
         => new()
         {
@@ -106,6 +119,24 @@ public sealed class RelationalMonitorDbContextTests
             LocalDate = new DateOnly(2026, 4, 28),
             TimezoneId = "Asia/Seoul",
             CreatedAtUtc = DateTimeOffset.UtcNow
+        };
+
+    private static WebSessionEntity CreateWebSession(Guid deviceId, string clientSessionId)
+        => new()
+        {
+            DeviceId = deviceId,
+            ClientSessionId = clientSessionId,
+            FocusSessionId = "focus-session-1",
+            BrowserFamily = "Chrome",
+            Url = null,
+            Domain = "github.com",
+            PageTitle = null,
+            StartedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            EndedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+            DurationMs = 600_000,
+            CaptureMethod = "BrowserExtensionFuture",
+            CaptureConfidence = "High",
+            IsPrivateOrUnknown = false
         };
 
     private static AppFamilyMappingEntity CreateAppFamilyMapping(long appFamilyId, string mappingType, string matchKey)

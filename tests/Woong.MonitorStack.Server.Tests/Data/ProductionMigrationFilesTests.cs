@@ -23,6 +23,27 @@ public sealed class ProductionMigrationFilesTests
         Assert.Contains("daily_summaries", migrationText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void WebSessionClientSessionMigration_BackfillsLegacyRowsBeforeAddingUniqueIndex()
+    {
+        var migrationsDirectory = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Server",
+            "Data",
+            "Migrations");
+        var migrationFile = Directory
+            .EnumerateFiles(migrationsDirectory, "*_AddWebSessionClientSessionId.cs")
+            .Single();
+        string migrationText = File.ReadAllText(migrationFile);
+
+        Assert.Contains("nullable: true", migrationText, StringComparison.Ordinal);
+        Assert.Contains("legacy-web-session-", migrationText, StringComparison.Ordinal);
+        Assert.Contains("AlterColumn<string>", migrationText, StringComparison.Ordinal);
+        Assert.Contains("IX_web_sessions_DeviceId_ClientSessionId", migrationText, StringComparison.Ordinal);
+        Assert.DoesNotContain("defaultValue: \"\"", migrationText, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

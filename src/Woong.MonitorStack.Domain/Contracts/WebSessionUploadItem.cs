@@ -3,6 +3,7 @@ namespace Woong.MonitorStack.Domain.Contracts;
 public sealed record WebSessionUploadItem
 {
     public WebSessionUploadItem(
+        string clientSessionId,
         string focusSessionId,
         string browserFamily,
         string? url,
@@ -15,6 +16,7 @@ public sealed record WebSessionUploadItem
         string? captureConfidence = null,
         bool? isPrivateOrUnknown = null)
     {
+        ClientSessionId = RequiredContractText.Ensure(clientSessionId, nameof(clientSessionId));
         FocusSessionId = RequiredContractText.Ensure(focusSessionId, nameof(focusSessionId));
         BrowserFamily = RequiredContractText.Ensure(browserFamily, nameof(browserFamily));
         Url = NormalizeOptional(url);
@@ -27,6 +29,8 @@ public sealed record WebSessionUploadItem
         CaptureConfidence = NormalizeOptional(captureConfidence);
         IsPrivateOrUnknown = isPrivateOrUnknown;
     }
+
+    public string ClientSessionId { get; }
 
     public string FocusSessionId { get; }
 

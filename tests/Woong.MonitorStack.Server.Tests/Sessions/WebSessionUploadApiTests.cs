@@ -20,6 +20,7 @@ public sealed class WebSessionUploadApiTests
         using HttpClient client = factory.CreateClient();
         string deviceId = Guid.NewGuid().ToString("N");
         var session = new WebSessionUploadItem(
+            clientSessionId: "web-session-1",
             focusSessionId: "client-session-1",
             browserFamily: "Chrome",
             url: "https://example.com/docs",
@@ -44,6 +45,7 @@ public sealed class WebSessionUploadApiTests
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         WebSessionEntity persisted = Assert.Single(await dbContext.WebSessions.ToListAsync());
         Assert.Equal(Guid.Parse(deviceId), persisted.DeviceId);
+        Assert.Equal("web-session-1", persisted.ClientSessionId);
         Assert.Equal("client-session-1", persisted.FocusSessionId);
         Assert.Equal("example.com", persisted.Domain);
         Assert.Equal("Docs", persisted.PageTitle);
@@ -57,6 +59,7 @@ public sealed class WebSessionUploadApiTests
         using HttpClient client = factory.CreateClient();
         string deviceId = Guid.NewGuid().ToString("N");
         var session = new WebSessionUploadItem(
+            clientSessionId: "domain-only-web-session-1",
             focusSessionId: "domain-only-session-1",
             browserFamily: "Chrome",
             url: null,
@@ -83,6 +86,7 @@ public sealed class WebSessionUploadApiTests
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         WebSessionEntity persisted = Assert.Single(await dbContext.WebSessions.ToListAsync());
+        Assert.Equal("domain-only-web-session-1", persisted.ClientSessionId);
         Assert.Null(persisted.Url);
         Assert.Equal("github.com", persisted.Domain);
         Assert.Null(persisted.PageTitle);
