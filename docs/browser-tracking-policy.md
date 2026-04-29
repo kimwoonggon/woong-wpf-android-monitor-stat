@@ -178,9 +178,17 @@ WPF browser UI copy must not present a safe privacy state as a broken product
 state. When no browser domain is available in the Current Focus panel, the
 fallback text is:
 
-`Browser domain not connected yet. Domain-only privacy is safe.`
+`No browser domain yet. Connect browser capture; app focus is tracked.`
 
 This means foreground app/window focus tracking can still be working while the
 browser-domain capture channel is not connected, not configured, or has not yet
 reported a domain. Full URL capture remains off by default and must require a
 future explicit opt-in before any URL path/query is stored.
+
+Running the WPF app as Administrator is not a reliable browser-domain capture
+solution. Administrator rights can affect some Windows UI Automation access,
+but they do not grant Chrome, Edge, Firefox, or Brave active-tab URL APIs. The
+robust path is explicit browser integration: Chrome/Edge extension plus native
+messaging, or a documented opt-in UI Automation address-bar fallback where it
+is technically available. The app should still show foreground app/process
+metadata immediately on Start even when browser-domain capture is not connected.

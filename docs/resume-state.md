@@ -4,7 +4,20 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 25 WPF TrackingPipeline SQLite evidence slice.
+Milestone 25 WPF EmptyData evidence and browser-domain copy adjustment.
+The in-progress EmptyData acceptance slice now proves the local snapshot tool
+launches with auto-start disabled and records zero `focus_session`,
+`web_session`, and `sync_outbox` rows in the temp DB. The browser-domain empty
+state copy was also adjusted from a privacy-sounding message to
+`No browser domain yet. Connect browser capture; app focus is tracked.` The
+policy docs now clarify that Administrator rights are not a reliable way to
+read active browser tab URLs; browser extension/native messaging or explicit
+UI Automation fallback is the correct path. Verification passed: all `.NET`
+tests (226), full `.NET` build, EmptyData snapshot flow, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-161328`, and coverage generation with
+overall line coverage 92.0%.
+
+Previous completed slice: Milestone 25 WPF TrackingPipeline SQLite evidence.
 Focused RED tests first required the UI snapshot tool to query the temp SQLite
 DB and publish semantic DB evidence in both `report.md` and `manifest.json`.
 `tools/Woong.MonitorStack.Windows.UiSnapshots` now uses `Microsoft.Data.Sqlite`
@@ -1936,3 +1949,39 @@ Coverage after this slice: overall line coverage 92.0%.
 Next highest priority is Milestone 25 EmptyData mode acceptance: prove the
 empty dashboard remains stopped, empty, and free of SQLite/outbox rows when the
 snapshot tool launches with auto-start disabled.
+
+## 2026-04-29 WPF EmptyData Acceptance And Browser Copy Slice
+
+- Added RED source-contract test
+  `UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows`.
+- EmptyData snapshot mode now always creates a temp `empty-data.db`, sets
+  `WOONG_MONITOR_AUTO_START_TRACKING=0`, and records DB evidence with
+  `focus_session=0`, `web_session=0`, and `sync_outbox=0`.
+- The browser-domain empty state copy now says
+  `No browser domain yet. Connect browser capture; app focus is tracked.`
+  instead of implying privacy itself is the reason domains are missing.
+- Documented that Administrator rights are not a reliable way to read active
+  browser tab URLs. App/window focus metadata appears immediately on Start;
+  browser-domain metadata requires browser integration or explicit fallback.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter UpdateCurrentActivity_WhenBrowserDomainMissing_ExplainsCaptureConnectionAndAppFocusState`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings|UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows"`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-ui-snapshots.ps1`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest EmptyData snapshot artifact:
+`artifacts/ui-snapshots/latest` from the 20260429-160531 run, with zero DB rows
+in `report.md` and `manifest.json`.
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-161328`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority is Milestone 25 SampleDashboard mode acceptance: add a
+deterministic, non-tracking dashboard sample mode for beginner visual review.

@@ -443,3 +443,18 @@ manifest includes the same `databaseEvidence` object.
 `artifacts/wpf-ui-acceptance/20260429-155615`
 
 Coverage after this slice remains 92.0% overall.
+
+The EmptyData acceptance slice now proves the inverse baseline: the snapshot
+tool launches with auto-start disabled, writes `empty-data.db`, and records
+`focus_session=0`, `web_session=0`, and `sync_outbox=0` in the local report and
+manifest. The same slice changed the Current Focus browser-domain empty state
+to `No browser domain yet. Connect browser capture; app focus is tracked.` so a
+missing domain does not look like a privacy failure.
+
+`artifacts/ui-snapshots/latest` from run `20260429-160531`
+
+The latest combined WPF UI acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-161328`
+
+Coverage after this slice remains 92.0% overall.

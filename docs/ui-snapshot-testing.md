@@ -101,6 +101,9 @@ Open `artifacts/ui-snapshots/latest/report.md` first. It links the screenshots
 and includes pass/fail notes from the run. In TrackingPipeline mode, the report
 and manifest also include SQLite evidence proving that the fake activity flow
 created focus sessions, web sessions, and outbox rows in the temp DB.
+In EmptyData mode, the tool forces auto-start off and records zero-row SQLite
+evidence so the empty dashboard baseline cannot accidentally include real or
+fake tracking data.
 
 ## What The Tool Does
 

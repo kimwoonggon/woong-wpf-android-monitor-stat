@@ -140,7 +140,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public string DetailsPageText => $"{CurrentDetailsPage} / {TotalDetailsPages}";
 
-    private const string BrowserDomainUnavailableText = "Browser domain not connected yet. Domain-only privacy is safe.";
+    private const string BrowserDomainUnavailableText = "No browser domain yet. Connect browser capture; app focus is tracked.";
 
     public DashboardViewModel(
         IDashboardDataSource dataSource,

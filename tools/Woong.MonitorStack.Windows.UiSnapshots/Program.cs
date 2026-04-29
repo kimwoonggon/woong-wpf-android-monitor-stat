@@ -156,6 +156,7 @@ internal static class UiSnapshotRunner
         SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
         Thread.Sleep(500);
         CaptureWindow(mainWindow, "04-settings.png", context);
+        VerifyEmptyDataDatabase(context);
     }
 
     private static void RunTrackingPipelineAcceptance(Window mainWindow, UiSnapshotContext context)
@@ -539,11 +540,7 @@ internal static class UiSnapshotRunner
             return;
         }
 
-        DatabaseEvidence evidence = new(
-            DatabasePath: databasePath,
-            FocusSessionRows: CountRows(databasePath, "focus_session"),
-            WebSessionRows: CountRows(databasePath, "web_session"),
-            SyncOutboxRows: CountRows(databasePath, "sync_outbox"));
+        DatabaseEvidence evidence = ReadDatabaseEvidence("TrackingPipeline", databasePath);
         context.DatabaseEvidence = evidence;
 
         context.Add(
@@ -563,6 +560,43 @@ internal static class UiSnapshotRunner
             evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
     }
 
+    private static void VerifyEmptyDataDatabase(UiSnapshotContext context)
+    {
+        string? databasePath = context.Options.DatabasePath;
+        if (string.IsNullOrWhiteSpace(databasePath))
+        {
+            context.Fail("EmptyData SQLite database", "Temp database path is configured", "Missing");
+            return;
+        }
+
+        DatabaseEvidence evidence = ReadDatabaseEvidence("EmptyData", databasePath);
+        context.DatabaseEvidence = evidence;
+
+        context.Add(
+            "EmptyData focus_session rows",
+            "= 0",
+            evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "EmptyData web_session rows",
+            "= 0",
+            evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "EmptyData sync_outbox rows",
+            "= 0",
+            evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+    }
+
+    private static DatabaseEvidence ReadDatabaseEvidence(string scenarioName, string databasePath)
+        => new(
+            ScenarioName: scenarioName,
+            DatabasePath: databasePath,
+            FocusSessionRows: CountRows(databasePath, "focus_session"),
+            WebSessionRows: CountRows(databasePath, "web_session"),
+            SyncOutboxRows: CountRows(databasePath, "sync_outbox"));
+
     private static int CountRows(string databasePath, string tableName)
     {
         string safeTableName = tableName switch
@@ -573,12 +607,26 @@ internal static class UiSnapshotRunner
             _ => throw new ArgumentException($"Unsupported table name: {tableName}.", nameof(tableName))
         };
 
-        using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
-        connection.Open();
-        using SqliteCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT COUNT(*) FROM {safeTableName};";
+        if (!File.Exists(databasePath))
+        {
+            return 0;
+        }
 
-        return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $"SELECT COUNT(*) FROM {safeTableName};";
+
+            return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (SqliteException exception) when (
+            exception.SqliteErrorCode == 1
+            && exception.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
     }
 
     private static void WriteArtifacts(UiSnapshotContext context, bool isSuccess)
@@ -642,10 +690,11 @@ internal static class UiSnapshotRunner
         }
         else
         {
+            lines.Add($"- Scenario: `{context.DatabaseEvidence.ScenarioName}`");
             lines.Add($"- Database: `{context.DatabaseEvidence.DatabasePath}`");
-            lines.Add($"- TrackingPipeline focus_session rows: {context.DatabaseEvidence.FocusSessionRows}");
-            lines.Add($"- TrackingPipeline web_session rows: {context.DatabaseEvidence.WebSessionRows}");
-            lines.Add($"- TrackingPipeline sync_outbox rows: {context.DatabaseEvidence.SyncOutboxRows}");
+            lines.Add($"- {context.DatabaseEvidence.ScenarioName} focus_session rows: {context.DatabaseEvidence.FocusSessionRows}");
+            lines.Add($"- {context.DatabaseEvidence.ScenarioName} web_session rows: {context.DatabaseEvidence.WebSessionRows}");
+            lines.Add($"- {context.DatabaseEvidence.ScenarioName} sync_outbox rows: {context.DatabaseEvidence.SyncOutboxRows}");
         }
 
         lines.Add("");
@@ -684,6 +733,7 @@ internal static class UiSnapshotRunner
                 ? null
                 : new
                 {
+                    context.DatabaseEvidence.ScenarioName,
                     context.DatabaseEvidence.DatabasePath,
                     context.DatabaseEvidence.FocusSessionRows,
                     context.DatabaseEvidence.WebSessionRows,
@@ -821,6 +871,7 @@ internal sealed class UiSnapshotContext
 internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
 
 internal sealed record DatabaseEvidence(
+    string ScenarioName,
     string DatabasePath,
     int FocusSessionRows,
     int WebSessionRows,
@@ -913,6 +964,10 @@ internal sealed record UiSnapshotOptions(
         if (mode == UiSnapshotMode.TrackingPipeline)
         {
             databasePath ??= Path.Combine(runDirectory, "tracking-pipeline.db");
+        }
+        else
+        {
+            databasePath ??= Path.Combine(runDirectory, "empty-data.db");
         }
 
         return new UiSnapshotOptions(

@@ -196,6 +196,24 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("DatabasePath", tool);
     }
 
+    [Fact]
+    public void UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("empty-data.db", tool);
+        Assert.Contains("WOONG_MONITOR_AUTO_START_TRACKING", tool);
+        Assert.Contains("VerifyEmptyDataDatabase", tool);
+        Assert.Contains("EmptyData focus_session rows", tool);
+        Assert.Contains("EmptyData web_session rows", tool);
+        Assert.Contains("EmptyData sync_outbox rows", tool);
+        Assert.Contains("= 0", tool);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

@@ -509,17 +509,19 @@ milestones below are finished.
 - [x] Create `scripts/run-wpf-ui-acceptance.ps1`.
 - [x] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
 - [x] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
-- [ ] Implement EmptyData mode acceptance.
+- [x] Implement EmptyData mode acceptance.
 - [ ] Implement SampleDashboard mode acceptance.
 - [x] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
 - [x] TrackingPipeline/RealStart acceptance tolerate product auto-start when the app is already Running.
 - [x] EmptyData snapshot mode explicitly disables product auto-start so empty-state evidence remains deterministic.
+- [x] EmptyData mode verifies temp SQLite `focus_session`, `web_session`, and `sync_outbox` row counts stay zero.
 - [x] TrackingPipeline mode verifies temp SQLite `focus_session`, `web_session`, and `sync_outbox` row counts.
 - [x] Verify Start changes tracking status to Running.
 - [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Verify Stop changes tracking status to Stopped.
 - [x] Verify Sync Now updates last sync status using a fake sync client.
 - [x] Verify StartTracking immediately attempts sync and reports local-only skipped status while sync is off.
+- [x] Browser-domain empty state copy no longer implies privacy is the blocker; it says browser capture must be connected while app focus is tracked.
 - [x] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
 - [x] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`, including TrackingPipeline SQLite evidence.
 - [x] Keep screenshot review local-only and optional for GPT/human review.
@@ -632,9 +634,11 @@ milestones below are finished.
 - [x] TrackingPipeline SQLite evidence verification: UiSnapshots checks temp `focus_session`, `web_session`, and `sync_outbox` row counts.
 - [x] TrackingPipeline SQLite evidence verification: `report.md` and `manifest.json` include the semantic DB checks and statuses.
 - [x] TrackingPipeline SQLite evidence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-155615`.
+- [x] EmptyData SQLite evidence verification: `run-ui-snapshots.ps1` passed and reported zero `focus_session`, `web_session`, and `sync_outbox` rows in `artifacts/ui-snapshots/latest`.
 - [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
 - [x] Update `docs/browser-tracking-policy.md` for the browser-domain-not-connected safe privacy UI label.
+- [x] Document that Administrator rights are not a reliable active-tab URL capture solution; explicit browser integration remains required.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.

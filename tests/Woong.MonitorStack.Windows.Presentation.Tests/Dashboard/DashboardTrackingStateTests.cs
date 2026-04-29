@@ -278,7 +278,7 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
-    public void UpdateCurrentActivity_WhenBrowserDomainMissing_ExplainsConnectionAndPrivacyState()
+    public void UpdateCurrentActivity_WhenBrowserDomainMissing_ExplainsCaptureConnectionAndAppFocusState()
     {
         DashboardViewModel viewModel = CreateViewModel();
 
@@ -290,7 +290,7 @@ public sealed class DashboardTrackingStateTests
             LastPersistedSession: null,
             CurrentBrowserDomain: null));
 
-        Assert.Equal("Browser domain not connected yet. Domain-only privacy is safe.", viewModel.CurrentBrowserDomainText);
+        Assert.Equal("No browser domain yet. Connect browser capture; app focus is tracked.", viewModel.CurrentBrowserDomainText);
     }
 
     [Fact]

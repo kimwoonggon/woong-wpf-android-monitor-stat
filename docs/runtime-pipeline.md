@@ -191,3 +191,10 @@ Normal WPF product startup now defaults to visible auto-start tracking through
 immediate sync attempt so users see sync state right away. This does not enable
 server upload by default: if sync is off, the visible status is
 `Sync skipped. Enable sync to upload.` and data remains local.
+
+On startup/Start, the Windows tracker reads the current foreground app/window
+metadata immediately and displays that current focus state. It does not treat
+all running or background processes as focus time; only the foreground
+app/window becomes the active FocusSession. Browser domain metadata is a
+separate capture channel and may require browser integration before domains can
+be shown.
