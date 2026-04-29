@@ -1,0 +1,25 @@
+<UserControl x:Class="Woong.MonitorStack.Windows.App.Views.SummaryCardsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Woong.MonitorStack.Windows.App.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dashboard="clr-namespace:Woong.MonitorStack.Windows.Presentation.Dashboard;assembly=Woong.MonitorStack.Windows.Presentation"
+             mc:Ignorable="d"
+             AutomationProperties.AutomationId="SummaryCardsContainer"
+             d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
+    <ItemsControl ItemsSource="{Binding SummaryCards}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <UniformGrid Columns="4" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type dashboard:DashboardSummaryCard}">
+                <controls:MetricCard Label="{Binding Label}"
+                                     Value="{Binding Value}"
+                                     Subtitle="{Binding Subtitle}" />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

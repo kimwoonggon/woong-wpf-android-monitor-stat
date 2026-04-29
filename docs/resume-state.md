@@ -4,14 +4,15 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 CurrentFocusPanel extraction slice.
-`DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings` proves
-`DashboardView` hosts `Views/CurrentFocusPanel.xaml` while preserving
-`CurrentActivityPanel`, all child AutomationIds, and current focus bindings.
-Verification passed: focused CurrentFocusPanel test, all Windows App tests (30),
-full `dotnet test`, full `dotnet build`, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-110649`, and coverage generation with
-overall line coverage 92.4%.
+Milestone 31 SummaryCardsPanel and MetricCard extraction slice.
+`DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent` proves
+`DashboardView` hosts `Views/SummaryCardsPanel.xaml` while preserving
+`SummaryCardsContainer` and the summary card content.
+`MetricCard_RendersLabelValueAndSubtitle` proves the reusable metric card
+renders its label, value, and subtitle. Verification passed: both focused
+tests, all Windows App tests (32), full `dotnet test`, full `dotnet build`,
+WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-112103`, and coverage
+generation with overall line coverage 92.3%.
 
 ## Completed
 
@@ -953,9 +954,9 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with `SummaryCardsPanel` and reusable
-`Controls/MetricCard.xaml` extraction while preserving summary card
-AutomationIds, bindings, behavior tests, and semantic WPF acceptance.
+Continue Milestone 31 with `ChartsPanel` and reusable
+`Controls/EmptyState.xaml` extraction while preserving chart AutomationIds,
+empty-state overlays, bindings, behavior tests, and semantic WPF acceptance.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1015,10 +1016,10 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `EmptyState`) and style dictionaries. This guidance is saved in
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
-The `DashboardView`, `HeaderStatusBar`, `ControlBar`, and `CurrentFocusPanel`
-extractions are now complete, and the runtime poll-tick persistence quality gap
-is covered. The next componentization slice is `SummaryCardsPanel` plus
-reusable `MetricCard` extraction.
+The `DashboardView`, `HeaderStatusBar`, `ControlBar`, `CurrentFocusPanel`,
+`SummaryCardsPanel`, and reusable `MetricCard` extractions are now complete,
+and the runtime poll-tick persistence quality gap is covered. The next
+componentization slice is `ChartsPanel` plus reusable `EmptyState` extraction.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1048,7 +1049,6 @@ Verified:
   completed successfully and generated the coverage report.
 
 Remaining Milestone 31 componentization work stays open, including
-`SummaryCardsPanel`,
 `ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
 dictionaries, chart details commands, final componentization verification, and
 commit/push.
@@ -1160,6 +1160,35 @@ Verified:
 - `scripts/test-coverage.ps1` generated the coverage report with overall line
   coverage 92.4%.
 
-Next highest priority is `SummaryCardsPanel` plus reusable `MetricCard`
-extraction while preserving summary card AutomationIds, bindings, behavior
+The next completed componentization slice is `SummaryCardsPanel` plus reusable
+`MetricCard` extraction.
+
+## 2026-04-29 WPF SummaryCardsPanel Extraction Slice
+
+- Added the RED componentization test
+  `DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent`.
+- Added the reusable-control test
+  `MetricCard_RendersLabelValueAndSubtitle`.
+- Extracted the summary-card markup from `Views/DashboardView.xaml` into
+  `Views/SummaryCardsPanel.xaml`.
+- Added `Views/SummaryCardsPanel.xaml.cs`.
+- Added reusable `Controls/MetricCard.xaml` and `Controls/MetricCard.xaml.cs`.
+- Kept `DashboardView` hosting `<views:SummaryCardsPanel>`.
+- Preserved `SummaryCardsContainer` AutomationId and summary card content.
+
+Verified:
+
+- Focused
+  `DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent` and
+  `MetricCard_RendersLabelValueAndSubtitle` passed.
+- All Windows App tests passed (32 tests).
+- Full `dotnet test` passed.
+- Full `dotnet build` passed.
+- WPF acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-112103`.
+- `scripts/test-coverage.ps1` generated the coverage report with overall line
+  coverage 92.3%.
+
+Next highest priority is `ChartsPanel` plus reusable `EmptyState` extraction
+while preserving chart AutomationIds, chart empty states, bindings, behavior
 tests, and semantic WPF acceptance.

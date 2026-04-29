@@ -662,7 +662,14 @@ milestones below are finished.
 - [x] CurrentFocusPanel extraction verification: `.NET` build passed.
 - [x] CurrentFocusPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-110649`.
 - [x] CurrentFocusPanel extraction verification: coverage report generated successfully with overall line coverage 92.4%.
-- [ ] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
+- [x] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
+- [x] SummaryCardsPanel extraction verification: focused `DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent` and `MetricCard_RendersLabelValueAndSubtitle` passed.
+- [x] SummaryCardsPanel extraction verification: `DashboardView` hosts `SummaryCardsPanel`, `SummaryCardsContainer` AutomationId was preserved, and summary card content remains intact.
+- [x] SummaryCardsPanel extraction verification: all Windows App tests passed (32 tests).
+- [x] SummaryCardsPanel extraction verification: full `.NET` tests passed.
+- [x] SummaryCardsPanel extraction verification: `.NET` build passed.
+- [x] SummaryCardsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-112103`.
+- [x] SummaryCardsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.
 - [ ] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
 - [ ] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.

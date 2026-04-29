@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using Woong.MonitorStack.Domain.Common;
+using Woong.MonitorStack.Windows.App.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
@@ -192,6 +193,70 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Equal(
                     "Sync is off. Data stays on this Windows device.",
                     FindByAutomationId<TextBlock>(panel, "LastSyncStatusText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Invoke(FindByAutomationId<Button>(window, "RefreshButton"));
+                window.UpdateLayout();
+
+                SummaryCardsPanel panel = FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer");
+                IReadOnlySet<string> panelText = CollectText(panel);
+
+                Assert.Contains("Active Focus", panelText);
+                Assert.Contains("20m", panelText);
+                Assert.Contains("Today's focused foreground time", panelText);
+                Assert.Contains("Foreground", panelText);
+                Assert.Contains("30m", panelText);
+                Assert.Contains("Today's foreground time", panelText);
+                Assert.Contains("Idle", panelText);
+                Assert.Contains("10m", panelText);
+                Assert.Contains("Today's idle foreground time", panelText);
+                Assert.Contains("Web Focus", panelText);
+                Assert.Contains("Today's browser domain time", panelText);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void MetricCard_RendersLabelValueAndSubtitle()
+        => RunOnStaThread(() =>
+        {
+            var card = new MetricCard
+            {
+                Label = "Active Focus",
+                Value = "3h 12m",
+                Subtitle = "Today's focused foreground time"
+            };
+            var window = new Window { Content = card };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                IReadOnlySet<string> cardText = CollectText(card);
+                Assert.Contains("Active Focus", cardText);
+                Assert.Contains("3h 12m", cardText);
+                Assert.Contains("Today's focused foreground time", cardText);
             }
             finally
             {

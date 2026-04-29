@@ -41,42 +41,7 @@
             <views:CurrentFocusPanel Grid.Row="2"
                                      Margin="0,0,0,16" />
 
-            <ItemsControl Grid.Row="3"
-                          AutomationProperties.AutomationId="SummaryCardsContainer"
-                          ItemsSource="{Binding SummaryCards}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Columns="4" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type dashboard:DashboardSummaryCard}">
-                        <Border Margin="0,0,8,12"
-                                Padding="18"
-                                CornerRadius="8"
-                                Background="White"
-                                BorderBrush="#DCE1E8"
-                                BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Label}"
-                                           Foreground="#162033"
-                                           FontSize="14"
-                                           FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Value}"
-                                           Foreground="#162033"
-                                           FontSize="28"
-                                           FontWeight="SemiBold"
-                                           Margin="0,8,0,0" />
-                                <TextBlock Text="{Binding Subtitle}"
-                                           Foreground="#5A6472"
-                                           FontSize="12"
-                                           TextWrapping="Wrap"
-                                           Margin="0,6,0,0" />
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <views:SummaryCardsPanel Grid.Row="3" />
 
             <StackPanel Grid.Row="4">
                 <Border Margin="0,4,0,16"
