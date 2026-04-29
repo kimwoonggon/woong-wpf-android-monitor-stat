@@ -173,6 +173,49 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void DetailsTabs_WhenSwitchingTabsFromLaterPage_UsesSelectedTabPageCount()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(0, 12)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index - 1),
+                now.AddMinutes(-index),
+                isIdle: false))
+            .ToArray();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(
+                sessions,
+                [
+                    WebSession.FromUtc(
+                        "session-web",
+                        "Chrome",
+                        "https://github.com/org/repo",
+                        "GitHub",
+                        now.AddMinutes(-7),
+                        now.AddMinutes(-2))
+                ]),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.NextDetailsPageCommand.Execute(null);
+
+        Assert.Equal(2, viewModel.CurrentDetailsPage);
+        Assert.Equal("2 / 2", viewModel.DetailsPageText);
+
+        viewModel.ShowDomainFocusDetailsCommand.Execute(null);
+
+        Assert.Equal(DetailsTab.WebSessions, viewModel.SelectedDetailsTab);
+        Assert.Equal(1, viewModel.CurrentDetailsPage);
+        Assert.Equal("1 / 1", viewModel.DetailsPageText);
+        Assert.False(viewModel.NextDetailsPageCommand.CanExecute(null));
+        DashboardWebSessionRow row = Assert.Single(viewModel.VisibleWebSessionRows);
+        Assert.Equal("github.com", row.Domain);
+    }
+
+    [Fact]
     public void SelectPeriod_TodayQueriesCurrentLocalDayRange()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

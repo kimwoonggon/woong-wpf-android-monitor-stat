@@ -182,6 +182,10 @@ Details pagination:
   DataGrids.
 - `CurrentDetailsPage`, `DetailsPageText`, `PreviousDetailsPageCommand`, and
   `NextDetailsPageCommand` drive the shared details pager footer.
+- Total page count is calculated from the selected details tab, not from the
+  largest table. Switching details tabs resets the current page to 1 so a short
+  Web Sessions or Live Event tab cannot appear empty after the user paged
+  through a longer App Sessions tab.
 
 Current details tab implementation:
 
@@ -192,6 +196,8 @@ Current details tab implementation:
   `DashboardViewModel.SelectedDetailsTab`.
 - The App/Web/Live DataGrids bind to visible paged row collections and share a
   footer with rows-per-page and previous/next controls.
+- `DashboardViewModel.SelectedDetailsTab` owns tab-scoped paging behavior:
+  page counts follow the selected tab and tab switches reset to page 1.
 - Details tab headers include compact icon text elements with stable
   AutomationIds. The pager uses icon-sized previous/next buttons so the footer
   stays compact at 1024px while remaining automation-addressable.
@@ -464,6 +470,10 @@ Details pagination:
 - The user can choose 10, 25, or 50 rows per page.
 - A shared previous/next pager applies to App Sessions, Web Sessions, and Live
   Event Log.
+- The pager's total pages and next/previous command state are scoped to the
+  selected tab.
+- Switching tabs resets the details page to 1 to avoid landing on an out-of
+  range page for shorter tab data.
 - The visible paged collections are presentation-only projections; the full
   SQLite-backed query result remains available for totals, charts, and future
   exports.

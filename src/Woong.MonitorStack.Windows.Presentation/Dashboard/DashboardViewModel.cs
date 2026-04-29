@@ -320,6 +320,12 @@ public sealed partial class DashboardViewModel : ObservableObject
         UpdateVisibleDetailsRows();
     }
 
+    partial void OnSelectedDetailsTabChanged(DetailsTab value)
+    {
+        CurrentDetailsPage = 1;
+        UpdateVisibleDetailsRows();
+    }
+
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(DashboardSettingsViewModel.IsWindowTitleVisible))
@@ -445,9 +451,16 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private int CalculateTotalDetailsPages()
     {
-        int largestRowCount = Math.Max(RecentSessions.Count, Math.Max(RecentWebSessions.Count, LiveEvents.Count));
+        int selectedRowCount = SelectedDetailsTab switch
+        {
+            DetailsTab.AppSessions => RecentSessions.Count,
+            DetailsTab.WebSessions => RecentWebSessions.Count,
+            DetailsTab.LiveEventLog => LiveEvents.Count,
+            DetailsTab.Settings => 0,
+            _ => 0
+        };
 
-        return (int)Math.Ceiling(largestRowCount / (double)Math.Max(1, RowsPerPage));
+        return (int)Math.Ceiling(selectedRowCount / (double)Math.Max(1, RowsPerPage));
     }
 
     private void UpdateVisibleDetailsRows()

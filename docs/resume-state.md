@@ -3135,6 +3135,29 @@ Verified:
 - `.\gradlew.bat :app:testDebugUnitTest --tests "com.woong.monitorstack.dashboard.DashboardActivityRobolectricTest" --no-daemon`
 - `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug --no-daemon`
 
+Committed and pushed:
+
+- `dc4b4ff Align Android dashboard with SVG UI flow`
+
+## 2026-04-30 WPF Selected Details Pager Slice
+
+- Added a TDD-first Presentation behavior test proving the Details pager belongs
+  to the selected tab. If the user pages through a long App Sessions list and
+  then switches to a shorter Web Sessions tab, the dashboard resets to page 1
+  and recalculates total pages from Web Sessions.
+- Updated `DashboardViewModel` so `SelectedDetailsTab` changes reset
+  `CurrentDetailsPage` and `TotalDetailsPages` uses the selected tab row count.
+- This is a Presentation-only MVVM behavior fix; it does not query WPF controls,
+  Windows APIs, SQLite, HTTP, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DetailsTabs_WhenSwitchingTabsFromLaterPage_UsesSelectedTabPageCount"`
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 336 total .NET tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.3% (3559/3895), branch 70.3% (486/691).
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain
