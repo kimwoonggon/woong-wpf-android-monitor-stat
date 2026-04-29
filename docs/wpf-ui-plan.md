@@ -228,6 +228,10 @@ Current style dictionary implementation:
   preserving their AutomationIds and existing bindings. Remaining typography
   work is to migrate repeated chart/settings text setters as those panels are
   split further.
+- `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
+  read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
+  Sessions, and Live Event Log while keeping explicit column MinWidth values in
+  the view and preserving grid-level horizontal scrolling at 1024px.
 
 Open `wpfelements.md` alignment decisions:
 

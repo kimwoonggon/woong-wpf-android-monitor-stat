@@ -284,6 +284,27 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DataGridStyleDictionary_DefinesReadableSessionGridStyle()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("DataGrid.xaml");
+
+            Assert.True(resources.Contains("SessionDataGridStyle"));
+
+            Style sessionGridStyle = Assert.IsType<Style>(resources["SessionDataGridStyle"]);
+            AssertStyleSetter(sessionGridStyle, DataGrid.AutoGenerateColumnsProperty, false);
+            AssertStyleSetter(sessionGridStyle, DataGrid.CanUserAddRowsProperty, false);
+            AssertStyleSetter(sessionGridStyle, DataGrid.CanUserDeleteRowsProperty, false);
+            AssertStyleSetter(sessionGridStyle, DataGrid.HeadersVisibilityProperty, DataGridHeadersVisibility.Column);
+            AssertStyleSetter(sessionGridStyle, DataGrid.IsReadOnlyProperty, true);
+            AssertStyleSetter(sessionGridStyle, FrameworkElement.MinHeightProperty, 260.0);
+            AssertStyleSetter(
+                sessionGridStyle,
+                ScrollViewer.HorizontalScrollBarVisibilityProperty,
+                ScrollBarVisibility.Auto);
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
@@ -866,6 +887,7 @@ public sealed class MainWindowUiExpectationTests
                 tabs.SelectedIndex = 0;
                 window.UpdateLayout();
                 DataGrid appSessions = FindByAutomationId<DataGrid>(window, "RecentAppSessionsList");
+                AssertSessionDataGridContract(appSessions);
                 Assert.Equal(["App", "Process", "Start", "End", "Duration", "State", "Window", "Source"], ColumnHeaders(appSessions));
                 AssertColumnMinWidths(appSessions, [160, 180, 90, 90, 100, 80, 260, 100]);
                 Assert.Same(dashboard.ViewModel.RecentSessions, appSessions.ItemsSource);
@@ -873,6 +895,7 @@ public sealed class MainWindowUiExpectationTests
                 tabs.SelectedIndex = 1;
                 window.UpdateLayout();
                 DataGrid webSessions = FindByAutomationId<DataGrid>(window, "RecentWebSessionsList");
+                AssertSessionDataGridContract(webSessions);
                 Assert.Equal(["Domain", "Title", "URL Mode", "Start", "End", "Duration", "Browser", "Confidence"], ColumnHeaders(webSessions));
                 AssertColumnMinWidths(webSessions, [180, 260, 120, 90, 90, 100, 120, 100]);
                 Assert.Same(dashboard.ViewModel.RecentWebSessions, webSessions.ItemsSource);
@@ -880,6 +903,7 @@ public sealed class MainWindowUiExpectationTests
                 tabs.SelectedIndex = 2;
                 window.UpdateLayout();
                 DataGrid liveEvents = FindByAutomationId<DataGrid>(window, "LiveEventsList");
+                AssertSessionDataGridContract(liveEvents);
                 Assert.Equal(["Time", "Event Type", "App", "Domain", "Message"], ColumnHeaders(liveEvents));
                 Assert.Same(dashboard.ViewModel.LiveEvents, liveEvents.ItemsSource);
 
@@ -989,6 +1013,18 @@ public sealed class MainWindowUiExpectationTests
                 dataGrid.Columns[index].MinWidth >= expectedMinWidths[index],
                 $"{dataGrid.Columns[index].Header} MinWidth should be >= {expectedMinWidths[index]}.");
         }
+    }
+
+    private static void AssertSessionDataGridContract(DataGrid dataGrid)
+    {
+        Assert.NotNull(dataGrid.Style);
+        Assert.False(dataGrid.AutoGenerateColumns);
+        Assert.False(dataGrid.CanUserAddRows);
+        Assert.False(dataGrid.CanUserDeleteRows);
+        Assert.Equal(DataGridHeadersVisibility.Column, dataGrid.HeadersVisibility);
+        Assert.True(dataGrid.IsReadOnly);
+        Assert.True(dataGrid.MinHeight >= 260);
+        Assert.Equal(ScrollBarVisibility.Auto, ScrollViewer.GetHorizontalScrollBarVisibility(dataGrid));
     }
 
     private static SettingsPanel ShowSettingsPanel(Window window)

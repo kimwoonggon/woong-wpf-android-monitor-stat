@@ -12,6 +12,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/DataGrid.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -25,13 +26,7 @@
                      AutomationProperties.AutomationId="AppSessionsTab">
                 <DataGrid Margin="0,12,0,0"
                           AutomationProperties.AutomationId="RecentAppSessionsList"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          IsReadOnly="True"
-                          MinHeight="260"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          Style="{StaticResource SessionDataGridStyle}"
                           ItemsSource="{Binding RecentSessions}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="App"
@@ -75,13 +70,7 @@
                      AutomationProperties.AutomationId="WebSessionsTab">
                 <DataGrid Margin="0,12,0,0"
                           AutomationProperties.AutomationId="RecentWebSessionsList"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          IsReadOnly="True"
-                          MinHeight="260"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          Style="{StaticResource SessionDataGridStyle}"
                           ItemsSource="{Binding RecentWebSessions}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Domain"
@@ -125,13 +114,7 @@
                      AutomationProperties.AutomationId="LiveEventsTab">
                 <DataGrid Margin="0,12,0,0"
                           AutomationProperties.AutomationId="LiveEventsList"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          IsReadOnly="True"
-                          MinHeight="260"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          Style="{StaticResource SessionDataGridStyle}"
                           ItemsSource="{Binding LiveEvents}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Time"
