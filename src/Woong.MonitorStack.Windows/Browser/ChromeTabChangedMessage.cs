@@ -16,7 +16,7 @@ public sealed record ChromeTabChangedMessage
         WindowId = windowId;
         TabId = tabId;
         Url = EnsureText(url, nameof(url));
-        Title = EnsureText(title, nameof(title));
+        Title = title.Trim();
         Domain = EnsureText(domain, nameof(domain));
         BrowserFamily = EnsureText(browserFamily, nameof(browserFamily));
         ObservedAtUtc = observedAtUtc.ToUniversalTime();

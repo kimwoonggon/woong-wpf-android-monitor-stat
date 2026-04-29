@@ -31,4 +31,15 @@ public sealed class ChromeNativeMessageReceiverTests
         Assert.Equal("example.com", message.Domain);
         Assert.Equal(42, message.TabId);
     }
+
+    [Fact]
+    public async Task ReadNextAsync_RejectsOversizedNativeMessage()
+    {
+        using var stream = new MemoryStream();
+        stream.Write(BitConverter.GetBytes(1024 * 1024 + 1));
+        stream.Position = 0;
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            ChromeNativeMessageReceiver.ReadNextAsync(stream, CancellationToken.None));
+    }
 }

@@ -67,6 +67,13 @@ Recommended levels:
 - Domain only: store normalized domain, not full URL.
 - Full URL: store full URL only when explicitly enabled.
 
+Domain-only browser metadata is the default target for browser visibility. It
+must appear in the Current Focus UI and Web Sessions view as soon as the active
+capture channel reports it; the UI must not wait for full URL opt-in to show a
+domain. Full path, query, fragment, page content, form content, message
+content, passwords, typed text, clipboard contents, and keystroke contents are
+out of scope by default.
+
 Window titles and tab titles may contain sensitive text. They must obey the
 same privacy-aware display/storage settings as window titles in Windows focus
 tracking.
@@ -87,7 +94,8 @@ URLs must be sanitized before persistence:
 - Administrator rights are not a browser-domain capture strategy. Elevation can
   change some Windows accessibility boundaries, but it does not provide browser
   active-tab URL APIs and should not be presented as the fix for missing
-  domains.
+  domains. Running the WPF app as Administrator may still leave Chrome, Edge,
+  Brave, or Firefox domain capture unavailable.
 - If URL/domain is unavailable, save only the normal FocusSession.
 - If URL/domain is available, save a WebSession linked to the current browser
   FocusSession.
@@ -103,17 +111,22 @@ URLs must be sanitized before persistence:
 
 Production browser-domain capture should prefer explicit browser integration:
 an installed extension that the user can see and approve, connected to the
-Windows app through native messaging. This is the stable path for Chrome and
-Edge domain metadata because the browser owns active-tab URL access.
+Windows app through native messaging. This is the stable path because the
+browser owns active-tab URL access. Chrome has the current implemented
+extension/native-messaging install path. Edge and Brave can use the same
+Chromium pattern, but each needs browser-specific extension packaging and
+native-messaging manifest/registry installation. Firefox needs its own
+extension and Firefox native-messaging manifest location.
 
 The WPF app also registers a metadata-only UI Automation address-bar fallback
 so domain-only metadata can appear as soon as tracking starts when the active
 browser exposes a recognizable address bar. This fallback reads only a browser
 address-bar value to derive a registrable domain, never reads page contents,
-forms, messages, passwords, or typed text, and never stores full URLs while the
-storage policy is Domain only. Browser UI availability can vary by browser
-version, focus state, profile, accessibility settings, and operating
-environment, so extension/native messaging remains the more reliable path.
+forms, messages, passwords, typed text, clipboard contents, or keystroke
+contents, and never stores full URLs while the storage policy is Domain only.
+Browser UI availability can vary by browser version, focus state, profile,
+accessibility settings, elevation mismatch, and operating environment, so
+extension/native messaging remains the more reliable path.
 
 The current browser-domain field should therefore distinguish capture status
 from privacy state:
@@ -238,9 +251,21 @@ The Chrome native messaging path now has a local host executable and install
 script. The extension keeps a persistent native port open so ordered tab/domain
 changes can be sessionized by the host process. This is more stable than
 administrator elevation because it uses browser-granted active-tab metadata
-rather than trying to pierce browser internals from the outside. Edge and Brave
-can follow the same Chromium extension/native-messaging pattern with browser
-specific registration/packaging, while Firefox requires its own extension and
-native-messaging manifest path. Until those browser-specific installers are
-added, the generic WPF browser-domain fallback remains best-effort for
-non-Chrome browsers.
+rather than trying to pierce browser internals from the outside. Edge, Brave,
+and Firefox should not be marked as fully installed browser-domain capture
+channels until their browser-specific extension packages, native-messaging
+manifests, and installer/registration flows exist. Until then, the generic WPF
+browser-domain fallback remains best-effort for non-Chrome browsers and should
+report capture status honestly.
+
+Local Chrome native messaging acceptance is sandboxed. It launches Chrome with
+a temporary `--user-data-dir` profile, uses the scoped test host
+`com.woong.monitorstack.chrome_test`, registers only an HKCU child native-host
+key, and cleans up only that key. The cleanup process stops only Chrome
+processes whose command line contains the temporary profile path, so existing
+user Chrome windows must not be closed. Acceptance writes to a temp SQLite DB
+under `artifacts/chrome-native-acceptance/` and sets
+`WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so a missing explicit test DB fails
+instead of falling back to the user's real local DB. The current full Chrome
+acceptance still needs a follow-up fix for the native-message timeout before it
+can be marked complete.

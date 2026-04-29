@@ -27,4 +27,25 @@ public sealed class ChromeNativeMessageParserTests
         Assert.Equal("microsoft.com", message.Domain);
         Assert.Equal(new DateTimeOffset(2026, 4, 28, 1, 2, 3, TimeSpan.Zero), message.ObservedAtUtc);
     }
+
+    [Fact]
+    public void ParseActiveTabChanged_AllowsEmptyTitleBecauseChromeCanReportBeforeTitleLoads()
+    {
+        const string json = """
+            {
+              "type": "activeTabChanged",
+              "browserFamily": "Chrome",
+              "windowId": 7,
+              "tabId": 42,
+              "url": "https://github.example/start.html",
+              "title": "",
+              "observedAtUtc": "2026-04-28T01:02:03Z"
+            }
+            """;
+
+        var message = ChromeNativeMessageParser.ParseActiveTabChanged(json);
+
+        Assert.Equal("", message.Title);
+        Assert.Equal("github.example", message.Domain);
+    }
 }

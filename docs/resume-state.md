@@ -4,6 +4,22 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Chrome native messaging acceptance safety hardening slice. RED/focused tests
+now guard against closing the user's normal Chrome and against dangerous HKCU
+native-messaging cleanup. The acceptance script launches Chrome with a temp
+`--user-data-dir` profile, cleanup stops only Chrome processes whose command
+line contains that temp profile, `HostName` values must be scoped and
+non-blank before any registry path is built, and the native host can be forced
+with `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so acceptance cannot silently fall
+back to the user's real local DB. Added
+`docs/chrome-native-messaging-acceptance.md`. Verified focused Chrome native
+messaging script/registry/parser/receiver tests, the dry-run acceptance path,
+full `.NET` tests (267), full `.NET` build with 0 warnings/errors, and coverage
+generation with 91.2% line coverage. The full headed Chrome acceptance is still
+not complete because the native message receipt path can time out before
+`github.example` and `chatgpt.example` reach temp SQLite; that remains the next
+Chrome-specific blocker.
+
 Milestone 27 Android UI snapshot blocked-evidence slice. RED tests first
 required a repo-level `scripts/run-android-ui-snapshots.ps1` contract and a
 fake-ADB execution path that writes `report.md`, `manifest.json`, and

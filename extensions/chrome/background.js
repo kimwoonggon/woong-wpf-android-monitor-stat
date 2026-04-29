@@ -1,6 +1,19 @@
 const nativeHostName = "com.woong.monitorstack.chrome";
-const browserFamily = "Chrome";
 let nativePort = null;
+let reconnectTimer = null;
+
+async function detectBrowserFamily() {
+  const userAgent = navigator.userAgent || "";
+  if (userAgent.includes("Edg/")) {
+    return "Microsoft Edge";
+  }
+
+  if (navigator.brave && await navigator.brave.isBrave()) {
+    return "Brave";
+  }
+
+  return "Chrome";
+}
 
 function getNativePort() {
   if (nativePort) {
@@ -10,8 +23,20 @@ function getNativePort() {
   nativePort = chrome.runtime.connectNative(nativeHostName);
   nativePort.onDisconnect.addListener(() => {
     nativePort = null;
+    scheduleReconnectReport();
   });
   return nativePort;
+}
+
+function scheduleReconnectReport() {
+  if (reconnectTimer) {
+    return;
+  }
+
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+    await reportCurrentActiveTab();
+  }, 5000);
 }
 
 async function sendActiveTab(tab) {
@@ -21,7 +46,7 @@ async function sendActiveTab(tab) {
 
   const message = {
     type: "activeTabChanged",
-    browserFamily,
+    browserFamily: await detectBrowserFamily(),
     windowId: tab.windowId,
     tabId: tab.id,
     url: tab.url,
@@ -35,8 +60,19 @@ async function sendActiveTab(tab) {
   } catch {
     // The Windows app may be closed or the native host may not be registered yet.
     nativePort = null;
+    scheduleReconnectReport();
   }
 }
+
+async function reportCurrentActiveTab() {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tabs.length > 0) {
+    await sendActiveTab(tabs[0]);
+  }
+}
+
+chrome.runtime.onStartup.addListener(reportCurrentActiveTab);
+chrome.runtime.onInstalled.addListener(reportCurrentActiveTab);
 
 chrome.tabs.onActivated.addListener(async activeInfo => {
   const tab = await chrome.tabs.get(activeInfo.tabId);
@@ -48,3 +84,5 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     await sendActiveTab(tab);
   }
 });
+
+reportCurrentActiveTab();

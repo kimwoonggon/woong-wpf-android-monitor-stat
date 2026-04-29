@@ -9,6 +9,7 @@ internal static class ChromeNativeHostProgram
     private const string LocalDbEnvironmentVariable = "WOONG_MONITOR_LOCAL_DB";
     private const string DeviceIdEnvironmentVariable = "WOONG_MONITOR_DEVICE_ID";
     private const string FocusSessionIdEnvironmentVariable = "WOONG_MONITOR_NATIVE_HOST_FOCUS_SESSION_ID";
+    private const string RequireExplicitDbEnvironmentVariable = "WOONG_MONITOR_REQUIRE_EXPLICIT_DB";
 
     public static async Task<int> RunAsync(string[] args, Stream input, CancellationToken cancellationToken)
     {
@@ -62,6 +63,15 @@ internal static class ChromeNativeHostProgram
         if (!string.IsNullOrWhiteSpace(environmentPath))
         {
             return environmentPath;
+        }
+
+        if (string.Equals(
+            Environment.GetEnvironmentVariable(RequireExplicitDbEnvironmentVariable),
+            "1",
+            StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "Chrome native host acceptance requires an explicit --db argument or WOONG_MONITOR_LOCAL_DB.");
         }
 
         return Path.Combine(

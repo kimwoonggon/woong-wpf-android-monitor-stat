@@ -60,6 +60,11 @@ Browser process focused
   -> URL/domain changes close previous WebSession and start a new one
 ```
 
+The browser-domain pipeline is metadata-only by default. It must not collect
+keystroke contents, clipboard contents, page contents, form input, message
+contents, passwords, screenshots, or full URLs unless a future explicit full
+URL storage setting is enabled for URL storage only.
+
 No fake domain should be inferred from a window title unless it is explicitly
 marked low-confidence test/fallback data.
 
@@ -71,10 +76,19 @@ address-bar fallback, reports domain metadata. Full URL storage remains a
 separate opt-in privacy setting.
 
 Running the WPF app as Administrator is not enough to make domain capture work.
-Elevation does not grant Chrome, Edge, Firefox, or Brave active-tab URL APIs.
-Production should use an explicit browser extension/native messaging channel as
-the stable path, with the UI Automation address-bar fallback documented as
-domain-only, status-aware, and best-effort.
+Elevation does not grant Chrome, Edge, Firefox, Brave, or other browsers
+active-tab URL APIs and can still fail depending on browser UI, profile,
+accessibility, and process boundaries. Production should use an explicit
+browser extension/native messaging channel as the stable path, with the UI
+Automation address-bar fallback documented as domain-only, status-aware, and
+best-effort.
+
+Chrome currently has the implemented native-messaging host and install script.
+Edge and Brave require their own extension packaging plus browser-specific
+native-messaging manifest/registry installers before they should be treated as
+stable capture channels. Firefox requires a Firefox-specific extension and
+native-messaging manifest path. Until those are present, non-Chrome domain
+capture is limited to the best-effort domain-only UI Automation fallback.
 
 ## Android Runtime Pipeline
 
@@ -229,8 +243,22 @@ registers the current-user Chrome native-messaging manifest. Foreground
 app/window focus still comes from the WPF tracking pipeline; extension tab
 events provide browser-domain metadata.
 
+When either Chrome native messaging or the address-bar fallback reports a
+domain, the dashboard should display that domain immediately. A missing domain
+means the capture channel is unavailable, not yet installed, not connected, or
+not currently reporting; it does not mean that privacy settings are blocking
+domain-only metadata.
+
 `SampleDashboard` acceptance mode is intentionally not a tracking pipeline. It
 injects deterministic read-only dashboard rows for visual review and beginner
 verification, while leaving the temp SQLite `focus_session`, `web_session`, and
 `sync_outbox` tables empty. Use `TrackingPipeline` or RealStart acceptance when
 the goal is to prove Start/Poll/Stop persistence.
+
+Chrome native messaging acceptance is also isolated from the user's normal
+runtime state. The acceptance script launches Chrome with a temporary
+`--user-data-dir` profile, registers only the scoped HKCU test host
+`com.woong.monitorstack.chrome_test`, writes to an artifact SQLite DB, and sets
+`WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so the host cannot silently fall back to
+the user's real local DB during acceptance. Cleanup stops only Chrome processes
+whose command line contains the temporary profile path.

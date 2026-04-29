@@ -698,6 +698,31 @@ milestones below are finished.
   at 90.8% line coverage, and WPF UI acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-170610`; the Windows smoke tool
   reported real Chrome foreground metadata without content capture.
+- [x] Chrome native messaging safety hardening: acceptance now uses a temp
+  Chrome profile, stops only sandbox Chrome processes whose command line
+  contains that temp profile, rejects blank/malformed native host names before
+  registry paths are built, writes dry-run artifacts under
+  `artifacts/chrome-native-acceptance/latest`, and requires an explicit temp
+  DB during acceptance so the native host cannot silently fall back to the
+  user's real local DB.
+- [x] Chrome native messaging safety docs added at
+  `docs/chrome-native-messaging-acceptance.md`.
+- [x] Chrome native messaging safety verification: focused script/registry/
+  parser/receiver tests passed (19), dry-run acceptance passed without
+  launching Chrome or writing HKCU values, full `.NET` tests passed (267),
+  `.NET` build passed with 0 warnings/errors, and coverage generated at 91.2%
+  line coverage.
+- [ ] Fix the remaining full headed Chrome native-message acceptance timeout
+  so `github.example` and `chatgpt.example` arrive in temp SQLite through
+  Extension -> NativeHost -> SQLite. Do not mark Chrome acceptance complete
+  until this passes.
+- [x] Browser capture docs-only clarification: `docs/browser-tracking-policy.md`
+  and `docs/runtime-pipeline.md` now state that Administrator rights are not a
+  reliable active-tab URL capture path, Chrome is the installed
+  extension/native-messaging path today, Edge/Brave/Firefox need
+  browser-specific native-messaging installers/manifests, domain-only metadata
+  should display immediately when reported, and keylogging/page content/full
+  URL capture remain out of scope by default. No code or tests changed.
 - [x] Live Event Log runtime verification: RED tests added command-level
   coverage for Tracking started, FocusSession closed/started, WebSession
   closed/started, FocusSession/WebSession persisted, outbox row created, sync
