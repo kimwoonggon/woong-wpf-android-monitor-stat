@@ -1202,6 +1202,7 @@ milestones below are finished.
   - [x] WPF details pager automation names: RED App test required readable `AutomationProperties.Name` values for compact previous/next/page-status controls, then passed after preserving icon buttons with semantic names.
   - [x] WPF Presentation pager/status behavior: RED tests required chart details commands to reset the selected tab pager, rows-per-page changes to clamp page state, and sync failure/off transitions to update dashboard sync status safely.
   - [x] WPF App accessibility names: RED App tests required SettingsPanel primary controls, chart detail buttons, and reusable SectionCard action buttons to expose readable `AutomationProperties.Name` values.
+  - [x] WPF App accessibility helper/details names: refactored duplicate STA/visual-tree test helpers into `WpfTestHelpers` and added RED DetailsTabsPanel tests for readable tab/list/rows-per-page automation names.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

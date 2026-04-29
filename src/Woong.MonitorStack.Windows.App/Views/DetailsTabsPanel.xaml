@@ -81,12 +81,14 @@
             </Grid.RowDefinitions>
 
             <TabControl AutomationProperties.AutomationId="DashboardTabs"
+                        AutomationProperties.Name="Dashboard details tabs"
                         Style="{StaticResource DashboardTabControlStyle}"
                         ItemContainerStyle="{StaticResource DashboardTabItemStyle}"
                         SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
                         SelectedValuePath="Tag">
                 <TabItem Tag="{x:Static dashboard:DetailsTab.AppSessions}"
-                         AutomationProperties.AutomationId="AppSessionsTab">
+                         AutomationProperties.AutomationId="AppSessionsTab"
+                         AutomationProperties.Name="App Sessions">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock AutomationProperties.AutomationId="AppSessionsTabIcon"
@@ -97,6 +99,7 @@
                     </TabItem.Header>
                     <Grid AutomationProperties.AutomationId="AppSessionsList">
                         <DataGrid AutomationProperties.AutomationId="RecentAppSessionsList"
+                                  AutomationProperties.Name="Recent app sessions"
                                   Style="{StaticResource SessionDataGridStyle}"
                                   ItemsSource="{Binding VisibleAppSessionRows}">
                             <DataGrid.Columns>
@@ -153,7 +156,8 @@
                 </TabItem>
 
                 <TabItem Tag="{x:Static dashboard:DetailsTab.WebSessions}"
-                         AutomationProperties.AutomationId="WebSessionsTab">
+                         AutomationProperties.AutomationId="WebSessionsTab"
+                         AutomationProperties.Name="Web Sessions">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock AutomationProperties.AutomationId="WebSessionsTabIcon"
@@ -164,6 +168,7 @@
                     </TabItem.Header>
                     <Grid AutomationProperties.AutomationId="WebSessionsList">
                         <DataGrid AutomationProperties.AutomationId="RecentWebSessionsList"
+                                  AutomationProperties.Name="Recent web sessions"
                                   Style="{StaticResource SessionDataGridStyle}"
                                   ItemsSource="{Binding VisibleWebSessionRows}">
                             <DataGrid.Columns>
@@ -205,7 +210,8 @@
                 </TabItem>
 
                 <TabItem Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
-                         AutomationProperties.AutomationId="LiveEventsTab">
+                         AutomationProperties.AutomationId="LiveEventsTab"
+                         AutomationProperties.Name="Live Event Log">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock AutomationProperties.AutomationId="LiveEventsTabIcon"
@@ -215,6 +221,7 @@
                         </StackPanel>
                     </TabItem.Header>
                     <DataGrid AutomationProperties.AutomationId="LiveEventsList"
+                              AutomationProperties.Name="Live event log"
                               Style="{StaticResource SessionDataGridStyle}"
                               ItemsSource="{Binding VisibleLiveEventRows}">
                         <DataGrid.Columns>
@@ -243,7 +250,8 @@
                 </TabItem>
 
                 <TabItem Tag="{x:Static dashboard:DetailsTab.Settings}"
-                         AutomationProperties.AutomationId="SettingsTab">
+                         AutomationProperties.AutomationId="SettingsTab"
+                         AutomationProperties.Name="Settings">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock AutomationProperties.AutomationId="SettingsTabIcon"
@@ -267,6 +275,7 @@
                                Style="{StaticResource MutedTextStyle}"
                                Margin="0,0,8,0" />
                     <ComboBox AutomationProperties.AutomationId="DetailsRowsPerPageComboBox"
+                              AutomationProperties.Name="Rows per details page"
                               ItemsSource="{Binding RowsPerPageOptions}"
                               SelectedItem="{Binding RowsPerPage, Mode=TwoWay}"
                               MinWidth="72" />

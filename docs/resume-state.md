@@ -3297,6 +3297,37 @@ Verified so far:
 - Main: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed and generated coverage: line 91.5% (3582/3913), branch 71.1% (496/697).
 - Main: `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-022502`. RealStart and TrackingPipeline passed against a temp SQLite DB; cleanup emitted the known non-fatal already-closed process warning.
 
+Committed and pushed:
+
+- `d785a8f Add WPF action automation names`
+
+## 2026-04-30 WPF Accessibility Test Helper And Details Names Slice
+
+- Refactored duplicated WPF App accessibility test helpers into
+  `WpfTestHelpers` for STA execution, visual/logical tree search, and
+  automation-name assertions.
+- Added a RED/GREEN WPF App test requiring DetailsTabsPanel's tab control,
+  tab items, App/Web/Live lists, and rows-per-page selector to expose readable
+  automation names.
+- Updated DetailsTabsPanel XAML with semantic names while preserving existing
+  AutomationIds and MVVM bindings.
+- This is a WPF App-only accessibility/test-maintenance slice. It does not
+  change tracking, SQLite, sync, browser capture, Android, or server behavior.
+
+Verified so far:
+
+- Popper: accessibility tests passed 3/3 before and after helper refactor.
+- Popper: `DetailsTabsPanel_PrimaryTabsAndListsExposeReadableAutomationNames`
+  failed RED on missing readable `DashboardTabs` name, then passed.
+- Popper: accessibility tests passed 4/4 after the details names slice.
+- Popper: WPF App tests passed 111/111.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~AccessibilityTests"` passed 4 tests.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 111 WPF App tests.
+- Main: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 345 total .NET tests.
+- Main: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed and generated coverage: line 91.5% (3582/3913), branch 71.1% (496/697).
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-023850`. RealStart and TrackingPipeline passed against a temp SQLite DB; cleanup emitted the known non-fatal already-closed process warning.
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain

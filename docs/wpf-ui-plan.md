@@ -220,6 +220,9 @@ Current details tab implementation:
 - Settings controls, chart details action buttons, and reusable `SectionCard`
   action buttons expose readable automation names. This keeps compact visual
   controls usable for semantic UI acceptance and assistive technology.
+- Details tabs and their primary lists also expose readable automation names:
+  the tab control, tab items, App/Web/Live grids, and rows-per-page selector can
+  be selected by stable AutomationIds and described by semantic names.
 
 Current reusable control implementation:
 
