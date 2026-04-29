@@ -209,6 +209,24 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void ButtonStyleDictionary_DefinesReadableDashboardButtonStyles()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("Buttons.xaml");
+
+            Assert.True(resources.Contains("DashboardButtonStyle"));
+            Assert.True(resources.Contains("PrimaryButtonStyle"));
+            Assert.True(resources.Contains("DangerButtonStyle"));
+            Assert.True(resources.Contains("SecondaryButtonStyle"));
+            Assert.True(resources.Contains("PeriodButtonStyle"));
+
+            Style primaryButtonStyle = Assert.IsType<Style>(resources["PrimaryButtonStyle"]);
+            AssertStyleSetter(primaryButtonStyle, Button.MinWidthProperty, 96.0);
+            AssertStyleSetter(primaryButtonStyle, Button.MinHeightProperty, 40.0);
+            AssertStyleSetter(primaryButtonStyle, Control.PaddingProperty, new Thickness(12, 0, 12, 0));
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
@@ -909,6 +927,40 @@ public sealed class MainWindowUiExpectationTests
         => dataGrid.Columns
             .Select(column => column.Header?.ToString() ?? "")
             .ToList();
+
+    private static ResourceDictionary LoadStyleResource(string fileName)
+        => Assert.IsType<ResourceDictionary>(
+            Application.LoadComponent(new Uri(
+                $"/Woong.MonitorStack.Windows.App;component/Styles/{fileName}",
+                UriKind.Relative)));
+
+    private static void AssertStyleSetter<T>(Style style, DependencyProperty property, T expectedValue)
+    {
+        Setter setter = FindSetter(style, property);
+        T actualValue = Assert.IsType<T>(setter.Value);
+
+        Assert.Equal(expectedValue, actualValue);
+    }
+
+    private static Setter FindSetter(Style style, DependencyProperty property)
+    {
+        Style? current = style;
+
+        while (current is not null)
+        {
+            foreach (Setter setter in current.Setters.OfType<Setter>())
+            {
+                if (setter.Property == property)
+                {
+                    return setter;
+                }
+            }
+
+            current = current.BasedOn;
+        }
+
+        throw new InvalidOperationException($"Style '{style}' does not set '{property.Name}'.");
+    }
 
     private static IReadOnlySet<string> CollectText(DependencyObject root)
     {

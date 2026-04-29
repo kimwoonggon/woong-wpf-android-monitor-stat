@@ -296,6 +296,16 @@ Coverage is 92.1% overall. The acceptance script still reports a non-fatal
 clean-close warning from FlaUI/process ownership; semantic checks and
 SQLite/outbox verification passed.
 
+The button style dictionary slice added `Styles/Buttons.xaml`, merged it from
+`App.xaml`, and replaced duplicate local button style definitions in
+`ControlBar` and `SettingsPanel`. Button readability, Start/Stop/Refresh/Sync,
+period controls, settings storage buttons, and semantic pipeline acceptance
+remained green. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-130753`
+
+Coverage remains 92.1% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

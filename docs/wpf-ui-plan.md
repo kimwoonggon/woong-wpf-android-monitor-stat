@@ -204,6 +204,15 @@ Current reusable control implementation:
   for the shared chart card surface while preserving chart AutomationIds and
   app/domain details tab-switch actions.
 
+Current style dictionary implementation:
+
+- `Styles/Buttons.xaml` defines the shared dashboard, primary, danger,
+  secondary, and period button styles.
+- `ControlBar` and `SettingsPanel` use the shared button dictionary instead of
+  duplicate local `DashboardButtonStyle` definitions. The remaining style
+  dictionary work is `Colors.xaml`, `Typography.xaml`, `Cards.xaml`,
+  `DataGrid.xaml`, and `Tabs.xaml`.
+
 Open `wpfelements.md` alignment decisions:
 
 - Domain Focus chart: `wpfelements.md` suggests a Cartesian/ranking chart,

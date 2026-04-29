@@ -8,14 +8,11 @@
              AutomationProperties.AutomationId="SettingsPanel"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
-        <Style x:Key="DashboardButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="MinHeight" Value="40" />
-            <Setter Property="MinWidth" Value="96" />
-            <Setter Property="Padding" Value="12,0" />
-            <Setter Property="Margin" Value="0,0,8,8" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid Margin="0,12,0,0">
@@ -95,11 +92,11 @@
             <Button Content="Open local DB folder"
                     AutomationProperties.AutomationId="OpenLocalDbFolderButton"
                     IsEnabled="False"
-                    Style="{StaticResource DashboardButtonStyle}" />
+                    Style="{StaticResource SecondaryButtonStyle}" />
             <Button Content="Open logs folder"
                     AutomationProperties.AutomationId="OpenLogsFolderButton"
                     IsEnabled="False"
-                    Style="{StaticResource DashboardButtonStyle}" />
+                    Style="{StaticResource SecondaryButtonStyle}" />
         </StackPanel>
     </Grid>
 </UserControl>

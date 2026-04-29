@@ -723,6 +723,14 @@ milestones below are finished.
 - [x] SectionCard extraction verification: `.NET` build passed.
 - [x] SectionCard extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-125444`.
 - [x] SectionCard extraction verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Add `Styles/Buttons.xaml` with shared dashboard, primary, danger, secondary, and period button styles.
+- [x] Replace duplicate local `DashboardButtonStyle` blocks in `ControlBar` and `SettingsPanel` with the shared button style dictionary.
+- [x] Button style dictionary verification: focused button/resource, ControlBar, SettingsPanel, MainWindow, and tabs tests passed.
+- [x] Button style dictionary verification: all Windows App tests passed (44 tests).
+- [x] Button style dictionary verification: full `.NET` tests passed (198 tests).
+- [x] Button style dictionary verification: `.NET` build passed.
+- [x] Button style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-130753`.
+- [x] Button style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Align DashboardView root scrolling with `wpfelements.md`: prefer vertical dashboard scrolling and keep horizontal scrolling inside wide grids/charts where needed.

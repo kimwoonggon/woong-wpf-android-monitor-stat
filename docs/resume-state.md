@@ -4,15 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 SectionCard extraction slice.
-`SectionCard_RendersContentAndOptionalActionCommand` proves the reusable WPF
-section card renders a title, optional top-right action command, and body
-content through its public `CardContent` slot. `ChartsPanel` now uses
-`Controls/SectionCard.xaml` for the shared chart card surface while preserving
-`ChartArea`, chart AutomationIds, chart empty states, and app/domain
-`상세보기` tab-switch behavior. Verification passed: all `.NET` tests (197),
+Milestone 31 button style dictionary slice.
+`ButtonStyleDictionary_DefinesReadableDashboardButtonStyles` proves
+`Styles/Buttons.xaml` exposes shared dashboard, primary, danger, secondary, and
+period button styles with the readable button contract. `ControlBar` and
+`SettingsPanel` now use the shared dictionary instead of duplicate local
+`DashboardButtonStyle` blocks. Verification passed: all `.NET` tests (198),
 full `.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-125444`, and coverage generation with
+`artifacts/wpf-ui-acceptance/20260429-130753`, and coverage generation with
 overall line coverage 92.1%.
 
 ## Completed
@@ -955,12 +954,13 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with style dictionary extraction: `Colors.xaml`,
-`Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, and
-`Tabs.xaml`. Preserve the extracted dashboard views, reusable controls,
-chart `상세보기` tab-switch behavior, and keep the `wpfelements.md` audit gaps
-visible: domain chart type decision, Details pagination decision, root scrolling
-alignment, and style dictionary migration away from hard-coded local styles.
+Continue Milestone 31 with the next style dictionary slice. Prefer the
+read-only audit order: root scrolling alignment next if reducing layout churn,
+otherwise `Colors.xaml`/`Cards.xaml` before typography and grid/tab styles.
+Preserve the extracted dashboard views, reusable controls, chart `상세보기`
+tab-switch behavior, and keep the `wpfelements.md` audit gaps visible: domain
+chart type decision, Details pagination decision, root scrolling alignment, and
+style dictionary migration away from hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1394,6 +1394,35 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.1%.
 
-Next highest priority is style dictionary extraction. Keep all WPF-only
-resources in `Windows.App`, preserve current semantic/UI acceptance tests, and
-avoid adding WPF references to `Windows.Presentation`.
+## 2026-04-29 WPF Button Style Dictionary Slice
+
+- Added the RED style-resource test
+  `ButtonStyleDictionary_DefinesReadableDashboardButtonStyles`.
+- Added `Styles/Buttons.xaml` with shared `DashboardButtonStyle`,
+  `PrimaryButtonStyle`, `DangerButtonStyle`, `SecondaryButtonStyle`, and
+  `PeriodButtonStyle`.
+- Merged the button dictionary from `App.xaml`.
+- Replaced duplicate local `DashboardButtonStyle` definitions in
+  `Views/ControlBar.xaml` and `Views/SettingsPanel.xaml` with the shared
+  resource dictionary while preserving button AutomationIds and command
+  bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "ButtonStyleDictionary_DefinesReadableDashboardButtonStyles|DashboardView_HostsControlBarAndPreservesCommandBindings|SettingsPanel_PreservesRuntimeAndStorageActions|MainWindow_ExposesDashboardControlsAndCommandBindings|MainWindow_TabsExposeExpectedListsAndSettingsControls"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-130753`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is the next narrow Milestone 31 slice. The read-only
+audit recommends root scrolling alignment before broader style churn, then
+`Colors.xaml`/`Cards.xaml`, then typography, data grid, and tabs. Keep all
+WPF-only resources in `Windows.App`, preserve current semantic/UI acceptance
+tests, and avoid adding WPF references to `Windows.Presentation`.
