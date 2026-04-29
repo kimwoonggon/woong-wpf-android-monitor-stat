@@ -26,6 +26,10 @@ $latestRoot = Join-Path $OutputRoot "latest"
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
 $expectedScreens = @("dashboard", "settings", "sessions", "daily summary")
+$expectedLocationChecks = @(
+    "Dashboard location card: locationContextCard, locationStatusText, locationLatitudeText, locationLongitudeText, locationAccuracyText, locationCapturedAtText",
+    "Settings location section: locationContextDefaultText, locationCoordinateBoundaryText, preciseLocationOptInText, locationContextCheckBox, preciseLatitudeLongitudeCheckBox, requestLocationPermissionButton"
+)
 $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
@@ -85,6 +89,14 @@ function Write-AndroidSnapshotArtifacts {
         "- sessions",
         "- daily summary",
         "",
+        "## Expected Location Context Checks",
+        ""
+    )
+    foreach ($check in $expectedLocationChecks) {
+        $reportLines += "- $check"
+    }
+    $reportLines += @(
+        "",
         "## Result",
         ""
     )
@@ -124,6 +136,7 @@ function Write-AndroidSnapshotArtifacts {
         adbPath = $AdbPath
         gradleWrapperPath = $GradleWrapperPath
         expectedScreens = $expectedScreens
+        expectedLocationChecks = $expectedLocationChecks
         screenshots = $screenshots
         blockedReason = $BlockedReason
     }
@@ -134,6 +147,8 @@ function Write-AndroidSnapshotArtifacts {
         "",
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",
+        "Check the Dashboard location card shows seeded opt-in location context when screenshots exist.",
+        "Check the Settings location section shows location off by default, precise latitude/longitude explicit opt-in, and the permission action.",
         "If this run is BLOCKED, read `report.md` and fix the device/emulator availability first."
     )
     Set-Content -Path (Join-Path $runRoot "visual-review-prompt.md") -Value $prompt
@@ -201,7 +216,7 @@ try {
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")
     $seedTestClass = "com.woong.monitorstack.snapshots.SnapshotSeedTest"
     $testRunner = "com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner"
-    $notes.Add("Seeding deterministic sample sessions with $seedTestClass.")
+    $notes.Add("Seeding deterministic sample sessions and location context with $seedTestClass.")
     Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $seedTestClass, $testRunner) -Description "Seed Android snapshot sample data"
 
     foreach ($target in $screenTargets) {

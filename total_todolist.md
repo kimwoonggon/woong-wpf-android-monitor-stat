@@ -628,7 +628,9 @@ milestones below are finished.
   - [x] Add Android sync API/client method for `/api/location-contexts/upload`.
   - [x] Align Android location-context upload payload with the server contract: top-level `deviceId` and `contexts` with `clientContextId`, UTC/local date, timezone, nullable coordinates, capture mode, permission state, and source.
   - [x] Wire local location-context outbox/worker processing into the sync runner while preserving sync opt-in and location opt-in gates.
-- [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
+- [x] Add Android UI snapshot script/androidTest coverage for Dashboard location card and Settings location section.
+  - [x] Generate no-device `BLOCKED` snapshot artifacts that explicitly list expected location-card/settings-section checks.
+  - [ ] Capture real connected-device screenshots for Dashboard location card and Settings location section when a device/emulator is available.
 - [x] Commit and push Android optional location context slices.
 
 ## Milestone 28: Privacy And Retention Hardening

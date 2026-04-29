@@ -26,6 +26,23 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotScript_DocumentsLocationContextScreenshotChecks()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("Dashboard location card", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Settings location section", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("locationContextCard", script, StringComparison.Ordinal);
+        Assert.Contains("locationContextCheckBox", script, StringComparison.Ordinal);
+        Assert.Contains("preciseLatitudeLongitudeCheckBox", script, StringComparison.Ordinal);
+        Assert.Contains("requestLocationPermissionButton", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_WhenNoDeviceConnected_WritesBlockedArtifacts()
     {
         string repoRoot = FindRepositoryRoot();
@@ -61,7 +78,10 @@ public sealed class AndroidUiSnapshotScriptTests
             Assert.True(File.Exists(Path.Combine(latest, "manifest.json")));
             Assert.True(File.Exists(Path.Combine(latest, "visual-review-prompt.md")));
             Assert.Contains("BLOCKED", File.ReadAllText(Path.Combine(latest, "report.md")));
+            Assert.Contains("Dashboard location card", File.ReadAllText(Path.Combine(latest, "report.md")));
+            Assert.Contains("Settings location section", File.ReadAllText(Path.Combine(latest, "report.md")));
             Assert.Contains("No connected Android device", File.ReadAllText(Path.Combine(latest, "manifest.json")));
+            Assert.Contains("expectedLocationChecks", File.ReadAllText(Path.Combine(latest, "manifest.json")));
         }
         finally
         {

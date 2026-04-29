@@ -3,7 +3,11 @@ package com.woong.monitorstack.snapshots
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.data.local.LocationCaptureMode
+import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
+import com.woong.monitorstack.data.local.LocationPermissionState
 import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.dashboard.RoomDashboardRepository
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.junit.Test
@@ -50,6 +54,19 @@ class SnapshotSeedTest {
                     durationMinutes = 10,
                     isIdle = true
                 )
+            )
+        )
+        database.locationContextSnapshotDao().insert(
+            LocationContextSnapshotEntity(
+                id = "snapshot-location-context",
+                deviceId = RoomDashboardRepository.DefaultDeviceId,
+                capturedAtUtcMillis = base.plusMinutes(30).toInstant().toEpochMilli(),
+                latitude = 37.5665,
+                longitude = 126.9780,
+                accuracyMeters = 35.5f,
+                permissionState = LocationPermissionState.GrantedApproximate,
+                captureMode = LocationCaptureMode.AppUsageContext,
+                createdAtUtcMillis = base.plusMinutes(30).toInstant().toEpochMilli()
             )
         )
     }

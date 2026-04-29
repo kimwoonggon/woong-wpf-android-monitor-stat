@@ -3168,6 +3168,35 @@ Verified:
 - Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.AndroidOutboxSyncProcessorTest" --tests "com.woong.monitorstack.sync.AndroidSyncWorkerTest" --no-daemon --stacktrace` passed.
 - Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
 
+Committed and pushed:
+
+- `5946c7b Sync Android location context outbox rows`
+
+## 2026-04-30 Android Location UI Snapshot Evidence Slice
+
+- Updated the local Android UI snapshot script so reports, manifests, and
+  visual-review prompts explicitly include expected checks for the Dashboard
+  location card and Settings location section.
+- Updated snapshot seed instrumentation to insert deterministic local location
+  context data alongside sample app sessions.
+- Added/updated androidTest coverage for the Dashboard location context card
+  and Settings location section safe defaults. The Settings test verifies the
+  location permission button remains disabled while location context is off.
+- Fixed an existing androidTest ID typo from `topAppCard` to `topAppsCard`.
+- The current local environment still has no connected Android device/emulator,
+  so screenshots remain `BLOCKED` at runtime; the blocked artifact now tells a
+  beginner exactly which location UI evidence to expect after connecting a
+  device.
+
+Verified:
+
+- Carver: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript" -v minimal` passed.
+- Carver: `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Main: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript" -v minimal` passed 4 tests.
+- Main: `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -SkipBuild` generated `BLOCKED` artifacts at `artifacts/android-ui-snapshots/20260430-024300` because no Android device/emulator was connected.
+- Main: `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+
 ## 2026-04-30 Android SVG UI Flow Alignment Slice
 
 - Checked the planned Figma/SVG flow at

@@ -24,7 +24,7 @@ class DashboardActivityTest {
         onView(withId(R.id.todayFilterButton)).check(matches(isDisplayed()))
         onView(withId(R.id.totalActiveCard)).check(matches(isDisplayed()))
         onView(withId(R.id.totalActiveText)).check(matches(isDisplayed()))
-        onView(withId(R.id.topAppCard)).check(matches(isDisplayed()))
+        onView(withId(R.id.topAppsCard)).check(matches(isDisplayed()))
         onView(withId(R.id.topAppText)).check(matches(isDisplayed()))
         onView(withId(R.id.idleCard)).check(matches(isDisplayed()))
         onView(withId(R.id.idleText)).check(matches(isDisplayed()))
@@ -35,6 +35,17 @@ class DashboardActivityTest {
         onView(withId(R.id.appUsageBarChart)).check(matches(isDisplayed()))
         onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
         onView(withId(R.id.recentSessionsList)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun dashboardDisplaysLocationContextCardForScreenshotCoverage() {
+        onView(withId(R.id.locationContextCard)).check(matches(isDisplayed()))
+        onView(withId(R.id.locationContextLabel)).check(matches(withText(R.string.location_context_label)))
+        onView(withId(R.id.locationStatusText)).check(matches(isDisplayed()))
+        onView(withId(R.id.locationLatitudeText)).check(matches(isDisplayed()))
+        onView(withId(R.id.locationLongitudeText)).check(matches(isDisplayed()))
+        onView(withId(R.id.locationAccuracyText)).check(matches(isDisplayed()))
+        onView(withId(R.id.locationCapturedAtText)).check(matches(isDisplayed()))
     }
 
     @Test
