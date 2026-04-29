@@ -56,11 +56,25 @@ Browser process focused
   -> Browser reader attempts URL/title/domain capture
   -> If URL/domain unavailable, keep only FocusSession
   -> If domain available, create WebSession linked to FocusSession
+  -> Dashboard shows domain-only metadata immediately when capture reports it
   -> URL/domain changes close previous WebSession and start a new one
 ```
 
 No fake domain should be inferred from a window title unless it is explicitly
 marked low-confidence test/fallback data.
+
+Missing browser-domain metadata is a capture-connection status, not a privacy
+block. The UI should continue to show current app/process/window metadata as
+soon as foreground capture starts. Browser domain should appear when the
+extension/native messaging path, or the WPF app's metadata-only UI Automation
+address-bar fallback, reports domain metadata. Full URL storage remains a
+separate opt-in privacy setting.
+
+Running the WPF app as Administrator is not enough to make domain capture work.
+Elevation does not grant Chrome, Edge, Firefox, or Brave active-tab URL APIs.
+Production should use an explicit browser extension/native messaging channel as
+the stable path, with the UI Automation address-bar fallback documented as
+domain-only, status-aware, and best-effort.
 
 ## Android Runtime Pipeline
 
@@ -196,5 +210,6 @@ On startup/Start, the Windows tracker reads the current foreground app/window
 metadata immediately and displays that current focus state. It does not treat
 all running or background processes as focus time; only the foreground
 app/window becomes the active FocusSession. Browser domain metadata is a
-separate capture channel and may require browser integration before domains can
-be shown.
+separate capture channel: show domain-only metadata immediately when capture is
+available, and otherwise report the missing domain as a capture-connection
+status rather than a privacy block.

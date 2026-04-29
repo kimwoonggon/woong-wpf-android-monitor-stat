@@ -481,6 +481,16 @@ milestones below are finished.
 - [x] Verify duplicate WebSession uploads are idempotent.
 - [x] Add native messaging host manifest generation.
 - [ ] Add WPF browser connection status after higher-priority non-UI tracking/schema work.
+- [x] Document browser-domain capture status semantics for the
+  current slice: Administrator is not enough; missing domain is a
+  capture-connection status, not a privacy block.
+- [x] Register a metadata-only WPF UI Automation address-bar fallback so
+  domain-only metadata can appear immediately when the active browser exposes a
+  recognizable address bar.
+- [x] Keep extension/native messaging documented as the stable browser capture
+  path while UI Automation remains best-effort.
+- [ ] Add WPF browser connection/status UI that distinguishes extension
+  connected, UI Automation fallback active, unavailable, and error states.
 - [x] Add URL sanitizer/redaction policy before storing raw browser events.
 - [x] Run browser/domain tests, Windows tests, solution build/test.
 - [x] Commit and push browser domain tracking non-UI slice through native manifest generation.
@@ -639,6 +649,17 @@ milestones below are finished.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
 - [x] Update `docs/browser-tracking-policy.md` for the browser-domain-not-connected safe privacy UI label.
 - [x] Document that Administrator rights are not a reliable active-tab URL capture solution; explicit browser integration remains required.
+- [x] Update browser-domain docs for current capture-status copy,
+  immediate domain-only display when capture is available, production
+  extension/native messaging path, and best-effort UI Automation fallback.
+- [x] Run focused tests proving immediate Start browser-domain display,
+  production browser reader DI registration, and address-bar fallback behavior.
+- [x] Browser immediate capture verification: full `.NET` tests passed (233),
+  `.NET` build passed with 0 warnings/errors, coverage generated at 90.6% line
+  coverage, WPF UI acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-163949`, and the Windows smoke tool
+  reported current foreground metadata without capturing keystrokes or screen
+  contents.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.

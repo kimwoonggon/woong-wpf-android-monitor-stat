@@ -1,6 +1,7 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Woong.MonitorStack.Windows.App.Dashboard;
+using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
@@ -47,6 +48,37 @@ public sealed class WindowsAppCompositionTests
                 provider.GetRequiredService<IDashboardTrackingCoordinator>());
             Assert.IsType<SqliteDashboardDataSource>(
                 provider.GetRequiredService<IDashboardDataSource>());
+        }
+        finally
+        {
+            if (File.Exists(dbPath))
+            {
+                File.Delete(dbPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void AddWindowsApp_RegistersBrowserActivityReaderForImmediateDomainCapture()
+    {
+        string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new WindowsAppOptions(
+                new DashboardOptions("Asia/Seoul"),
+                deviceId: "windows-device-1",
+                localDatabaseConnectionString: $"Data Source={dbPath};Pooling=False",
+                idleThreshold: TimeSpan.FromMinutes(5)));
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+
+            Assert.IsAssignableFrom<IBrowserActivityReader>(
+                provider.GetRequiredService<IBrowserActivityReader>());
+            Assert.IsType<BrowserUrlSanitizer>(
+                provider.GetRequiredService<IBrowserUrlSanitizer>());
+            Assert.IsType<WindowsTrackingDashboardCoordinator>(
+                provider.GetRequiredService<IDashboardTrackingCoordinator>());
         }
         finally
         {

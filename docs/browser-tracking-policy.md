@@ -84,13 +84,45 @@ URLs must be sanitized before persistence:
 - Attempt URL/domain capture only through privacy-safe methods.
 - Prefer a visible browser extension/native messaging path or UI Automation
   address bar extraction when feasible.
+- Administrator rights are not a browser-domain capture strategy. Elevation can
+  change some Windows accessibility boundaries, but it does not provide browser
+  active-tab URL APIs and should not be presented as the fix for missing
+  domains.
 - If URL/domain is unavailable, save only the normal FocusSession.
 - If URL/domain is available, save a WebSession linked to the current browser
   FocusSession.
+- In Domain only mode, show the domain as soon as the capture channel provides
+  it. The absence of a domain means the browser capture channel is not
+  connected, configured, or reporting yet; it is not a privacy block.
 - URL/domain changes close the previous WebSession and start a new WebSession.
 - Duplicate tab events must not inflate duration.
 - Do not invent fake domains from window titles unless explicitly marked
   `Low` confidence and `FakeTestData` or test-only fallback.
+
+## Production Capture Path
+
+Production browser-domain capture should prefer explicit browser integration:
+an installed extension that the user can see and approve, connected to the
+Windows app through native messaging. This is the stable path for Chrome and
+Edge domain metadata because the browser owns active-tab URL access.
+
+The WPF app also registers a metadata-only UI Automation address-bar fallback
+so domain-only metadata can appear as soon as tracking starts when the active
+browser exposes a recognizable address bar. This fallback reads only a browser
+address-bar value to derive a registrable domain, never reads page contents,
+forms, messages, passwords, or typed text, and never stores full URLs while the
+storage policy is Domain only. Browser UI availability can vary by browser
+version, focus state, profile, accessibility settings, and operating
+environment, so extension/native messaging remains the more reliable path.
+
+The current browser-domain field should therefore distinguish capture status
+from privacy state:
+
+- Privacy status: full URL storage is off unless explicitly enabled.
+- Capture status: no domain is available until extension/native messaging or
+  the address-bar fallback reports metadata.
+- Product state: foreground app/window focus remains valid and should display
+  immediately even when browser-domain capture is unavailable.
 
 ## Required Tests
 

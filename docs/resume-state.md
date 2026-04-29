@@ -4,6 +4,20 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 23/25 browser-domain immediate capture slice. The WPF app now
+registers a metadata-only UI Automation address-bar fallback through DI, wires
+`WindowsTrackingDashboardCoordinator` with `SqliteWebSessionRepository`,
+`IBrowserActivityReader`, and DomainOnly URL storage, and keeps extension/native
+messaging documented as the more reliable browser-owned active-tab path. RED
+tests first covered production browser reader DI, immediate Start snapshot
+domain display, WPF `StartTrackingButton` domain display, and safe fallback
+behavior when a foreground process is not a browser or no address bar URL is
+available. This does not rely on Administrator rights, does not infer domains
+from window titles, and still stores no full URLs by default. Verification
+passed: full `.NET` tests (233), full `.NET` build with 0 warnings/errors,
+coverage generation with 90.6% line coverage, WPF UI acceptance at
+`artifacts/wpf-ui-acceptance/20260429-163949`, and the Windows smoke tool.
+
 Milestone 25 WPF EmptyData evidence and browser-domain copy adjustment.
 The in-progress EmptyData acceptance slice now proves the local snapshot tool
 launches with auto-start disabled and records zero `focus_session`,

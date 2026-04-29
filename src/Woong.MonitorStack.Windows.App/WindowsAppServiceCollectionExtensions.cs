@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Woong.MonitorStack.Windows.App.Browser;
 using Woong.MonitorStack.Windows.App.Dashboard;
+using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
@@ -52,6 +54,10 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<ISystemClock, SystemClock>();
         services.AddSingleton<IForegroundWindowReader, WindowsForegroundWindowReader>();
         services.AddSingleton<ILastInputReader, WindowsLastInputReader>();
+        services.AddSingleton<IBrowserProcessClassifier, BrowserProcessClassifier>();
+        services.AddSingleton<IBrowserUrlSanitizer, BrowserUrlSanitizer>();
+        services.AddSingleton<IBrowserAddressBarReader, WindowsUiAutomationAddressBarReader>();
+        services.AddSingleton<IBrowserActivityReader, UiAutomationBrowserActivityReader>();
         services.AddSingleton(provider => new ForegroundWindowCollector(
             provider.GetRequiredService<IForegroundWindowReader>(),
             provider.GetRequiredService<ISystemClock>()));
@@ -84,7 +90,15 @@ public static class WindowsAppServiceCollectionExtensions
         });
         services.AddSingleton<ISyncOutboxRepository>(provider => provider.GetRequiredService<SqliteSyncOutboxRepository>());
         services.AddSingleton<IDashboardDataSource, SqliteDashboardDataSource>();
-        services.AddSingleton<IDashboardTrackingCoordinator, WindowsTrackingDashboardCoordinator>();
+        services.AddSingleton<IDashboardTrackingCoordinator>(provider => new WindowsTrackingDashboardCoordinator(
+            provider.GetRequiredService<Func<TrackingPoller>>(),
+            provider.GetRequiredService<SqliteFocusSessionRepository>(),
+            provider.GetRequiredService<SqliteWebSessionRepository>(),
+            provider.GetRequiredService<SqliteSyncOutboxRepository>(),
+            provider.GetRequiredService<ISystemClock>(),
+            provider.GetRequiredService<IBrowserActivityReader>(),
+            provider.GetRequiredService<IBrowserUrlSanitizer>(),
+            BrowserUrlStoragePolicy.DomainOnly));
 
         return services;
     }

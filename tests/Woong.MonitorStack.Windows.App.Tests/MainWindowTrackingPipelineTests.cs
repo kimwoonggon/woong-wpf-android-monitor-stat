@@ -140,6 +140,64 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void StartButton_WhenBrowserSnapshotExists_ShowsBrowserDomainImmediately()
+        => RunOnStaThread(() =>
+        {
+            var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            var clock = new MutableClock(startedAtUtc);
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 200,
+                processId: 20,
+                processName: "chrome.exe",
+                executablePath: "C:\\Apps\\chrome.exe",
+                windowTitle: "GitHub - Chrome"));
+            var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                startedAtUtc,
+                "https://github.com/org/repo?secret=1",
+                "github.com",
+                "Repository"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                browserReader);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var window = new MainWindow(viewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+                window.UpdateLayout();
+
+                Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Equal("chrome.exe", FindByAutomationId<TextBlock>(window, "CurrentAppNameText").Text);
+                Assert.Equal("github.com", FindByAutomationId<TextBlock>(window, "CurrentBrowserDomainText").Text);
+                Assert.Empty(webRepository.QueryByFocusSessionId("20:200:1777334400000"));
+                Assert.Empty(outboxRepository.QueryAll());
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void CurrentSessionDuration_WhenPollTicks_AdvancesBeyondZero()
         => RunOnStaThread(() =>
         {
