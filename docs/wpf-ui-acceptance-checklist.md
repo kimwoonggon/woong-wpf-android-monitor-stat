@@ -250,6 +250,15 @@ passed at:
 
 Coverage remains 92.3% overall.
 
+The DetailsTabsPanel extraction slice moved App/Web/Live/Settings tab content
+into `Views/DetailsTabsPanel.xaml` while preserving all existing tab/list/settings
+AutomationIds and `SelectedDetailsTab` binding. The latest local WPF acceptance
+run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-121155`
+
+Coverage remains 92.3% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

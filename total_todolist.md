@@ -686,7 +686,13 @@ milestones below are finished.
 - [x] Chart details verification: `.NET` build passed.
 - [x] Chart details verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-114947`.
 - [x] Chart details verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Add `Views/DetailsTabsPanel.xaml` while preserving App/Web/Live/Settings tab automation IDs.
+- [x] Add `Views/DetailsTabsPanel.xaml` while preserving App/Web/Live/Settings tab automation IDs.
+- [x] DetailsTabsPanel extraction verification: `DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding` passed.
+- [x] DetailsTabsPanel extraction verification: all Windows App tests passed (36 tests).
+- [x] DetailsTabsPanel extraction verification: full `.NET` tests passed (190 tests).
+- [x] DetailsTabsPanel extraction verification: `.NET` build passed.
+- [x] DetailsTabsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-121155`.
+- [x] DetailsTabsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
 - [ ] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
 - [ ] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
 - [ ] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.

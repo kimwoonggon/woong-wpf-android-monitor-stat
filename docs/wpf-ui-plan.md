@@ -180,6 +180,16 @@ Future pagination:
   `CurrentPage`, visible row collections, and tests for
   `DetailsTabs_ShowRowsPerPageRows`.
 
+Current details tab implementation:
+
+- `DashboardView` hosts `DetailsTabsPanel`.
+- `DetailsTabsPanel` owns the `DashboardTabs` `TabControl`, App/Web/Live/Settings
+  tabs, and tab content for now.
+- `DashboardTabs.SelectedValue` binds two-way to
+  `DashboardViewModel.SelectedDetailsTab`.
+- `SettingsPanel` extraction is the next intended child slice; it must inherit
+  the existing dashboard `DataContext`.
+
 Open `wpfelements.md` alignment decisions:
 
 - Domain Focus chart: `wpfelements.md` suggests a Cartesian/ranking chart,

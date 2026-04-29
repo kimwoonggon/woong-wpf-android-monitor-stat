@@ -334,6 +334,36 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                DetailsTabsPanel panel = FindByAutomationId<DetailsTabsPanel>(window, "DetailsTabsPanel");
+                TabControl tabs = FindByAutomationId<TabControl>(panel, "DashboardTabs");
+
+                Assert.Equal(["App Sessions", "Web Sessions", "Live Event Log", "Settings"], TabHeaders(tabs));
+                Assert.Equal("Tag", tabs.SelectedValuePath);
+                Assert.Equal(DetailsTab.AppSessions, dashboard.ViewModel.SelectedDetailsTab);
+
+                tabs.SelectedIndex = 3;
+                window.UpdateLayout();
+
+                Assert.Equal(DetailsTab.Settings, dashboard.ViewModel.SelectedDetailsTab);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void EmptyState_RendersBoundTextWithTextAutomationId()
         => RunOnStaThread(() =>
         {
@@ -403,24 +433,22 @@ public sealed class MainWindowUiExpectationTests
                 Invoke(FindByAutomationId<Button>(window, "RefreshButton"));
                 window.UpdateLayout();
 
-                Assert.Contains("Woong Monitor Stack", CollectText(window));
-                Assert.Contains("chrome.exe", CollectText(window));
-                Assert.Contains("Active Focus", CollectText(window));
-                Assert.Contains("Foreground", CollectText(window));
-                Assert.Contains("20m", CollectText(window));
-                Assert.Contains("Idle", CollectText(window));
-                Assert.Contains("10m", CollectText(window));
-                Assert.Contains("Web Focus", CollectText(window));
-                Assert.Contains("시간대별 Active Focus", CollectText(window));
-                Assert.Contains("앱별 집중 시간", CollectText(window));
-                Assert.Contains("도메인별 집중 시간", CollectText(window));
+                Assert.Contains("Woong Monitor Stack", CollectText(FindByAutomationId<HeaderStatusBar>(window, "HeaderArea")));
+                Assert.Contains("chrome.exe", CollectText(FindByAutomationId<DetailsTabsPanel>(window, "DetailsTabsPanel")));
+                Assert.Contains("Active Focus", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
+                Assert.Contains("Foreground", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
+                Assert.Contains("20m", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
+                Assert.Contains("Idle", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
+                Assert.Contains("10m", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
+                Assert.Contains("Web Focus", CollectText(FindByAutomationId<SummaryCardsPanel>(window, "SummaryCardsContainer")));
 
-                Assert.NotNull(FindByAutomationId<FrameworkElement>(window, "ChartArea"));
+                ChartsPanel chartsPanel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
+                Assert.Contains("시간대별 Active Focus", CollectText(chartsPanel));
+                Assert.Contains("앱별 집중 시간", CollectText(chartsPanel));
+                Assert.Contains("도메인별 집중 시간", CollectText(chartsPanel));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "AppUsageChart"));
                 Assert.NotNull(FindByAutomationId<PieChart>(window, "DomainUsageChart"));
-                Assert.True(FindVisualDescendants<CartesianChart>(window).Distinct().Count() >= 2);
-                Assert.True(FindVisualDescendants<PieChart>(window).Distinct().Any());
             }
             finally
             {
