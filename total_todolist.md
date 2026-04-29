@@ -1203,7 +1203,7 @@ milestones below are finished.
   - [x] App root style merge slice docs/TODO updated.
   - [x] WPF color/direct-section/AutomationId/acceptance-clock guard slice docs/TODO updated.
   - [x] WPF chart/details icon and Live Event paged acceptance docs/TODO updated.
-- [ ] Commit and push WPF componentization slices.
+- [x] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done
 

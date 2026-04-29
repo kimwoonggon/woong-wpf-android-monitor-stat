@@ -3088,6 +3088,10 @@ Verified:
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
 
+Committed and pushed:
+
+- `72c5928 Add location sync gate and WPF runtime UI evidence`
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain
