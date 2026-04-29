@@ -177,6 +177,10 @@ a port that the App composition root wires together.
   settings, and charts.
 - Add stable `AutomationProperties.AutomationId` values for important controls.
 - Keep WPF resources and styles in App, not Presentation.
+- Keep reusable WPF visuals such as `StatusBadge`, `MetricCard`,
+  `SectionCard`, `DetailRow`, and `EmptyState` in `Windows.App.Controls`.
+  These controls may expose dependency properties for XAML composition, but
+  must not own product calculations, persistence, sync, or tracking behavior.
 - Verify visual changes with WPF App tests and local UI snapshots.
 
 Example code-behind shape:

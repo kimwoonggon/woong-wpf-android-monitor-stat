@@ -285,6 +285,17 @@ AutomationIds. The latest local WPF acceptance run passed at:
 
 Coverage is 92.0% overall.
 
+The SectionCard extraction slice added `Controls/SectionCard.xaml` and moved
+the chart area's reusable card surface onto it while preserving the chart
+AutomationIds, empty states, and app/domain `상세보기` tab-switch commands. The
+latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-125444`
+
+Coverage is 92.1% overall. The acceptance script still reports a non-fatal
+clean-close warning from FlaUI/process ownership; semantic checks and
+SQLite/outbox verification passed.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

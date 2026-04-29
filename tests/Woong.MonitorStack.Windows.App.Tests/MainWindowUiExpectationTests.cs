@@ -176,6 +176,39 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void SectionCard_RendersContentAndOptionalActionCommand()
+        => RunOnStaThread(() =>
+        {
+            var command = new CountingCommand();
+            var card = new SectionCard
+            {
+                Title = "앱별 집중 시간",
+                ActionText = "상세보기",
+                ActionCommand = command,
+                CardContent = new TextBlock { Text = "Chrome" }
+            };
+            var window = new Window { Content = card };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                IReadOnlySet<string> text = CollectText(card);
+                Assert.Contains("앱별 집중 시간", text);
+                Assert.Contains("상세보기", text);
+                Assert.Contains("Chrome", text);
+
+                Invoke(FindByAutomationId<Button>(card, "SectionCardActionButton"));
+                Assert.Equal(1, command.ExecuteCount);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
@@ -1026,5 +1059,21 @@ public sealed class MainWindowUiExpectationTests
     private sealed class FixedClock(DateTimeOffset utcNow) : IDashboardClock
     {
         public DateTimeOffset UtcNow => utcNow;
+    }
+
+    private sealed class CountingCommand : System.Windows.Input.ICommand
+    {
+        public int ExecuteCount { get; private set; }
+
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter)
+            => true;
+
+        public void Execute(object? parameter)
+        {
+            ExecuteCount++;
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

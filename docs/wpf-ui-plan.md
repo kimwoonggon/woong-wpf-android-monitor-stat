@@ -199,6 +199,10 @@ Current reusable control implementation:
   original badge AutomationIds.
 - `DetailRow` renders Current Focus label/value rows while preserving the
   value AutomationIds used by semantic tests and snapshot automation.
+- `SectionCard` renders a reusable surface with optional title, optional
+  top-right action command, and a `CardContent` slot. `ChartsPanel` now uses it
+  for the shared chart card surface while preserving chart AutomationIds and
+  app/domain details tab-switch actions.
 
 Open `wpfelements.md` alignment decisions:
 

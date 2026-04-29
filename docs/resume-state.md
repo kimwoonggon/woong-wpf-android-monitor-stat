@@ -4,15 +4,16 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 DetailRow extraction slice.
-`DetailRow_RendersLabelAndValueWithStableValueAutomationId` proves the reusable
-WPF detail row renders a label/value pair with a stable value AutomationId and
-ellipsis trimming. `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings`
-continues to prove the Current Focus panel exposes the same tracking, app,
-process, title, domain, duration, poll, DB write, and sync text AutomationIds.
-Verification passed: all `.NET` tests (196), full `.NET` build, WPF acceptance
-at `artifacts/wpf-ui-acceptance/20260429-124239`, and coverage generation with
-overall line coverage 92.0%.
+Milestone 31 SectionCard extraction slice.
+`SectionCard_RendersContentAndOptionalActionCommand` proves the reusable WPF
+section card renders a title, optional top-right action command, and body
+content through its public `CardContent` slot. `ChartsPanel` now uses
+`Controls/SectionCard.xaml` for the shared chart card surface while preserving
+`ChartArea`, chart AutomationIds, chart empty states, and app/domain
+`상세보기` tab-switch behavior. Verification passed: all `.NET` tests (197),
+full `.NET` build, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-125444`, and coverage generation with
+overall line coverage 92.1%.
 
 ## Completed
 
@@ -954,12 +955,12 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with reusable `SectionCard` extraction. Preserve the
-extracted `DetailsTabsPanel`/`SettingsPanel`, `StatusBadge`, and `DetailRow`,
-the chart `상세보기` tab-switch behavior, and keep the `wpfelements.md` audit
-gaps visible: domain chart type decision, Details pagination decision, Settings
-sync endpoint/privacy/runtime storage controls, root scrolling alignment, and
-style dictionary migration away from hard-coded local styles.
+Continue Milestone 31 with style dictionary extraction: `Colors.xaml`,
+`Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, and
+`Tabs.xaml`. Preserve the extracted dashboard views, reusable controls,
+chart `상세보기` tab-switch behavior, and keep the `wpfelements.md` audit gaps
+visible: domain chart type decision, Details pagination decision, root scrolling
+alignment, and style dictionary migration away from hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1367,6 +1368,32 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.0%.
 
-Next highest priority is reusable `SectionCard` extraction. Keep all WPF-only
-controls in `Windows.App` and avoid adding WPF references to
-`Windows.Presentation`.
+## 2026-04-29 WPF SectionCard Extraction Slice
+
+- Added the RED reusable-control test
+  `SectionCard_RendersContentAndOptionalActionCommand`.
+- Added `Controls/SectionCard.xaml` and `Controls/SectionCard.xaml.cs`.
+- Implemented a WPF-only `CardContent` slot with optional title/action header
+  so nested dashboard content remains in `Windows.App` and no WPF dependency is
+  introduced into `Windows.Presentation`.
+- Replaced the `ChartsPanel` outer card `Border` with `controls:SectionCard`
+  while preserving `ChartArea`, chart AutomationIds, empty-state TextBlock
+  AutomationIds, and app/domain `상세보기` tab-switch command behavior.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SectionCard_RendersContentAndOptionalActionCommand|DashboardView_HostsChartsPanelAndPreservesChartContent|DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-125444`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is style dictionary extraction. Keep all WPF-only
+resources in `Windows.App`, preserve current semantic/UI acceptance tests, and
+avoid adding WPF references to `Windows.Presentation`.

@@ -9,12 +9,7 @@
              mc:Ignorable="d"
              AutomationProperties.AutomationId="ChartArea"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
-    <Border Margin="0,4,0,16"
-            Padding="18"
-            CornerRadius="8"
-            Background="White"
-            BorderBrush="#DCE1E8"
-            BorderThickness="1">
+    <controls:SectionCard>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -100,5 +95,5 @@
                                  Text="{Binding DomainUsageEmptyStateText}"
                                  TextAutomationId="DomainUsageEmptyStateText" />
         </Grid>
-    </Border>
+    </controls:SectionCard>
 </UserControl>
