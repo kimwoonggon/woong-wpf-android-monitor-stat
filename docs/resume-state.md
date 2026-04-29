@@ -4,11 +4,12 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 ControlBar extraction slice. `Views/ControlBar.xaml` and
-`Views/ControlBar.xaml.cs` were added; `DashboardView.xaml` now hosts
-`<views:ControlBar>`; and
-`DashboardView_HostsControlBarAndPreservesCommandBindings` proves the command
-bindings and stable AutomationIds were preserved.
+Milestone 31 runtime poll-tick persistence quality gap slice.
+`MainWindowTrackingPipelineTests.PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop`
+proves Start -> DispatcherTimer poll foreground change -> closed Code.exe
+session persisted to SQLite -> focus_session outbox queued -> dashboard
+summary/recent rows refreshed while TrackingStatus remains Running, before
+Stop. No production code changes were needed.
 
 ## Completed
 
@@ -950,12 +951,8 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Pause Milestone 31 component extraction to close the runtime poll-tick
-persistence quality gap: prove WPF poll-tick foreground changes persist
-SQLite/outbox rows and refresh the dashboard before Stop. After that gap is
-covered, continue Milestone 31 with `CurrentFocusPanel` extraction while
-preserving existing automation IDs, bindings, behavior tests, and semantic WPF
-acceptance.
+Continue Milestone 31 with `CurrentFocusPanel` extraction while preserving
+existing automation IDs, bindings, behavior tests, and semantic WPF acceptance.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1016,10 +1013,8 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
 The `DashboardView`, `HeaderStatusBar`, and `ControlBar` extractions are now
-complete. Before continuing with `CurrentFocusPanel`, close the runtime
-poll-tick persistence quality gap so foreground changes observed during a timer
-tick are proven to persist SQLite/outbox rows and refresh the dashboard before
-Stop.
+complete, and the runtime poll-tick persistence quality gap is covered. The
+next componentization slice is `CurrentFocusPanel` extraction.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1114,5 +1109,29 @@ Verified:
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
   completed successfully; overall line coverage remains about 92.3%.
 
-Next highest priority is the runtime poll-tick persistence quality gap before
-continuing with `CurrentFocusPanel` extraction.
+Runtime poll-tick persistence coverage is the next completed quality slice
+after ControlBar extraction.
+
+## 2026-04-29 Runtime Poll-Tick Persistence Gap
+
+- Added the runtime confidence test
+  `MainWindowTrackingPipelineTests.PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop`.
+- It proves Start -> DispatcherTimer poll foreground change -> closed Code.exe
+  session persisted to SQLite -> focus_session outbox queued -> dashboard
+  summary/recent rows refreshed while `TrackingStatus` remains `Running`,
+  before Stop.
+- No production code changes were needed.
+
+Verified:
+
+- Focused
+  `MainWindowTrackingPipelineTests.PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop`
+  passed.
+- All Windows App tests passed (29 tests).
+- Full `dotnet test` passed.
+- Full `dotnet build` passed.
+- WPF acceptance passed at `artifacts/wpf-ui-acceptance/20260429-105310`.
+- `scripts/test-coverage.ps1` generated the coverage report.
+
+Next highest priority is `CurrentFocusPanel` extraction while preserving
+existing automation IDs, bindings, behavior tests, and semantic WPF acceptance.
