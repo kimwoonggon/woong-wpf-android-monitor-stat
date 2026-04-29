@@ -222,7 +222,8 @@ Current style dictionary implementation:
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.
 - `Styles/Colors.xaml` defines the core app background, surface, border,
   primary text, and muted text brushes. `Cards.xaml` now consumes surface and
-  border brushes, and the dashboard shell content uses the app background brush.
+  border brushes, and both `MainWindow` and the dashboard shell content use the
+  app background brush.
   Header tracking/sync/privacy badge brushes are also named resources so the
   status color policy stays centralized. Remaining color work includes
   replacing repeated settings text/status hard-coded brushes.

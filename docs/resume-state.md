@@ -2409,3 +2409,32 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should re-audit remaining XAML inline colors and
 decide whether the Milestone 31 style cleanup can close or needs one more
 targeted slice.
+
+## 2026-04-29 WPF MainWindow Background Resource Slice
+
+- Added RED WPF expectation `MainWindow_UsesSharedBackgroundBrush`.
+- Replaced the remaining `MainWindow.xaml` literal `#F6F8FB` background with
+  the shared `AppBackgroundBrush`.
+- Used `DynamicResource` for the `Window.Background` binding because
+  `Window.Resources` are not available early enough for an attribute-level
+  `StaticResource` lookup during XAML parsing.
+- Preserved the root dashboard grid background resource and existing shell
+  sizing.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_UsesSharedBackgroundBrush`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "MainWindow_UsesSharedBackgroundBrush|ColorStyleDictionary_DefinesCoreDashboardBrushes|MainWindow_ExposesDashboardControlsAndCommandBindings"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-205628`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should address the Details tab pager text style or
+close the style-dictionary cleanup item after a final XAML audit.

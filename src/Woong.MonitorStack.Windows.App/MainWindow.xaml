@@ -9,7 +9,7 @@
         MinWidth="1024"
         MinHeight="768"
         WindowStartupLocation="CenterScreen"
-        Background="#F6F8FB">
+        Background="{DynamicResource AppBackgroundBrush}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

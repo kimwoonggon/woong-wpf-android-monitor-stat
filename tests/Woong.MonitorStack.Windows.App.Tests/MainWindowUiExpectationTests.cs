@@ -307,6 +307,29 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void MainWindow_UsesSharedBackgroundBrush()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                object backgroundBrush = window.FindResource("AppBackgroundBrush");
+                Assert.Same(backgroundBrush, window.Background);
+                var root = Assert.IsType<Grid>(window.Content);
+                Assert.Same(backgroundBrush, root.Background);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void TypographyStyleDictionary_DefinesDashboardTextStyles()
         => RunOnStaThread(() =>
         {
