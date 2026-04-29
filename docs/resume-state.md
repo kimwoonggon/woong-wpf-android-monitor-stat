@@ -2466,3 +2466,30 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should perform a final style/resource audit and then
 either close the style-dictionary cleanup checklist item or open the next
 specific debt slice.
+
+## 2026-04-29 WPF Metric Card Label Typography Slice
+
+- Added RED WPF expectation `MetricCard_UsesSharedLabelTypography`.
+- Added `MetricLabelTextStyle` to `Styles/Typography.xaml`.
+- Replaced `MetricCard` inline label `FontWeight` with the shared metric label
+  typography resource.
+- Preserved metric card label/value/subtitle bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MetricCard_UsesSharedLabelTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "MetricCard_UsesSharedLabelTypography|MetricCard_RendersLabelValueAndSubtitle|DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-211007`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should decide whether `StatusBadge` intrinsic
+padding/font weight should stay as a reusable control default or be moved to a
+style resource before closing Milestone 31 style cleanup.

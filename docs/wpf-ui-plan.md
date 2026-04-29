@@ -230,9 +230,11 @@ Current style dictionary implementation:
 - `Styles/Typography.xaml` defines shared heading, subtitle, section title,
   body, muted, and metric-value `TextBlock` styles. `HeaderStatusBar`,
   `SectionCard`, `DetailRow`, and `MetricCard` consume those styles while
-  preserving their AutomationIds and existing bindings. `EmptyState` uses
-  `EmptyStateTextStyle`, and `ChartsPanel` uses `SectionTitleTextStyle` for
-  the three chart headings. `SettingsPanel` uses
+  preserving their AutomationIds and existing bindings. `MetricCard` uses
+  `MetricLabelTextStyle` so card label emphasis lives in the typography
+  dictionary instead of inline markup. `EmptyState` uses `EmptyStateTextStyle`,
+  and `ChartsPanel` uses `SectionTitleTextStyle` for the three chart headings.
+  `SettingsPanel` uses
   `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings and
   `SettingsMutedTextStyle` for muted privacy/sync/runtime helper text.
   `SettingsWarningTextStyle` plus `WarningTextBrush` carry the local-only sync

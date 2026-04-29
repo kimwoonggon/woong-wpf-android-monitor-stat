@@ -14,8 +14,7 @@
             Style="{StaticResource DashboardCardBorderStyle}">
         <StackPanel>
             <TextBlock Text="{Binding Label, ElementName=Root}"
-                       Style="{StaticResource BodyTextStyle}"
-                       FontWeight="SemiBold" />
+                       Style="{StaticResource MetricLabelTextStyle}" />
             <TextBlock Text="{Binding Value, ElementName=Root}"
                        Style="{StaticResource MetricValueTextStyle}"
                        Margin="0,8,0,0" />

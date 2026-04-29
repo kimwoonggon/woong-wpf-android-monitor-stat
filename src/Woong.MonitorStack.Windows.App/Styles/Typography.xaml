@@ -59,4 +59,8 @@
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
+
+    <Style x:Key="MetricLabelTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BodyTextStyle}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
 </ResourceDictionary>

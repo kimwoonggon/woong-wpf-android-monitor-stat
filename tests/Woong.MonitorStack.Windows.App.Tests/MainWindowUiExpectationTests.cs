@@ -564,6 +564,33 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void MetricCard_UsesSharedLabelTypography()
+        => RunOnStaThread(() =>
+        {
+            var card = new MetricCard
+            {
+                Label = "Active Focus",
+                Value = "3h 12m",
+                Subtitle = "Today's focused foreground time"
+            };
+            var window = new Window { Content = card };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                TextBlock label = FindTextBlock(card, "Active Focus");
+
+                AssertMetricLabelTextStyle(label);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_HostsChartsPanelAndPreservesChartContent()
         => RunOnStaThread(() =>
         {
@@ -1422,6 +1449,17 @@ public sealed class MainWindowUiExpectationTests
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
         Assert.Equal(Color.FromRgb(0x5A, 0x64, 0x72), foregroundBrush.Color);
+    }
+
+    private static void AssertMetricLabelTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 13.0);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
     }
 
     private static void AssertSettingsCheckBoxStyle(CheckBox checkBox)
