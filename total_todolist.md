@@ -600,7 +600,7 @@ milestones below are finished.
 - [x] Replace summary cards with Active Focus, Foreground, Idle, and Web Focus using clear values and subtitles.
 - [x] Add Chart mapper tests for meaningful hour labels, minute axis labels, app/domain labels, durations, and empty states.
 - [x] Update LiveCharts data and XAML bindings to avoid meaningless `-0.5 / 0 / 0.5` axes.
-- [ ] Add visible empty-state overlays for all chart panels.
+- [x] Add visible empty-state overlays for all chart panels.
 - [x] Add App Sessions grid tests for required columns, readable widths, horizontal scrolling, and fake pipeline VS Code/Chrome rows.
 - [x] Update App Sessions grid columns: App, Process, Start, End, Duration, State, Window, Source with required MinWidths.
 - [x] Add Web Sessions grid tests for required columns, readable widths, domain-only privacy, empty state, and fake github/chatgpt rows.
@@ -621,6 +621,30 @@ milestones below are finished.
 - [x] Run full `.NET` tests and build.
 - [x] Run WPF UI acceptance when the slice touches runtime/UI behavior.
 - [x] Commit and push each completed WPF product UI slice.
+
+## Milestone 31: WPF Componentized Dashboard Architecture
+
+- [x] Save componentization guidance in `docs/wpf-ui-plan.md`.
+- [ ] Add tests proving `MainWindow` is a thin shell that hosts `DashboardView`.
+- [ ] Add `Views/DashboardView.xaml` and move the vertical dashboard layout out of `MainWindow.xaml`.
+- [ ] Add `Views/HeaderStatusBar.xaml` while preserving Header automation IDs and behavior tests.
+- [ ] Add `Views/ControlBar.xaml` while preserving button commands and readable sizing tests.
+- [ ] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
+- [ ] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
+- [ ] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.
+- [ ] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
+- [ ] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
+- [ ] Add `Views/DetailsTabsPanel.xaml` while preserving App/Web/Live/Settings tab automation IDs.
+- [ ] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
+- [ ] Add reusable `Controls/StatusBadge.xaml`, `Controls/SectionCard.xaml`, and `Controls/DetailRow.xaml`.
+- [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
+- [ ] Merge style dictionaries from `App.xaml`.
+- [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
+- [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.
+- [ ] Run full `.NET` tests and build after componentization.
+- [ ] Run WPF UI acceptance after componentization.
+- [ ] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
+- [ ] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done
 

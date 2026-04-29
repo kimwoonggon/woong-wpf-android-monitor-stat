@@ -981,3 +981,40 @@ Latest WPF acceptance artifact:
 
 Current overall line coverage is 92.3%, Windows.Presentation is 96.6%, and
 Windows.App is 86.3%.
+
+## 2026-04-29 WPF Chart Empty-State Slice
+
+- Added visible chart empty-state overlays for hourly activity, app usage, and
+  domain usage panels.
+- Added `MainWindow_WithEmptyData_ShowsReadableChartEmptyStates` to verify the
+  WPF UI exposes `No data for selected period` instead of relying on broken
+  empty chart axes.
+- Kept the semantic WPF acceptance path passing after the chart UI change.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_WithEmptyData_ShowsReadableChartEmptyStates`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF acceptance artifact:
+
+`artifacts/wpf-ui-acceptance/20260429-100746`
+
+Current overall line coverage is 92.3%, Windows.Presentation is 96.6%, and
+Windows.App is 86.3%.
+
+## 2026-04-29 WPF Componentization Guidance
+
+The user provided a component architecture direction for the WPF dashboard:
+`MainWindow -> DashboardView -> HeaderStatusBar / ControlBar /
+CurrentFocusPanel / SummaryCardsPanel / ChartsPanel / DetailsTabsPanel`, plus
+reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
+`EmptyState`) and style dictionaries. This guidance is saved in
+`docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
+
+Next highest priority is to extract the current monolithic `MainWindow.xaml`
+into tested reusable WPF views while keeping existing automation IDs and
+semantic acceptance behavior stable.

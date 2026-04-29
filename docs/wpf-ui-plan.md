@@ -48,52 +48,130 @@ The WPF dashboard must answer these questions at a glance:
 
 ```text
 MainWindow
-  Header
-    App title
-    Subtitle
-    Tracking status badge
-    Sync status badge
-    Privacy status badge
-  Control Bar
-    Start Tracking
-    Stop Tracking
-    Refresh
-    Sync Now
-    Today
-    1h
-    6h
-    24h
-    Custom
-  Current Focus Panel
-    Tracking status
-    Current app
-    Current process
-    Current window title
-    Current browser domain
-    Current session duration
-    Last persisted session
-    Last poll time
-    Last DB write time
-    Sync state
-  Summary Cards
-    Active Focus
-    Foreground
-    Idle
-    Web Focus
-  Charts
-    Hourly Active Focus
-    Top Apps by Focus Time
-    Top Domains by Web Focus Time
-  Details Tabs
-    App Sessions
-    Web Sessions
-    Live Event Log
-    Settings
+  DashboardView
+    HeaderStatusBar
+    ControlBar
+    CurrentFocusPanel
+    SummaryCardsPanel
+    ChartsPanel
+    DetailsTabsPanel
 ```
 
 The target visual language is a modern desktop dashboard: spacious sections,
 clear cards, readable command buttons, useful chart labels, and data grids that
 remain usable instead of looking like clipped debug output.
+
+## Component Architecture
+
+The dashboard should not stay as one large `MainWindow.xaml`. The WPF shell
+should be decomposed into reusable views, controls, and resource dictionaries.
+`Windows.App` owns WPF UI composition and XAML. `Windows.Presentation` owns
+MVVM state, display models, commands, and chart mapping that can be tested
+without WPF UI automation.
+
+Recommended WPF app structure:
+
+```text
+src/Woong.MonitorStack.Windows.App/
+  MainWindow.xaml
+  MainWindow.xaml.cs
+  App.xaml
+  App.xaml.cs
+  Views/
+    DashboardView.xaml
+    HeaderStatusBar.xaml
+    ControlBar.xaml
+    CurrentFocusPanel.xaml
+    SummaryCardsPanel.xaml
+    ChartsPanel.xaml
+    DetailsTabsPanel.xaml
+    SettingsPanel.xaml
+  Controls/
+    StatusBadge.xaml
+    MetricCard.xaml
+    SectionCard.xaml
+    DetailRow.xaml
+    EmptyState.xaml
+  Styles/
+    Colors.xaml
+    Typography.xaml
+    Buttons.xaml
+    Cards.xaml
+    DataGrid.xaml
+    Tabs.xaml
+```
+
+Recommended presentation structure:
+
+```text
+src/Woong.MonitorStack.Windows.Presentation/
+  Dashboard/
+    DashboardViewModel.cs
+    HeaderStatusViewModel.cs
+    ControlBarViewModel.cs
+    CurrentFocusViewModel.cs
+    SummaryCardsViewModel.cs
+    ChartsViewModel.cs
+    DetailsTabsViewModel.cs
+    AppSessionRowViewModel.cs
+    WebSessionRowViewModel.cs
+    LiveEventRowViewModel.cs
+    MetricCardViewModel.cs
+    StatusBadgeViewModel.cs
+  Charts/
+    HourlyActivityChartMapper.cs
+    AppFocusChartMapper.cs
+    DomainFocusChartMapper.cs
+```
+
+This decomposition should happen in tested slices. Keep existing public
+automation IDs stable while moving markup into controls.
+
+MainWindow responsibilities:
+
+- Window title.
+- Minimum size: `MinWidth=1024`, `MinHeight=768`.
+- Centered startup and shell background.
+- Host `DashboardView`.
+- Thin code-behind only.
+
+DashboardView responsibilities:
+
+- One vertical `ScrollViewer`.
+- Section ordering: header, control bar, current focus, summary cards, charts,
+  details tabs.
+- No business logic.
+
+Reusable controls:
+
+- `StatusBadge`: text plus kind/dot color for tracking/sync/privacy states.
+- `MetricCard`: title, value, subtitle, optional kind/icon.
+- `SectionCard`: title, optional top-right action, content presenter.
+- `DetailRow`: label/value pair with trimming for long process/window text.
+- `EmptyState`: reusable visible no-data message.
+
+Styles/resource dictionaries:
+
+- `Colors.xaml` for background/surface/border/text/accent brushes.
+- `Typography.xaml` for heading, subtitle, section title, muted/body text.
+- `Buttons.xaml` for base, primary, danger, secondary, period, and small link
+  button styles.
+- `Cards.xaml` for section/card surfaces.
+- `DataGrid.xaml` for session grid readability.
+- `Tabs.xaml` for details tabs.
+
+Details chart actions:
+
+- App chart `상세보기` selects the App Sessions tab.
+- Domain chart `상세보기` selects the Web Sessions tab.
+- Initial behavior should be tab switching, not modal windows.
+
+Future pagination:
+
+- Details tables should initially show 10 rows per page when pagination is
+  implemented.
+- Keep the current SQLite-backed row source as the truth; pagination should
+  bind to visible row collections derived from those rows.
 
 ## Current Problems
 

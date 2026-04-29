@@ -336,6 +336,14 @@
                                             Series="{Binding HourlyActivityChart.Series}"
                                             XAxes="{Binding HourlyActivityChart.XAxes}"
                                             YAxes="{Binding HourlyActivityChart.YAxes}" />
+                        <TextBlock Grid.Row="1"
+                                   AutomationProperties.AutomationId="HourlyActivityEmptyStateText"
+                                   Text="{Binding HourlyActivityChart.EmptyStateText}"
+                                   Foreground="#5A6472"
+                                   FontSize="13"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False" />
                         <lvc:CartesianChart Grid.Row="1"
                                             Grid.Column="1"
                                             AutomationProperties.AutomationId="AppUsageChart"
@@ -343,11 +351,29 @@
                                             Series="{Binding AppUsageChart.Series}"
                                             XAxes="{Binding AppUsageChart.XAxes}"
                                             YAxes="{Binding AppUsageChart.YAxes}" />
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="1"
+                                   AutomationProperties.AutomationId="AppUsageEmptyStateText"
+                                   Text="{Binding AppUsageChart.EmptyStateText}"
+                                   Foreground="#5A6472"
+                                   FontSize="13"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False" />
                         <lvc:PieChart Grid.Row="1"
                                       Grid.Column="2"
                                       AutomationProperties.AutomationId="DomainUsageChart"
                                       Margin="0,12,0,0"
                                       Series="{Binding DomainUsageSeries}" />
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="2"
+                                   AutomationProperties.AutomationId="DomainUsageEmptyStateText"
+                                   Text="{Binding DomainUsageEmptyStateText}"
+                                   Foreground="#5A6472"
+                                   FontSize="13"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False" />
                     </Grid>
                 </Border>
 

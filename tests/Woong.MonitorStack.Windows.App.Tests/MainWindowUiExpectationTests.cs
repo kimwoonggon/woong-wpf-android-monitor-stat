@@ -156,6 +156,37 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void MainWindow_WithEmptyData_ShowsReadableChartEmptyStates()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateEmptyDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Invoke(FindByAutomationId<Button>(window, "RefreshButton"));
+                window.UpdateLayout();
+
+                Assert.Equal(
+                    "No data for selected period",
+                    FindByAutomationId<TextBlock>(window, "HourlyActivityEmptyStateText").Text);
+                Assert.Equal(
+                    "No data for selected period",
+                    FindByAutomationId<TextBlock>(window, "AppUsageEmptyStateText").Text);
+                Assert.Equal(
+                    "No data for selected period",
+                    FindByAutomationId<TextBlock>(window, "DomainUsageEmptyStateText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_PeriodButtonsSelectExpectedDashboardRanges()
         => RunOnStaThread(() =>
         {
@@ -286,6 +317,15 @@ public sealed class MainWindowUiExpectationTests
                     now.AddMinutes(-25),
                     now.AddMinutes(-15))
             ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        return new TestDashboard(now, dataSource, viewModel);
+    }
+
+    private static TestDashboard CreateEmptyDashboard()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
         var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
 
         return new TestDashboard(now, dataSource, viewModel);

@@ -231,6 +231,15 @@ period` for empty inputs. The latest local WPF acceptance run passed at:
 Coverage after the chart slice: overall line coverage 92.3%,
 Windows.Presentation 96.6%, and Windows.App 86.3%.
 
+The next empty-state UI slice added visible `No data for selected period`
+overlays for hourly activity, app usage, and domain usage chart panels. The
+latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-100746`
+
+Coverage remains 92.3% overall, with Windows.Presentation at 96.6% and
+Windows.App at 86.3%.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

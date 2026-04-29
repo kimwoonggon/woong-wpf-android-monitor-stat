@@ -105,6 +105,9 @@ public sealed partial class DashboardViewModel : ObservableObject
     private IReadOnlyList<PieSeries<long>> _domainUsageSeries = [];
 
     [ObservableProperty]
+    private string _domainUsageEmptyStateText = "No data for selected period";
+
+    [ObservableProperty]
     private IReadOnlyList<DashboardSessionRow> _recentSessions = [];
 
     [ObservableProperty]
@@ -281,6 +284,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
         AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
         DomainUsageSeries = DashboardLiveChartsMapper.BuildPieSeries(DomainUsagePoints);
+        DomainUsageEmptyStateText = DomainUsagePoints.Count == 0 ? "No data for selected period" : "";
         RecentSessions = BuildRecentSessionRows(focusSessions);
         RecentWebSessions = BuildRecentWebSessionRows(webSessions);
         LiveEvents = BuildLiveEventRows(focusSessions, webSessions);
