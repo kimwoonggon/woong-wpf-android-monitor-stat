@@ -1115,6 +1115,19 @@ milestones below are finished.
   - [x] Settings section heading spacing verification: `.NET` build passed.
   - [x] Settings section heading spacing verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-213752`.
   - [x] Settings section heading spacing verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `ITrackingTicker` and `DispatcherTrackingTicker` so WPF tracking ticks are a testable runtime boundary.
+  - [x] Replace `MainWindow` direct `DispatcherTimer` construction with injected `ITrackingTicker`.
+  - [x] Ensure `MainWindow` starts the ticker on Loaded, stops it on Closed, and unsubscribes the Tick handler on close.
+  - [x] Register `DispatcherTrackingTicker` in DI and construct `MainWindow` via an explicit factory to avoid ambiguous constructors.
+  - [x] Tracking ticker verification: RED tests failed first on missing `ITrackingTicker`, then passed.
+  - [x] Tracking ticker verification: manual ticker tests now cover duration advancement, foreground change persistence, and browser domain web-session persistence without wall-clock timer waits.
+  - [x] Tracking ticker verification: safety tests prove a visible ticker tick does not collect/persist anything before the user starts tracking.
+  - [x] Tracking ticker verification: safety tests prove auto-start does not start tracking before `MainWindow.Loaded`.
+  - [x] Tracking ticker verification: all Windows App tests passed (93 tests).
+  - [x] Tracking ticker verification: full `.NET` tests passed (298 tests).
+  - [x] Tracking ticker verification: `.NET` build passed.
+  - [x] Tracking ticker verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-215459`.
+  - [x] Tracking ticker verification: coverage report generated successfully with overall line coverage 91.2%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

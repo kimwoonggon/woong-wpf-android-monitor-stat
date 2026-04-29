@@ -35,7 +35,11 @@ public static class WindowsAppServiceCollectionExtensions
             services.AddSampleDashboardMode();
         }
 
-        services.AddSingleton<MainWindow>();
+        services.AddTransient<ITrackingTicker, DispatcherTrackingTicker>();
+        services.AddSingleton(provider => new MainWindow(
+            provider.GetRequiredService<DashboardViewModel>(),
+            new MainWindowStartupOptions(provider.GetRequiredService<WindowsAppOptions>().AutoStartTracking),
+            provider.GetRequiredService<ITrackingTicker>()));
 
         return services;
     }

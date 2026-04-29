@@ -1,51 +1,67 @@
 using System.Windows;
-using System.Windows.Threading;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 namespace Woong.MonitorStack.Windows.App;
 
 public partial class MainWindow : Window
 {
-    private readonly DispatcherTimer _trackingTimer;
+    private readonly ITrackingTicker _trackingTicker;
     private readonly DashboardViewModel _viewModel;
     private readonly MainWindowStartupOptions _startupOptions;
     private bool _hasAppliedStartupOptions;
 
     public MainWindow(DashboardViewModel viewModel)
-        : this(viewModel, MainWindowStartupOptions.Manual)
+        : this(viewModel, MainWindowStartupOptions.Manual, new DispatcherTrackingTicker())
     {
     }
 
     public MainWindow(DashboardViewModel viewModel, WindowsAppOptions options)
         : this(
             viewModel,
-            new MainWindowStartupOptions(options.AutoStartTracking))
+            new MainWindowStartupOptions(options.AutoStartTracking),
+            new DispatcherTrackingTicker())
     {
     }
 
     public MainWindow(DashboardViewModel viewModel, MainWindowStartupOptions startupOptions)
+        : this(viewModel, startupOptions, new DispatcherTrackingTicker())
+    {
+    }
+
+    public MainWindow(DashboardViewModel viewModel, ITrackingTicker trackingTicker)
+        : this(viewModel, MainWindowStartupOptions.Manual, trackingTicker)
+    {
+    }
+
+    public MainWindow(
+        DashboardViewModel viewModel,
+        MainWindowStartupOptions startupOptions,
+        ITrackingTicker trackingTicker)
     {
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _startupOptions = startupOptions ?? throw new ArgumentNullException(nameof(startupOptions));
+        _trackingTicker = trackingTicker ?? throw new ArgumentNullException(nameof(trackingTicker));
         DataContext = viewModel;
-        _trackingTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(1)
-        };
-        _trackingTimer.Tick += (_, _) =>
-        {
-            if (viewModel.PollTrackingCommand.CanExecute(null))
-            {
-                viewModel.PollTrackingCommand.Execute(null);
-            }
-        };
+        _trackingTicker.Tick += OnTrackingTickerTick;
         Loaded += (_, _) =>
         {
             ApplyStartupOptions();
-            _trackingTimer.Start();
+            _trackingTicker.Start();
         };
-        Closed += (_, _) => _trackingTimer.Stop();
+        Closed += (_, _) =>
+        {
+            _trackingTicker.Stop();
+            _trackingTicker.Tick -= OnTrackingTickerTick;
+        };
+    }
+
+    private void OnTrackingTickerTick(object? sender, EventArgs e)
+    {
+        if (_viewModel.PollTrackingCommand.CanExecute(null))
+        {
+            _viewModel.PollTrackingCommand.Execute(null);
+        }
     }
 
     private void ApplyStartupOptions()

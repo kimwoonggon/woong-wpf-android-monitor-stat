@@ -601,8 +601,21 @@ public interface ITrackingTicker
 }
 ```
 
-Runtime implementation can wrap `DispatcherTimer`. Tests should use a manual
-fake ticker.
+Current implementation:
+
+- `ITrackingTicker` is implemented in `Windows.App` as the runtime boundary.
+- `DispatcherTrackingTicker` wraps WPF `DispatcherTimer` for production UI
+  ticks.
+- `MainWindow` receives an `ITrackingTicker`, starts it only when the visible
+  window is loaded, stops it when the window closes, and unsubscribes its tick
+  handler on close.
+- Tracking tests use a manual fake ticker so foreground/window/browser-domain
+  persistence behavior is deterministic and does not wait on wall-clock timer
+  delays.
+- Safety tests prove that showing the window starts only the ticker, not
+  tracking collection: a manual tick before Start leaves tracking stopped and
+  writes no focus, web, or outbox rows. Auto-start is also proven to occur only
+  after `Loaded`, not during construction or DI resolution.
 
 ## SQLite Rules
 

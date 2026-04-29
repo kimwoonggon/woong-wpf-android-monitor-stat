@@ -90,6 +90,34 @@ public sealed class WindowsAppCompositionTests
     }
 
     [Fact]
+    public void AddWindowsApp_RegistersDispatcherTrackingTicker()
+        => RunOnStaThread(() =>
+        {
+            string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddWindowsApp(new WindowsAppOptions(
+                    new DashboardOptions("Asia/Seoul"),
+                    deviceId: "windows-device-1",
+                    localDatabaseConnectionString: $"Data Source={dbPath};Pooling=False",
+                    idleThreshold: TimeSpan.FromMinutes(5)));
+
+                using ServiceProvider provider = services.BuildServiceProvider();
+
+                Assert.IsType<DispatcherTrackingTicker>(
+                    provider.GetRequiredService<ITrackingTicker>());
+            }
+            finally
+            {
+                if (File.Exists(dbPath))
+                {
+                    File.Delete(dbPath);
+                }
+            }
+        });
+
+    [Fact]
     public void AddWindowsApp_WhenSampleDashboardMode_RegistersDeterministicSampleDashboardDataSource()
     {
         string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");

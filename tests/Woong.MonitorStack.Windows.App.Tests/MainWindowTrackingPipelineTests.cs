@@ -47,7 +47,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 clock,
                 new DashboardOptions("Asia/Seoul"),
                 coordinator);
-            var window = new MainWindow(viewModel);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
 
             try
             {
@@ -140,6 +141,58 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void MainWindow_WhenAutoStartEnabled_DoesNotStartTrackingBeforeLoaded()
+        => RunOnStaThread(() =>
+        {
+            var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 100,
+                processId: 10,
+                processName: "Code.exe",
+                executablePath: "C:\\Apps\\Code.exe",
+                windowTitle: "Project - Visual Studio Code"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                CreateOutboxRepository(),
+                clock);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, CreateWebRepository()),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(
+                viewModel,
+                new MainWindowStartupOptions(AutoStartTracking: true),
+                ticker);
+
+            try
+            {
+                Assert.Equal("Stopped", viewModel.TrackingStatusText);
+                Assert.Equal("No current app", viewModel.CurrentAppNameText);
+                Assert.False(ticker.IsRunning);
+                Assert.Empty(focusRepository.QueryByRange(DateTimeOffset.MinValue, DateTimeOffset.MaxValue));
+
+                window.Show();
+                DrainDispatcher();
+
+                Assert.Equal("Running", viewModel.TrackingStatusText);
+                Assert.Equal("Code.exe", viewModel.CurrentAppNameText);
+                Assert.True(ticker.IsRunning);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void StartButton_WhenBrowserSnapshotExists_ShowsBrowserDomainImmediately()
         => RunOnStaThread(() =>
         {
@@ -175,7 +228,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 clock,
                 new DashboardOptions("Asia/Seoul"),
                 coordinator);
-            var window = new MainWindow(viewModel);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
 
             try
             {
@@ -198,7 +252,65 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
-    public void CurrentSessionDuration_WhenPollTicks_AdvancesBeyondZero()
+    public void ManualTickerTick_WhenTrackingHasNotStarted_DoesNotCollectOrPersist()
+        => RunOnStaThread(() =>
+        {
+            var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 100,
+                processId: 10,
+                processName: "Code.exe",
+                executablePath: "C:\\Apps\\Code.exe",
+                windowTitle: "Project - Visual Studio Code"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                    clock.UtcNow,
+                    "https://github.com/org/repo",
+                    "github.com",
+                    "Repository")));
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                window.Show();
+                DrainDispatcher();
+
+                Assert.True(ticker.IsRunning);
+                ticker.RaiseTick();
+                window.UpdateLayout();
+
+                Assert.Equal("Stopped", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Equal("No current app", FindByAutomationId<TextBlock>(window, "CurrentAppNameText").Text);
+                Assert.Empty(focusRepository.QueryByRange(DateTimeOffset.MinValue, DateTimeOffset.MaxValue));
+                Assert.Empty(webRepository.QueryByRange(DateTimeOffset.MinValue, DateTimeOffset.MaxValue));
+                Assert.Empty(outboxRepository.QueryAll());
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void CurrentSessionDuration_WhenManualTickerTicks_AdvancesBeyondZero()
         => RunOnStaThread(() =>
         {
             var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
@@ -222,7 +334,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                     focusRepository,
                     CreateOutboxRepository(),
                     clock));
-            var window = new MainWindow(viewModel);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
 
             try
             {
@@ -231,7 +344,7 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
 
                 clock.UtcNow = clock.UtcNow.AddSeconds(12);
-                WaitForDispatcherTimerTick();
+                ticker.RaiseTick();
                 window.UpdateLayout();
 
                 Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
@@ -240,6 +353,40 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
             finally
             {
                 window.Close();
+            }
+        });
+
+    [Fact]
+    public void MainWindow_WhenLoadedStartsTickerAndClosedStopsTicker()
+        => RunOnStaThread(() =>
+        {
+            var viewModel = new DashboardViewModel(
+                new EmptyDashboardDataSource(),
+                new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero)),
+                new DashboardOptions("Asia/Seoul"));
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                Assert.False(ticker.IsRunning);
+
+                window.Show();
+                DrainDispatcher();
+
+                Assert.True(ticker.IsRunning);
+
+                window.Close();
+                DrainDispatcher();
+
+                Assert.False(ticker.IsRunning);
+            }
+            finally
+            {
+                if (window.IsVisible)
+                {
+                    window.Close();
+                }
             }
         });
 
@@ -271,7 +418,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 clock,
                 new DashboardOptions("Asia/Seoul"),
                 coordinator);
-            var window = new MainWindow(viewModel);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
 
             try
             {
@@ -287,7 +435,7 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                     executablePath: "C:\\Apps\\chrome.exe",
                     windowTitle: "GitHub - Chrome");
 
-                WaitForDispatcherTimerTick();
+                ticker.RaiseTick();
                 window.UpdateLayout();
 
                 Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
@@ -352,7 +500,8 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 clock,
                 new DashboardOptions("Asia/Seoul"),
                 coordinator);
-            var window = new MainWindow(viewModel);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
 
             try
             {
@@ -367,7 +516,7 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                     "chatgpt.com",
                     "ChatGPT");
 
-                WaitForDispatcherTimerTick();
+                ticker.RaiseTick();
                 window.UpdateLayout();
 
                 string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
@@ -535,22 +684,6 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         Dispatcher.PushFrame(frame);
     }
 
-    private static void WaitForDispatcherTimerTick()
-    {
-        var frame = new DispatcherFrame();
-        var timer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(1_100)
-        };
-        timer.Tick += (_, _) =>
-        {
-            timer.Stop();
-            frame.Continue = false;
-        };
-        timer.Start();
-        Dispatcher.PushFrame(frame);
-    }
-
     private static void PersistCompletedWebSessions(
         SqliteWebSessionRepository repository,
         IEnumerable<WebSession> completedSessions)
@@ -699,6 +832,22 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
 
         public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
             => Snapshot;
+    }
+
+    private sealed class ManualTrackingTicker : ITrackingTicker
+    {
+        public event EventHandler? Tick;
+
+        public bool IsRunning { get; private set; }
+
+        public void Start()
+            => IsRunning = true;
+
+        public void Stop()
+            => IsRunning = false;
+
+        public void RaiseTick()
+            => Tick?.Invoke(this, EventArgs.Empty);
     }
 
     private sealed class EmptyDashboardDataSource : IDashboardDataSource

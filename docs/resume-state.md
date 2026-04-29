@@ -2579,3 +2579,42 @@ Coverage after this slice: overall line coverage 91.3%.
 Next work should leave minor visual style cleanup alone if it starts delaying
 runtime confidence, and prioritize the next real tracking/browser pipeline
 behavior recommended by the priority audit.
+
+## 2026-04-29 WPF Tracking Ticker Extraction Slice
+
+- Added `ITrackingTicker` and `DispatcherTrackingTicker` in `Windows.App`.
+- Updated `MainWindow` so it no longer constructs a `DispatcherTimer`
+  directly. It now receives an `ITrackingTicker`, starts it on `Loaded`, stops
+  it on `Closed`, and unsubscribes the tick handler on close.
+- Kept tracking visible-window scoped: the ticker only starts with the visible
+  `MainWindow` lifecycle and only invokes the existing `PollTrackingCommand`;
+  it does not add hidden background monitoring, server sync on tick, or any new
+  data collection surface.
+- Registered `ITrackingTicker` in DI and changed `MainWindow` registration to
+  an explicit factory so constructor resolution stays deterministic.
+- Replaced wall-clock `DispatcherTimer` waits in runtime WPF tests with a
+  manual fake ticker for current-session duration, foreground-change
+  persistence, and browser-domain web-session persistence.
+- Added hidden-tracking safety coverage: a manual tick before Start does not
+  collect or persist focus/web/outbox rows, and auto-start remains delayed
+  until `MainWindow.Loaded` rather than constructor or DI resolution.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "CurrentSessionDuration_WhenManualTickerTicks_AdvancesBeyondZero|MainWindow_WhenLoadedStartsTickerAndClosedStopsTicker|AddWindowsApp_RegistersDispatcherTrackingTicker|PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop|PollTick_WhenBrowserDomainChanges_PersistsWebSessionAndRefreshesWebRowsBeforeStop"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "MainWindow_WhenAutoStartEnabled_DoesNotStartTrackingBeforeLoaded|ManualTickerTick_WhenTrackingHasNotStarted_DoesNotCollectOrPersist|MainWindow_WhenLoadedStartsTickerAndClosedStopsTicker"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-215459`.
+
+Coverage after this slice: overall line coverage 91.2%.
+
+Next work should continue runtime confidence slices before returning to minor
+visual cleanup. Good candidates are proving stop/close flush behavior through
+the manual ticker path, or tightening Chrome native messaging acceptance
+without touching the user's real Chrome profile or real local DB.
