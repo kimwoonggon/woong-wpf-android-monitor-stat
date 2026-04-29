@@ -11,6 +11,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -24,9 +25,7 @@
 
         <StackPanel Margin="0,0,18,0">
             <TextBlock Text="Privacy"
-                       FontWeight="SemiBold"
-                       FontSize="15"
-                       Foreground="#162033"
+                       Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,0,0,10" />
             <CheckBox Content="Collection visible"
                       AutomationProperties.AutomationId="CollectionVisibleCheckBox"
@@ -66,9 +65,7 @@
         <StackPanel Grid.Column="1"
                     Margin="0,0,18,0">
             <TextBlock Text="Sync"
-                       FontWeight="SemiBold"
-                       FontSize="15"
-                       Foreground="#162033"
+                       Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,0,0,10" />
             <CheckBox Content="Sync enabled"
                       AutomationProperties.AutomationId="SyncEnabledCheckBox"
@@ -94,9 +91,7 @@
 
         <StackPanel Grid.Column="2">
             <TextBlock Text="Runtime"
-                       FontWeight="SemiBold"
-                       FontSize="15"
-                       Foreground="#162033"
+                       Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,0,0,10" />
             <TextBlock Text="Poll interval: 1 second"
                        Foreground="#5A6472"

@@ -228,8 +228,10 @@ Current style dictionary implementation:
   `SectionCard`, `DetailRow`, and `MetricCard` consume those styles while
   preserving their AutomationIds and existing bindings. `EmptyState` uses
   `EmptyStateTextStyle`, and `ChartsPanel` uses `SectionTitleTextStyle` for
-  the three chart headings. Remaining typography work is to migrate repeated
-  settings text setters as that panel is split further.
+  the three chart headings. `SettingsPanel` uses
+  `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings. Remaining
+  typography work is to migrate repeated settings body/muted/warning text
+  setters as that panel is split further.
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in

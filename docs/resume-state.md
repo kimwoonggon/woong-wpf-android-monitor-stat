@@ -2225,3 +2225,32 @@ Coverage after this slice: overall line coverage 91.3% (3353/3671).
 
 Next componentization work should move to `SettingsPanel` typography/status
 brush cleanup, because HeaderStatusBar badge color literals are now gone.
+
+## 2026-04-29 WPF Settings Heading Typography Slice
+
+- Added a RED WPF assertion that the Settings tab section headings use a
+  shared typography resource.
+- Added `SettingsSectionTitleTextStyle` to `Styles/Typography.xaml`.
+- Replaced inline FontWeight, FontSize, and Foreground setters on the
+  Privacy/Sync/Runtime headings in `SettingsPanel`.
+- Preserved the existing Settings tab controls, privacy defaults, and sync
+  bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter SettingsPanel_UsesSharedSectionHeadingTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_UsesSharedSectionHeadingTypography|SettingsPanel_PreservesPrivacyControlsAndSafeDefaults|SettingsPanel_PreservesSyncControlsAndTwoWayBinding"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-200823`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should continue in `SettingsPanel`, preferably
+muted body text and sync warning/status brush resources, one RED/GREEN slice at
+a time.

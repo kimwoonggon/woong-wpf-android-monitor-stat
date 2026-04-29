@@ -21,6 +21,10 @@
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
     </Style>
 
+    <Style x:Key="SettingsSectionTitleTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SectionTitleTextStyle}">
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
     <Style x:Key="BodyTextStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />

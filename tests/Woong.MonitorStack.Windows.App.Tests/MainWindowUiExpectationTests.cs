@@ -753,6 +753,28 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void SettingsPanel_UsesSharedSectionHeadingTypography()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+
+                Assert.IsType<Style>(panel.FindResource("SettingsSectionTitleTextStyle"));
+                AssertSettingsSectionTitleStyle(FindTextBlock(panel, "Privacy"));
+                AssertSettingsSectionTitleStyle(FindTextBlock(panel, "Sync"));
+                AssertSettingsSectionTitleStyle(FindTextBlock(panel, "Runtime"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void SettingsPanel_PreservesSyncControlsAndTwoWayBinding()
         => RunOnStaThread(() =>
         {
@@ -1159,6 +1181,17 @@ public sealed class MainWindowUiExpectationTests
     {
         Style style = Assert.IsType<Style>(textBlock.Style);
         AssertStyleSetter(style, TextBlock.FontSizeProperty, 16.0);
+        AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
+    }
+
+    private static void AssertSettingsSectionTitleStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 15.0);
         AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
 
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);

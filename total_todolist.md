@@ -1020,6 +1020,13 @@ milestones below are finished.
   - [x] Header badge color verification: `.NET` build passed.
   - [x] Header badge color verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-200235`.
   - [x] Header badge color verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `SettingsSectionTitleTextStyle` to `Styles/Typography.xaml` and replace Settings panel Privacy/Sync/Runtime heading inline text setters.
+  - [x] Settings heading typography verification: RED `SettingsPanel_UsesSharedSectionHeadingTypography` failed first, then passed.
+  - [x] Settings heading typography verification: all Windows App tests passed (80 tests).
+  - [x] Settings heading typography verification: full `.NET` tests passed (284 tests).
+  - [x] Settings heading typography verification: `.NET` build passed.
+  - [x] Settings heading typography verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-200823`.
+  - [x] Settings heading typography verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
