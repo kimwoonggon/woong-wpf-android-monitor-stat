@@ -1076,6 +1076,13 @@ milestones below are finished.
   - [x] MainWindow background verification: `.NET` build passed.
   - [x] MainWindow background verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-205628`.
   - [x] MainWindow background verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Replace `DetailsTabsPanel` pager label/status inline text styling with shared typography resources.
+  - [x] Details pager typography verification: RED `DetailsTabsPanel_UsesSharedPagerTypography` failed first, then passed.
+  - [x] Details pager typography verification: all Windows App tests passed (87 tests).
+  - [x] Details pager typography verification: full `.NET` tests passed (292 tests).
+  - [x] Details pager typography verification: `.NET` build passed.
+  - [x] Details pager typography verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-210315`.
+  - [x] Details pager typography verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

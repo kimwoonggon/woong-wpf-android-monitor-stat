@@ -15,6 +15,7 @@
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/DataGrid.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -166,6 +167,7 @@
                             VerticalAlignment="Center">
                     <TextBlock Text="Rows per page:"
                                VerticalAlignment="Center"
+                               Style="{StaticResource MutedTextStyle}"
                                Margin="0,0,8,0" />
                     <ComboBox AutomationProperties.AutomationId="DetailsRowsPerPageComboBox"
                               ItemsSource="{Binding RowsPerPageOptions}"
@@ -183,6 +185,7 @@
                     <TextBlock AutomationProperties.AutomationId="DetailsPageStatusText"
                                Text="{Binding DetailsPageText}"
                                VerticalAlignment="Center"
+                               Style="{StaticResource BodyTextStyle}"
                                Margin="8,0" />
                     <Button AutomationProperties.AutomationId="DetailsNextPageButton"
                             Content="Next"

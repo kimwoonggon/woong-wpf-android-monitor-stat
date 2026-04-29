@@ -2438,3 +2438,31 @@ Coverage after this slice: overall line coverage 91.3%.
 
 Next componentization work should address the Details tab pager text style or
 close the style-dictionary cleanup item after a final XAML audit.
+
+## 2026-04-29 WPF Details Pager Typography Slice
+
+- Added RED WPF expectation `DetailsTabsPanel_UsesSharedPagerTypography`.
+- Merged `Styles/Typography.xaml` into `DetailsTabsPanel`.
+- Replaced inline pager label/status text rendering with `MutedTextStyle` and
+  `BodyTextStyle`.
+- Preserved Details tab selection, row-page controls, DataGrid bindings, and
+  settings tab controls.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter DetailsTabsPanel_UsesSharedPagerTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DetailsTabsPanel_UsesSharedPagerTypography|MainWindow_TabsExposeExpectedListsAndSettingsControls"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-210315`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should perform a final style/resource audit and then
+either close the style-dictionary cleanup checklist item or open the next
+specific debt slice.

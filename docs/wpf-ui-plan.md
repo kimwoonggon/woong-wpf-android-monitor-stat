@@ -239,7 +239,8 @@ Current style dictionary implementation:
   warning/status color. `CurrentFocusPanel` now uses shared typography for its
   section title, last DB write value, and sync status helper text through
   `SectionTitleTextStyle`, `CurrentFocusValueTextStyle`, and
-  `CurrentFocusSecondaryTextStyle`.
+  `CurrentFocusSecondaryTextStyle`. `DetailsTabsPanel` uses `MutedTextStyle`
+  and `BodyTextStyle` for the pager label and current page status.
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in
