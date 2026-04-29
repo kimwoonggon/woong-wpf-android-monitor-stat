@@ -220,8 +220,9 @@ Current style dictionary implementation:
 - `Styles/Colors.xaml` defines the core app background, surface, border,
   primary text, and muted text brushes. `Cards.xaml` now consumes surface and
   border brushes, and the dashboard shell content uses the app background brush.
-  Remaining color work includes replacing repeated text and badge/status
-  hard-coded brushes.
+  Header tracking/sync/privacy badge brushes are also named resources so the
+  status color policy stays centralized. Remaining color work includes
+  replacing repeated settings text/status hard-coded brushes.
 - `Styles/Typography.xaml` defines shared heading, subtitle, section title,
   body, muted, and metric-value `TextBlock` styles. `HeaderStatusBar`,
   `SectionCard`, `DetailRow`, and `MetricCard` consume those styles while

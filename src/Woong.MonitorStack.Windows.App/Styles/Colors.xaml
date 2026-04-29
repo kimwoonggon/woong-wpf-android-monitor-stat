@@ -5,4 +5,16 @@
     <SolidColorBrush x:Key="BorderBrush" Color="#DCE1E8" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#162033" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#5A6472" />
+
+    <SolidColorBrush x:Key="TrackingBadgeBackgroundBrush" Color="#EEF8F1" />
+    <SolidColorBrush x:Key="TrackingBadgeBorderBrush" Color="#BFE8CC" />
+    <SolidColorBrush x:Key="TrackingBadgeTextBrush" Color="#087A34" />
+
+    <SolidColorBrush x:Key="SyncBadgeBackgroundBrush" Color="#FFF6E8" />
+    <SolidColorBrush x:Key="SyncBadgeBorderBrush" Color="#FFDDA8" />
+    <SolidColorBrush x:Key="SyncBadgeTextBrush" Color="#A45B00" />
+
+    <SolidColorBrush x:Key="PrivacyBadgeBackgroundBrush" Color="#EEF5FF" />
+    <SolidColorBrush x:Key="PrivacyBadgeBorderBrush" Color="#BFD8FF" />
+    <SolidColorBrush x:Key="PrivacyBadgeTextBrush" Color="#0B63CE" />
 </ResourceDictionary>

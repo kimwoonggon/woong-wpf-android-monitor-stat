@@ -11,6 +11,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -34,19 +35,19 @@
                    VerticalAlignment="Center">
             <controls:StatusBadge AutomationProperties.AutomationId="TrackingStatusBadge"
                                   Text="{Binding TrackingBadgeText}"
-                                  Background="#EEF8F1"
-                                  BorderBrush="#BFE8CC"
-                                  TextBrush="#087A34" />
+                                  Background="{StaticResource TrackingBadgeBackgroundBrush}"
+                                  BorderBrush="{StaticResource TrackingBadgeBorderBrush}"
+                                  TextBrush="{StaticResource TrackingBadgeTextBrush}" />
             <controls:StatusBadge AutomationProperties.AutomationId="SyncStatusBadge"
                                   Text="{Binding SyncBadgeText}"
-                                  Background="#FFF6E8"
-                                  BorderBrush="#FFDDA8"
-                                  TextBrush="#A45B00" />
+                                  Background="{StaticResource SyncBadgeBackgroundBrush}"
+                                  BorderBrush="{StaticResource SyncBadgeBorderBrush}"
+                                  TextBrush="{StaticResource SyncBadgeTextBrush}" />
             <controls:StatusBadge AutomationProperties.AutomationId="PrivacyStatusBadge"
                                   Text="{Binding PrivacyBadgeText}"
-                                  Background="#EEF5FF"
-                                  BorderBrush="#BFD8FF"
-                                  TextBrush="#0B63CE" />
+                                  Background="{StaticResource PrivacyBadgeBackgroundBrush}"
+                                  BorderBrush="{StaticResource PrivacyBadgeBorderBrush}"
+                                  TextBrush="{StaticResource PrivacyBadgeTextBrush}" />
         </WrapPanel>
     </Grid>
 </UserControl>

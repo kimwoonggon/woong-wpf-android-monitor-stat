@@ -120,6 +120,44 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void HeaderStatusBar_UsesSharedBadgeColorResources()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                HeaderStatusBar header = FindByAutomationId<HeaderStatusBar>(window, "HeaderArea");
+                AssertBadgeUsesBrushes(
+                    header,
+                    "TrackingStatusBadge",
+                    "TrackingBadgeBackgroundBrush",
+                    "TrackingBadgeBorderBrush",
+                    "TrackingBadgeTextBrush");
+                AssertBadgeUsesBrushes(
+                    header,
+                    "SyncStatusBadge",
+                    "SyncBadgeBackgroundBrush",
+                    "SyncBadgeBorderBrush",
+                    "SyncBadgeTextBrush");
+                AssertBadgeUsesBrushes(
+                    header,
+                    "PrivacyStatusBadge",
+                    "PrivacyBadgeBackgroundBrush",
+                    "PrivacyBadgeBorderBrush",
+                    "PrivacyBadgeTextBrush");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void StatusBadge_RendersTextAndPreservesAutomationId()
         => RunOnStaThread(() =>
         {
@@ -1101,6 +1139,20 @@ public sealed class MainWindowUiExpectationTests
         Assert.Equal(72.0, button.MinWidth);
         Assert.Equal(new Thickness(10, 0, 10, 0), button.Padding);
         Assert.Equal(12.0, button.FontSize);
+    }
+
+    private static void AssertBadgeUsesBrushes(
+        FrameworkElement root,
+        string automationId,
+        string backgroundBrushKey,
+        string borderBrushKey,
+        string textBrushKey)
+    {
+        StatusBadge badge = FindByAutomationId<StatusBadge>(root, automationId);
+
+        Assert.Same(root.FindResource(backgroundBrushKey), badge.Background);
+        Assert.Same(root.FindResource(borderBrushKey), badge.BorderBrush);
+        Assert.Same(root.FindResource(textBrushKey), badge.TextBrush);
     }
 
     private static void AssertSectionTitleStyle(TextBlock textBlock)

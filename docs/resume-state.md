@@ -2199,3 +2199,29 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should continue reducing remaining direct
 foreground/background/font setters, with `SettingsPanel` and `HeaderStatusBar`
 as likely candidates.
+
+## 2026-04-29 WPF Header Badge Color Resource Slice
+
+- Added a RED WPF assertion that the three header status badges use shared
+  named brushes instead of inline color literals.
+- Added tracking, sync, and privacy badge background/border/text brushes to
+  `Styles/Colors.xaml`.
+- Replaced `HeaderStatusBar` inline badge color values with static resource
+  references while preserving AutomationIds and badge text bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter HeaderStatusBar_UsesSharedBadgeColorResources`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-200235`.
+
+Coverage after this slice: overall line coverage 91.3% (3353/3671).
+
+Next componentization work should move to `SettingsPanel` typography/status
+brush cleanup, because HeaderStatusBar badge color literals are now gone.

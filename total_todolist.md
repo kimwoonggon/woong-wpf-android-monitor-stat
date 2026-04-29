@@ -1012,6 +1012,14 @@ milestones below are finished.
   - [x] Typography cleanup verification: `.NET` build passed.
   - [x] Typography cleanup verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-195534`.
   - [x] Typography cleanup verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add named header badge brushes to `Styles/Colors.xaml` for tracking, sync, and privacy status colors.
+  - [x] Replace `HeaderStatusBar` inline badge color values with shared brush resources.
+  - [x] Header badge color verification: RED `HeaderStatusBar_UsesSharedBadgeColorResources` failed first, then passed.
+  - [x] Header badge color verification: all Windows App tests passed (79 tests).
+  - [x] Header badge color verification: full `.NET` tests passed (283 tests).
+  - [x] Header badge color verification: `.NET` build passed.
+  - [x] Header badge color verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-200235`.
+  - [x] Header badge color verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
