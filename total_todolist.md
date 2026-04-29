@@ -545,6 +545,9 @@ milestones below are finished.
 - [x] EmptyData snapshot mode explicitly disables product auto-start so empty-state evidence remains deterministic.
 - [x] EmptyData mode verifies temp SQLite `focus_session`, `web_session`, and `sync_outbox` row counts stay zero.
 - [x] TrackingPipeline mode verifies temp SQLite `focus_session`, `web_session`, and `sync_outbox` row counts.
+- [x] Add WPF architecture guard that `MainWindow.xaml` remains a thin `DashboardView` shell.
+- [x] Add WPF architecture guard that `DashboardView.xaml` composes reusable section controls inside a vertical `ScrollViewer`.
+- [x] Add WPF App guard for stable dashboard AutomationIds used by UI acceptance.
 - [x] Verify Start changes tracking status to Running.
 - [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Verify Stop changes tracking status to Stopped.
@@ -615,11 +618,11 @@ milestones below are finished.
 - [x] Add Android foreground-only manifest guard for optional location context: coarse/fine permissions allowed, background location forbidden.
 - [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
-- [ ] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
+- [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [ ] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [ ] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
 - [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
-- [ ] Commit and push Android optional location context slices.
+- [x] Commit and push Android optional location context slices.
 
 ## Milestone 28: Privacy And Retention Hardening
 

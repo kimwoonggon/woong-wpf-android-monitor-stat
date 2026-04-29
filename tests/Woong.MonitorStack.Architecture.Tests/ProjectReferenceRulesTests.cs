@@ -271,6 +271,46 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
+    public void MainWindow_XamlRemainsThinDashboardShell()
+    {
+        XDocument mainWindowXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "MainWindow.xaml"));
+
+        XElement mainWindow = Assert.Single(mainWindowXaml.Elements());
+        XElement contentGrid = Assert.Single(
+            mainWindow.Elements(),
+            element => element.Name.LocalName != "Window.Resources");
+        XElement dashboardView = Assert.Single(contentGrid.Elements());
+        string[] forbiddenInlineDashboardControls =
+        [
+            "HeaderStatusBar",
+            "ControlBar",
+            "CurrentFocusPanel",
+            "SummaryCardsPanel",
+            "ChartsPanel",
+            "DetailsTabsPanel",
+            "DataGrid",
+            "TabControl",
+            "CartesianChart",
+            "PieChart"
+        ];
+        string[] mainWindowElementNames = mainWindow
+            .Descendants()
+            .Select(element => element.Name.LocalName)
+            .ToArray();
+
+        Assert.Equal("Grid", contentGrid.Name.LocalName);
+        Assert.Equal("DashboardView", dashboardView.Name.LocalName);
+        foreach (string forbiddenControl in forbiddenInlineDashboardControls)
+        {
+            Assert.DoesNotContain(forbiddenControl, mainWindowElementNames);
+        }
+    }
+
+    [Fact]
     public void WpfXaml_DoesNotUseColorLiteralsOutsideColorsDictionary()
     {
         string wpfAppRoot = Path.Combine(RepositoryRoot, "src", "Woong.MonitorStack.Windows.App");
@@ -320,6 +360,47 @@ public sealed class ProjectReferenceRulesTests
         Assert.Equal(6, layoutGrid.Elements().Single(element => element.Name.LocalName == "Grid.RowDefinitions").Elements().Count());
         Assert.Equal("4", GetXamlAttribute(layoutGrid.Elements().Single(element => element.Name.LocalName == "ChartsPanel"), "Grid.Row"));
         Assert.Equal("5", GetXamlAttribute(layoutGrid.Elements().Single(element => element.Name.LocalName == "DetailsTabsPanel"), "Grid.Row"));
+    }
+
+    [Fact]
+    public void DashboardView_ComposesReusableSectionsInsideVerticalScrollViewer()
+    {
+        XDocument dashboardViewXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "Views",
+            "DashboardView.xaml"));
+
+        XElement dashboardView = Assert.Single(dashboardViewXaml.Elements());
+        XElement scrollViewer = Assert.Single(
+            dashboardView.Elements(),
+            element => element.Name.LocalName == "ScrollViewer");
+        XElement layoutGrid = Assert.Single(scrollViewer.Elements());
+        string[] requiredSectionControls =
+        [
+            "HeaderStatusBar",
+            "ControlBar",
+            "CurrentFocusPanel",
+            "SummaryCardsPanel",
+            "ChartsPanel",
+            "DetailsTabsPanel"
+        ];
+        string[] directCompositionControls = layoutGrid
+            .Elements()
+            .Where(element => element.Name.LocalName != "Grid.RowDefinitions")
+            .Select(element => element.Name.LocalName)
+            .ToArray();
+        string[] unexpectedInlineElements = layoutGrid
+            .Descendants()
+            .Select(element => element.Name.LocalName)
+            .Where(elementName => elementName != "Grid.RowDefinitions" && elementName != "RowDefinition")
+            .Except(requiredSectionControls)
+            .ToArray();
+
+        Assert.Equal("Auto", GetXamlAttribute(scrollViewer, "VerticalScrollBarVisibility"));
+        Assert.Equal(requiredSectionControls, directCompositionControls);
+        Assert.Empty(unexpectedInlineElements);
     }
 
     [Fact]

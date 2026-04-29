@@ -2840,6 +2840,53 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.3%; branch coverage 70.2%.
 
+## 2026-04-29 Android Optional Location Room Slice
+
+- Added a local-only Room `location_context_snapshots` table for Android
+  optional location context. The table stores nullable latitude, longitude,
+  accuracy, permission state, capture mode, and captured UTC timestamp.
+- Added `LocationContextSnapshotDao` with recent-by-device and
+  captured-range-by-device queries.
+- Added a `2 -> 3` Room migration that creates only the Android local table;
+  no server DTO/upload path was added in this slice, and location sync remains
+  off/unimplemented.
+- RED/GREEN component tests now prove nullable coordinates are preserved and
+  range queries do not mix devices.
+
+Focused validation completed so far:
+
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.data.local.LocationContextSnapshotDaoTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`
+
+## 2026-04-29 WPF Thin Shell And AutomationId Guard Slice
+
+- Added architecture tests proving `MainWindow.xaml` remains a thin
+  `Grid -> DashboardView` shell and that `DashboardView.xaml` composes the six
+  reusable dashboard sections inside a vertical `ScrollViewer`.
+- Added a WPF App test proving key dashboard controls keep stable
+  AutomationIds required by local UI acceptance.
+- Added minimal component-level AutomationIds to WPF section UserControls and
+  non-visual wrappers for app/web session lists while preserving existing
+  acceptance IDs on `DashboardView`.
+
+Focused validation completed so far:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~MainWindow_XamlRemainsThinDashboardShell" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~DashboardView_ComposesReusableSectionsInsideVerticalScrollViewer" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~DashboardComponentXaml_ExposesStableAutomationIdsForUiAcceptance|FullyQualifiedName~MainWindow_ExposesStableAutomationIdsForSnapshotAutomation" -maxcpucount:1 -v minimal`
+
+Full validation after integrating the Android Room slice and WPF guard slices:
+
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260430-003857`.
+
+Coverage after this slice: overall line coverage 91.3%; branch coverage 70.2%.
+
 ## 2026-04-29 WPF Component Guard And Acceptance Clock Slice
 
 - Added architecture guardrails so WPF XAML color literals are centralized in

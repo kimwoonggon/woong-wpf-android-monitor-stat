@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dashboard="clr-namespace:Woong.MonitorStack.Windows.Presentation.Dashboard;assembly=Woong.MonitorStack.Windows.Presentation"
              mc:Ignorable="d"
-             AutomationProperties.AutomationId="ChartArea"
+             AutomationProperties.AutomationId="ChartsPanel"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
         <ResourceDictionary>

@@ -10,14 +10,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         FocusSessionEntity::class,
-        SyncOutboxEntity::class
+        SyncOutboxEntity::class,
+        LocationContextSnapshotEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class MonitorDatabase : RoomDatabase() {
     abstract fun focusSessionDao(): FocusSessionDao
     abstract fun syncOutboxDao(): SyncOutboxDao
+    abstract fun locationContextSnapshotDao(): LocationContextSnapshotDao
 
     companion object {
         @Volatile
@@ -42,6 +44,26 @@ abstract class MonitorDatabase : RoomDatabase() {
             }
         }
 
+        private val Migration2To3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS location_context_snapshots (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        deviceId TEXT NOT NULL,
+                        capturedAtUtcMillis INTEGER NOT NULL,
+                        latitude REAL,
+                        longitude REAL,
+                        accuracyMeters REAL,
+                        permissionState TEXT NOT NULL,
+                        captureMode TEXT NOT NULL,
+                        createdAtUtcMillis INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): MonitorDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -49,7 +71,7 @@ abstract class MonitorDatabase : RoomDatabase() {
                     MonitorDatabase::class.java,
                     "woong-monitor.db"
                 )
-                    .addMigrations(Migration1To2)
+                    .addMigrations(Migration1To2, Migration2To3)
                     .build()
                     .also { instance = it }
             }

@@ -159,11 +159,14 @@ artifacts only. They must not capture other apps as telemetry.
   is enabled.
 - Location permission policy requests coarse location for approximate mode and
   adds fine location only after precise latitude/longitude opt-in.
+- Room now has a local-only `location_context_snapshots` table and DAO.
+  Component tests prove nullable `latitude`, `longitude`, `accuracyMeters`,
+  and `capturedAtUtcMillis` are preserved, and that snapshots can be queried by
+  device plus captured UTC range.
 
 ## Not Implemented Yet
 
 - Runtime location collector/provider.
-- Room `location_context_snapshot` table.
 - Dashboard location card.
 - Server location DTO/storage.
 - Connected-device screenshot evidence for location UI.
