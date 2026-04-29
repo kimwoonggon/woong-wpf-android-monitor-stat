@@ -21,6 +21,34 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("It will not capture screen contents as product telemetry.", script);
         Assert.Contains("AllowServerSync", script);
         Assert.Contains("artifacts/wpf-ui-acceptance", script);
+        Assert.Contains("WOONG_MONITOR_ACCEPTANCE_MODE", script);
+        Assert.Contains("TrackingPipeline", script);
+        Assert.Contains("manifest.json", script);
+        Assert.Contains("visual-review-prompt.md", script);
+        Assert.Contains("$LASTEXITCODE", script);
+        Assert.Contains("TrackingPipeline UI snapshot acceptance failed.", script);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("--mode", tool);
+        Assert.Contains("TrackingPipeline", tool);
+        Assert.Contains("StartTrackingButton", tool);
+        Assert.Contains("github.com", tool);
+        Assert.Contains("chatgpt.com", tool);
+        Assert.Contains("05-after-sync.png", tool);
+        Assert.Contains("06-settings.png", tool);
+        Assert.Contains("recent-web-sessions.png", tool);
+        Assert.Contains("manifest.json", tool);
+        Assert.Contains("visual-review-prompt.md", tool);
+        Assert.Contains("PASS/FAIL/WARN", tool);
     }
 
     private static string FindRepositoryRoot()

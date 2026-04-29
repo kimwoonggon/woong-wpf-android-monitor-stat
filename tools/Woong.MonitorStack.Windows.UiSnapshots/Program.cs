@@ -1,5 +1,8 @@
+using System.Diagnostics;
+using System.Text.Json;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
 
 var exitCode = UiSnapshotRunner.Run(args);
@@ -20,14 +23,12 @@ internal static class UiSnapshotRunner
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             Console.Error.WriteLine($"[FAIL] {exception.Message}");
-            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--timeout-seconds <seconds>]");
+            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--db <path>] [--mode EmptyData|TrackingPipeline] [--timeout-seconds <seconds>] [--allow-server-sync]");
             return 2;
         }
 
-        var notes = new List<string>();
-        Directory.CreateDirectory(options.RunDirectory);
-
-        Application? application = null;
+        var context = new UiSnapshotContext(options);
+        Process? process = null;
         try
         {
             if (!File.Exists(options.AppPath))
@@ -37,53 +38,49 @@ internal static class UiSnapshotRunner
                     options.AppPath);
             }
 
-            using var automation = new UIA3Automation();
-            application = Application.Launch(options.AppPath);
-            Window mainWindow = application.GetMainWindow(automation, options.Timeout)
-                ?? throw new InvalidOperationException($"Main window with title process for '{AppFileName}' did not appear within {options.Timeout.TotalSeconds:N0} seconds.");
+            Directory.CreateDirectory(options.RunDirectory);
+            ProcessStartInfo startInfo = CreateStartInfo(options);
+            process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to launch WPF app.");
 
-            string? automationId = TryGetAutomationId(mainWindow, notes);
+            using var automation = new UIA3Automation();
+            using Application application = Application.Attach(process);
+            Window mainWindow = application.GetMainWindow(automation, options.Timeout)
+                ?? throw new InvalidOperationException($"Main window for '{AppFileName}' did not appear within {options.Timeout.TotalSeconds:N0} seconds.");
+
+            string? automationId = TryGetAutomationId(mainWindow, context);
             if (!string.Equals(automationId, MainWindowAutomationId, StringComparison.Ordinal))
             {
-                notes.Add($"Main window AutomationId was '{automationId ?? "<unsupported>"}', expected '{MainWindowAutomationId}'. Continuing because the window was found by process.");
+                context.Warn(
+                    "MainWindow AutomationId",
+                    MainWindowAutomationId,
+                    automationId ?? "<unsupported>",
+                    "Continuing because the window was found by process.");
             }
 
             mainWindow.Focus();
-            TryMoveWindow(mainWindow, notes);
+            TryMoveWindow(mainWindow, context);
             Thread.Sleep(500);
 
-            CaptureWindow(mainWindow, options.RunDirectory, "01-startup.png", notes);
-            CaptureElementIfAvailable(mainWindow, "SummaryCardsContainer", options.RunDirectory, "summary-cards.png", notes);
-            CaptureElementIfAvailable(mainWindow, "ChartArea", options.RunDirectory, "chart-area.png", notes);
-            CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", options.RunDirectory, "recent-sessions.png", notes);
+            if (options.Mode == UiSnapshotMode.TrackingPipeline)
+            {
+                RunTrackingPipelineAcceptance(mainWindow, context);
+            }
+            else
+            {
+                RunEmptyDataSnapshots(mainWindow, context);
+            }
 
-            InvokeIfAvailable(mainWindow, "RefreshButton", "Refresh", notes);
-            Thread.Sleep(500);
-            CaptureWindow(mainWindow, options.RunDirectory, "02-dashboard-after-refresh.png", notes);
-
-            InvokeIfAvailable(mainWindow, "Last6HoursPeriodButton", "Last 6 hours period", notes);
-            Thread.Sleep(500);
-            CaptureWindow(mainWindow, options.RunDirectory, "03-dashboard-period-change.png", notes);
-
-            SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", notes);
-            Thread.Sleep(300);
-            CaptureElementIfAvailable(mainWindow, "LiveEventsList", options.RunDirectory, "live-events.png", notes);
-
-            SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", notes);
-            Thread.Sleep(500);
-            CaptureWindow(mainWindow, options.RunDirectory, "04-settings.png", notes);
-
-            WriteReport(options.RunDirectory, options.AppPath, notes, isSuccess: true);
+            WriteArtifacts(context, isSuccess: context.Results.All(result => result.Status != CheckStatus.Fail));
             ReplaceLatest(options.OutputRoot, options.RunDirectory);
             Console.WriteLine($"UI snapshots saved to: {options.RunDirectory}");
             Console.WriteLine($"Latest snapshots copied to: {Path.Combine(options.OutputRoot, "latest")}");
 
-            return 0;
+            return context.Results.All(result => result.Status != CheckStatus.Fail) ? 0 : 1;
         }
         catch (Exception exception)
         {
-            notes.Add($"Failure: {exception.GetType().Name}: {exception.Message}");
-            WriteReport(options.RunDirectory, options.AppPath, notes, isSuccess: false);
+            context.Fail("Tool execution", "No unhandled exception", $"{exception.GetType().Name}: {exception.Message}");
+            WriteArtifacts(context, isSuccess: false);
             Console.Error.WriteLine($"[FAIL] UI snapshot automation failed: {exception.Message}");
             Console.Error.WriteLine($"Report written to: {Path.Combine(options.RunDirectory, "report.md")}");
 
@@ -93,7 +90,14 @@ internal static class UiSnapshotRunner
         {
             try
             {
-                application?.Close(killIfCloseFails: true);
+                if (process is { HasExited: false })
+                {
+                    process.CloseMainWindow();
+                    if (!process.WaitForExit(5000))
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -102,14 +106,164 @@ internal static class UiSnapshotRunner
         }
     }
 
-    private static void CaptureWindow(Window window, string directory, string fileName, ICollection<string> notes)
+    private static ProcessStartInfo CreateStartInfo(UiSnapshotOptions options)
     {
-        string path = Path.Combine(directory, fileName);
-        window.CaptureToFile(path);
-        notes.Add($"Captured `{fileName}`.");
+        var startInfo = new ProcessStartInfo(options.AppPath)
+        {
+            UseShellExecute = false,
+            WorkingDirectory = Path.GetDirectoryName(options.AppPath) ?? Environment.CurrentDirectory
+        };
+
+        if (options.DatabasePath is not null)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(options.DatabasePath)!);
+            startInfo.Environment["WOONG_MONITOR_LOCAL_DB"] = options.DatabasePath;
+            startInfo.Environment["WOONG_MONITOR_DEVICE_ID"] = "ui-acceptance-local";
+        }
+
+        if (options.Mode == UiSnapshotMode.TrackingPipeline)
+        {
+            startInfo.Environment["WOONG_MONITOR_ACCEPTANCE_MODE"] = "TrackingPipeline";
+            startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
+        }
+
+        return startInfo;
     }
 
-    private static string? TryGetAutomationId(AutomationElement element, ICollection<string> notes)
+    private static void RunEmptyDataSnapshots(Window mainWindow, UiSnapshotContext context)
+    {
+        CaptureWindow(mainWindow, "01-startup.png", context);
+        CaptureElementIfAvailable(mainWindow, "SummaryCardsContainer", "summary-cards.png", context);
+        CaptureElementIfAvailable(mainWindow, "ChartArea", "chart-area.png", context);
+        CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", "recent-sessions.png", context);
+
+        InvokeIfAvailable(mainWindow, "RefreshButton", "Refresh", context);
+        Thread.Sleep(500);
+        CaptureWindow(mainWindow, "02-dashboard-after-refresh.png", context);
+
+        InvokeIfAvailable(mainWindow, "Last6HoursPeriodButton", "Last 6 hours period", context);
+        Thread.Sleep(500);
+        CaptureWindow(mainWindow, "03-dashboard-period-change.png", context);
+
+        SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
+        Thread.Sleep(500);
+        CaptureWindow(mainWindow, "04-settings.png", context);
+    }
+
+    private static void RunTrackingPipelineAcceptance(Window mainWindow, UiSnapshotContext context)
+    {
+        CaptureWindow(mainWindow, "01-startup.png", context);
+        RequireEnabled(mainWindow, "StartTrackingButton", context);
+        RequireExists(mainWindow, "StopTrackingButton", context);
+        RequireExists(mainWindow, "SyncNowButton", context);
+        RequireExists(mainWindow, "SummaryCardsContainer", context);
+        WarnIfMissing(mainWindow, "ChartArea", context, "Chart area may be below the current scroll viewport.");
+
+        InvokeRequired(mainWindow, "StartTrackingButton");
+        Thread.Sleep(300);
+        context.Pass("StartTrackingButton", "Invoked", "Invoked");
+        context.CheckContains("TrackingStatusText", "Running", GetElementName(mainWindow, "TrackingStatusText"));
+        context.CheckContains("CurrentAppNameText start", "Code.exe", GetElementName(mainWindow, "CurrentAppNameText"));
+        CaptureWindow(mainWindow, "02-after-start.png", context);
+        CaptureElementOrWindowFallback(mainWindow, "CurrentActivityPanel", "current-activity.png", context);
+
+        Thread.Sleep(1500);
+        context.CheckContains("CurrentAppNameText after generated activity", "chrome.exe", GetElementName(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("LastPersistedSessionText", "Code.exe", GetElementName(mainWindow, "LastPersistedSessionText"));
+        CaptureWindow(mainWindow, "03-after-generated-activity.png", context);
+
+        InvokeRequired(mainWindow, "StopTrackingButton");
+        Thread.Sleep(700);
+        context.Pass("StopTrackingButton", "Invoked", "Invoked");
+        context.CheckContains("TrackingStatusText stopped", "Stopped", GetElementName(mainWindow, "TrackingStatusText"));
+        CaptureWindow(mainWindow, "04-after-stop.png", context);
+
+        SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", "recent-sessions.png", context);
+        string appText = GetAllVisibleText(mainWindow);
+        context.CheckContains("TrackingPipeline shows Visual Studio Code process", "Code.exe", appText);
+        context.CheckContains("TrackingPipeline shows Chrome process", "chrome.exe", appText);
+        context.CheckContains("SummaryCards show expected duration", "15m", appText);
+
+        SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "RecentWebSessionsList", "recent-web-sessions.png", context);
+        string webText = GetAllVisibleText(mainWindow);
+        context.CheckContains("TrackingPipeline shows github.com", "github.com", webText);
+        context.CheckContains("TrackingPipeline shows chatgpt.com", "chatgpt.com", webText);
+
+        SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "LiveEventsList", "live-events.png", context);
+        string liveEventText = GetAllVisibleText(mainWindow);
+        context.CheckContains("LiveEventLog shows focus activity", "Focus", liveEventText);
+        context.CheckContains("LiveEventLog shows browser visit", "Web", liveEventText);
+
+        CaptureElementIfAvailable(mainWindow, "SummaryCardsContainer", "summary-cards.png", context);
+        CaptureElementIfAvailable(mainWindow, "ChartArea", "chart-area.png", context);
+
+        SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
+        Thread.Sleep(300);
+        RequireExists(mainWindow, "WindowTitleVisibleCheckBox", context);
+        RequireExists(mainWindow, "SyncEnabledCheckBox", context);
+        EnableCheckBox(mainWindow, "SyncEnabledCheckBox", context);
+        InvokeRequired(mainWindow, "SyncNowButton");
+        Thread.Sleep(500);
+        context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementName(mainWindow, "LastSyncStatusText"));
+        CaptureWindow(mainWindow, "05-after-sync.png", context);
+        CaptureWindow(mainWindow, "06-settings.png", context);
+    }
+
+    private static void RequireEnabled(Window window, string automationId, UiSnapshotContext context)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        if (element is null)
+        {
+            context.Fail(automationId, "Visible and enabled", "Missing");
+            return;
+        }
+
+        context.Add(
+            automationId,
+            "Visible and enabled",
+            element.IsEnabled ? "Visible and enabled" : "Visible but disabled",
+            element.IsEnabled ? CheckStatus.Pass : CheckStatus.Fail);
+    }
+
+    private static void RequireExists(Window window, string automationId, UiSnapshotContext context)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        context.Add(
+            automationId,
+            "Exists",
+            element is null ? "Missing" : "Exists",
+            element is null ? CheckStatus.Fail : CheckStatus.Pass);
+    }
+
+    private static void WarnIfMissing(Window window, string automationId, UiSnapshotContext context, string note)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        context.Add(
+            automationId,
+            "Exists or is reachable by scrolling",
+            element is null ? "Missing from current viewport" : "Exists",
+            element is null ? CheckStatus.Warn : CheckStatus.Pass);
+        if (element is null)
+        {
+            context.Notes.Add(note);
+        }
+    }
+
+    private static void CaptureWindow(Window window, string fileName, UiSnapshotContext context)
+    {
+        string path = Path.Combine(context.Options.RunDirectory, fileName);
+        window.CaptureToFile(path);
+        context.Screenshots.Add(fileName);
+        context.Notes.Add($"Captured `{fileName}`.");
+    }
+
+    private static string? TryGetAutomationId(AutomationElement element, UiSnapshotContext context)
     {
         try
         {
@@ -117,7 +271,7 @@ internal static class UiSnapshotRunner
         }
         catch (Exception exception)
         {
-            notes.Add($"Main window AutomationId could not be read: {exception.Message}");
+            context.Notes.Add($"Main window AutomationId could not be read: {exception.Message}");
             return null;
         }
     }
@@ -125,116 +279,254 @@ internal static class UiSnapshotRunner
     private static void CaptureElementIfAvailable(
         Window window,
         string automationId,
-        string directory,
         string fileName,
-        ICollection<string> notes)
+        UiSnapshotContext context)
     {
         AutomationElement? element = window.FindFirstDescendant(automationId);
         if (element is null)
         {
-            notes.Add($"Optional crop `{fileName}` skipped because `{automationId}` was not visible.");
+            context.SkippedScreenshots.Add($"{fileName}: `{automationId}` was not visible.");
+            context.Warn(fileName, "Element screenshot", $"Skipped because `{automationId}` was not visible.", "");
             return;
         }
 
-        element.CaptureToFile(Path.Combine(directory, fileName));
-        notes.Add($"Captured optional crop `{fileName}` from `{automationId}`.");
+        element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
+        context.Screenshots.Add(fileName);
+        context.Notes.Add($"Captured optional crop `{fileName}` from `{automationId}`.");
     }
 
-    private static void InvokeIfAvailable(Window window, string automationId, string label, ICollection<string> notes)
+    private static void CaptureElementOrWindowFallback(
+        Window window,
+        string automationId,
+        string fileName,
+        UiSnapshotContext context)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        if (element is not null)
+        {
+            element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
+            context.Screenshots.Add(fileName);
+            context.Notes.Add($"Captured `{fileName}` from `{automationId}`.");
+            return;
+        }
+
+        window.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
+        context.Screenshots.Add(fileName);
+        context.Warn(
+            fileName,
+            $"Crop `{automationId}`",
+            "Captured full window fallback",
+            $"`{automationId}` was not exposed as a UI Automation element, so `{fileName}` uses the full window.");
+    }
+
+    private static void InvokeIfAvailable(Window window, string automationId, string label, UiSnapshotContext context)
     {
         AutomationElement? element = window.FindFirstDescendant(automationId);
         if (element is null)
         {
-            notes.Add($"{label} control skipped because `{automationId}` was not found.");
+            context.Warn(label, "Control can be invoked", $"Skipped because `{automationId}` was not found.", "");
             return;
         }
 
         element.AsButton().Invoke();
-        notes.Add($"Invoked {label} control.");
+        context.Pass(label, "Control invoked", "Control invoked");
     }
 
-    private static void SelectTabIfAvailable(Window window, string automationId, string tabName, ICollection<string> notes)
+    private static void InvokeRequired(Window window, string automationId)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId)
+            ?? throw new InvalidOperationException($"Could not find required control `{automationId}`.");
+
+        element.AsButton().Invoke();
+    }
+
+    private static void EnableCheckBox(Window window, string automationId, UiSnapshotContext context)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        if (element is null)
+        {
+            context.Fail(automationId, "Checkbox exists", "Missing");
+            return;
+        }
+
+        CheckBox checkBox = element.AsCheckBox();
+        if (checkBox.ToggleState == ToggleState.Off)
+        {
+            checkBox.Toggle();
+        }
+
+        context.CheckContains(automationId, "On", checkBox.ToggleState.ToString());
+    }
+
+    private static void SelectTabIfAvailable(Window window, string automationId, string tabName, UiSnapshotContext context)
     {
         AutomationElement? element = window.FindFirstDescendant(automationId)
             ?? window.FindFirstDescendant(condition => condition.ByName(tabName));
         if (element is null)
         {
-            notes.Add($"Tab `{tabName}` skipped because `{automationId}` was not found.");
+            context.Warn(tabName, "Tab selected", $"Skipped because `{automationId}` was not found.", "");
             return;
         }
 
         element.AsTabItem().Select();
-        notes.Add($"Selected `{tabName}` tab.");
+        context.Pass(tabName, "Tab selected", "Tab selected");
     }
 
-    private static void TryMoveWindow(Window window, ICollection<string> notes)
+    private static string GetElementName(Window window, string automationId)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        return element?.Name ?? "";
+    }
+
+    private static string GetAllVisibleText(Window window)
+        => string.Join(
+            Environment.NewLine,
+            window
+                .FindAllDescendants()
+                .Select(element => element.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.Ordinal));
+
+    private static void TryMoveWindow(Window window, UiSnapshotContext context)
     {
         try
         {
             window.Move(0, 0);
-            notes.Add("Moved main window to 0,0 for more deterministic screenshots. Size uses XAML defaults.");
+            context.Notes.Add("Moved main window to 0,0 for more deterministic screenshots. Size uses XAML defaults.");
         }
         catch (Exception exception)
         {
-            notes.Add($"Could not move main window: {exception.Message}");
+            context.Notes.Add($"Could not move main window: {exception.Message}");
         }
     }
 
-    private static void WriteReport(string directory, string appPath, IReadOnlyCollection<string> notes, bool isSuccess)
+    private static void WriteArtifacts(UiSnapshotContext context, bool isSuccess)
     {
-        string[] primaryScreenshots =
-        [
-            "01-startup.png",
-            "02-dashboard-after-refresh.png",
-            "03-dashboard-period-change.png",
-            "04-settings.png"
-        ];
-        string[] optionalScreenshots =
-        [
-            "summary-cards.png",
-            "chart-area.png",
-            "recent-sessions.png",
-            "live-events.png"
-        ];
+        WriteReport(context, isSuccess);
+        WriteManifest(context, isSuccess);
+        WriteVisualReviewPrompt(context);
+    }
+
+    private static void WriteReport(UiSnapshotContext context, bool isSuccess)
+    {
         var lines = new List<string>
         {
             "# WPF UI Snapshot Report",
             "",
             $"Status: {(isSuccess ? "PASS" : "FAIL")}",
             $"Generated at UTC: {DateTimeOffset.UtcNow:O}",
-            $"App: `{appPath}`",
+            $"Mode: `{context.Options.Mode}`",
+            $"App: `{context.Options.AppPath}`",
             "",
-            "## Primary Screenshots",
-            ""
+            "## PASS/FAIL/WARN Table",
+            "",
+            "| Check | Expected | Actual | Status |",
+            "|:---|:---|:---|:---|"
         };
 
-        foreach (string screenshot in primaryScreenshots)
+        foreach (CheckResult result in context.Results)
         {
-            lines.Add(File.Exists(Path.Combine(directory, screenshot))
-                ? $"- [{screenshot}]({screenshot})"
-                : $"- {screenshot} missing");
+            lines.Add($"| {Escape(result.Name)} | {Escape(result.Expected)} | {Escape(result.Actual)} | {result.Status} |");
         }
 
         lines.Add("");
-        lines.Add("## Optional Crops");
+        lines.Add("## Screenshots");
         lines.Add("");
-        foreach (string screenshot in optionalScreenshots)
+        foreach (string screenshot in context.Screenshots.Distinct(StringComparer.Ordinal))
         {
-            lines.Add(File.Exists(Path.Combine(directory, screenshot))
-                ? $"- [{screenshot}]({screenshot})"
-                : $"- {screenshot} not captured");
+            lines.Add($"- [{screenshot}]({screenshot})");
+        }
+
+        lines.Add("");
+        lines.Add("## Skipped Screenshots");
+        lines.Add("");
+        if (context.SkippedScreenshots.Count == 0)
+        {
+            lines.Add("- None");
+        }
+        else
+        {
+            foreach (string skipped in context.SkippedScreenshots)
+            {
+                lines.Add($"- {skipped}");
+            }
         }
 
         lines.Add("");
         lines.Add("## Notes");
         lines.Add("");
-        foreach (string note in notes)
+        foreach (string note in context.Notes)
         {
             lines.Add($"- {note}");
         }
 
-        File.WriteAllLines(Path.Combine(directory, "report.md"), lines);
+        lines.Add("");
+        lines.Add("## Next Recommended Fixes");
+        lines.Add("");
+        if (isSuccess)
+        {
+            lines.Add("- Continue expanding semantic fake-pipeline checks before adding strict pixel comparison.");
+        }
+        else
+        {
+            lines.Add("- Fix failed semantic checks before trusting screenshots.");
+        }
+
+        File.WriteAllLines(Path.Combine(context.Options.RunDirectory, "report.md"), lines);
     }
+
+    private static void WriteManifest(UiSnapshotContext context, bool isSuccess)
+    {
+        var manifest = new
+        {
+            status = isSuccess ? "PASS" : "FAIL",
+            generatedAtUtc = DateTimeOffset.UtcNow,
+            mode = context.Options.Mode.ToString(),
+            appPath = context.Options.AppPath,
+            databasePath = context.Options.DatabasePath,
+            screenshots = context.Screenshots.Distinct(StringComparer.Ordinal).ToArray(),
+            skippedScreenshots = context.SkippedScreenshots.ToArray(),
+            checks = context.Results.Select(result => new
+            {
+                result.Name,
+                result.Expected,
+                result.Actual,
+                status = result.Status.ToString()
+            }).ToArray()
+        };
+
+        string json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(Path.Combine(context.Options.RunDirectory, "manifest.json"), json);
+    }
+
+    private static void WriteVisualReviewPrompt(UiSnapshotContext context)
+    {
+        string[] lines =
+        [
+            "# Manual WPF Visual Review Prompt",
+            "",
+            "Review the local screenshots in this folder. Do not upload them automatically.",
+            "",
+            "Check:",
+            "",
+            "- Current activity is readable.",
+            "- Start/Stop state is clear.",
+            "- Expected app names appear: Visual Studio Code / Code.exe and Chrome / chrome.exe.",
+            "- Expected domains appear: github.com and chatgpt.com.",
+            "- Summary values match the fake TrackingPipeline data.",
+            "- Lists are not clipped in a way that hides required content.",
+            "- Chart area is visible when expected.",
+            "- Settings/privacy controls are readable.",
+            "- Content is not overlapped or offscreen.",
+            "",
+            $"Mode: `{context.Options.Mode}`"
+        ];
+
+        File.WriteAllLines(Path.Combine(context.Options.RunDirectory, "visual-review-prompt.md"), lines);
+    }
+
+    private static string Escape(string value)
+        => value.Replace("|", "\\|", StringComparison.Ordinal).ReplaceLineEndings(" ");
 
     private static void ReplaceLatest(string outputRoot, string runDirectory)
     {
@@ -258,12 +550,67 @@ internal static class UiSnapshotRunner
     }
 }
 
+internal sealed class UiSnapshotContext
+{
+    public UiSnapshotContext(UiSnapshotOptions options)
+    {
+        Options = options;
+    }
+
+    public UiSnapshotOptions Options { get; }
+
+    public List<CheckResult> Results { get; } = [];
+
+    public List<string> Notes { get; } = [];
+
+    public List<string> Screenshots { get; } = [];
+
+    public List<string> SkippedScreenshots { get; } = [];
+
+    public void Pass(string name, string expected, string actual)
+        => Add(name, expected, actual, CheckStatus.Pass);
+
+    public void Warn(string name, string expected, string actual, string note)
+    {
+        Add(name, expected, actual, CheckStatus.Warn);
+        if (!string.IsNullOrWhiteSpace(note))
+        {
+            Notes.Add(note);
+        }
+    }
+
+    public void Fail(string name, string expected, string actual)
+        => Add(name, expected, actual, CheckStatus.Fail);
+
+    public void CheckContains(string name, string expected, string actual)
+        => Add(
+            name,
+            $"Contains `{expected}`",
+            string.IsNullOrWhiteSpace(actual) ? "<empty>" : actual,
+            actual.Contains(expected, StringComparison.OrdinalIgnoreCase) ? CheckStatus.Pass : CheckStatus.Fail);
+
+    public void Add(string name, string expected, string actual, CheckStatus status)
+        => Results.Add(new CheckResult(name, expected, actual, status));
+}
+
+internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
+
+internal enum CheckStatus
+{
+    Pass,
+    Fail,
+    Warn
+}
+
 internal sealed record UiSnapshotOptions(
     string RepositoryRoot,
     string AppPath,
     string OutputRoot,
     string RunDirectory,
-    TimeSpan Timeout)
+    string? DatabasePath,
+    UiSnapshotMode Mode,
+    TimeSpan Timeout,
+    bool AllowServerSync)
 {
     private const string AppFileName = "Woong.MonitorStack.Windows.App.exe";
 
@@ -272,7 +619,10 @@ internal sealed record UiSnapshotOptions(
         string repositoryRoot = FindRepositoryRoot();
         string? appPath = null;
         string? outputRoot = null;
+        string? databasePath = null;
+        UiSnapshotMode mode = UiSnapshotMode.EmptyData;
         var timeout = TimeSpan.FromSeconds(20);
+        var allowServerSync = false;
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -285,6 +635,17 @@ internal sealed record UiSnapshotOptions(
                 case "--output-root":
                     outputRoot = ReadValue(args, ref index, arg);
                     break;
+                case "--db":
+                    databasePath = ReadValue(args, ref index, arg);
+                    break;
+                case "--mode":
+                    string modeValue = ReadValue(args, ref index, arg);
+                    if (!Enum.TryParse(modeValue, ignoreCase: true, out mode))
+                    {
+                        throw new ArgumentException($"Unsupported --mode value: {modeValue}.");
+                    }
+
+                    break;
                 case "--timeout-seconds":
                     string timeoutValue = ReadValue(args, ref index, arg);
                     if (!int.TryParse(timeoutValue, out int timeoutSeconds) || timeoutSeconds <= 0)
@@ -293,6 +654,9 @@ internal sealed record UiSnapshotOptions(
                     }
 
                     timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                    break;
+                case "--allow-server-sync":
+                    allowServerSync = true;
                     break;
                 default:
                     throw new ArgumentException($"Unknown argument: {arg}");
@@ -310,13 +674,20 @@ internal sealed record UiSnapshotOptions(
         outputRoot ??= Path.Combine(repositoryRoot, "artifacts", "ui-snapshots");
         string timestamp = DateTimeOffset.Now.ToString("yyyyMMdd-HHmmss");
         string runDirectory = Path.Combine(outputRoot, timestamp);
+        if (mode == UiSnapshotMode.TrackingPipeline)
+        {
+            databasePath ??= Path.Combine(runDirectory, "tracking-pipeline.db");
+        }
 
         return new UiSnapshotOptions(
             repositoryRoot,
             Path.GetFullPath(appPath),
             Path.GetFullPath(outputRoot),
             Path.GetFullPath(runDirectory),
-            timeout);
+            databasePath is null ? null : Path.GetFullPath(databasePath),
+            mode,
+            timeout,
+            allowServerSync);
     }
 
     private static string ReadValue(string[] args, ref int index, string argumentName)
@@ -345,4 +716,10 @@ internal sealed record UiSnapshotOptions(
 
         throw new InvalidOperationException("Could not locate repository root from the tool output directory.");
     }
+}
+
+internal enum UiSnapshotMode
+{
+    EmptyData = 0,
+    TrackingPipeline = 1
 }

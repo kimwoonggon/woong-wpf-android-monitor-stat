@@ -4,11 +4,12 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 25 WPF UI acceptance orchestration. The new
-`scripts/run-wpf-ui-acceptance.ps1` script composes the FlaUI RealStart
-Start/Stop/temp-SQLite persistence check with the local WPF UI snapshot tool,
-stores artifacts under `artifacts/wpf-ui-acceptance/`, and keeps server sync
-disabled unless `-AllowServerSync` is explicitly passed.
+Milestone 25 TrackingPipeline semantic WPF UI acceptance. The WPF app now has a
+metadata-only `WOONG_MONITOR_ACCEPTANCE_MODE=TrackingPipeline` mode with fake
+Code.exe, chrome.exe, `github.com`, and `chatgpt.com` activity. The local
+acceptance script runs both RealStart temp-SQLite persistence and the fake
+TrackingPipeline semantic UI checks, then writes screenshots, `report.md`,
+`manifest.json`, and `visual-review-prompt.md`.
 
 ## Completed
 
@@ -68,6 +69,29 @@ disabled unless `-AllowServerSync` is explicitly passed.
 - Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
   92.9% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
   Windows.App 86.6%, and Server 96.3%.
+- Added `WindowsAppAcceptanceMode.TrackingPipeline` and an
+  `AcceptanceTrackingDashboardCoordinator` for local-only WPF acceptance. It
+  persists fake Code.exe and chrome.exe focus sessions to temp SQLite, creates
+  linked `github.com` and `chatgpt.com` web sessions, queues focus/web outbox
+  rows, and fake-syncs outbox rows only after the UI enables sync.
+- Upgraded `tools/Woong.MonitorStack.Windows.UiSnapshots` with semantic FlaUI
+  TrackingPipeline checks, required screenshot names, `manifest.json`, and a
+  local `visual-review-prompt.md`.
+- Hardened `scripts/run-wpf-ui-acceptance.ps1` so native `dotnet` exit codes
+  fail the script, and split RealStart and TrackingPipeline temp SQLite DBs for
+  deterministic fake-pipeline checks.
+- Verified TrackingPipeline acceptance with
+  `scripts/run-wpf-ui-acceptance.ps1 -Seconds 2`; latest detailed snapshot
+  report is PASS and confirms Running/Stopped state, Code.exe, chrome.exe,
+  `github.com`, `chatgpt.com`, summary `15m`, live Focus/Web events, and fake
+  Sync Now status.
+- Re-verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1
+  -v minimal`; all 175 .NET tests passed.
+- Re-verified `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal`; build passed with 0 warnings/errors.
+- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+  92.2% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
+  Windows.App 85.7%, and Server 96.3%.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
   `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,

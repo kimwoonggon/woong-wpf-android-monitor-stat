@@ -175,16 +175,25 @@ Additional semantic coverage now proves:
   still reachable.
 
 `scripts/run-wpf-ui-acceptance.ps1` now composes the local RealStart semantic
-check with snapshot evidence. It builds the WPF app and tools, launches the app
-through FlaUI, invokes Start/Stop, verifies temp SQLite `focus_session` and
-`sync_outbox` rows through the RealStart tool, runs UI snapshots, and writes
-`artifacts/wpf-ui-acceptance/<timestamp>/report.md` plus `latest/report.md`.
+check with TrackingPipeline snapshot evidence. It builds the WPF app and tools,
+launches the app through FlaUI, invokes Start/Stop, verifies temp SQLite
+`focus_session` and `sync_outbox` rows through the RealStart tool, then launches
+the app again in `WOONG_MONITOR_ACCEPTANCE_MODE=TrackingPipeline`.
+
+TrackingPipeline mode uses fake metadata-only activity: Code.exe, chrome.exe,
+`github.com`, and `chatgpt.com`. The tool verifies Running/Stopped status,
+persisted SQLite-backed app and web sessions, live event rows, summary duration,
+and fake opt-in Sync Now behavior. It writes
+`artifacts/wpf-ui-acceptance/<timestamp>/report.md`, detailed snapshot
+`report.md`, `manifest.json`, and `visual-review-prompt.md`.
+
 This composed local script was verified with `-Seconds 2`; it is the current
 beginner-friendly command for proving the runtime pipeline works before visual
-review. The solution also has 172 passing .NET tests and current line coverage
-of 92.9% overall.
+review. The solution also has 175 passing .NET tests and current line coverage
+of 92.2% overall. `ChartArea` can still be reported as WARN when it is below
+the current scroll viewport; this is acceptable for the current functional gate
+because required app/web/session content is semantically checked.
 
-Still to do: upgrade the acceptance report to include a richer
-PASS/FAIL/WARN table, `manifest.json`, `visual-review-prompt.md`, and fake
-TrackingPipeline sample content for Visual Studio Code, Chrome, `github.com`,
-and `chatgpt.com`.
+Still to do: add richer EmptyData and SampleDashboard acceptance modes so a
+beginner can separately verify no-data and deterministic sample dashboard
+states without relying on the TrackingPipeline scenario.

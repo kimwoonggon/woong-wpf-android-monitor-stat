@@ -9,11 +9,14 @@ public sealed class WindowsAppOptions
 
     public const string DeviceIdEnvironmentVariable = "WOONG_MONITOR_DEVICE_ID";
 
+    public const string AcceptanceModeEnvironmentVariable = "WOONG_MONITOR_ACCEPTANCE_MODE";
+
     public WindowsAppOptions(
         DashboardOptions dashboardOptions,
         string deviceId,
         string localDatabaseConnectionString,
-        TimeSpan idleThreshold)
+        TimeSpan idleThreshold,
+        WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None)
     {
         DashboardOptions = dashboardOptions ?? throw new ArgumentNullException(nameof(dashboardOptions));
         DeviceId = string.IsNullOrWhiteSpace(deviceId)
@@ -25,6 +28,7 @@ public sealed class WindowsAppOptions
         IdleThreshold = idleThreshold > TimeSpan.Zero
             ? idleThreshold
             : throw new ArgumentOutOfRangeException(nameof(idleThreshold));
+        AcceptanceMode = acceptanceMode;
     }
 
     public DashboardOptions DashboardOptions { get; }
@@ -34,6 +38,8 @@ public sealed class WindowsAppOptions
     public string LocalDatabaseConnectionString { get; }
 
     public TimeSpan IdleThreshold { get; }
+
+    public WindowsAppAcceptanceMode AcceptanceMode { get; }
 
     public static WindowsAppOptions CreateDefault(DashboardOptions dashboardOptions)
     {
@@ -58,7 +64,8 @@ public sealed class WindowsAppOptions
                 dashboardOptions,
                 deviceId,
                 localDatabaseConnectionString: $"Data Source={localDbOverride};Pooling=False",
-                idleThreshold: TimeSpan.FromMinutes(5));
+                idleThreshold: TimeSpan.FromMinutes(5),
+                acceptanceMode: ParseAcceptanceMode());
         }
 
         string dataDirectory = Path.Combine(
@@ -70,6 +77,26 @@ public sealed class WindowsAppOptions
             dashboardOptions,
             deviceId,
             localDatabaseConnectionString: $"Data Source={Path.Combine(dataDirectory, "windows-local.db")};Pooling=False",
-            idleThreshold: TimeSpan.FromMinutes(5));
+            idleThreshold: TimeSpan.FromMinutes(5),
+            acceptanceMode: ParseAcceptanceMode());
     }
+
+    private static WindowsAppAcceptanceMode ParseAcceptanceMode()
+    {
+        string? value = Environment.GetEnvironmentVariable(AcceptanceModeEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return WindowsAppAcceptanceMode.None;
+        }
+
+        return Enum.TryParse(value, ignoreCase: true, out WindowsAppAcceptanceMode mode)
+            ? mode
+            : throw new InvalidOperationException($"Unsupported WPF acceptance mode: {value}.");
+    }
+}
+
+public enum WindowsAppAcceptanceMode
+{
+    None = 0,
+    TrackingPipeline = 1
 }

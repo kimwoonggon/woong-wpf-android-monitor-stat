@@ -501,21 +501,21 @@ milestones below are finished.
 - [x] Add WPF App semantic test proving fake browser github/chatgpt web sessions render in the Web Sessions tab from SQLite.
 - [x] Add WPF App semantic test proving minimum-size windows provide scrolling while keeping dashboard tabs reachable.
 - [x] Create `scripts/run-wpf-ui-acceptance.ps1`.
-- [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
+- [x] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
 - [x] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
 - [ ] Implement EmptyData mode acceptance.
 - [ ] Implement SampleDashboard mode acceptance.
-- [ ] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
-- [ ] Verify Start changes tracking status to Running.
-- [ ] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
-- [ ] Verify Stop changes tracking status to Stopped.
-- [ ] Verify Sync Now updates last sync status using a fake sync client.
-- [ ] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
-- [ ] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
-- [ ] Keep screenshot review local-only and optional for GPT/human review.
+- [x] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
+- [x] Verify Start changes tracking status to Running.
+- [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
+- [x] Verify Stop changes tracking status to Stopped.
+- [x] Verify Sync Now updates last sync status using a fake sync client.
+- [x] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
+- [x] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [x] Keep screenshot review local-only and optional for GPT/human review.
 - [x] Run current composed RealStart + UI snapshot WPF acceptance tool locally.
-- [ ] Run full semantic WPF acceptance tool locally after fake TrackingPipeline/report upgrades.
-- [ ] Commit and push WPF semantic acceptance slice.
+- [x] Run full semantic WPF acceptance tool locally after fake TrackingPipeline/report upgrades.
+- [x] Commit and push WPF semantic acceptance slice.
 
 ## Milestone 26: Android Usage Tracking Restoration
 
@@ -576,7 +576,7 @@ milestones below are finished.
 - [ ] Browser domain tracking is explicit, privacy-aware, and covered by tests.
 - [x] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
 - [ ] Server schema supports required relationships and idempotent integrated storage.
-- [ ] WPF semantic UI acceptance passes with expected content.
+- [x] WPF semantic UI acceptance passes with expected content.
 - [ ] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
 - [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.
 - [ ] Full .NET tests/build pass.

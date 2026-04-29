@@ -24,6 +24,11 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(options.DashboardOptions);
         services.AddDashboardPresentation();
         services.AddWindowsInfrastructure();
+        if (options.AcceptanceMode == WindowsAppAcceptanceMode.TrackingPipeline)
+        {
+            services.AddTrackingPipelineAcceptanceMode();
+        }
+
         services.AddSingleton<MainWindow>();
 
         return services;
@@ -80,6 +85,26 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<ISyncOutboxRepository>(provider => provider.GetRequiredService<SqliteSyncOutboxRepository>());
         services.AddSingleton<IDashboardDataSource, SqliteDashboardDataSource>();
         services.AddSingleton<IDashboardTrackingCoordinator, WindowsTrackingDashboardCoordinator>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddTrackingPipelineAcceptanceMode(this IServiceCollection services)
+    {
+        services.AddSingleton<AcceptanceTrackingScenarioClock>();
+        services.AddSingleton<IDashboardClock>(provider => provider.GetRequiredService<AcceptanceTrackingScenarioClock>());
+        services.AddSingleton<IDashboardTrackingCoordinator>(provider =>
+        {
+            WindowsAppOptions options = provider.GetRequiredService<WindowsAppOptions>();
+
+            return new AcceptanceTrackingDashboardCoordinator(
+                provider.GetRequiredService<SqliteFocusSessionRepository>(),
+                provider.GetRequiredService<SqliteWebSessionRepository>(),
+                provider.GetRequiredService<SqliteSyncOutboxRepository>(),
+                provider.GetRequiredService<AcceptanceTrackingScenarioClock>(),
+                options.DeviceId,
+                options.DashboardOptions.TimeZoneId);
+        });
 
         return services;
     }

@@ -12,6 +12,7 @@ $outputRoot = Join-Path $repoRoot "artifacts/wpf-ui-acceptance"
 $runRoot = Join-Path $outputRoot $timestamp
 $latestRoot = Join-Path $outputRoot "latest"
 $dbPath = Join-Path $runRoot "acceptance.db"
+$trackingPipelineDbPath = Join-Path $runRoot "tracking-pipeline.db"
 $snapshotRoot = Join-Path $runRoot "ui-snapshots"
 $reportPath = Join-Path $runRoot "report.md"
 $appProject = Join-Path $repoRoot "src/Woong.MonitorStack.Windows.App/Woong.MonitorStack.Windows.App.csproj"
@@ -31,8 +32,11 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 Push-Location $repoRoot
 try {
     dotnet build $appProject
+    if ($LASTEXITCODE -ne 0) { throw "dotnet build failed for WPF app." }
     dotnet build $realStartProject
+    if ($LASTEXITCODE -ne 0) { throw "dotnet build failed for RealStart acceptance tool." }
     dotnet build $snapshotProject
+    if ($LASTEXITCODE -ne 0) { throw "dotnet build failed for UI snapshot tool." }
 
     if ([string]::IsNullOrWhiteSpace($AppPath)) {
         $AppPath = Join-Path $repoRoot "src/Woong.MonitorStack.Windows.App/bin/Debug/net10.0-windows/Woong.MonitorStack.Windows.App.exe"
@@ -48,16 +52,29 @@ try {
     }
 
     dotnet run --project $realStartProject --no-build -- @realStartArgs
-    dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot
+    if ($LASTEXITCODE -ne 0) { throw "RealStart acceptance failed." }
+
+    $previousAcceptanceMode = $env:WOONG_MONITOR_ACCEPTANCE_MODE
+    try {
+        $env:WOONG_MONITOR_ACCEPTANCE_MODE = "TrackingPipeline"
+        dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot --db $trackingPipelineDbPath --mode TrackingPipeline
+        if ($LASTEXITCODE -ne 0) { throw "TrackingPipeline UI snapshot acceptance failed." }
+    }
+    finally {
+        $env:WOONG_MONITOR_ACCEPTANCE_MODE = $previousAcceptanceMode
+    }
 
     $snapshotReport = Join-Path $snapshotRoot "latest/report.md"
+    $snapshotManifest = Join-Path $snapshotRoot "latest/manifest.json"
+    $visualReviewPrompt = Join-Path $snapshotRoot "latest/visual-review-prompt.md"
     $lines = @(
         "# WPF UI Acceptance Report",
         "",
         "Status: PASS",
         "Generated at UTC: $([DateTimeOffset]::UtcNow.ToString('O'))",
         "App: ``$AppPath``",
-        "Temp DB: ``$dbPath``",
+        "RealStart temp DB: ``$dbPath``",
+        "TrackingPipeline temp DB: ``$trackingPipelineDbPath``",
         "",
         "## Semantic Checks",
         "",
@@ -71,6 +88,8 @@ try {
         "",
         "- Snapshot output root: ``$snapshotRoot``",
         "- Latest snapshot report: ``$snapshotReport``",
+        "- Latest snapshot manifest: ``$snapshotManifest``",
+        "- Latest visual review prompt: ``$visualReviewPrompt``",
         "",
         "## Privacy Boundary",
         "",
