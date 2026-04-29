@@ -258,14 +258,16 @@ manifests, and installer/registration flows exist. Until then, the generic WPF
 browser-domain fallback remains best-effort for non-Chrome browsers and should
 report capture status honestly.
 
-Local Chrome native messaging acceptance is sandboxed. It launches Chrome with
-a temporary `--user-data-dir` profile, uses the scoped test host
+Local Chrome native messaging acceptance is sandboxed. It launches Chrome for
+Testing with a temporary `--user-data-dir` profile, uses the scoped test host
 `com.woong.monitorstack.chrome_test`, registers only an HKCU child native-host
 key, and cleans up only that key. The cleanup process stops only Chrome
 processes whose command line contains the temporary profile path, so existing
 user Chrome windows must not be closed. Acceptance writes to a temp SQLite DB
 under `artifacts/chrome-native-acceptance/` and sets
 `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so a missing explicit test DB fails
-instead of falling back to the user's real local DB. The current full Chrome
-acceptance still needs a follow-up fix for the native-message timeout before it
-can be marked complete.
+instead of falling back to the user's real local DB. Chrome for Testing is used
+because current Google Chrome stable builds can block command-line unpacked
+extension loading. The latest acceptance run passed with `github.example` and
+`chatgpt.example` written as domain-only web sessions and outbox rows, while
+full URL and page title fields remained redacted by default.

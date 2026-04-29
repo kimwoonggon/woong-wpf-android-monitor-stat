@@ -25,10 +25,11 @@ public sealed class BrowserUrlSanitizerTests
         var sanitizer = new BrowserUrlSanitizer();
 
         BrowserActivitySnapshot sanitized = sanitizer.Sanitize(
-            CreateSnapshot("https://www.github.com/org/repo?token=secret#section", domain: null),
+            CreateSnapshot("https://www.github.com/org/repo?token=secret#section", domain: null, tabTitle: "www.github.com/org/repo?token=secret"),
             BrowserUrlStoragePolicy.DomainOnly);
 
         Assert.Null(sanitized.Url);
+        Assert.Null(sanitized.TabTitle);
         Assert.Equal("github.com", sanitized.Domain);
         Assert.Equal(CaptureMethod.UIAutomationAddressBar, sanitized.CaptureMethod);
         Assert.Equal(CaptureConfidence.High, sanitized.CaptureConfidence);
@@ -48,6 +49,9 @@ public sealed class BrowserUrlSanitizerTests
     }
 
     private static BrowserActivitySnapshot CreateSnapshot(string? url, string? domain)
+        => CreateSnapshot(url, domain, tabTitle: "Tab");
+
+    private static BrowserActivitySnapshot CreateSnapshot(string? url, string? domain, string? tabTitle)
         => new(
             capturedAtUtc: DateTimeOffset.Parse("2026-04-29T00:00:00Z"),
             browserName: "Chrome",
@@ -55,7 +59,7 @@ public sealed class BrowserUrlSanitizerTests
             processId: 42,
             windowHandle: 100,
             windowTitle: "Browser",
-            tabTitle: "Tab",
+            tabTitle,
             url,
             domain,
             CaptureMethod.UIAutomationAddressBar,

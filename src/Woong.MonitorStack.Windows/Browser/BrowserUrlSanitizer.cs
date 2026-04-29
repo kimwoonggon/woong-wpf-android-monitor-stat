@@ -15,18 +15,21 @@ public sealed class BrowserUrlSanitizer : IBrowserUrlSanitizer
             BrowserUrlStoragePolicy.Off => Copy(
                 snapshot,
                 url: null,
+                tabTitle: null,
                 domain: null,
                 captureMethod: CaptureMethod.None,
                 captureConfidence: CaptureConfidence.Unknown),
             BrowserUrlStoragePolicy.DomainOnly => Copy(
                 snapshot,
                 url: null,
+                tabTitle: null,
                 domain: NormalizeDomain(snapshot.Domain, snapshot.Url),
                 captureMethod: snapshot.CaptureMethod,
                 captureConfidence: snapshot.CaptureConfidence),
             BrowserUrlStoragePolicy.FullUrl => Copy(
                 snapshot,
                 url: StripFragment(snapshot.Url),
+                tabTitle: snapshot.TabTitle,
                 domain: NormalizeDomain(snapshot.Domain, snapshot.Url),
                 captureMethod: snapshot.CaptureMethod,
                 captureConfidence: snapshot.CaptureConfidence),
@@ -37,6 +40,7 @@ public sealed class BrowserUrlSanitizer : IBrowserUrlSanitizer
     private static BrowserActivitySnapshot Copy(
         BrowserActivitySnapshot snapshot,
         string? url,
+        string? tabTitle,
         string? domain,
         CaptureMethod captureMethod,
         CaptureConfidence captureConfidence)
@@ -47,7 +51,7 @@ public sealed class BrowserUrlSanitizer : IBrowserUrlSanitizer
             snapshot.ProcessId,
             snapshot.WindowHandle,
             snapshot.WindowTitle,
-            snapshot.TabTitle,
+            tabTitle,
             url,
             domain,
             captureMethod,

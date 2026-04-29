@@ -19,6 +19,7 @@ artifacts/ui-diffs/
 artifacts/wpf-ui-acceptance/
 artifacts/android-ui-snapshots/
 artifacts/chrome-native-acceptance/
+.cache/chrome-for-testing/
 coverage/
 
 # IDE

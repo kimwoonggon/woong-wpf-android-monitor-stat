@@ -712,10 +712,19 @@ milestones below are finished.
   launching Chrome or writing HKCU values, full `.NET` tests passed (267),
   `.NET` build passed with 0 warnings/errors, and coverage generated at 91.2%
   line coverage.
-- [ ] Fix the remaining full headed Chrome native-message acceptance timeout
-  so `github.example` and `chatgpt.example` arrive in temp SQLite through
-  Extension -> NativeHost -> SQLite. Do not mark Chrome acceptance complete
-  until this passes.
+- [x] Fixed full headed Chrome native-message acceptance by using Chrome for
+  Testing from `.cache/chrome-for-testing`, quoting host resolver rules,
+  enumerating SQLite JSON rows correctly in PowerShell, and redacting page
+  titles in DomainOnly mode so outbox payloads do not leak paths.
+- [x] Chrome native-message acceptance passed at
+  `artifacts/chrome-native-acceptance/20260429-185325`: extension/native host
+  wrote `github.example` and `chatgpt.example` domain-only web sessions plus
+  pending outbox rows to temp SQLite, full URL/page title remained null,
+  cleanup removed only the scoped HKCU test host key, and no user Chrome
+  process was stopped.
+- [x] Chrome native-message completion verification: full `.NET` tests passed
+  (271), `.NET` build passed with 0 warnings/errors, and coverage generated at
+  91.2% line coverage after the acceptance fix.
 - [x] Browser capture docs-only clarification: `docs/browser-tracking-policy.md`
   and `docs/runtime-pipeline.md` now state that Administrator rights are not a
   reliable active-tab URL capture path, Chrome is the installed

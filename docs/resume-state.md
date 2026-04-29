@@ -15,10 +15,22 @@ back to the user's real local DB. Added
 `docs/chrome-native-messaging-acceptance.md`. Verified focused Chrome native
 messaging script/registry/parser/receiver tests, the dry-run acceptance path,
 full `.NET` tests (267), full `.NET` build with 0 warnings/errors, and coverage
-generation with 91.2% line coverage. The full headed Chrome acceptance is still
-not complete because the native message receipt path can time out before
-`github.example` and `chatgpt.example` reach temp SQLite; that remains the next
-Chrome-specific blocker.
+generation with 91.2% line coverage.
+
+Chrome native messaging acceptance completion slice. Chrome stable blocked
+command-line unpacked extension loading, so the local acceptance path now uses
+Chrome for Testing from the ignored `.cache/chrome-for-testing/` cache. The
+script quotes host resolver rules, writes Chrome/native-host diagnostic logs to
+artifacts, and enumerates SQLite JSON rows correctly in PowerShell. DomainOnly
+browser storage now redacts both full URL and page title by default, preventing
+early Chrome titles such as `github.example:port/github.html` from leaking
+paths through outbox payloads. Full headed acceptance passed at
+`artifacts/chrome-native-acceptance/20260429-185325`: `github.example` and
+`chatgpt.example` arrived through Extension -> NativeHost -> temp SQLite, two
+domain-only web sessions and outbox rows were written, cleanup removed only the
+scoped HKCU test host key, and no user Chrome process was stopped. Verification
+after this fix passed: full `.NET` tests (271), full `.NET` build with 0
+warnings/errors, and coverage generation with 91.2% line coverage.
 
 Milestone 27 Android UI snapshot blocked-evidence slice. RED tests first
 required a repo-level `scripts/run-android-ui-snapshots.ps1` contract and a

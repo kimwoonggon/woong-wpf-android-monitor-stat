@@ -10,12 +10,15 @@ internal static class ChromeNativeHostProgram
     private const string DeviceIdEnvironmentVariable = "WOONG_MONITOR_DEVICE_ID";
     private const string FocusSessionIdEnvironmentVariable = "WOONG_MONITOR_NATIVE_HOST_FOCUS_SESSION_ID";
     private const string RequireExplicitDbEnvironmentVariable = "WOONG_MONITOR_REQUIRE_EXPLICIT_DB";
+    private const string NativeHostLogEnvironmentVariable = "WOONG_MONITOR_NATIVE_HOST_LOG";
 
     public static async Task<int> RunAsync(string[] args, Stream input, CancellationToken cancellationToken)
     {
         try
         {
+            WriteDiagnostic("Native host starting.");
             string dbPath = ResolveDatabasePath(args);
+            WriteDiagnostic($"Resolved database path: {dbPath}");
             string? dbDirectory = Path.GetDirectoryName(dbPath);
             if (!string.IsNullOrWhiteSpace(dbDirectory))
             {
@@ -42,10 +45,12 @@ internal static class ChromeNativeHostProgram
             var runner = new ChromeNativeMessageHostRunner(ingestion);
 
             await runner.RunUntilEndAsync(input, cancellationToken).ConfigureAwait(false);
+            WriteDiagnostic("Native host completed.");
             return 0;
         }
         catch (Exception exception)
         {
+            WriteDiagnostic($"Native host failed: {exception.GetType().Name}: {exception.Message}");
             Console.Error.WriteLine($"Woong Chrome native host failed: {exception.GetType().Name}");
             return 1;
         }
@@ -107,5 +112,31 @@ internal static class ChromeNativeHostProgram
         }
 
         return null;
+    }
+
+    private static void WriteDiagnostic(string message)
+    {
+        string? logPath = Environment.GetEnvironmentVariable(NativeHostLogEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(logPath))
+        {
+            return;
+        }
+
+        try
+        {
+            string? directory = Path.GetDirectoryName(logPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.AppendAllText(
+                logPath,
+                $"{DateTimeOffset.UtcNow:O} {message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Diagnostics must never corrupt stdout or prevent native messaging.
+        }
     }
 }

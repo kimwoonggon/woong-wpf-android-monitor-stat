@@ -7,7 +7,8 @@ param(
     [switch]$DryRun,
     [switch]$CleanupOnly,
     [switch]$HadPreviousValue,
-    [string]$PreviousDefaultValue = ""
+    [string]$PreviousDefaultValue = "",
+    [switch]$InstallChromeForTesting
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,6 +38,8 @@ $tempExtension = Join-Path $tempWorkRoot "extension"
 $fixtureRoot = Join-Path $tempWorkRoot "fixtures"
 $nativeInstallRoot = Join-Path $tempWorkRoot "native-host"
 $dbPath = Join-Path $runRoot "chrome-native-acceptance.db"
+$chromeLogPath = Join-Path $runRoot "chrome.log"
+$nativeHostLogPath = Join-Path $runRoot "native-host.log"
 $registryPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
 $previousHostKeyExisted = $false
 $previousDefaultValue = $null
@@ -75,6 +78,26 @@ function Get-ChromiumExtensionId {
 function Find-Chrome {
     if (-not [string]::IsNullOrWhiteSpace($ChromePath) -and (Test-Path $ChromePath)) {
         return (Resolve-Path $ChromePath).Path
+    }
+
+    $repoChromeForTesting = Get-ChildItem `
+        -Path (Join-Path $repoRoot ".cache\chrome-for-testing") `
+        -Recurse `
+        -Filter "chrome.exe" `
+        -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -like "*chrome-win64*" } |
+        Sort-Object FullName -Descending |
+        Select-Object -First 1
+    if ($repoChromeForTesting) {
+        return $repoChromeForTesting.FullName
+    }
+
+    if ($InstallChromeForTesting) {
+        $installer = Join-Path $repoRoot "scripts\install-chrome-for-testing.ps1"
+        $installed = & $installer -RepoRoot $repoRoot | Select-Object -Last 1
+        if (-not [string]::IsNullOrWhiteSpace($installed) -and (Test-Path $installed)) {
+            return (Resolve-Path $installed).Path
+        }
     }
 
     $candidates = @(
@@ -199,7 +222,19 @@ finally:
         throw "SQLite query failed: $Sql"
     }
 
-    return $output | ConvertFrom-Json
+    $parsed = $output | ConvertFrom-Json
+    if ($null -eq $parsed) {
+        return
+    }
+
+    if ($parsed -is [System.Array]) {
+        foreach ($item in $parsed) {
+            $item
+        }
+        return
+    }
+
+    $parsed
 }
 
 function Wait-ForSqliteCondition {
@@ -287,6 +322,8 @@ function Write-AcceptanceArtifacts {
         chromePath = $ChromeExecutable
         databasePath = $dbPath
         tempProfilePath = $tempProfile
+        chromeLogPath = $chromeLogPath
+        nativeHostLogPath = $nativeHostLogPath
         extensionId = $ExtensionId
         nativeHostName = $hostName
         registryPath = $registryPath.Replace("HKCU:", "HKCU")
@@ -342,6 +379,7 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 try {
     Write-Host "Chrome native messaging acceptance observes active-tab metadata only."
     Write-Host "It will not record keystrokes, page contents, screenshots, forms, passwords, messages, or clipboard contents."
+    Write-Host "Chrome for Testing is preferred because official Google Chrome stable builds block command-line unpacked extension loading."
 
     $resolvedChromePath = Find-Chrome
     if ([string]::IsNullOrWhiteSpace($resolvedChromePath)) {
@@ -412,6 +450,7 @@ try {
     $env:WOONG_MONITOR_DEVICE_ID = "windows-chrome-acceptance"
     $env:WOONG_MONITOR_NATIVE_HOST_FOCUS_SESSION_ID = "chrome-native-acceptance-focus"
     $env:WOONG_MONITOR_REQUIRE_EXPLICIT_DB = "1"
+    $env:WOONG_MONITOR_NATIVE_HOST_LOG = $nativeHostLogPath
 
     $port = Get-FreeTcpPort
     $httpServerProcess = Start-Process `
@@ -426,15 +465,19 @@ try {
     $chatgptUrl = "http://chatgpt.example:$port/chatgpt.html"
     $docsUrl = "http://docs.example:$port/docs.html"
     $resolverRules = "MAP github.example 127.0.0.1,MAP chatgpt.example 127.0.0.1,MAP docs.example 127.0.0.1"
+    $quotedResolverRules = "--host-resolver-rules=`"$resolverRules`""
 
     $chromeArgs = @(
         "--user-data-dir=$tempProfile",
         "--no-first-run",
         "--no-default-browser-check",
         "--disable-background-networking",
+        "--enable-logging",
+        "--v=1",
+        "--log-file=$chromeLogPath",
         "--disable-extensions-except=$tempExtension",
         "--load-extension=$tempExtension",
-        "--host-resolver-rules=$resolverRules",
+        $quotedResolverRules,
         "--new-window",
         $githubUrl
     )
@@ -533,6 +576,7 @@ finally {
     Remove-Item Env:WOONG_MONITOR_DEVICE_ID -ErrorAction SilentlyContinue
     Remove-Item Env:WOONG_MONITOR_NATIVE_HOST_FOCUS_SESSION_ID -ErrorAction SilentlyContinue
     Remove-Item Env:WOONG_MONITOR_REQUIRE_EXPLICIT_DB -ErrorAction SilentlyContinue
+    Remove-Item Env:WOONG_MONITOR_NATIVE_HOST_LOG -ErrorAction SilentlyContinue
 
     try {
         Update-CleanupStatusArtifacts $cleanupStatus

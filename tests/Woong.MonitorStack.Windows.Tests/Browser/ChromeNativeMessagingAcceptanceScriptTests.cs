@@ -65,6 +65,68 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
         Assert.DoesNotContain("Stop-Process -ProcessName chrome", script, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void AcceptanceScript_WritesChromeAndNativeHostDiagnosticsToArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-chrome-native-message-acceptance.ps1");
+        string hostProgramPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.ChromeNativeHost", "Program.cs");
+
+        string script = File.ReadAllText(scriptPath);
+        string hostProgram = File.ReadAllText(hostProgramPath);
+
+        Assert.Contains("$chromeLogPath = Join-Path $runRoot \"chrome.log\"", script, StringComparison.Ordinal);
+        Assert.Contains("$nativeHostLogPath = Join-Path $runRoot \"native-host.log\"", script, StringComparison.Ordinal);
+        Assert.Contains("--log-file=$chromeLogPath", script, StringComparison.Ordinal);
+        Assert.Contains("$env:WOONG_MONITOR_NATIVE_HOST_LOG = $nativeHostLogPath", script, StringComparison.Ordinal);
+        Assert.Contains("chromeLogPath", script, StringComparison.Ordinal);
+        Assert.Contains("nativeHostLogPath", script, StringComparison.Ordinal);
+        Assert.Contains("WOONG_MONITOR_NATIVE_HOST_LOG", hostProgram, StringComparison.Ordinal);
+        Assert.Contains("WriteDiagnostic", hostProgram, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptanceScript_QuotesHostResolverRulesSoChromeReceivesOneArgument()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$quotedResolverRules = \"--host-resolver-rules=`\"$resolverRules`\"\"", script, StringComparison.Ordinal);
+        Assert.Contains("$quotedResolverRules", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"--host-resolver-rules=$resolverRules\"", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptanceScript_UsesChromeForTestingBecauseStableChromeBlocksLoadExtension()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-chrome-native-message-acceptance.ps1");
+        string installScriptPath = Path.Combine(repoRoot, "scripts", "install-chrome-for-testing.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.True(File.Exists(installScriptPath), "Chrome acceptance needs a local Chrome for Testing installer.");
+        Assert.Contains("InstallChromeForTesting", script, StringComparison.Ordinal);
+        Assert.Contains("install-chrome-for-testing.ps1", script, StringComparison.Ordinal);
+        Assert.Contains("if ([string]::IsNullOrWhiteSpace($RepoRoot))", File.ReadAllText(installScriptPath), StringComparison.Ordinal);
+        Assert.Contains("Chrome for Testing", script, StringComparison.Ordinal);
+        Assert.Contains("official Google Chrome stable builds block command-line unpacked extension loading", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(".cache/chrome-for-testing", File.ReadAllText(Path.Combine(repoRoot, ".gitignore")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptanceScript_EnumeratesSqliteJsonRowsForWaitCondition()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$parsed = $output | ConvertFrom-Json", script, StringComparison.Ordinal);
+        Assert.Contains("foreach ($item in $parsed)", script, StringComparison.Ordinal);
+        Assert.Contains("$raw.Count -ge 2", script, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         string? directory = AppContext.BaseDirectory;

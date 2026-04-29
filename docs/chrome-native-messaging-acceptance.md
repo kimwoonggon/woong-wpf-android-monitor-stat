@@ -14,8 +14,8 @@ clipboard contents.
 
 ## Local-Only Sandbox
 
-`scripts/run-chrome-native-message-acceptance.ps1` launches Chrome with a
-temporary profile:
+`scripts/run-chrome-native-message-acceptance.ps1` launches Chrome for Testing
+with a temporary profile:
 
 ```text
 --user-data-dir=<temp-profile>
@@ -34,6 +34,15 @@ artifacts/chrome-native-acceptance/<timestamp>/chrome-native-acceptance.db
 The native host is run with `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1`, so the
 acceptance host fails instead of falling back to the user's real
 `windows-local.db` if the explicit temp DB path is missing.
+
+Chrome for Testing is preferred for this acceptance path because recent
+official Google Chrome stable builds can block command-line unpacked extension
+loading. The helper `scripts/install-chrome-for-testing.ps1` downloads the
+official Chrome for Testing win64 archive into the ignored local cache:
+
+```text
+.cache/chrome-for-testing/
+```
 
 ## Registry Safety
 
@@ -70,12 +79,8 @@ powershell -ExecutionPolicy Bypass -File scripts/run-chrome-native-message-accep
 
 ## Current Status
 
-The safety harness, dry-run path, scoped HKCU registration, scoped cleanup, and
-temp-profile Chrome cleanup are covered by automated tests. The full headed
-Chrome acceptance should not be marked complete until it receives active-tab
-messages and writes the expected `github.example` and `chatgpt.example` domain
-rows to the temp SQLite DB.
-
-Latest known blocker: the full acceptance can still time out waiting for native
-messages to reach SQLite. That is a functional Chrome/native messaging issue,
-not permission to use address-bar scraping or the user's real Chrome profile.
+The safety harness, dry-run path, scoped HKCU registration, scoped cleanup,
+temp-profile Chrome cleanup, and full headed Chrome for Testing acceptance are
+covered locally. The latest passing acceptance wrote domain-only
+`github.example` and `chatgpt.example` web sessions plus pending outbox rows to
+the temp SQLite DB, with full URL and page title values redacted by default.

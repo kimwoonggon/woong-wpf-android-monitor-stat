@@ -256,9 +256,12 @@ verification, while leaving the temp SQLite `focus_session`, `web_session`, and
 the goal is to prove Start/Poll/Stop persistence.
 
 Chrome native messaging acceptance is also isolated from the user's normal
-runtime state. The acceptance script launches Chrome with a temporary
-`--user-data-dir` profile, registers only the scoped HKCU test host
+runtime state. The acceptance script launches Chrome for Testing with a
+temporary `--user-data-dir` profile, registers only the scoped HKCU test host
 `com.woong.monitorstack.chrome_test`, writes to an artifact SQLite DB, and sets
 `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1` so the host cannot silently fall back to
 the user's real local DB during acceptance. Cleanup stops only Chrome processes
-whose command line contains the temporary profile path.
+whose command line contains the temporary profile path. The current acceptance
+uses extension/native messaging to write `github.example` and `chatgpt.example`
+domain-only web sessions plus outbox rows into temp SQLite, proving the browser
+metadata path without Chrome address-bar scraping.
