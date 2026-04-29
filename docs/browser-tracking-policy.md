@@ -233,3 +233,14 @@ robust path is explicit browser integration: Chrome/Edge extension plus native
 messaging, or a documented opt-in UI Automation address-bar fallback where it
 is technically available. The app should still show foreground app/process
 metadata immediately on Start even when browser-domain capture is not connected.
+
+The Chrome native messaging path now has a local host executable and install
+script. The extension keeps a persistent native port open so ordered tab/domain
+changes can be sessionized by the host process. This is more stable than
+administrator elevation because it uses browser-granted active-tab metadata
+rather than trying to pierce browser internals from the outside. Edge and Brave
+can follow the same Chromium extension/native-messaging pattern with browser
+specific registration/packaging, while Firefox requires its own extension and
+native-messaging manifest path. Until those browser-specific installers are
+added, the generic WPF browser-domain fallback remains best-effort for
+non-Chrome browsers.

@@ -50,6 +50,20 @@ through an explicit Chrome extension and Windows native messaging host.
 - Added `NativeMessagingHostManifestGenerator` so the Windows side can generate
   the Chrome native messaging host manifest JSON with the stable host name,
   executable path, stdio type, and allowed extension origins.
+- Added `ChromeNativeMessageHostRunner` plus
+  `tools/Woong.MonitorStack.ChromeNativeHost`, a console native host executable
+  that reads Chrome's native-messaging stdin stream until EOF and feeds messages
+  into `ChromeNativeMessageIngestionFlow`.
+- Switched the Chrome extension from one-shot `sendNativeMessage` calls to a
+  persistent `chrome.runtime.connectNative` port, so ordered active-tab changes
+  can share one in-memory web-sessionizer during the host lifetime.
+- Added `scripts/install-chrome-native-host.ps1` to publish the native host,
+  write a native-messaging manifest, and register
+  `com.woong.monitorstack.chrome` under the current user's Chrome
+  `NativeMessagingHosts` registry key.
+- The native host uses DomainOnly URL storage by default. Full URL paths and
+  query strings are not written to the local DB or outbox unless a future
+  explicit opt-in changes the storage policy.
 
 ## Native Message Contract
 
@@ -67,7 +81,10 @@ through an explicit Chrome extension and Windows native messaging host.
 
 ## Next Slice
 
-Milestone 4.5 implementation is complete for the local Windows path. Remaining
-work is physical Chrome installation/manual verification during packaging and a
-later WPF browser connection status indicator. The connection-status UI is
-deferred while non-UI tracking/schema restoration remains higher priority.
+Remaining work is physical Chrome installation/manual verification with a real
+extension id, native host packaging polish, and tighter correlation between
+extension tab events and the currently foreground Windows browser
+`FocusSession`. The current host stores domain-only web-session metadata with a
+stable placeholder focus-session id when a live WPF focus-session id is not
+available, while the WPF foreground pipeline still provides the authoritative
+app/window focus session.

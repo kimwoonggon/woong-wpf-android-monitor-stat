@@ -218,3 +218,13 @@ The dashboard separates browser domain from browser capture status. Domain text
 is reserved for metadata such as `github.com`; capture status reports whether
 the domain came from extension/native messaging, the UI Automation address-bar
 fallback, is unavailable, or failed while normal foreground tracking continues.
+
+Chrome extension/native-message ingestion now has a local console host:
+`tools/Woong.MonitorStack.ChromeNativeHost`. The host reads Chrome's
+native-messaging stdin stream until EOF, sanitizes URL metadata with DomainOnly
+storage, persists browser raw events and completed web sessions into the same
+Windows local SQLite database, and enqueues `web_session` outbox rows. The
+installer script `scripts/install-chrome-native-host.ps1` publishes the host and
+registers the current-user Chrome native-messaging manifest. Foreground
+app/window focus still comes from the WPF tracking pipeline; extension tab
+events provide browser-domain metadata.

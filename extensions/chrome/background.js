@@ -1,5 +1,18 @@
 const nativeHostName = "com.woong.monitorstack.chrome";
 const browserFamily = "Chrome";
+let nativePort = null;
+
+function getNativePort() {
+  if (nativePort) {
+    return nativePort;
+  }
+
+  nativePort = chrome.runtime.connectNative(nativeHostName);
+  nativePort.onDisconnect.addListener(() => {
+    nativePort = null;
+  });
+  return nativePort;
+}
 
 async function sendActiveTab(tab) {
   if (!tab || !tab.id || !tab.url || !tab.url.startsWith("http")) {
@@ -17,9 +30,11 @@ async function sendActiveTab(tab) {
   };
 
   try {
-    await chrome.runtime.sendNativeMessage(nativeHostName, message);
+    const port = getNativePort();
+    port.postMessage(message);
   } catch {
     // The Windows app may be closed or the native host may not be registered yet.
+    nativePort = null;
   }
 }
 

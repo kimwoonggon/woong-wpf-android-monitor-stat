@@ -152,6 +152,12 @@ milestones below are finished.
 - [x] Implement native messaging host registration for Windows.
 - [x] Implement extension -> native host message DTO.
 - [x] Implement native host receiver in Windows app/service.
+- [x] Add a console native host executable that reads persistent Chrome native
+  messaging stdin and ingests domain-only tab events.
+- [x] Add local Chrome native host install script that publishes the host,
+  writes the manifest, and registers the HKCU native messaging host key.
+- [x] Switch the Chrome extension to a persistent native port so ordered tab
+  events share one sessionizer during the host lifetime.
 - [x] Store browser raw events.
 - [x] Convert browser events to web_session.
 - [x] Test domain extraction from extension payload.
@@ -480,6 +486,8 @@ milestones below are finished.
 - [x] Create WebSession outbox items and upload payloads with domain/duration.
 - [x] Verify duplicate WebSession uploads are idempotent.
 - [x] Add native messaging host manifest generation.
+- [x] Add Chrome native host runner, console host project, persistent extension
+  connection, and install script for real extension/native-message ingestion.
 - [x] Add WPF browser connection status after higher-priority non-UI tracking/schema work.
 - [x] Document browser-domain capture status semantics for the
   current slice: Administrator is not enough; missing domain is a
@@ -669,6 +677,13 @@ milestones below are finished.
   coverage, WPF UI acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-164942`, and the Windows smoke tool
   reported foreground metadata only.
+- [x] Native browser host verification: RED tests added
+  `ChromeNativeMessageHostRunner`, persistent `connectNative` extension
+  behavior, and `scripts/install-chrome-native-host.ps1`; full `.NET` tests
+  passed (241), `.NET` build passed with 0 warnings/errors, coverage generated
+  at 90.8% line coverage, and WPF UI acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-170610`; the Windows smoke tool
+  reported real Chrome foreground metadata without content capture.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.

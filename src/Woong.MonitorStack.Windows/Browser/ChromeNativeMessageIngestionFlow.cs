@@ -65,13 +65,16 @@ public sealed class ChromeNativeMessageIngestionFlow
     }
 
     public async Task IngestAsync(Stream nativeMessageStream, CancellationToken cancellationToken)
+        => _ = await TryIngestNextAsync(nativeMessageStream, cancellationToken).ConfigureAwait(false);
+
+    public async Task<bool> TryIngestNextAsync(Stream nativeMessageStream, CancellationToken cancellationToken)
     {
         var message = await ChromeNativeMessageReceiver
             .ReadNextAsync(nativeMessageStream, cancellationToken)
             .ConfigureAwait(false);
         if (message is null)
         {
-            return;
+            return false;
         }
 
         BrowserActivitySnapshot sanitized = _urlSanitizer.Sanitize(ToSnapshot(message), _storagePolicy);
@@ -82,6 +85,8 @@ public sealed class ChromeNativeMessageIngestionFlow
             _webSessions.Save(session);
             EnqueueIfConfigured(session);
         }
+
+        return true;
     }
 
     private void EnqueueIfConfigured(WebSession session)

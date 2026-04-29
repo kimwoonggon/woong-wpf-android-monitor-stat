@@ -25,6 +25,18 @@ public sealed class ChromeExtensionManifestTests
         Assert.Contains("nativeMessaging", permissions);
     }
 
+    [Fact]
+    public void BackgroundScript_UsesPersistentNativePortForMultipleTabEvents()
+    {
+        var backgroundPath = Path.Combine(FindRepositoryRoot(), "extensions", "chrome", "background.js");
+
+        string script = File.ReadAllText(backgroundPath);
+
+        Assert.Contains("chrome.runtime.connectNative", script, StringComparison.Ordinal);
+        Assert.Contains("port.postMessage", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("sendNativeMessage", script, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

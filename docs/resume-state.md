@@ -4,6 +4,20 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 4.5/23 native browser host slice. RED tests first required a
+`ChromeNativeMessageHostRunner`, a local Chrome native host install script, and
+a persistent `chrome.runtime.connectNative` extension path. The Windows layer
+now has a host runner that processes Chrome native messages until EOF, plus
+`tools/Woong.MonitorStack.ChromeNativeHost`, a console native host so a real
+extension can stream domain-only active-tab metadata into local SQLite and
+outbox rows. The extension now keeps a persistent native port instead of
+launching a one-shot host per message. Verification passed: full `.NET` tests
+(241), full `.NET` build with 0 warnings/errors, coverage generation with 90.8%
+line coverage, and WPF UI acceptance at
+`artifacts/wpf-ui-acceptance/20260429-170610`. The Windows smoke tool reported
+real Chrome foreground metadata without keystroke, screen, or page-content
+capture.
+
 Milestone 23/25 browser connection status UI slice. RED tests first required a
 presentation-level `DashboardBrowserCaptureStatus`, a visible
 `BrowserCaptureStatusText`, and a stable `BrowserCaptureStatusText`
