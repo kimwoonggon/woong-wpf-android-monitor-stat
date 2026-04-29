@@ -598,8 +598,9 @@ milestones below are finished.
 - [x] Add or verify testable ticker behavior proving current session duration advances while tracking is Running.
 - [x] Add Summary Card tests for Active Focus, Foreground, Idle, and Web Focus labels and SQLite-backed non-zero/empty behavior.
 - [x] Replace summary cards with Active Focus, Foreground, Idle, and Web Focus using clear values and subtitles.
-- [ ] Add Chart mapper tests for meaningful hour labels, minute axis labels, app/domain labels, durations, and empty states.
-- [ ] Update charts to avoid meaningless `-0.5 / 0 / 0.5` axes and show useful empty states.
+- [x] Add Chart mapper tests for meaningful hour labels, minute axis labels, app/domain labels, durations, and empty states.
+- [x] Update LiveCharts data and XAML bindings to avoid meaningless `-0.5 / 0 / 0.5` axes.
+- [ ] Add visible empty-state overlays for all chart panels.
 - [x] Add App Sessions grid tests for required columns, readable widths, horizontal scrolling, and fake pipeline VS Code/Chrome rows.
 - [x] Update App Sessions grid columns: App, Process, Start, End, Duration, State, Window, Source with required MinWidths.
 - [x] Add Web Sessions grid tests for required columns, readable widths, domain-only privacy, empty state, and fake github/chatgpt rows.

@@ -96,10 +96,10 @@ public sealed partial class DashboardViewModel : ObservableObject
     private IReadOnlyList<DashboardChartPoint> _domainUsagePoints = [];
 
     [ObservableProperty]
-    private DashboardLiveChartsData _hourlyActivityChart = new([], []);
+    private DashboardLiveChartsData _hourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", []);
 
     [ObservableProperty]
-    private DashboardLiveChartsData _appUsageChart = new([], []);
+    private DashboardLiveChartsData _appUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", []);
 
     [ObservableProperty]
     private IReadOnlyList<PieSeries<long>> _domainUsageSeries = [];

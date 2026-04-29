@@ -940,9 +940,7 @@ Latest WPF acceptance artifact:
 
 Remaining Milestone 30 work:
 
-- Add chart mapper/axis tests for hour labels, minute axes, duration labels, and
-  empty states.
-- Improve chart rendering/empty states so axis labels are guaranteed meaningful.
+- Add visible empty-state overlays for all chart panels.
 - Add richer Live Event Log semantic tests for start/close/persist/outbox/sync
   event names.
 - Add explicit Settings tests for full URL off, sync off, and folder command
@@ -952,8 +950,34 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 30 with chart mapper/axis tests and chart empty-state/UI
-label fixes. After the WPF product UI goal is complete, return to Milestone 27
-Android screenshot/device automation if an emulator/device is available;
-physical Android resource measurement remains blocked until a device is
-connected.
+Continue Milestone 30 with visible chart empty-state overlays, richer Live Event
+Log semantic tests, Settings privacy/sync command tests, and explicit
+1920/1366/1024 WPF screenshots. After the WPF product UI goal is complete,
+return to Milestone 27 Android screenshot/device automation if an
+emulator/device is available; physical Android resource measurement remains
+blocked until a device is connected.
+
+## 2026-04-29 WPF Chart Axis Slice
+
+- Updated `DashboardChartMapper` hour labels from `HH:mm` to compact `HH`
+  labels for hourly Active Focus.
+- Extended `DashboardLiveChartsData` with tested `XAxes`, `YAxes`, and
+  `EmptyStateText`.
+- Updated `DashboardLiveChartsMapper` so Cartesian charts expose category
+  labels on X axes and minute labels on Y axes.
+- Bound `HourlyActivityChart` and `AppUsageChart` X/Y axes in `MainWindow.xaml`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DashboardChartMapperTests|DashboardLiveChartsMapperTests"`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF acceptance artifact:
+
+`artifacts/wpf-ui-acceptance/20260429-100159`
+
+Current overall line coverage is 92.3%, Windows.Presentation is 96.6%, and
+Windows.App is 86.3%.

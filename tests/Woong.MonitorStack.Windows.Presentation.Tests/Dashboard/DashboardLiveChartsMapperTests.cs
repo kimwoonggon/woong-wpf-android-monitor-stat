@@ -11,6 +11,9 @@ public sealed class DashboardLiveChartsMapperTests
         DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildColumnChart("Activity", []);
 
         Assert.Empty(chart.Labels);
+        Assert.Equal("No data for selected period", chart.EmptyStateText);
+        Assert.Empty(Assert.Single(chart.XAxes).Labels ?? []);
+        Assert.Equal("0m", Assert.Single(chart.YAxes).Labeler?.Invoke(0));
         var series = Assert.Single(chart.Series);
         var columnSeries = Assert.IsType<ColumnSeries<long>>(series);
         Assert.Equal("Activity", columnSeries.Name);
@@ -29,6 +32,10 @@ public sealed class DashboardLiveChartsMapperTests
         DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildColumnChart("Apps", points);
 
         Assert.Equal(["Chrome", "VS Code"], chart.Labels);
+        Assert.Equal("", chart.EmptyStateText);
+        Assert.Equal(["Chrome", "VS Code"], Assert.Single(chart.XAxes).Labels);
+        Assert.Equal("10m", Assert.Single(chart.YAxes).Labeler?.Invoke(600_000));
+        Assert.Equal("60m", Assert.Single(chart.YAxes).Labeler?.Invoke(3_600_000));
         var series = Assert.Single(chart.Series);
         var columnSeries = Assert.IsType<ColumnSeries<long>>(series);
         Assert.Equal("Apps", columnSeries.Name);

@@ -33,12 +33,12 @@ public sealed class DashboardChartMapperTests
             points,
             point =>
             {
-                Assert.Equal("00:00", point.Label);
+                Assert.Equal("00", point.Label);
                 Assert.Equal(900_000, point.ValueMs);
             },
             point =>
             {
-                Assert.Equal("01:00", point.Label);
+                Assert.Equal("01", point.Label);
                 Assert.Equal(900_000, point.ValueMs);
             });
     }

@@ -38,7 +38,7 @@ public static class DashboardChartMapper
     {
         DateTimeOffset local = TimeZoneInfo.ConvertTime(bucketStartUtc, timeZone);
 
-        return local.ToString("HH:mm", CultureInfo.InvariantCulture);
+        return local.ToString("HH", CultureInfo.InvariantCulture);
     }
 
     private static IReadOnlyList<DashboardChartPoint> BuildUsagePoints(IEnumerable<UsageTotal> totals)

@@ -218,8 +218,18 @@ behavior. The latest local WPF acceptance run passed at:
 
 `artifacts/wpf-ui-acceptance/20260429-095154`
 
-Coverage after this slice: overall line coverage 92.2%, Windows.Presentation
-95.7%, and Windows.App 86.3%.
+Coverage after the first product UI slice: overall line coverage 92.2%,
+Windows.Presentation 95.7%, and Windows.App 86.3%.
+
+The follow-up chart slice bound LiveCharts X/Y axes from tested presentation
+data. Hour labels now use `HH` labels, Y labels format milliseconds as minutes
+such as `0m`, `10m`, and `60m`, and chart data exposes `No data for selected
+period` for empty inputs. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-100159`
+
+Coverage after the chart slice: overall line coverage 92.3%,
+Windows.Presentation 96.6%, and Windows.App 86.3%.
 
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped

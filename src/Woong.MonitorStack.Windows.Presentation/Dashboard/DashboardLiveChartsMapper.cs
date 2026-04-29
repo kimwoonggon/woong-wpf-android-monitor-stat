@@ -16,10 +16,14 @@ public static class DashboardLiveChartsMapper
             Name = seriesName,
             Values = pointList.Select(point => point.ValueMs).ToArray()
         };
+        string[] labels = pointList.Select(point => point.Label).ToArray();
 
         return new DashboardLiveChartsData(
             [series],
-            pointList.Select(point => point.Label).ToArray());
+            labels,
+            [new Axis { Labels = labels }],
+            [new Axis { MinLimit = 0, Labeler = FormatMillisecondsAsMinutes }],
+            pointList.Count == 0 ? "No data for selected period" : "");
     }
 
     public static IReadOnlyList<PieSeries<long>> BuildPieSeries(IEnumerable<DashboardChartPoint> points)
@@ -33,5 +37,13 @@ public static class DashboardLiveChartsMapper
                 Values = [point.ValueMs]
             })
             .ToList();
+    }
+
+    private static string FormatMillisecondsAsMinutes(double value)
+    {
+        double safeValue = Math.Max(0, value);
+        long minutes = Convert.ToInt64(Math.Round(safeValue / 60_000, MidpointRounding.AwayFromZero));
+
+        return $"{minutes}m";
     }
 }
