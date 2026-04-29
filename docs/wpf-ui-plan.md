@@ -238,9 +238,9 @@ Current style dictionary implementation:
 
 Open `wpfelements.md` alignment decisions:
 
-- Domain Focus chart: `wpfelements.md` suggests a Cartesian/ranking chart,
-  while the current WPF app uses a `PieChart`. Either switch it in a tested
-  slice or document the PieChart as an intentional exception.
+- Domain Focus chart now uses the same Cartesian/ranking chart shape as App
+  Focus. This replaced the earlier `PieChart` mismatch and keeps domain labels
+  and durations readable.
 - SettingsPanel must cover Sync endpoint, Capture page title, Domain-only
   browser storage, runtime controls, storage folder actions, and guarded Clear
   local data.

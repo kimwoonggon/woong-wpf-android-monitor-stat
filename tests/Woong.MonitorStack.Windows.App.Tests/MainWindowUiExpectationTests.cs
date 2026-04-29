@@ -486,7 +486,7 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("도메인별 집중 시간", panelText);
                 Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "AppUsageChart"));
-                Assert.NotNull(FindByAutomationId<PieChart>(panel, "DomainUsageChart"));
+                Assert.IsType<CartesianChart>(FindByAutomationId<FrameworkElement>(panel, "DomainUsageChart"));
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "HourlyActivityEmptyStateText"));
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "AppUsageEmptyStateText"));
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "DomainUsageEmptyStateText"));
@@ -808,7 +808,7 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("도메인별 집중 시간", CollectText(chartsPanel));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "AppUsageChart"));
-                Assert.NotNull(FindByAutomationId<PieChart>(window, "DomainUsageChart"));
+                Assert.IsType<CartesianChart>(FindByAutomationId<FrameworkElement>(window, "DomainUsageChart"));
             }
             finally
             {

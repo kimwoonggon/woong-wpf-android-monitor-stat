@@ -213,7 +213,8 @@ public sealed class DashboardViewModelTests
         Assert.NotEmpty(viewModel.HourlyActivityChart.Series);
         Assert.Equal(["chrome.exe"], viewModel.AppUsageChart.Labels);
         Assert.NotEmpty(viewModel.AppUsageChart.Series);
-        Assert.NotEmpty(viewModel.DomainUsageSeries);
+        Assert.Equal(["example.com"], viewModel.DomainUsageChart.Labels);
+        Assert.NotEmpty(viewModel.DomainUsageChart.Series);
     }
 
     [Fact]

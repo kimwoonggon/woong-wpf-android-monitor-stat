@@ -43,7 +43,7 @@ public sealed class DashboardLiveChartsMapperTests
     }
 
     [Fact]
-    public void BuildPieSeries_MapsEachPointToNamedSlice()
+    public void BuildColumnChart_MapsDomainLabelsAndValues()
     {
         var points = new[]
         {
@@ -51,19 +51,12 @@ public sealed class DashboardLiveChartsMapperTests
             new DashboardChartPoint("openai.com", 300_000)
         };
 
-        IReadOnlyList<PieSeries<long>> series = DashboardLiveChartsMapper.BuildPieSeries(points);
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildColumnChart("Domains", points);
 
-        Assert.Collection(
-            series,
-            slice =>
-            {
-                Assert.Equal("example.com", slice.Name);
-                Assert.Equal([600_000], slice.Values);
-            },
-            slice =>
-            {
-                Assert.Equal("openai.com", slice.Name);
-                Assert.Equal([300_000], slice.Values);
-            });
+        Assert.Equal(["example.com", "openai.com"], chart.Labels);
+        Assert.Equal(["example.com", "openai.com"], Assert.Single(chart.XAxes).Labels);
+        var series = Assert.IsType<ColumnSeries<long>>(Assert.Single(chart.Series));
+        Assert.Equal("Domains", series.Name);
+        Assert.Equal([600_000, 300_000], series.Values);
     }
 }

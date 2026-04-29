@@ -85,14 +85,16 @@
                                  Grid.Column="1"
                                  Text="{Binding AppUsageChart.EmptyStateText}"
                                  TextAutomationId="AppUsageEmptyStateText" />
-            <lvc:PieChart Grid.Row="1"
-                          Grid.Column="2"
-                          AutomationProperties.AutomationId="DomainUsageChart"
-                          Margin="0,12,0,0"
-                          Series="{Binding DomainUsageSeries}" />
+            <lvc:CartesianChart Grid.Row="1"
+                                Grid.Column="2"
+                                AutomationProperties.AutomationId="DomainUsageChart"
+                                Margin="0,12,0,0"
+                                Series="{Binding DomainUsageChart.Series}"
+                                XAxes="{Binding DomainUsageChart.XAxes}"
+                                YAxes="{Binding DomainUsageChart.YAxes}" />
             <controls:EmptyState Grid.Row="1"
                                  Grid.Column="2"
-                                 Text="{Binding DomainUsageEmptyStateText}"
+                                 Text="{Binding DomainUsageChart.EmptyStateText}"
                                  TextAutomationId="DomainUsageEmptyStateText" />
         </Grid>
     </controls:SectionCard>

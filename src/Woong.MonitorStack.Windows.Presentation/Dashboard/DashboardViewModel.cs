@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LiveChartsCore.SkiaSharpView;
 using System.ComponentModel;
 using System.Globalization;
 using Woong.MonitorStack.Domain.Common;
@@ -105,10 +104,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private DashboardLiveChartsData _appUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", []);
 
     [ObservableProperty]
-    private IReadOnlyList<PieSeries<long>> _domainUsageSeries = [];
-
-    [ObservableProperty]
-    private string _domainUsageEmptyStateText = "No data for selected period";
+    private DashboardLiveChartsData _domainUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Domains", []);
 
     [ObservableProperty]
     private IReadOnlyList<DashboardSessionRow> _recentSessions = [];
@@ -294,8 +290,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
         AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
-        DomainUsageSeries = DashboardLiveChartsMapper.BuildPieSeries(DomainUsagePoints);
-        DomainUsageEmptyStateText = DomainUsagePoints.Count == 0 ? "No data for selected period" : "";
+        DomainUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Domains", DomainUsagePoints);
         RecentSessions = BuildRecentSessionRows(focusSessions);
         RecentWebSessions = BuildRecentWebSessionRows(webSessions);
         LiveEvents = BuildLiveEventRows(focusSessions, webSessions);

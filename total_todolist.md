@@ -678,7 +678,12 @@ milestones below are finished.
 - [x] ChartsPanel extraction verification: `.NET` build passed.
 - [x] ChartsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-113407`.
 - [x] ChartsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Resolve `wpfelements.md` Domain Focus chart type mismatch: switch domain focus to a readable Cartesian/ranking chart or document the current PieChart as an intentional exception.
+- [x] Resolve `wpfelements.md` Domain Focus chart type mismatch by switching domain focus from `PieChart` to a readable Cartesian/ranking chart.
+- [x] Domain chart verification: RED WPF chart-type test failed first against `PieChart`, then Presentation and WPF focused tests passed.
+- [x] Domain chart verification: full `.NET` tests passed (204 tests).
+- [x] Domain chart verification: `.NET` build passed.
+- [x] Domain chart verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-140652`.
+- [x] Domain chart verification: coverage report generated successfully with overall line coverage 92.1%.
 - [x] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.
 - [x] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
 - [x] Chart details verification: `ShowAppFocusDetailsCommand_SelectsAppSessionsTab`, `ShowDomainFocusDetailsCommand_SelectsWebSessionsTab`, and `DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs` passed.

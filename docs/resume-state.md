@@ -4,14 +4,13 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 tabs style dictionary slice.
-`TabsStyleDictionary_DefinesReadableDashboardTabsStyle` first failed because
-`Styles/Tabs.xaml` did not exist, then passed after shared dashboard TabControl
-and TabItem styles were added. `DashboardTabs` now consumes the shared styles
-while preserving selected-value binding, four tab headers, tab reachability, and
-the DataGrid contracts. Verification passed: all `.NET` tests (204), full
-`.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-135614`, and coverage generation with
+Milestone 31 Domain Focus chart mismatch slice.
+`DashboardView_HostsChartsPanelAndPreservesChartContent` first failed because
+`DomainUsageChart` was still a `PieChart`. The domain chart now uses the same
+Cartesian/ranking `DashboardLiveChartsData` shape as App Focus, with readable
+domain labels/durations and no Presentation exposure of WPF chart controls.
+Verification passed: all `.NET` tests (204), full `.NET` build, WPF acceptance
+at `artifacts/wpf-ui-acceptance/20260429-140652`, and coverage generation with
 overall line coverage 92.1%.
 
 ## Completed
@@ -955,10 +954,10 @@ Remaining Milestone 30 work:
 ## Next Highest Priority
 
 Continue with the next product/UI correctness gap from the read-only audits:
-Domain Focus chart should become a Cartesian/ranking chart instead of a
-PieChart so domain labels/durations remain readable and align with
-`wpfelements.md`. After that, complete Settings privacy coverage before Details
-pagination. Acceptance viewport variants remain open.
+complete Settings privacy coverage before Details pagination. Settings should
+make Capture page title, domain-only browser storage, sync endpoint state, and
+guarded clear-local-data behavior visible or explicitly disabled without
+weakening safe defaults. Acceptance viewport variants remain open.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1598,3 +1597,35 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is the Domain Focus chart mismatch. Convert the current
 PieChart to the same Cartesian/ranking chart shape used for app focus, with
 tests in Presentation and Windows.App.
+
+## 2026-04-29 WPF Domain Focus Cartesian Chart Slice
+
+- Added the RED WPF expectation that `DomainUsageChart` must be a
+  `CartesianChart`; it failed first because the UI still rendered a `PieChart`.
+- Replaced `DashboardViewModel.DomainUsageSeries` with
+  `DashboardViewModel.DomainUsageChart` so the domain chart uses
+  `DashboardLiveChartsData`.
+- Removed the Presentation `BuildPieSeries` adapter and reused
+  `BuildColumnChart("Domains", ...)` for domain focus.
+- Updated `ChartsPanel.xaml` so `DomainUsageChart` is a Cartesian chart with
+  bound series and axes.
+- Updated Presentation and WPF tests to verify domain labels, series, and chart
+  type.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "BuildColumnChart_MapsDomainLabelsAndValues|SelectPeriod_PublishesLiveChartsSeries"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DashboardView_HostsChartsPanelAndPreservesChartContent|MainWindow_RefreshButtonRendersSummaryCardsAndChartSurface|MainWindow_WithEmptyData_ShowsReadableChartEmptyStates"`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-140652`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is Settings privacy/safety coverage. Add RED tests for
+Capture page title off by default, domain-only browser storage on by default,
+sync endpoint disabled/absent until opt-in, and guarded clear local data.

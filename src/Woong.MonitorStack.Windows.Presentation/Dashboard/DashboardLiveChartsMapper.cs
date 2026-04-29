@@ -26,19 +26,6 @@ public static class DashboardLiveChartsMapper
             pointList.Count == 0 ? "No data for selected period" : "");
     }
 
-    public static IReadOnlyList<PieSeries<long>> BuildPieSeries(IEnumerable<DashboardChartPoint> points)
-    {
-        ArgumentNullException.ThrowIfNull(points);
-
-        return points
-            .Select(point => new PieSeries<long>
-            {
-                Name = point.Label,
-                Values = [point.ValueMs]
-            })
-            .ToList();
-    }
-
     private static string FormatMillisecondsAsMinutes(double value)
     {
         double safeValue = Math.Max(0, value);
