@@ -14,7 +14,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly Func<TrackingPoller> _trackingPollerFactory;
-    private readonly SqliteFocusSessionRepository _focusSessionRepository;
+    private readonly WindowsFocusSessionPersistenceService _focusSessionPersistenceService;
     private readonly SqliteWebSessionRepository? _webSessionRepository;
     private readonly SqliteSyncOutboxRepository _outboxRepository;
     private readonly ISystemClock _clock;
@@ -34,7 +34,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         ISystemClock clock)
         : this(
             trackingPollerFactory,
-            focusSessionRepository,
+            new WindowsFocusSessionPersistenceService(focusSessionRepository, outboxRepository, clock),
             webSessionRepository: null,
             outboxRepository,
             clock,
@@ -51,9 +51,30 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         IBrowserActivityReader? browserActivityReader,
         IBrowserUrlSanitizer? browserUrlSanitizer = null,
         BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly)
+        : this(
+            trackingPollerFactory,
+            new WindowsFocusSessionPersistenceService(focusSessionRepository, outboxRepository, clock),
+            webSessionRepository,
+            outboxRepository,
+            clock,
+            browserActivityReader,
+            browserUrlSanitizer,
+            browserStoragePolicy)
+    {
+    }
+
+    public WindowsTrackingDashboardCoordinator(
+        Func<TrackingPoller> trackingPollerFactory,
+        WindowsFocusSessionPersistenceService focusSessionPersistenceService,
+        SqliteWebSessionRepository? webSessionRepository,
+        SqliteSyncOutboxRepository outboxRepository,
+        ISystemClock clock,
+        IBrowserActivityReader? browserActivityReader,
+        IBrowserUrlSanitizer? browserUrlSanitizer = null,
+        BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly)
     {
         _trackingPollerFactory = trackingPollerFactory ?? throw new ArgumentNullException(nameof(trackingPollerFactory));
-        _focusSessionRepository = focusSessionRepository ?? throw new ArgumentNullException(nameof(focusSessionRepository));
+        _focusSessionPersistenceService = focusSessionPersistenceService ?? throw new ArgumentNullException(nameof(focusSessionPersistenceService));
         _webSessionRepository = webSessionRepository;
         _outboxRepository = outboxRepository ?? throw new ArgumentNullException(nameof(outboxRepository));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
@@ -144,20 +165,15 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private DashboardPersistedSessionSnapshot Persist(FocusSession session)
     {
-        _focusSessionRepository.Save(session);
-        _lastDbWriteAtUtc = _clock.UtcNow;
-        _outboxRepository.Add(SyncOutboxItem.Pending(
-            id: $"focus-session:{session.ClientSessionId}",
-            aggregateType: "focus_session",
-            aggregateId: session.ClientSessionId,
-            payloadJson: CreatePayload(session),
-            createdAtUtc: _lastDbWriteAtUtc.Value));
+        WindowsFocusSessionPersistenceResult result = _focusSessionPersistenceService.SaveFocusSession(session);
+        _lastDbWriteAtUtc = result.PersistedAtUtc;
+        FocusSession persistedSession = result.Session;
 
         return new DashboardPersistedSessionSnapshot(
-            AppName: session.PlatformAppKey,
-            ProcessName: session.PlatformAppKey,
-            EndedAtUtc: session.EndedAtUtc,
-            Duration: TimeSpan.FromMilliseconds(session.DurationMs));
+            AppName: persistedSession.PlatformAppKey,
+            ProcessName: persistedSession.PlatformAppKey,
+            EndedAtUtc: persistedSession.EndedAtUtc,
+            Duration: TimeSpan.FromMilliseconds(persistedSession.DurationMs));
     }
 
     private BrowserPersistenceResult PersistBrowserActivity(FocusSessionizerResult result)
@@ -277,31 +293,6 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             CaptureMethod.UIAutomationAddressBar => DashboardBrowserCaptureStatus.UiAutomationFallbackActive,
             _ => DashboardBrowserCaptureStatus.Unavailable
         };
-
-    private static string CreatePayload(FocusSession session)
-    {
-        var request = new UploadFocusSessionsRequest(
-            session.DeviceId,
-            [
-                new FocusSessionUploadItem(
-                    session.ClientSessionId,
-                    session.PlatformAppKey,
-                    session.StartedAtUtc,
-                    session.EndedAtUtc,
-                    session.DurationMs,
-                    session.LocalDate,
-                    session.TimezoneId,
-                    session.IsIdle,
-                    session.Source,
-                    session.ProcessId,
-                    session.ProcessName,
-                    session.ProcessPath,
-                    session.WindowHandle,
-                    session.WindowTitle)
-            ]);
-
-        return JsonSerializer.Serialize(request, JsonOptions);
-    }
 
     private string CreatePayload(WebSession session, string deviceId)
     {

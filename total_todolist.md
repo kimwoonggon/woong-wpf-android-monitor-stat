@@ -628,6 +628,8 @@ milestones below are finished.
   - [x] Add Android sync API/client method for `/api/location-contexts/upload`.
   - [x] Align Android location-context upload payload with the server contract: top-level `deviceId` and `contexts` with `clientContextId`, UTC/local date, timezone, nullable coordinates, capture mode, permission state, and source.
   - [x] Wire local location-context outbox/worker processing into the sync runner while preserving sync opt-in and location opt-in gates.
+  - [x] Add no-hardware Robolectric worker coverage proving pending `location_context` rows stay local while sync is off, upload only when sync and location opt-in are both enabled, and retry failed location uploads.
+  - [x] Verify the WorkManager `AndroidSyncWorker` runtime path with a real `AndroidOutboxSyncProcessor` fake-outbox setup for sync-off skip, accepted location upload, and failed-upload retry.
 - [x] Add Android UI snapshot script/androidTest coverage for Dashboard location card and Settings location section.
   - [x] Generate no-device `BLOCKED` snapshot artifacts that explicitly list expected location-card/settings-section checks.
   - [ ] Capture real connected-device screenshots for Dashboard location card and Settings location section when a device/emulator is available.
@@ -1205,8 +1207,9 @@ milestones below are finished.
   - [x] WPF Presentation pager/status behavior: RED tests required chart details commands to reset the selected tab pager, rows-per-page changes to clamp page state, and sync failure/off transitions to update dashboard sync status safely.
   - [x] WPF App accessibility names: RED App tests required SettingsPanel primary controls, chart detail buttons, and reusable SectionCard action buttons to expose readable `AutomationProperties.Name` values.
   - [x] WPF App accessibility helper/details names: refactored duplicate STA/visual-tree test helpers into `WpfTestHelpers` and added RED DetailsTabsPanel tests for readable tab/list/rows-per-page automation names.
+  - [x] WPF focus persistence extraction: RED Windows infrastructure test required `WindowsFocusSessionPersistenceService` to save privacy-safe focus sessions, queue `focus_session` outbox payloads, and keep window titles null.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
-- [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
+- [ ] Continue extracting WPF browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
 - [x] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during current component/style guard extraction.
 - [x] Run full `.NET` tests and build after current component/style guard extraction.

@@ -7,6 +7,10 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
+import com.woong.monitorstack.data.local.SyncOutboxEntity
+import com.woong.monitorstack.data.local.SyncOutboxStatus
+import com.woong.monitorstack.data.local.SyncOutboxStore
+import com.woong.monitorstack.settings.AndroidLocationSettings
 import com.woong.monitorstack.settings.AndroidSyncSettings
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -95,6 +99,144 @@ class AndroidSyncWorkerTest {
         )
     }
 
+    @Test
+    fun doWorkSkipsLocationContextOutboxWhenSyncOptInIsDisabled() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val outbox = FakeSyncOutboxStore(
+            listOf(locationOutboxItem("location-outbox-1", "location-context-1"))
+        )
+        val syncApi = FakeAndroidSyncApi(
+            locationResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "location-context-1",
+                        status = SyncUploadItemStatus.Accepted,
+                        errorMessage = null
+                    )
+                )
+            )
+        )
+        val runner = ProcessorBackedAndroidSyncRunner(
+            processor = AndroidOutboxSyncProcessor(
+                deviceId = "device-1",
+                outbox = outbox,
+                syncApi = syncApi,
+                locationSettings = FakeLocationSettings(isLocationEnabled = true),
+                clock = { 9_000L }
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = false)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(null, runner.limit)
+        assertEquals(null, syncApi.locationRequest)
+        assertEquals(emptyList<String>(), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+        assertEquals(
+            ListenableWorker.Result.success(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_SKIPPED to true
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkUploadsLocationContextOutboxWhenSyncAndLocationOptInAreEnabled() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val outbox = FakeSyncOutboxStore(
+            listOf(locationOutboxItem("location-outbox-1", "location-context-1"))
+        )
+        val syncApi = FakeAndroidSyncApi(
+            locationResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "location-context-1",
+                        status = SyncUploadItemStatus.Accepted,
+                        errorMessage = null
+                    )
+                )
+            )
+        )
+        val runner = ProcessorBackedAndroidSyncRunner(
+            processor = AndroidOutboxSyncProcessor(
+                deviceId = "device-1",
+                outbox = outbox,
+                syncApi = syncApi,
+                locationSettings = FakeLocationSettings(isLocationEnabled = true),
+                clock = { 9_000L }
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        val request = requireNotNull(syncApi.locationRequest)
+        assertEquals("device-1", request.deviceId)
+        assertEquals("location-context-1", request.contexts.single().clientContextId)
+        assertEquals(37.5665, request.contexts.single().latitude ?: 0.0, 0.0001)
+        assertEquals(126.9780, request.contexts.single().longitude ?: 0.0, 0.0001)
+        assertEquals(listOf("location-outbox-1"), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+        assertEquals(
+            ListenableWorker.Result.success(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 1,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkRetriesWhenLocationContextUploadFails() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val outbox = FakeSyncOutboxStore(
+            listOf(locationOutboxItem("location-outbox-1", "location-context-1"))
+        )
+        val syncApi = FakeAndroidSyncApi(
+            locationResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "location-context-1",
+                        status = SyncUploadItemStatus.Error,
+                        errorMessage = "location rejected"
+                    )
+                )
+            )
+        )
+        val runner = ProcessorBackedAndroidSyncRunner(
+            processor = AndroidOutboxSyncProcessor(
+                deviceId = "device-1",
+                outbox = outbox,
+                syncApi = syncApi,
+                locationSettings = FakeLocationSettings(isLocationEnabled = true),
+                clock = { 9_000L }
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(ListenableWorker.Result.retry(), result)
+        assertEquals(emptyList<String>(), outbox.syncedClientItemIds)
+        assertEquals(
+            listOf(FailedOutboxItem("location-outbox-1", "location rejected", 9_000L)),
+            outbox.failedItems
+        )
+    }
+
     private class FakeAndroidSyncRunner(
         private val result: AndroidOutboxSyncResult
     ) : AndroidSyncRunner {
@@ -129,4 +271,103 @@ class AndroidSyncWorkerTest {
     ) : AndroidSyncSettings {
         override fun isSyncEnabled(): Boolean = isEnabled
     }
+
+    private class ProcessorBackedAndroidSyncRunner(
+        private val processor: AndroidOutboxSyncProcessor
+    ) : AndroidSyncRunner {
+        var limit: Int? = null
+            private set
+
+        override suspend fun syncPending(limit: Int): AndroidOutboxSyncResult {
+            this.limit = limit
+            return processor.processPending(limit)
+        }
+    }
+
+    private class FakeSyncOutboxStore(
+        private val pendingItems: List<SyncOutboxEntity>
+    ) : SyncOutboxStore {
+        val syncedClientItemIds = mutableListOf<String>()
+        val failedItems = mutableListOf<FailedOutboxItem>()
+
+        override fun queryPending(limit: Int): List<SyncOutboxEntity> = pendingItems.take(limit)
+
+        override fun markSynced(
+            clientItemId: String,
+            updatedAtUtcMillis: Long
+        ) {
+            syncedClientItemIds += clientItemId
+        }
+
+        override fun markFailed(
+            clientItemId: String,
+            lastError: String,
+            updatedAtUtcMillis: Long
+        ) {
+            failedItems += FailedOutboxItem(clientItemId, lastError, updatedAtUtcMillis)
+        }
+    }
+
+    private class FakeAndroidSyncApi(
+        private val locationResult: SyncUploadBatchResult
+    ) : AndroidSyncApi {
+        var locationRequest: SyncLocationContextUploadRequest? = null
+            private set
+
+        override fun uploadFocusSessions(
+            request: SyncFocusSessionUploadRequest
+        ): SyncUploadBatchResult {
+            throw AssertionError("Focus session upload is not expected in this test.")
+        }
+
+        override fun uploadLocationContexts(
+            request: SyncLocationContextUploadRequest
+        ): SyncUploadBatchResult {
+            locationRequest = request
+            return locationResult
+        }
+    }
+
+    private class FakeLocationSettings(
+        private val isLocationEnabled: Boolean
+    ) : AndroidLocationSettings {
+        override fun isLocationCaptureEnabled(): Boolean = isLocationEnabled
+        override fun isPreciseLatitudeLongitudeEnabled(): Boolean = false
+        override fun isApproximateLocationPreferred(): Boolean = true
+    }
+
+    private fun locationOutboxItem(
+        clientItemId: String,
+        clientContextId: String
+    ): SyncOutboxEntity {
+        return SyncOutboxEntity(
+            clientItemId = clientItemId,
+            aggregateType = AndroidOutboxSyncProcessor.LocationContextAggregateType,
+            payloadJson = """
+                {
+                  "clientContextId": "$clientContextId",
+                  "capturedAtUtc": "2026-04-28T00:00:00Z",
+                  "localDate": "2026-04-28",
+                  "timezoneId": "Asia/Seoul",
+                  "latitude": 37.5665,
+                  "longitude": 126.9780,
+                  "accuracyMeters": 35.5,
+                  "captureMode": "AppUsageContext",
+                  "permissionState": "GrantedApproximate",
+                  "source": "android_location_context"
+                }
+            """.trimIndent(),
+            status = SyncOutboxStatus.Pending,
+            retryCount = 0,
+            lastError = null,
+            createdAtUtcMillis = 1_000,
+            updatedAtUtcMillis = 1_000
+        )
+    }
+
+    private data class FailedOutboxItem(
+        val clientItemId: String,
+        val lastError: String,
+        val updatedAtUtcMillis: Long
+    )
 }
