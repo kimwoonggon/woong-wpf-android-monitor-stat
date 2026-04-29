@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using Woong.MonitorStack.Domain.Common;
+using Woong.MonitorStack.Windows.App.Views;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
@@ -28,6 +29,7 @@ public sealed class MainWindowUiExpectationTests
                 Assert.True(window.MinWidth >= 1024);
                 Assert.True(window.MinHeight >= 768);
                 Assert.Same(dashboard.ViewModel, window.DataContext);
+                Assert.NotNull(FindByAutomationId<DashboardView>(window, "DashboardView"));
 
                 FrameworkElement header = FindByAutomationId<FrameworkElement>(window, "HeaderArea");
                 IReadOnlySet<string> headerText = CollectText(header);

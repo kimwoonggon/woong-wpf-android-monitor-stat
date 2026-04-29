@@ -4,11 +4,10 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 28 browser URL privacy copy and sync opt-in enforcement. Windows now
-has a direct coordinator test proving Sync Now with opt-in off leaves pending
-outbox rows local, Android already has the matching Worker test proving disabled
-sync does not invoke the runner, and the WPF Settings tab visibly states that
-browser URL storage is domain-only by default.
+Milestone 31 DashboardView extraction slice. `MainWindow.xaml` is now a thin
+shell hosting `Views/DashboardView.xaml`; `DashboardView.xaml.cs` was added; and
+`MainWindowUiExpectationTests` now asserts the hosted `DashboardView` is present
+while preserving the dashboard controls and command bindings.
 
 ## Completed
 
@@ -950,12 +949,10 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 30 with visible chart empty-state overlays, richer Live Event
-Log semantic tests, Settings privacy/sync command tests, and explicit
-1920/1366/1024 WPF screenshots. After the WPF product UI goal is complete,
-return to Milestone 27 Android screenshot/device automation if an
-emulator/device is available; physical Android resource measurement remains
-blocked until a device is connected.
+Continue Milestone 31 with the next component extraction slice, starting with
+`HeaderStatusBar`, while preserving existing automation IDs, behavior tests, and
+semantic WPF acceptance. Do not mark later Milestone 31 component items complete
+until their own tested slices pass.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1015,6 +1012,39 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `EmptyState`) and style dictionaries. This guidance is saved in
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
-Next highest priority is to extract the current monolithic `MainWindow.xaml`
-into tested reusable WPF views while keeping existing automation IDs and
-semantic acceptance behavior stable.
+The first extraction is now complete as `DashboardView`; continue extracting
+smaller tested WPF views while keeping existing automation IDs and semantic
+acceptance behavior stable.
+
+## 2026-04-29 WPF DashboardView Extraction Slice
+
+- Extracted the existing vertical dashboard layout from `MainWindow.xaml` into
+  `Views/DashboardView.xaml`.
+- Added `Views/DashboardView.xaml.cs`.
+- Kept `MainWindow.xaml` as a thin shell that hosts `DashboardView`.
+- Updated `MainWindowUiExpectationTests` so
+  `MainWindow_ExposesDashboardControlsAndCommandBindings` asserts the hosted
+  `DashboardView` is present while preserving the dashboard control and command
+  binding expectations.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_ExposesDashboardControlsAndCommandBindings`
+  passed.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+  passed all 26 Windows App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+  passed and wrote WPF acceptance evidence at
+  `artifacts/wpf-ui-acceptance/20260429-102017`.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+  completed successfully and generated the coverage report.
+
+Remaining Milestone 31 componentization work stays open, including
+`HeaderStatusBar`, `ControlBar`, `CurrentFocusPanel`, `SummaryCardsPanel`,
+`ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
+dictionaries, chart details commands, final componentization verification, and
+commit/push.

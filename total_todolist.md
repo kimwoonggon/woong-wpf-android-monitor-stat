@@ -625,8 +625,14 @@ milestones below are finished.
 ## Milestone 31: WPF Componentized Dashboard Architecture
 
 - [x] Save componentization guidance in `docs/wpf-ui-plan.md`.
-- [ ] Add tests proving `MainWindow` is a thin shell that hosts `DashboardView`.
-- [ ] Add `Views/DashboardView.xaml` and move the vertical dashboard layout out of `MainWindow.xaml`.
+- [x] Add tests proving `MainWindow` is a thin shell that hosts `DashboardView`.
+- [x] Add `Views/DashboardView.xaml` and move the vertical dashboard layout out of `MainWindow.xaml`.
+- [x] DashboardView extraction verification: focused `MainWindow_ExposesDashboardControlsAndCommandBindings` passed.
+- [x] DashboardView extraction verification: all Windows App tests passed (26 tests).
+- [x] DashboardView extraction verification: full `.NET` tests passed.
+- [x] DashboardView extraction verification: `.NET` build passed.
+- [x] DashboardView extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-102017`.
+- [x] DashboardView extraction verification: coverage report generated successfully with `scripts/test-coverage.ps1`.
 - [ ] Add `Views/HeaderStatusBar.xaml` while preserving Header automation IDs and behavior tests.
 - [ ] Add `Views/ControlBar.xaml` while preserving button commands and readable sizing tests.
 - [ ] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
