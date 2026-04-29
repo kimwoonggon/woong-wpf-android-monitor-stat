@@ -174,6 +174,11 @@ artifacts only. They must not capture other apps as telemetry.
   `location_context` outbox rows stay local while sync is off, stay local while
   location context is off, upload only when both opt-ins are enabled, and retry
   failed location uploads through the same path as focus sessions.
+- Runtime location capture policy/provider seam now has no-hardware unit tests:
+  it returns no local snapshot while location context is off or foreground
+  permission is missing, keeps approximate-mode latitude/longitude null, stores
+  precise coordinates only after separate precise opt-in plus precise
+  permission, and stays independent from sync opt-in.
 - Server now exposes a dedicated `location_contexts` upload path and PostgreSQL
   table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
   nullable, uses `deviceId + clientContextId` idempotency, and is separate from
@@ -181,5 +186,5 @@ artifacts only. They must not capture other apps as telemetry.
 
 ## Not Implemented Yet
 
-- Runtime location collector/provider.
+- Hardware-backed runtime location reader and scheduling/persistence wiring.
 - Connected-device screenshot evidence for location UI.

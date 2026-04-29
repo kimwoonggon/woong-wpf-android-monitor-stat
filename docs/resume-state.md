@@ -3220,6 +3220,30 @@ Verified:
 - Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.AndroidSyncWorkerTest" --no-daemon --stacktrace` passed.
 - Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
 
+## 2026-04-30 Android Runtime Location Provider Seam Slice
+
+- Added a no-hardware `RuntimeLocationContextProvider` seam with injectable
+  `RuntimeLocationReader`, foreground permission checker, clock, and id factory.
+- Added a real Android permission checker that reports foreground fine/coarse
+  permission state without using background location.
+- Tests prove no local snapshot is produced while location context is off or
+  foreground location permission is missing.
+- Tests prove approximate mode keeps `latitude`, `longitude`, and
+  `accuracyMeters` null, while precise coordinates require both separate
+  precise opt-in and precise permission.
+- The capture seam is local-only and deliberately independent from sync opt-in;
+  sync remains a separate upload gate.
+- Updated `docs/android-ui-plan.md` so remaining Android location gaps are the
+  hardware-backed reader/scheduling/persistence wiring and connected-device
+  screenshots.
+
+Verified:
+
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.location.RuntimeLocationContextProviderTest" --no-daemon --stacktrace` passed.
+- Carver: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.location.RuntimeLocationContextProviderTest" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+
 ## 2026-04-30 Android SVG UI Flow Alignment Slice
 
 - Checked the planned Figma/SVG flow at
@@ -3404,6 +3428,31 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.6% (3624/3955), branch 70.9% (500/705).
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-025532`. RealStart persisted a focus session into a temp SQLite DB and queued one outbox row; cleanup emitted the known non-fatal already-closed process warning.
+
+## 2026-04-30 WPF Web Persistence Extraction Slice
+
+- Added a RED Windows infrastructure test for `WindowsWebSessionPersistenceService`
+  proving a web session is saved to Windows SQLite, a pending `web_session`
+  outbox row is queued, the payload deserializes to the existing upload
+  contract, client session id/duration are present, and full URL/page title
+  remain null under the default domain-only policy.
+- Moved WebSession SQLite/outbox payload creation out of
+  `WindowsTrackingDashboardCoordinator` into
+  `Woong.MonitorStack.Windows.Storage.WindowsWebSessionPersistenceService`.
+- Wired `Windows.App` DI so the coordinator uses the Windows infrastructure
+  service for web persistence while keeping browser capture/sessionization and
+  dashboard snapshot mapping in the coordinator.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore --filter "FullyQualifiedName~WindowsWebSessionPersistenceServiceTests" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~WindowsTrackingDashboardCoordinatorTests" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~WindowsAppCompositionTests" -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 347 total `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.6% (3655/3988), branch 70.4% (504/715).
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-031037`. RealStart persisted a focus session into a temp SQLite DB and queued one outbox row; cleanup emitted the known non-fatal already-closed process warning.
 
 ## 2026-04-29 WPF Browser Stop Flush Slice
 

@@ -619,6 +619,7 @@ milestones below are finished.
 - [x] Add Android foreground-only manifest guard for optional location context: coarse/fine permissions allowed, background location forbidden.
 - [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
 - [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
+- [x] Add no-hardware runtime location capture policy/provider seam: no snapshot unless location context is enabled and foreground permission is granted; approximate mode keeps precise coordinates null; precise coordinates require separate precise opt-in.
 - [x] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [x] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [x] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
@@ -1208,8 +1209,9 @@ milestones below are finished.
   - [x] WPF App accessibility names: RED App tests required SettingsPanel primary controls, chart detail buttons, and reusable SectionCard action buttons to expose readable `AutomationProperties.Name` values.
   - [x] WPF App accessibility helper/details names: refactored duplicate STA/visual-tree test helpers into `WpfTestHelpers` and added RED DetailsTabsPanel tests for readable tab/list/rows-per-page automation names.
   - [x] WPF focus persistence extraction: RED Windows infrastructure test required `WindowsFocusSessionPersistenceService` to save privacy-safe focus sessions, queue `focus_session` outbox payloads, and keep window titles null.
+  - [x] WPF web persistence extraction: RED Windows infrastructure test required `WindowsWebSessionPersistenceService` to save domain-only web sessions, queue `web_session` outbox payloads, keep full URLs/page titles null by default, and preserve client session ids/durations.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
-- [ ] Continue extracting WPF browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
+- [x] Extract WPF focus/web session SQLite and outbox payload creation from `Windows.App` coordinator into Windows infrastructure services.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
 - [x] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during current component/style guard extraction.
 - [x] Run full `.NET` tests and build after current component/style guard extraction.

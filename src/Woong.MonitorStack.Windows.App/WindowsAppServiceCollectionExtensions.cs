@@ -98,12 +98,16 @@ public static class WindowsAppServiceCollectionExtensions
         });
         services.AddSingleton<ISyncOutboxRepository>(provider => provider.GetRequiredService<SqliteSyncOutboxRepository>());
         services.AddSingleton<WindowsFocusSessionPersistenceService>();
+        services.AddSingleton(provider => new WindowsWebSessionPersistenceService(
+            provider.GetRequiredService<SqliteWebSessionRepository>(),
+            provider.GetRequiredService<SqliteSyncOutboxRepository>(),
+            provider.GetRequiredService<ISystemClock>(),
+            BrowserUrlStoragePolicy.DomainOnly));
         services.AddSingleton<IDashboardDataSource, SqliteDashboardDataSource>();
         services.AddSingleton<IDashboardTrackingCoordinator>(provider => new WindowsTrackingDashboardCoordinator(
             provider.GetRequiredService<Func<TrackingPoller>>(),
             provider.GetRequiredService<WindowsFocusSessionPersistenceService>(),
-            provider.GetRequiredService<SqliteWebSessionRepository>(),
-            provider.GetRequiredService<SqliteSyncOutboxRepository>(),
+            provider.GetRequiredService<WindowsWebSessionPersistenceService>(),
             provider.GetRequiredService<ISystemClock>(),
             provider.GetRequiredService<IBrowserActivityReader>(),
             provider.GetRequiredService<IBrowserUrlSanitizer>(),
