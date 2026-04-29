@@ -640,7 +640,14 @@ milestones below are finished.
 - [x] HeaderStatusBar extraction verification: `.NET` build passed.
 - [x] HeaderStatusBar extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-103315`.
 - [x] HeaderStatusBar extraction verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Add `Views/ControlBar.xaml` while preserving button commands and readable sizing tests.
+- [x] Add `Views/ControlBar.xaml` while preserving button commands and readable sizing tests.
+- [x] ControlBar extraction verification: focused `DashboardView_HostsControlBarAndPreservesCommandBindings` passed.
+- [x] ControlBar extraction verification: all Windows App tests passed (28 tests).
+- [x] ControlBar extraction verification: full `.NET` tests passed.
+- [x] ControlBar extraction verification: `.NET` build passed.
+- [x] ControlBar extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-104336`.
+- [x] ControlBar extraction verification: coverage report generated successfully with overall line coverage about 92.3%.
+- [ ] Close runtime poll-tick persistence quality gap before continuing `CurrentFocusPanel`: prove WPF poll-tick foreground changes persist SQLite/outbox rows and refresh the dashboard before Stop.
 - [ ] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
 - [ ] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
 - [ ] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.

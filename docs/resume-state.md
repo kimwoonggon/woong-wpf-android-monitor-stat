@@ -4,10 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 DashboardView extraction slice. `MainWindow.xaml` is now a thin
-shell hosting `Views/DashboardView.xaml`; `DashboardView.xaml.cs` was added; and
-`MainWindowUiExpectationTests` now asserts the hosted `DashboardView` is present
-while preserving the dashboard controls and command bindings.
+Milestone 31 ControlBar extraction slice. `Views/ControlBar.xaml` and
+`Views/ControlBar.xaml.cs` were added; `DashboardView.xaml` now hosts
+`<views:ControlBar>`; and
+`DashboardView_HostsControlBarAndPreservesCommandBindings` proves the command
+bindings and stable AutomationIds were preserved.
 
 ## Completed
 
@@ -949,11 +950,12 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with the next component extraction slice, starting with
-`ControlBar`, while preserving existing automation IDs, command bindings,
-behavior tests, and semantic WPF acceptance. Separately prioritize the runtime
-confidence gap noted by the QA subagent: prove WPF poll-tick foreground changes
-persist SQLite/outbox rows and refresh the dashboard before Stop.
+Pause Milestone 31 component extraction to close the runtime poll-tick
+persistence quality gap: prove WPF poll-tick foreground changes persist
+SQLite/outbox rows and refresh the dashboard before Stop. After that gap is
+covered, continue Milestone 31 with `CurrentFocusPanel` extraction while
+preserving existing automation IDs, bindings, behavior tests, and semantic WPF
+acceptance.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1013,9 +1015,11 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `EmptyState`) and style dictionaries. This guidance is saved in
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
-The first extraction is now complete as `DashboardView`; continue extracting
-smaller tested WPF views while keeping existing automation IDs and semantic
-acceptance behavior stable.
+The `DashboardView`, `HeaderStatusBar`, and `ControlBar` extractions are now
+complete. Before continuing with `CurrentFocusPanel`, close the runtime
+poll-tick persistence quality gap so foreground changes observed during a timer
+tick are proven to persist SQLite/outbox rows and refresh the dashboard before
+Stop.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1045,7 +1049,7 @@ Verified:
   completed successfully and generated the coverage report.
 
 Remaining Milestone 31 componentization work stays open, including
-`ControlBar`, `CurrentFocusPanel`, `SummaryCardsPanel`,
+`CurrentFocusPanel`, `SummaryCardsPanel`,
 `ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
 dictionaries, chart details commands, final componentization verification, and
 commit/push.
@@ -1079,5 +1083,36 @@ Verified:
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
   completed successfully; overall line coverage is 92.3%.
 
-Next componentization slice is `ControlBar`, unless the runtime confidence gap
-is selected first for product-risk reasons.
+ControlBar is the next completed componentization slice after HeaderStatusBar.
+
+## 2026-04-29 WPF ControlBar Extraction Slice
+
+- Added a RED componentization test,
+  `DashboardView_HostsControlBarAndPreservesCommandBindings`, proving the
+  dashboard hosts a `ControlBar` while preserving Start/Stop/Refresh/Sync
+  command bindings, period/custom controls, readable control-bar expectations,
+  and stable AutomationIds.
+- Extracted the control-bar markup from `Views/DashboardView.xaml` into
+  `Views/ControlBar.xaml`.
+- Added `Views/ControlBar.xaml.cs`.
+- Kept existing command bindings and AutomationIds intact through
+  `<views:ControlBar>`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter DashboardView_HostsControlBarAndPreservesCommandBindings`
+  failed before implementation and passed after extraction.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+  passed all 28 Windows App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+  passed and wrote WPF acceptance evidence at
+  `artifacts/wpf-ui-acceptance/20260429-104336`.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+  completed successfully; overall line coverage remains about 92.3%.
+
+Next highest priority is the runtime poll-tick persistence quality gap before
+continuing with `CurrentFocusPanel` extraction.
