@@ -510,6 +510,31 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_ChartsPanelUsesSharedSectionTitleTypography()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                ChartsPanel panel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
+                Assert.IsType<Style>(panel.FindResource("SectionTitleTextStyle"));
+
+                AssertSectionTitleStyle(FindTextBlock(panel, "시간대별 Active Focus"));
+                AssertSectionTitleStyle(FindTextBlock(panel, "앱별 집중 시간"));
+                AssertSectionTitleStyle(FindTextBlock(panel, "도메인별 집중 시간"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs()
         => RunOnStaThread(() =>
         {
@@ -773,6 +798,12 @@ public sealed class MainWindowUiExpectationTests
 
                 TextBlock text = FindByAutomationId<TextBlock>(emptyState, "TestEmptyStateText");
                 Assert.Equal("No data for selected period", text.Text);
+                Style style = Assert.IsType<Style>(text.Style);
+                AssertStyleSetter(style, TextBlock.FontSizeProperty, 13.0);
+
+                Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+                var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+                Assert.Equal(Color.FromRgb(0x5A, 0x64, 0x72), foregroundBrush.Color);
             }
             finally
             {
@@ -1072,6 +1103,17 @@ public sealed class MainWindowUiExpectationTests
         Assert.Equal(12.0, button.FontSize);
     }
 
+    private static void AssertSectionTitleStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 16.0);
+        AssertStyleSetter(style, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
+    }
+
     private static void AssertColumnMinWidths(DataGrid dataGrid, IReadOnlyList<double> expectedMinWidths)
     {
         Assert.Equal(expectedMinWidths.Count, dataGrid.Columns.Count);
@@ -1220,6 +1262,14 @@ public sealed class MainWindowUiExpectationTests
         }
 
         throw new InvalidOperationException($"Could not find {typeof(T).Name} with AutomationId '{automationId}'.");
+    }
+
+    private static TextBlock FindTextBlock(DependencyObject root, string text)
+    {
+        TextBlock? match = FindVisualDescendants<TextBlock>(root)
+            .FirstOrDefault(textBlock => string.Equals(textBlock.Text, text, StringComparison.Ordinal));
+
+        return match ?? throw new InvalidOperationException($"Could not find TextBlock with text '{text}'.");
     }
 
     private static IReadOnlyList<T> FindVisualDescendants<T>(DependencyObject root)

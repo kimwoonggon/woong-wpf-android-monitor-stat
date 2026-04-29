@@ -3,10 +3,16 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              IsHitTestVisible="False">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <TextBlock AutomationProperties.AutomationId="{Binding TextAutomationId, ElementName=Root}"
                Text="{Binding Text, ElementName=Root}"
-               Foreground="#5A6472"
-               FontSize="13"
+               Style="{StaticResource EmptyStateTextStyle}"
                HorizontalAlignment="Center"
                VerticalAlignment="Center" />
 </UserControl>

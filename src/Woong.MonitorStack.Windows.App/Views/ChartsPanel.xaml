@@ -13,6 +13,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -29,18 +30,14 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="시간대별 Active Focus"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="#162033" />
+                       Style="{StaticResource SectionTitleTextStyle}" />
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="앱별 집중 시간"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#162033"
+                           Style="{StaticResource SectionTitleTextStyle}"
                            VerticalAlignment="Center" />
                 <Button Grid.Column="1"
                         AutomationProperties.AutomationId="AppChartDetailsButton"
@@ -55,9 +52,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="도메인별 집중 시간"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#162033"
+                           Style="{StaticResource SectionTitleTextStyle}"
                            VerticalAlignment="Center" />
                 <Button Grid.Column="1"
                         AutomationProperties.AutomationId="DomainChartDetailsButton"

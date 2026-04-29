@@ -1003,6 +1003,15 @@ milestones below are finished.
   - [x] Compact action style verification: `.NET` build passed.
   - [x] Compact action style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-193853`.
   - [x] Compact action style verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `EmptyStateTextStyle` to `Styles/Typography.xaml` and replace `EmptyState` inline muted text color/font setters.
+  - [x] Replace chart heading inline font/color setters in `ChartsPanel` with shared `SectionTitleTextStyle`.
+  - [x] Typography cleanup verification: RED `EmptyState_RendersBoundTextWithTextAutomationId` style assertion failed first, then passed.
+  - [x] Typography cleanup verification: RED `DashboardView_ChartsPanelUsesSharedSectionTitleTypography` failed first, then passed.
+  - [x] Typography cleanup verification: all Windows App tests passed (78 tests).
+  - [x] Typography cleanup verification: full `.NET` tests passed (282 tests).
+  - [x] Typography cleanup verification: `.NET` build passed.
+  - [x] Typography cleanup verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-195534`.
+  - [x] Typography cleanup verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

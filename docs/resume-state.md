@@ -2168,3 +2168,34 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work remains the larger hard-coded color/brush cleanup
 and any child ViewModel/adaptor extraction that improves testability without
 moving behavior into code-behind.
+
+## 2026-04-29 WPF Typography Cleanup Slice
+
+- Added a RED WPF assertion that `EmptyState` renders through a shared text
+  style instead of direct foreground/font setters.
+- Added `EmptyStateTextStyle` to `Styles/Typography.xaml` and wired
+  `Controls/EmptyState.xaml` to that resource.
+- Added a RED WPF assertion that the three chart headings resolve shared
+  section-title typography.
+- Merged `Styles/Typography.xaml` into `ChartsPanel` and replaced inline
+  chart heading font/weight/foreground setters with `SectionTitleTextStyle`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter EmptyState_RendersBoundTextWithTextAutomationId`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter DashboardView_ChartsPanelUsesSharedSectionTitleTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "EmptyState_RendersBoundTextWithTextAutomationId|DashboardView_ChartsPanelUsesSharedSectionTitleTypography|DashboardView_HostsChartsPanelAndPreservesChartContent"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-195534`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should continue reducing remaining direct
+foreground/background/font setters, with `SettingsPanel` and `HeaderStatusBar`
+as likely candidates.

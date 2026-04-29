@@ -31,6 +31,10 @@
         <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
     </Style>
 
+    <Style x:Key="EmptyStateTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MutedTextStyle}">
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
     <Style x:Key="MetricValueTextStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BodyTextStyle}">
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="SemiBold" />
