@@ -8,7 +8,8 @@ param(
     [switch]$CleanupOnly,
     [switch]$HadPreviousValue,
     [string]$PreviousDefaultValue = "",
-    [switch]$InstallChromeForTesting
+    [switch]$InstallChromeForTesting,
+    [switch]$AllowInstalledChromeFallback
 )
 
 $ErrorActionPreference = "Stop"
@@ -98,6 +99,12 @@ function Find-Chrome {
         if (-not [string]::IsNullOrWhiteSpace($installed) -and (Test-Path $installed)) {
             return (Resolve-Path $installed).Path
         }
+    }
+
+    if ($AllowInstalledChromeFallback) {
+        Write-Warning "Using installed Chrome fallback by explicit request. Prefer Chrome for Testing so user Chrome profiles stay outside acceptance."
+    } else {
+        return $null
     }
 
     $candidates = @(
@@ -379,13 +386,15 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 try {
     Write-Host "Chrome native messaging acceptance observes active-tab metadata only."
     Write-Host "It will not record keystrokes, page contents, screenshots, forms, passwords, messages, or clipboard contents."
-    Write-Host "Chrome for Testing is preferred because official Google Chrome stable builds block command-line unpacked extension loading."
+    Write-Host "Chrome for Testing is required by default so user Chrome windows/profiles stay outside this acceptance sandbox."
+    Write-Host "Official Google Chrome stable builds can also block command-line unpacked extension loading."
 
     $resolvedChromePath = Find-Chrome
     if ([string]::IsNullOrWhiteSpace($resolvedChromePath)) {
         $status = "BLOCKED"
-        $blockedReason = "Google Chrome executable was not found."
-        $notes.Add("Install Chrome or pass -ChromePath.")
+        $blockedReason = "Chrome for Testing executable was not found."
+        $notes.Add("Run scripts/install-chrome-for-testing.ps1, pass -InstallChromeForTesting, or pass -ChromePath explicitly.")
+        $notes.Add("Use -AllowInstalledChromeFallback only for isolated manual debugging; default acceptance must not touch the user's installed Chrome.")
         Write-AcceptanceArtifacts $status $blockedReason "" "" @() @() @() $cleanupStatus
         Write-Host "Chrome native messaging acceptance blocked: $blockedReason"
         exit 0
@@ -548,7 +557,8 @@ finally {
             -Browser Chrome `
             -HostName $hostName `
             -HadPreviousValue:$previousHostKeyExisted `
-            -PreviousDefaultValue "$previousDefaultValue" | Out-Null
+            -PreviousDefaultValue "$previousDefaultValue" `
+            -DryRun:$DryRun | Out-Null
         $cleanupStatus = if ($previousHostKeyExisted) {
             "Restored previous default value for $($registryPath.Replace('HKCU:', 'HKCU'))."
         } else {

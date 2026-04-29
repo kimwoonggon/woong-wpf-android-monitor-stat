@@ -15,7 +15,7 @@ clipboard contents.
 ## Local-Only Sandbox
 
 `scripts/run-chrome-native-message-acceptance.ps1` launches Chrome for Testing
-with a temporary profile:
+by default with a temporary profile:
 
 ```text
 --user-data-dir=<temp-profile>
@@ -24,6 +24,12 @@ with a temporary profile:
 Cleanup searches Windows processes for that exact temporary profile path and
 stops only matching Chrome processes. Existing user Chrome windows and profiles
 are outside the sandbox and must not be closed by this test.
+
+The script must not fall back to the user's installed Chrome automatically. If
+Chrome for Testing is not already in `.cache/chrome-for-testing/`, run the
+helper installer or pass `-InstallChromeForTesting`. Installed Chrome fallback
+is available only with the explicit `-AllowInstalledChromeFallback` switch for
+isolated manual debugging.
 
 The test DB is also local to the artifact run:
 
@@ -35,8 +41,9 @@ The native host is run with `WOONG_MONITOR_REQUIRE_EXPLICIT_DB=1`, so the
 acceptance host fails instead of falling back to the user's real
 `windows-local.db` if the explicit temp DB path is missing.
 
-Chrome for Testing is preferred for this acceptance path because recent
-official Google Chrome stable builds can block command-line unpacked extension
+Chrome for Testing is required by default for this acceptance path because it
+keeps the user's real Chrome profile out of the test harness. Recent official
+Google Chrome stable builds can also block command-line unpacked extension
 loading. The helper `scripts/install-chrome-for-testing.ps1` downloads the
 official Chrome for Testing win64 archive into the ignored local cache:
 
@@ -69,6 +76,16 @@ Dry run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/run-chrome-native-message-acceptance.ps1 -DryRun
+```
+
+Dry-run cleanup also passes `-DryRun` to the uninstall script, so it reports
+which scoped HKCU key would be restored or removed without changing registry
+values.
+
+Install Chrome for Testing and run against the sandbox browser:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-chrome-native-message-acceptance.ps1 -InstallChromeForTesting
 ```
 
 Cleanup only:

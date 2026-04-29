@@ -725,6 +725,20 @@ milestones below are finished.
 - [x] Chrome native-message completion verification: full `.NET` tests passed
   (271), `.NET` build passed with 0 warnings/errors, and coverage generated at
   91.2% line coverage after the acceptance fix.
+- [x] Chrome acceptance sandbox follow-up: default run no longer falls back to
+  the user's installed Chrome. It now requires Chrome for Testing from the
+  ignored local cache, `-InstallChromeForTesting`, or explicit `-ChromePath`;
+  installed Chrome fallback is guarded by explicit
+  `-AllowInstalledChromeFallback` for isolated manual debugging only.
+- [x] Chrome acceptance dry-run cleanup follow-up: final uninstall/cleanup now
+  receives `-DryRun:$DryRun`, so dry-run reports the scoped HKCU key it would
+  remove or restore without changing registry values.
+- [x] Chrome acceptance sandbox follow-up verification: Chrome-native focused
+  tests passed (33), dry-run acceptance passed without launching Chrome or
+  writing HKCU values, full Chrome for Testing acceptance passed at
+  `artifacts/chrome-native-acceptance/20260429-190639`, scoped HKCU test key
+  was absent after cleanup, full `.NET` tests passed (273), `.NET` build passed
+  with 0 warnings/errors, and coverage generated at 91.2% line coverage.
 - [x] Browser capture docs-only clarification: `docs/browser-tracking-policy.md`
   and `docs/runtime-pipeline.md` now state that Administrator rights are not a
   reliable active-tab URL capture path, Chrome is the installed

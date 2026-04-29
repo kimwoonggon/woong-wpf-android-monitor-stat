@@ -111,8 +111,34 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
         Assert.Contains("install-chrome-for-testing.ps1", script, StringComparison.Ordinal);
         Assert.Contains("if ([string]::IsNullOrWhiteSpace($RepoRoot))", File.ReadAllText(installScriptPath), StringComparison.Ordinal);
         Assert.Contains("Chrome for Testing", script, StringComparison.Ordinal);
-        Assert.Contains("official Google Chrome stable builds block command-line unpacked extension loading", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Official Google Chrome stable builds", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("block command-line unpacked extension loading", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(".cache/chrome-for-testing", File.ReadAllText(Path.Combine(repoRoot, ".gitignore")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptanceScript_DoesNotFallbackToUserInstalledChromeUnlessExplicitlyAllowed()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("AllowInstalledChromeFallback", script, StringComparison.Ordinal);
+        Assert.Contains("if ($AllowInstalledChromeFallback)", script, StringComparison.Ordinal);
+        Assert.Contains("Chrome for Testing executable was not found", script, StringComparison.Ordinal);
+        Assert.Contains("Use -AllowInstalledChromeFallback", script, StringComparison.Ordinal);
+        Assert.Contains("Using installed Chrome fallback by explicit request", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("Google Chrome executable was not found", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptanceScript_DryRunCleanupKeepsUninstallInDryRunMode()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("-DryRun:$DryRun", script, StringComparison.Ordinal);
     }
 
     [Fact]

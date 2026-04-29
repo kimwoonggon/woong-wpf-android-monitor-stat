@@ -32,6 +32,23 @@ scoped HKCU test host key, and no user Chrome process was stopped. Verification
 after this fix passed: full `.NET` tests (271), full `.NET` build with 0
 warnings/errors, and coverage generation with 91.2% line coverage.
 
+Follow-up sandbox hardening: the Chrome native-message acceptance script no
+longer falls back to the user's installed Chrome by default. It now requires
+Chrome for Testing from `.cache/chrome-for-testing/`, `-InstallChromeForTesting`,
+or an explicit `-ChromePath`; installed Chrome fallback requires the explicit
+`-AllowInstalledChromeFallback` switch for isolated manual debugging. Cleanup
+still stops only Chrome processes whose command line contains the temp
+`--user-data-dir` profile. Dry-run cleanup now passes `-DryRun` through to the
+uninstall script, so dry-run acceptance reports registry cleanup without
+changing HKCU values.
+
+Verification after the sandbox follow-up passed on 2026-04-29: Chrome-native
+focused tests (33), full `.NET` tests (273), full `.NET` build with 0 warnings
+and 0 errors, coverage generation at 91.2% line coverage, dry-run acceptance,
+and full Chrome for Testing acceptance at
+`artifacts/chrome-native-acceptance/20260429-190639`. The scoped HKCU test key
+was absent after cleanup.
+
 Milestone 27 Android UI snapshot blocked-evidence slice. RED tests first
 required a repo-level `scripts/run-android-ui-snapshots.ps1` contract and a
 fake-ADB execution path that writes `report.md`, `manifest.json`, and
