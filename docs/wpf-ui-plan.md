@@ -231,8 +231,9 @@ Current style dictionary implementation:
   the three chart headings. `SettingsPanel` uses
   `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings and
   `SettingsMutedTextStyle` for muted privacy/sync/runtime helper text.
-  Remaining typography work is to migrate warning/status text setters as that
-  panel is split further.
+  `SettingsWarningTextStyle` plus `WarningTextBrush` carry the local-only sync
+  warning/status color. Remaining typography work is to migrate the sync
+  endpoint TextBox font setter or extract it into an input style.
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in

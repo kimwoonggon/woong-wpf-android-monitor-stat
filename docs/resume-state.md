@@ -2283,3 +2283,31 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should test and extract the Settings sync warning
 text brush/style, then audit remaining inline settings font setters such as the
 sync endpoint TextBox.
+
+## 2026-04-29 WPF Settings Warning Text Typography Slice
+
+- Added a RED WPF assertion that the Settings sync status warning uses a shared
+  warning brush/style.
+- Added `WarningTextBrush` to `Styles/Colors.xaml`.
+- Added `SettingsWarningTextStyle` to `Styles/Typography.xaml`.
+- Replaced inline Foreground/FontSize setters on `SyncStatusLabel` with the
+  shared warning style while preserving sync-off/local-only copy.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter SettingsPanel_UsesSharedWarningTextTypography`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SettingsPanel_UsesSharedWarningTextTypography|SettingsPanel_PreservesSyncControlsAndTwoWayBinding"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-201950`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should address the remaining Settings TextBox font
+setter with a shared input style, then re-audit XAML for remaining inline
+colors and duplicated typography.

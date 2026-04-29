@@ -5,6 +5,7 @@
     <SolidColorBrush x:Key="BorderBrush" Color="#DCE1E8" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#162033" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#5A6472" />
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#8A4B00" />
 
     <SolidColorBrush x:Key="TrackingBadgeBackgroundBrush" Color="#EEF8F1" />
     <SolidColorBrush x:Key="TrackingBadgeBorderBrush" Color="#BFE8CC" />

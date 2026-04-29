@@ -1034,6 +1034,13 @@ milestones below are finished.
   - [x] Settings muted text verification: `.NET` build passed.
   - [x] Settings muted text verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-201406`.
   - [x] Settings muted text verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `WarningTextBrush` and `SettingsWarningTextStyle` for Settings sync status warning text.
+  - [x] Settings warning text verification: RED `SettingsPanel_UsesSharedWarningTextTypography` failed first, then passed.
+  - [x] Settings warning text verification: all Windows App tests passed (82 tests).
+  - [x] Settings warning text verification: full `.NET` tests passed (286 tests).
+  - [x] Settings warning text verification: `.NET` build passed.
+  - [x] Settings warning text verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-201950`.
+  - [x] Settings warning text verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

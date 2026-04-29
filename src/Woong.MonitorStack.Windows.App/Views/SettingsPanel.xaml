@@ -76,8 +76,7 @@
                        Style="{StaticResource SettingsMutedTextStyle}" />
             <TextBlock AutomationProperties.AutomationId="SyncStatusLabel"
                        Text="{Binding Settings.SyncStatusLabel}"
-                       Foreground="#8A4B00"
-                       FontSize="13"
+                       Style="{StaticResource SettingsWarningTextStyle}"
                        TextWrapping="Wrap"
                        Margin="0,8,0,0" />
             <TextBox AutomationProperties.AutomationId="SyncEndpointTextBox"
