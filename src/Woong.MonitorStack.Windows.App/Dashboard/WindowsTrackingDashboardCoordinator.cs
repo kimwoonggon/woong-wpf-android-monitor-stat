@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Text.Json;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
+using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
@@ -13,9 +15,15 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private readonly Func<TrackingPoller> _trackingPollerFactory;
     private readonly SqliteFocusSessionRepository _focusSessionRepository;
+    private readonly SqliteWebSessionRepository? _webSessionRepository;
     private readonly SqliteSyncOutboxRepository _outboxRepository;
     private readonly ISystemClock _clock;
+    private readonly IBrowserActivityReader? _browserActivityReader;
+    private readonly IBrowserUrlSanitizer _browserUrlSanitizer;
+    private readonly BrowserUrlStoragePolicy _browserStoragePolicy;
     private TrackingPoller? _trackingPoller;
+    private BrowserWebSessionizer? _webSessionizer;
+    private string? _webSessionizerFocusSessionId;
     private bool _isRunning;
     private DateTimeOffset? _lastDbWriteAtUtc;
 
@@ -24,11 +32,34 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         SqliteFocusSessionRepository focusSessionRepository,
         SqliteSyncOutboxRepository outboxRepository,
         ISystemClock clock)
+        : this(
+            trackingPollerFactory,
+            focusSessionRepository,
+            webSessionRepository: null,
+            outboxRepository,
+            clock,
+            browserActivityReader: null)
+    {
+    }
+
+    public WindowsTrackingDashboardCoordinator(
+        Func<TrackingPoller> trackingPollerFactory,
+        SqliteFocusSessionRepository focusSessionRepository,
+        SqliteWebSessionRepository? webSessionRepository,
+        SqliteSyncOutboxRepository outboxRepository,
+        ISystemClock clock,
+        IBrowserActivityReader? browserActivityReader,
+        IBrowserUrlSanitizer? browserUrlSanitizer = null,
+        BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly)
     {
         _trackingPollerFactory = trackingPollerFactory ?? throw new ArgumentNullException(nameof(trackingPollerFactory));
         _focusSessionRepository = focusSessionRepository ?? throw new ArgumentNullException(nameof(focusSessionRepository));
+        _webSessionRepository = webSessionRepository;
         _outboxRepository = outboxRepository ?? throw new ArgumentNullException(nameof(outboxRepository));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _browserActivityReader = browserActivityReader;
+        _browserUrlSanitizer = browserUrlSanitizer ?? new BrowserUrlSanitizer();
+        _browserStoragePolicy = browserStoragePolicy;
     }
 
     public DashboardTrackingSnapshot StartTracking()
@@ -38,8 +69,15 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = _trackingPoller.Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
+        BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
 
-        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, persisted is null ? null : _lastDbWriteAtUtc);
+        return ToSnapshot(
+            result.CurrentSession,
+            persisted,
+            pollAtUtc,
+            ResolveSnapshotDbWriteTime(persisted, browserPersistence),
+            browserPersistence.CurrentDomain,
+            browserPersistence.HasPersistedWebSession);
     }
 
     public DashboardTrackingSnapshot StopTracking()
@@ -52,11 +90,20 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
+        BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
         persisted = Persist(result.CurrentSession);
         _isRunning = false;
         _trackingPoller = null;
+        _webSessionizer = null;
+        _webSessionizerFocusSessionId = null;
 
-        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, _lastDbWriteAtUtc);
+        return ToSnapshot(
+            result.CurrentSession,
+            persisted,
+            pollAtUtc,
+            _lastDbWriteAtUtc,
+            browserPersistence.CurrentDomain,
+            browserPersistence.HasPersistedWebSession);
     }
 
     public DashboardTrackingSnapshot PollOnce()
@@ -69,8 +116,15 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
+        BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
 
-        return ToSnapshot(result.CurrentSession, persisted, pollAtUtc, persisted is null ? null : _lastDbWriteAtUtc);
+        return ToSnapshot(
+            result.CurrentSession,
+            persisted,
+            pollAtUtc,
+            ResolveSnapshotDbWriteTime(persisted, browserPersistence),
+            browserPersistence.CurrentDomain,
+            browserPersistence.HasPersistedWebSession);
     }
 
     public DashboardSyncResult SyncNow(bool syncEnabled)
@@ -102,19 +156,87 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             Duration: TimeSpan.FromMilliseconds(session.DurationMs));
     }
 
+    private BrowserPersistenceResult PersistBrowserActivity(FocusSessionizerResult result)
+    {
+        if (_webSessionRepository is null ||
+            _browserActivityReader is null ||
+            result.ForegroundWindow is null)
+        {
+            return BrowserPersistenceResult.Empty;
+        }
+
+        BrowserActivitySnapshot? rawSnapshot = _browserActivityReader.TryRead(result.ForegroundWindow);
+        if (rawSnapshot is null)
+        {
+            return BrowserPersistenceResult.Empty;
+        }
+
+        BrowserActivitySnapshot sanitizedSnapshot = _browserUrlSanitizer.Sanitize(rawSnapshot, _browserStoragePolicy);
+        BrowserWebSessionizer sessionizer = GetWebSessionizer(result.CurrentSession.ClientSessionId);
+        IReadOnlyList<WebSession> completedSessions = sessionizer.Apply(sanitizedSnapshot);
+        foreach (WebSession session in completedSessions)
+        {
+            PersistWebSession(session, result.CurrentSession.DeviceId);
+        }
+
+        return new BrowserPersistenceResult(
+            sanitizedSnapshot.Domain,
+            completedSessions.Count > 0);
+    }
+
+    private BrowserWebSessionizer GetWebSessionizer(string focusSessionId)
+    {
+        if (_webSessionizer is null || !string.Equals(_webSessionizerFocusSessionId, focusSessionId, StringComparison.Ordinal))
+        {
+            _webSessionizer = new BrowserWebSessionizer(focusSessionId);
+            _webSessionizerFocusSessionId = focusSessionId;
+        }
+
+        return _webSessionizer;
+    }
+
+    private void PersistWebSession(WebSession session, string deviceId)
+    {
+        if (_webSessionRepository is null)
+        {
+            return;
+        }
+
+        _webSessionRepository.Save(session);
+        _lastDbWriteAtUtc = _clock.UtcNow;
+        string aggregateId = CreateWebSessionAggregateId(session);
+        _outboxRepository.Add(SyncOutboxItem.Pending(
+            id: $"web-session:{aggregateId}",
+            aggregateType: "web_session",
+            aggregateId,
+            payloadJson: CreatePayload(session, deviceId),
+            createdAtUtc: _lastDbWriteAtUtc.Value));
+    }
+
+    private DateTimeOffset? ResolveSnapshotDbWriteTime(
+        DashboardPersistedSessionSnapshot? persistedSession,
+        BrowserPersistenceResult browserPersistence)
+        => persistedSession is null && !browserPersistence.HasPersistedWebSession
+            ? null
+            : _lastDbWriteAtUtc;
+
     private static DashboardTrackingSnapshot ToSnapshot(
         FocusSession session,
         DashboardPersistedSessionSnapshot? persistedSession,
         DateTimeOffset lastPollAtUtc,
-        DateTimeOffset? lastDbWriteAtUtc)
+        DateTimeOffset? lastDbWriteAtUtc,
+        string? currentBrowserDomain = null,
+        bool hasPersistedWebSession = false)
         => new(
             AppName: session.PlatformAppKey,
             ProcessName: session.ProcessName ?? session.PlatformAppKey,
             WindowTitle: session.WindowTitle,
             CurrentSessionDuration: TimeSpan.FromMilliseconds(session.DurationMs),
             LastPersistedSession: persistedSession,
+            CurrentBrowserDomain: currentBrowserDomain,
             LastPollAtUtc: lastPollAtUtc,
-            LastDbWriteAtUtc: lastDbWriteAtUtc);
+            LastDbWriteAtUtc: lastDbWriteAtUtc,
+            HasPersistedWebSession: hasPersistedWebSession);
 
     private static string CreatePayload(FocusSession session)
     {
@@ -139,5 +261,39 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             ]);
 
         return JsonSerializer.Serialize(request, JsonOptions);
+    }
+
+    private string CreatePayload(WebSession session, string deviceId)
+    {
+        var request = new UploadWebSessionsRequest(
+            deviceId,
+            [
+                new WebSessionUploadItem(
+                    session.FocusSessionId,
+                    session.BrowserFamily,
+                    session.Url,
+                    session.Domain,
+                    session.PageTitle,
+                    session.StartedAtUtc,
+                    session.EndedAtUtc,
+                    session.DurationMs,
+                    session.CaptureMethod,
+                    session.CaptureConfidence,
+                    session.IsPrivateOrUnknown)
+            ]);
+
+        return JsonSerializer.Serialize(request, JsonOptions);
+    }
+
+    private static string CreateWebSessionAggregateId(WebSession session)
+        => string.Create(
+            CultureInfo.InvariantCulture,
+            $"{session.FocusSessionId}:{session.StartedAtUtc:yyyyMMddHHmmssfffffff}");
+
+    private sealed record BrowserPersistenceResult(
+        string? CurrentDomain,
+        bool HasPersistedWebSession)
+    {
+        public static BrowserPersistenceResult Empty { get; } = new(null, HasPersistedWebSession: false);
     }
 }

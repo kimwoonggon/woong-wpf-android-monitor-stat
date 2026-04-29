@@ -734,6 +734,19 @@ milestones below are finished.
 - [x] WPF web persistence refresh signal verification: `.NET` build passed.
 - [x] WPF web persistence refresh signal verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-150004`.
 - [x] WPF web persistence refresh signal verification: coverage report generated successfully with overall line coverage 92.0%.
+- [x] WPF browser persistence coordinator: RED coordinator test proved Chrome domain changes must persist completed WebSessions to SQLite, enqueue `web_session` outbox rows, and set `HasPersistedWebSession`.
+- [x] WPF browser persistence coordinator: `TrackingPoller` now carries foreground snapshots through `FocusSessionizerResult` so browser readers can inspect the current foreground safely.
+- [x] WPF browser persistence coordinator: coordinator sanitizes browser snapshots with DomainOnly storage by default and keeps full URL null unless future opt-in exists.
+- [x] WPF browser persistence coordinator: RED test caught a wrong web upload `deviceId`; fixed payloads to use the current FocusSession device id.
+- [x] WPF browser persistence UI path: Start button plus dispatcher tick from Chrome `github.com` to `chatgpt.com` persists a `github.com` WebSession and refreshes the Web Sessions grid before Stop.
+- [x] WPF browser persistence UI path: `SqliteDashboardDataSource` now reads web sessions by their own time range so completed web sessions are visible while the browser focus session is still open.
+- [x] WPF browser persistence verification: focused coordinator and MainWindow tests passed.
+- [x] WPF browser persistence verification: all Windows App tests passed (57 tests).
+- [x] WPF browser persistence verification: browser/storage related Windows tests passed (33 tests).
+- [x] WPF browser persistence verification: full `.NET` tests passed (214 tests).
+- [x] WPF browser persistence verification: `.NET` build passed.
+- [x] WPF browser persistence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-151739`.
+- [x] WPF browser persistence verification: coverage report generated successfully with overall line coverage 92.2%.
 - [x] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
 - [x] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
 - [x] SettingsPanel extraction verification: `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`, `SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`, `SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and `SettingsPanel_PreservesRuntimeAndStorageActions` passed.

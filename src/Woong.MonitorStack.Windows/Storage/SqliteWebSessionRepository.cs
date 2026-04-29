@@ -110,6 +110,40 @@ public sealed class SqliteWebSessionRepository
         return sessions;
     }
 
+    public IReadOnlyList<WebSession> QueryByRange(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
+    {
+        using var connection = OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT
+                focus_session_id,
+                browser_family,
+                url,
+                domain,
+                page_title,
+                started_at_utc,
+                ended_at_utc,
+                capture_method,
+                capture_confidence,
+                is_private_or_unknown
+            FROM web_session
+            WHERE started_at_utc < $endedAtUtc
+              AND ended_at_utc > $startedAtUtc
+            ORDER BY started_at_utc;
+            """;
+        _ = command.Parameters.AddWithValue("$startedAtUtc", FormatUtc(startedAtUtc));
+        _ = command.Parameters.AddWithValue("$endedAtUtc", FormatUtc(endedAtUtc));
+
+        using var reader = command.ExecuteReader();
+        var sessions = new List<WebSession>();
+        while (reader.Read())
+        {
+            sessions.Add(ReadSession(reader));
+        }
+
+        return sessions;
+    }
+
     private SqliteConnection OpenConnection()
     {
         var connection = new SqliteConnection(_connectionString);

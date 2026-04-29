@@ -214,6 +214,80 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void PollTick_WhenBrowserDomainChanges_PersistsWebSessionAndRefreshesWebRowsBeforeStop()
+        => RunOnStaThread(() =>
+        {
+            var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            var clock = new MutableClock(startedAtUtc);
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 200,
+                processId: 20,
+                processName: "chrome.exe",
+                executablePath: "C:\\Apps\\chrome.exe",
+                windowTitle: "GitHub - Chrome"));
+            var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                startedAtUtc,
+                "https://github.com/org/repo?secret=1",
+                "github.com",
+                "Repository"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                browserReader);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var window = new MainWindow(viewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+
+                clock.UtcNow = startedAtUtc.AddMinutes(5);
+                browserReader.Snapshot = CreateBrowserSnapshot(
+                    clock.UtcNow,
+                    "https://chatgpt.com/codex",
+                    "chatgpt.com",
+                    "ChatGPT");
+
+                WaitForDispatcherTimerTick();
+                window.UpdateLayout();
+
+                string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
+                WebSession saved = Assert.Single(webRepository.QueryByFocusSessionId(chromeFocusSessionId));
+                Assert.Equal("github.com", saved.Domain);
+                Assert.Null(saved.Url);
+                SyncOutboxItem outbox = Assert.Single(outboxRepository.QueryAll());
+                Assert.Equal("web_session", outbox.AggregateType);
+
+                Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Equal("chatgpt.com", FindByAutomationId<TextBlock>(window, "CurrentBrowserDomainText").Text);
+                Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "github.com");
+                Assert.Contains(
+                    FindByAutomationId<DataGrid>(window, "RecentWebSessionsList").ItemsSource.Cast<DashboardWebSessionRow>(),
+                    row => row.Domain == "github.com");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_WithFakeBrowserPipeline_ShowsGithubAndChatgptInWebSessions()
         => RunOnStaThread(() =>
         {
@@ -514,6 +588,14 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
     {
         public DateTimeOffset ReadLastInputAtUtc(DateTimeOffset nowUtc)
             => nowUtc;
+    }
+
+    private sealed class MutableBrowserActivityReader(BrowserActivitySnapshot? snapshot) : IBrowserActivityReader
+    {
+        public BrowserActivitySnapshot? Snapshot { get; set; } = snapshot;
+
+        public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
+            => Snapshot;
     }
 
     private sealed class EmptyDashboardDataSource : IDashboardDataSource

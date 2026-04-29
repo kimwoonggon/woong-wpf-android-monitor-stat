@@ -1,6 +1,8 @@
 using System.IO;
 using System.Text.Json;
+using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Dashboard;
+using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
 
@@ -103,6 +105,68 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         Assert.Null(startSnapshot.LastDbWriteAtUtc);
         Assert.Equal(clock.UtcNow, pollSnapshot.LastPollAtUtc);
         Assert.Equal(clock.UtcNow, pollSnapshot.LastDbWriteAtUtc);
+    }
+
+    [Fact]
+    public void PollOnce_WhenBrowserDomainChanges_PersistsCompletedWebSessionQueuesOutboxAndSignalsDashboardRefresh()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "GitHub - Chrome"));
+        var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+            capturedAtUtc: startedAtUtc,
+            domain: "github.com",
+            url: "https://github.com/org/repo?secret=1"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteWebSessionRepository webRepository = CreateWebSessionRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            webRepository,
+            outboxRepository,
+            clock,
+            browserReader);
+
+        coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(5);
+        browserReader.Snapshot = CreateBrowserSnapshot(
+            capturedAtUtc: clock.UtcNow,
+            domain: "chatgpt.com",
+            url: "https://chatgpt.com/codex");
+
+        var pollSnapshot = coordinator.PollOnce();
+
+        string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
+        var saved = Assert.Single(webRepository.QueryByFocusSessionId(chromeFocusSessionId));
+        Assert.Equal("github.com", saved.Domain);
+        Assert.Null(saved.Url);
+        Assert.Equal(300_000, saved.DurationMs);
+        Assert.True(pollSnapshot.HasPersistedWebSession);
+        Assert.Equal("chatgpt.com", pollSnapshot.CurrentBrowserDomain);
+        Assert.Equal(clock.UtcNow, pollSnapshot.LastDbWriteAtUtc);
+
+        SyncOutboxItem item = Assert.Single(outboxRepository.QueryAll());
+        Assert.Equal("web_session", item.AggregateType);
+        Assert.Equal(SyncOutboxStatus.Pending, item.Status);
+        var request = JsonSerializer.Deserialize<UploadWebSessionsRequest>(
+            item.PayloadJson,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.NotNull(request);
+        WebSessionUploadItem payload = Assert.Single(request.Sessions);
+        Assert.Equal("windows-device-1", request.DeviceId);
+        Assert.Equal("github.com", payload.Domain);
+        Assert.Null(payload.Url);
+        Assert.Equal(300_000, payload.DurationMs);
     }
 
     [Fact]
@@ -232,6 +296,32 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         return repository;
     }
 
+    private SqliteWebSessionRepository CreateWebSessionRepository()
+    {
+        var repository = new SqliteWebSessionRepository($"Data Source={_dbPath};Pooling=False");
+        repository.Initialize();
+
+        return repository;
+    }
+
+    private static BrowserActivitySnapshot CreateBrowserSnapshot(
+        DateTimeOffset capturedAtUtc,
+        string domain,
+        string url)
+        => new(
+            capturedAtUtc,
+            "Chrome",
+            "chrome.exe",
+            processId: 20,
+            windowHandle: 200,
+            windowTitle: null,
+            tabTitle: "Hidden by privacy setting",
+            url,
+            domain,
+            CaptureMethod.UIAutomationAddressBar,
+            CaptureConfidence.High,
+            isPrivateOrUnknown: false);
+
     private static string FormatClockDuration(TimeSpan duration)
         => $"{(int)duration.TotalHours:D2}:{duration.Minutes:D2}:{duration.Seconds:D2}";
 
@@ -252,5 +342,13 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
     {
         public DateTimeOffset ReadLastInputAtUtc(DateTimeOffset nowUtc)
             => nowUtc;
+    }
+
+    private sealed class MutableBrowserActivityReader(BrowserActivitySnapshot? snapshot) : IBrowserActivityReader
+    {
+        public BrowserActivitySnapshot? Snapshot { get; set; } = snapshot;
+
+        public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
+            => Snapshot;
     }
 }

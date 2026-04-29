@@ -161,6 +161,14 @@ classification, DomainOnly and FullUrl sanitizer behavior, nullable URL
 persistence, domain-only raw event ingestion, web-session outbox payloads, and
 idempotent server upload.
 
+`WindowsTrackingDashboardCoordinator` now has an optional browser reader path
+for the live WPF tracking loop. The path sanitizes browser snapshots with
+DomainOnly storage by default, so `web_session.url` and upload payload `url`
+remain null unless a future explicit opt-in enables full URL storage. A browser
+domain change while Chrome stays foreground persists the completed previous
+domain session, creates a pending `web_session` outbox row, and signals the
+dashboard to reload from SQLite.
+
 The Windows infrastructure can now generate the Chrome native messaging host
 manifest JSON through `NativeMessagingHostManifestGenerator`. The manifest
 declares the stable native host name, host executable path, `stdio` transport,

@@ -164,3 +164,12 @@ browser domain change persists only a `web_session` and no focus session closes,
 reload the SQLite-backed summary, app/web rows, charts, and live events. This
 keeps browser-domain totals current without waiting for Stop or a later app
 switch.
+
+The real WPF coordinator now supports an optional privacy-safe browser reader.
+When a browser snapshot is available, the coordinator sanitizes it with
+DomainOnly storage by default, feeds it through `BrowserWebSessionizer`, writes
+completed `web_session` rows to Windows local SQLite, and queues pending
+`web_session` outbox rows. The UI path is covered through a MainWindow
+Start/tick test: Chrome remains foreground, the domain changes from
+`github.com` to `chatgpt.com`, and the dashboard reloads `github.com` from
+SQLite before Stop is clicked.

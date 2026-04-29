@@ -21,9 +21,8 @@ public sealed class SqliteDashboardDataSource : IDashboardDataSource
         => _focusSessionRepository.QueryByRange(startedAtUtc, endedAtUtc);
 
     public IReadOnlyList<WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
-        => _focusSessionRepository
+        => _webSessionRepository
             .QueryByRange(startedAtUtc, endedAtUtc)
-            .SelectMany(session => _webSessionRepository.QueryByFocusSessionId(session.ClientSessionId))
             .OrderBy(session => session.StartedAtUtc)
             .ToList();
 }

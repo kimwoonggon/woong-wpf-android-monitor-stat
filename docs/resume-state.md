@@ -1792,3 +1792,45 @@ Next highest priority is proving real coordinator browser-domain persistence:
 add a RED `WindowsTrackingDashboardCoordinator` test that a domain change
 persists a linked `web_session`, creates a pending outbox item, and surfaces
 the refresh signal to the dashboard.
+
+## 2026-04-29 WPF Browser Persistence Coordinator Slice
+
+- Added RED coordinator test
+  `PollOnce_WhenBrowserDomainChanges_PersistsCompletedWebSessionQueuesOutboxAndSignalsDashboardRefresh`.
+- The test failed first because `WindowsTrackingDashboardCoordinator` had no
+  browser-reader/web-repository constructor path.
+- Added foreground snapshot propagation from `TrackingPoller` through
+  `FocusSessionizerResult`.
+- Added an optional browser reader path to `WindowsTrackingDashboardCoordinator`
+  that sanitizes snapshots with DomainOnly storage by default, persists
+  completed `web_session` rows to SQLite, enqueues `web_session` outbox rows,
+  and returns `HasPersistedWebSession`.
+- The test then caught an incorrect web upload `deviceId`; fixed the payload to
+  use the current FocusSession device id.
+- Added UI-surface test
+  `PollTick_WhenBrowserDomainChanges_PersistsWebSessionAndRefreshesWebRowsBeforeStop`.
+- That test exposed that `SqliteDashboardDataSource` only queried web sessions
+  through persisted focus sessions, hiding completed web sessions for an open
+  browser focus. Added `SqliteWebSessionRepository.QueryByRange` and made the
+  dashboard read web sessions by their own time range.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter PollOnce_WhenBrowserDomainChanges_PersistsCompletedWebSessionQueuesOutboxAndSignalsDashboardRefresh`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter PollTick_WhenBrowserDomainChanges_PersistsWebSessionAndRefreshesWebRowsBeforeStop`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~Browser|FullyQualifiedName~SqliteWebSession"`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-151739`.
+
+Coverage after this slice: overall line coverage 92.2%.
+
+Next highest priority is to decide the next WPF runtime acceptance gap from the
+subagent audit: RealStart evidence depth, semantic SQLite-backed UI acceptance,
+or a small refactor to extract the coordinator browser persistence helper
+without changing behavior.

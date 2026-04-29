@@ -400,3 +400,13 @@ with no skipped screenshots.
 
 Remaining UI acceptance gap: strict visual regression and CI execution remain
 future work. The semantic pipeline gate remains the primary automated evidence.
+
+The live browser persistence slice added a UI-surface regression check for the
+Start/tick path: with Chrome foreground, the fake browser reader changes from
+`github.com` to `chatgpt.com`, the completed `github.com` WebSession is written
+to SQLite, a pending `web_session` outbox row is created, and the Web Sessions
+grid refreshes before Stop. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-151739`
+
+Coverage after this slice is 92.2% overall.

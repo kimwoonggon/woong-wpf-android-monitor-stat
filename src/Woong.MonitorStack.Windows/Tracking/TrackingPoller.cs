@@ -25,6 +25,9 @@ public sealed class TrackingPoller
         var lastInputAtUtc = _lastInputReader.ReadLastInputAtUtc(snapshot.TimestampUtc);
         var isIdle = _idleDetector.IsIdle(snapshot.TimestampUtc, lastInputAtUtc);
 
-        return _sessionizer.Process(snapshot, isIdle);
+        return _sessionizer.Process(snapshot, isIdle) with
+        {
+            ForegroundWindow = snapshot
+        };
     }
 }
