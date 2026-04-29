@@ -654,7 +654,14 @@ milestones below are finished.
 - [x] Runtime poll-tick gap verification: `.NET` build passed.
 - [x] Runtime poll-tick gap verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-105310`.
 - [x] Runtime poll-tick gap verification: coverage report generated successfully with `scripts/test-coverage.ps1`.
-- [ ] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
+- [x] Add `Views/CurrentFocusPanel.xaml` while preserving current focus automation IDs.
+- [x] CurrentFocusPanel extraction verification: focused `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings` passed.
+- [x] CurrentFocusPanel extraction verification: `CurrentActivityPanel` and all child AutomationIds were preserved.
+- [x] CurrentFocusPanel extraction verification: all Windows App tests passed (30 tests).
+- [x] CurrentFocusPanel extraction verification: full `.NET` tests passed.
+- [x] CurrentFocusPanel extraction verification: `.NET` build passed.
+- [x] CurrentFocusPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-110649`.
+- [x] CurrentFocusPanel extraction verification: coverage report generated successfully with overall line coverage 92.4%.
 - [ ] Add `Views/SummaryCardsPanel.xaml` and reusable `Controls/MetricCard.xaml`.
 - [ ] Add `Views/ChartsPanel.xaml` and reusable `Controls/EmptyState.xaml`.
 - [ ] Add app/domain chart `상세보기` actions that select App Sessions and Web Sessions tabs.

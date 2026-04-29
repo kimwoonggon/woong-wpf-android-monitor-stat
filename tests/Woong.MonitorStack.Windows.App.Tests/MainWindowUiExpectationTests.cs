@@ -161,6 +161,45 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                CurrentFocusPanel panel = FindByAutomationId<CurrentFocusPanel>(window, "CurrentActivityPanel");
+                IReadOnlySet<string> panelText = CollectText(panel);
+
+                Assert.Contains("Current Focus", panelText);
+                Assert.Equal("Stopped", FindByAutomationId<TextBlock>(panel, "TrackingStatusText").Text);
+                Assert.Equal("No current app", FindByAutomationId<TextBlock>(panel, "CurrentAppNameText").Text);
+                Assert.Equal("No process", FindByAutomationId<TextBlock>(panel, "CurrentProcessNameText").Text);
+                Assert.Equal(
+                    "Window title hidden by privacy settings",
+                    FindByAutomationId<TextBlock>(panel, "CurrentWindowTitleText").Text);
+                Assert.Equal(
+                    "Browser metadata unavailable",
+                    FindByAutomationId<TextBlock>(panel, "CurrentBrowserDomainText").Text);
+                Assert.Equal("00:00:00", FindByAutomationId<TextBlock>(panel, "CurrentSessionDurationText").Text);
+                Assert.Equal("No session persisted", FindByAutomationId<TextBlock>(panel, "LastPersistedSessionText").Text);
+                Assert.Equal("No poll yet", FindByAutomationId<TextBlock>(panel, "LastPollTimeText").Text);
+                Assert.Equal("No DB write yet", FindByAutomationId<TextBlock>(panel, "LastDbWriteTimeText").Text);
+                Assert.Equal(
+                    "Sync is off. Data stays on this Windows device.",
+                    FindByAutomationId<TextBlock>(panel, "LastSyncStatusText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_TrackingButtonsUpdateVisibleStatus()
         => RunOnStaThread(() =>
         {

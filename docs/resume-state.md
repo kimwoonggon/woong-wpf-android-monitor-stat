@@ -4,12 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 runtime poll-tick persistence quality gap slice.
-`MainWindowTrackingPipelineTests.PollTick_WhenForegroundChanges_PersistsClosedSessionAndRefreshesDashboardBeforeStop`
-proves Start -> DispatcherTimer poll foreground change -> closed Code.exe
-session persisted to SQLite -> focus_session outbox queued -> dashboard
-summary/recent rows refreshed while TrackingStatus remains Running, before
-Stop. No production code changes were needed.
+Milestone 31 CurrentFocusPanel extraction slice.
+`DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings` proves
+`DashboardView` hosts `Views/CurrentFocusPanel.xaml` while preserving
+`CurrentActivityPanel`, all child AutomationIds, and current focus bindings.
+Verification passed: focused CurrentFocusPanel test, all Windows App tests (30),
+full `dotnet test`, full `dotnet build`, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-110649`, and coverage generation with
+overall line coverage 92.4%.
 
 ## Completed
 
@@ -951,8 +953,9 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with `CurrentFocusPanel` extraction while preserving
-existing automation IDs, bindings, behavior tests, and semantic WPF acceptance.
+Continue Milestone 31 with `SummaryCardsPanel` and reusable
+`Controls/MetricCard.xaml` extraction while preserving summary card
+AutomationIds, bindings, behavior tests, and semantic WPF acceptance.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1012,9 +1015,10 @@ reusable controls (`StatusBadge`, `MetricCard`, `SectionCard`, `DetailRow`,
 `EmptyState`) and style dictionaries. This guidance is saved in
 `docs/wpf-ui-plan.md` and tracked as Milestone 31 in `total_todolist.md`.
 
-The `DashboardView`, `HeaderStatusBar`, and `ControlBar` extractions are now
-complete, and the runtime poll-tick persistence quality gap is covered. The
-next componentization slice is `CurrentFocusPanel` extraction.
+The `DashboardView`, `HeaderStatusBar`, `ControlBar`, and `CurrentFocusPanel`
+extractions are now complete, and the runtime poll-tick persistence quality gap
+is covered. The next componentization slice is `SummaryCardsPanel` plus
+reusable `MetricCard` extraction.
 
 ## 2026-04-29 WPF DashboardView Extraction Slice
 
@@ -1044,7 +1048,7 @@ Verified:
   completed successfully and generated the coverage report.
 
 Remaining Milestone 31 componentization work stays open, including
-`CurrentFocusPanel`, `SummaryCardsPanel`,
+`SummaryCardsPanel`,
 `ChartsPanel`, `DetailsTabsPanel`, `SettingsPanel`, reusable controls, style
 dictionaries, chart details commands, final componentization verification, and
 commit/push.
@@ -1133,5 +1137,29 @@ Verified:
 - WPF acceptance passed at `artifacts/wpf-ui-acceptance/20260429-105310`.
 - `scripts/test-coverage.ps1` generated the coverage report.
 
-Next highest priority is `CurrentFocusPanel` extraction while preserving
-existing automation IDs, bindings, behavior tests, and semantic WPF acceptance.
+## 2026-04-29 WPF CurrentFocusPanel Extraction Slice
+
+- Added the RED componentization test
+  `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings`.
+- Extracted the current focus markup from `Views/DashboardView.xaml` into
+  `Views/CurrentFocusPanel.xaml`.
+- Added `Views/CurrentFocusPanel.xaml.cs`.
+- Kept `DashboardView` hosting `<views:CurrentFocusPanel>`.
+- Preserved `CurrentActivityPanel` and all child AutomationIds.
+
+Verified:
+
+- Focused
+  `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings`
+  passed.
+- All Windows App tests passed (30 tests).
+- Full `dotnet test` passed.
+- Full `dotnet build` passed.
+- WPF acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-110649`.
+- `scripts/test-coverage.ps1` generated the coverage report with overall line
+  coverage 92.4%.
+
+Next highest priority is `SummaryCardsPanel` plus reusable `MetricCard`
+extraction while preserving summary card AutomationIds, bindings, behavior
+tests, and semantic WPF acceptance.
