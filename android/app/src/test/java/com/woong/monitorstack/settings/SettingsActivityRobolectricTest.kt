@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
@@ -43,6 +45,66 @@ class SettingsActivityRobolectricTest {
             binding.notificationPermissionGuidanceText.text.toString()
         )
         assertEquals("Allow notifications", binding.requestNotificationPermissionButton.text.toString())
+        assertEquals(
+            "Location context is off by default.",
+            binding.locationContextDefaultText.text.toString()
+        )
+        assertEquals(
+            "Latitude/longitude are not stored unless location context is enabled.",
+            binding.locationCoordinateBoundaryText.text.toString()
+        )
+        assertEquals(
+            "Precise latitude/longitude requires a separate explicit opt-in.",
+            binding.preciseLocationOptInText.text.toString()
+        )
+    }
+
+    @Test
+    fun settingsActivityLocationControlsDefaultToSafeOptInState() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidLocationSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java)
+            .setup()
+            .get()
+
+        val locationContext = activity.findViewById<CheckBox>(R.id.locationContextCheckBox)
+        val preciseLatitudeLongitude = activity.findViewById<CheckBox>(
+            R.id.preciseLatitudeLongitudeCheckBox
+        )
+
+        assertEquals("Store optional location context", locationContext.text.toString())
+        assertEquals("Store precise latitude/longitude", preciseLatitudeLongitude.text.toString())
+        assertEquals(false, locationContext.isChecked)
+        assertEquals(false, preciseLatitudeLongitude.isChecked)
+        assertEquals(false, preciseLatitudeLongitude.isEnabled)
+    }
+
+    @Test
+    fun locationPermissionRequestStaysDisabledUntilLocationContextOptIn() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidLocationSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java)
+            .setup()
+            .get()
+
+        val locationContext = activity.findViewById<CheckBox>(R.id.locationContextCheckBox)
+        val requestLocationPermission = activity.findViewById<Button>(
+            R.id.requestLocationPermissionButton
+        )
+
+        assertEquals("Allow location permission", requestLocationPermission.text.toString())
+        assertEquals(false, requestLocationPermission.isEnabled)
+
+        locationContext.performClick()
+
+        assertEquals(true, requestLocationPermission.isEnabled)
     }
 
     @Test

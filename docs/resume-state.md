@@ -2801,6 +2801,68 @@ Verified so far:
 Coverage after this slice: overall line coverage 91.3%; Server line coverage
 96.7%.
 
+## 2026-04-29 Android Optional Location Settings Slice
+
+- Added optional Android location context settings with safe defaults:
+  location capture is off, approximate mode is preferred, and precise
+  latitude/longitude requires a separate explicit opt-in.
+- Added foreground-only manifest guardrails for optional location context:
+  `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` are allowed, while
+  `ACCESS_BACKGROUND_LOCATION` remains forbidden.
+- Updated Settings UI with location guidance, opt-in checkboxes, and a location
+  permission button that remains disabled until the user enables location
+  context.
+- Added a location permission policy/controller so approximate mode requests
+  coarse location only, and precise latitude/longitude requests fine location
+  only after separate opt-in.
+- This slice does not collect location samples, write Room location rows, upload
+  coordinates, or infer location from other app content.
+
+Focused validation completed so far:
+
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettingsTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.settings.SettingsActivityRobolectricTest" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.privacy.AndroidManifestPrivacyTest.manifestUsesForegroundLocationPermissionsOnlyForOptionalLocationContext" --no-daemon --stacktrace`
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.settings.LocationPermissionPolicyTest" --tests "com.woong.monitorstack.settings.SettingsActivityRobolectricTest.locationPermissionRequestStaysDisabledUntilLocationContextOptIn" --no-daemon --stacktrace`
+
+Full validation after integrating the Android location settings slice and WPF
+component/style guard slice:
+
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`
+  from `android/`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260430-001723`.
+
+Coverage after this slice: overall line coverage 91.3%; branch coverage 70.2%.
+
+## 2026-04-29 WPF Component Guard And Acceptance Clock Slice
+
+- Added architecture guardrails so WPF XAML color literals are centralized in
+  `Styles/Colors.xaml`; `Tabs.xaml` now uses the shared `TransparentBrush`.
+- Added a dashboard composition guard proving `DashboardView` owns the direct
+  dashboard sections rather than hiding chart/details sections behind an extra
+  generic container.
+- Added product UI goal checks for Control Bar action/period grouping, summary
+  metric card icon/accent slots, and separate chart card surfaces.
+- Added a UI automation stability guard proving the direct dashboard sections
+  expose stable AutomationIds for Header, Control Bar, Current Focus, Summary,
+  Charts, and Details tabs.
+- Fixed a TrackingPipeline acceptance flake where running local WPF acceptance
+  immediately after midnight caused the Today filter to exclude the fake
+  `Code.exe` session. The fake acceptance clock now starts at local noon.
+- The runtime/product behavior is unchanged; this slice hardens local
+  acceptance and WPF composition boundaries.
+
+Validated with the full commands listed above. The first WPF acceptance rerun
+failed at `artifacts/wpf-ui-acceptance/20260430-001351` because the fake
+TrackingPipeline crossed the local midnight boundary; the local-noon clock fix
+made the rerun pass at `artifacts/wpf-ui-acceptance/20260430-001723`.
+
 ## 2026-04-29 Android UI Snapshot Connected-Branch Slice
 
 - Added a fake-adb architecture test proving that

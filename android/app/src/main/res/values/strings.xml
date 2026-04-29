@@ -23,6 +23,12 @@
     <string name="sync_opt_in_default">Sync is opt-in and off by default.</string>
     <string name="notification_permission_guidance">Morning summary notifications require notification permission on Android 13+.</string>
     <string name="request_notification_permission">Allow notifications</string>
+    <string name="location_context_default">Location context is off by default.</string>
+    <string name="location_coordinate_boundary">Latitude/longitude are not stored unless location context is enabled.</string>
+    <string name="precise_location_opt_in">Precise latitude/longitude requires a separate explicit opt-in.</string>
+    <string name="store_optional_location_context">Store optional location context</string>
+    <string name="store_precise_latitude_longitude">Store precise latitude/longitude</string>
+    <string name="request_location_permission">Allow location permission</string>
     <string name="empty_sessions">No sessions yet</string>
     <string name="zero_duration">0m</string>
     <string name="no_top_app">No app</string>

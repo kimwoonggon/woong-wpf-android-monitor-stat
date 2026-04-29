@@ -42,7 +42,7 @@ public sealed class MainWindowUiExpectationTests
                 Assert.DoesNotContain("chrome.exe", headerText);
 
                 Button refreshButton = FindByAutomationId<Button>(window, "RefreshButton");
-                Assert.Equal("Refresh", refreshButton.Content);
+                Assert.Equal("↻ Refresh", refreshButton.Content);
                 Assert.Same(dashboard.ViewModel.RefreshDashboardCommand, refreshButton.Command);
 
                 AssertPeriodButton(window, "TodayPeriodButton", "Today", DashboardPeriod.Today, dashboard.ViewModel);
@@ -54,9 +54,9 @@ public sealed class MainWindowUiExpectationTests
                 Button stopTracking = FindByAutomationId<Button>(window, "StopTrackingButton");
                 Button syncNow = FindByAutomationId<Button>(window, "SyncNowButton");
                 Button customPeriod = FindByAutomationId<Button>(window, "CustomPeriodButton");
-                Assert.Equal("Start Tracking", startTracking.Content);
-                Assert.Equal("Stop Tracking", stopTracking.Content);
-                Assert.Equal("Sync Now", syncNow.Content);
+                Assert.Equal("▶ Start Tracking", startTracking.Content);
+                Assert.Equal("■ Stop Tracking", stopTracking.Content);
+                Assert.Equal("⇅ Sync Now", syncNow.Content);
                 Assert.Equal("Custom", customPeriod.Content);
                 AssertReadableButton(startTracking);
                 AssertReadableButton(stopTracking);
@@ -445,10 +445,10 @@ public sealed class MainWindowUiExpectationTests
                 Button refreshButton = FindByAutomationId<Button>(controlBar, "RefreshButton");
                 Button syncNow = FindByAutomationId<Button>(controlBar, "SyncNowButton");
 
-                Assert.Equal("Start Tracking", startTracking.Content);
-                Assert.Equal("Stop Tracking", stopTracking.Content);
-                Assert.Equal("Refresh", refreshButton.Content);
-                Assert.Equal("Sync Now", syncNow.Content);
+                Assert.Equal("▶ Start Tracking", startTracking.Content);
+                Assert.Equal("■ Stop Tracking", stopTracking.Content);
+                Assert.Equal("↻ Refresh", refreshButton.Content);
+                Assert.Equal("⇅ Sync Now", syncNow.Content);
                 Assert.Same(dashboard.ViewModel.StartTrackingCommand, startTracking.Command);
                 Assert.Same(dashboard.ViewModel.StopTrackingCommand, stopTracking.Command);
                 Assert.Same(dashboard.ViewModel.RefreshDashboardCommand, refreshButton.Command);
@@ -462,6 +462,41 @@ public sealed class MainWindowUiExpectationTests
                 AssertReadableButton(stopTracking);
                 AssertReadableButton(refreshButton);
                 AssertReadableButton(syncNow);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void ControlBar_RendersGoalActionAndPeriodGroups()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                ControlBar controlBar = FindByAutomationId<ControlBar>(window, "PeriodSelector");
+                FrameworkElement actionGroup = FindByAutomationId<FrameworkElement>(controlBar, "TrackingActionGroup");
+                FrameworkElement periodGroup = FindByAutomationId<FrameworkElement>(controlBar, "PeriodFilterGroup");
+
+                IReadOnlySet<string> actionText = CollectText(actionGroup);
+                Assert.Contains("▶ Start Tracking", actionText);
+                Assert.Contains("■ Stop Tracking", actionText);
+                Assert.Contains("↻ Refresh", actionText);
+                Assert.Contains("⇅ Sync Now", actionText);
+
+                IReadOnlySet<string> periodText = CollectText(periodGroup);
+                Assert.Contains("Today", periodText);
+                Assert.Contains("1h", periodText);
+                Assert.Contains("6h", periodText);
+                Assert.Contains("24h", periodText);
+                Assert.Contains("Custom", periodText);
             }
             finally
             {
@@ -603,6 +638,41 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void MetricCard_RendersGoalIconAccentSlot()
+        => RunOnStaThread(() =>
+        {
+            var accentBrush = new SolidColorBrush(Color.FromRgb(0x0F, 0x6B, 0xDE));
+            var iconBackgroundBrush = new SolidColorBrush(Color.FromRgb(0xEA, 0xF3, 0xFF));
+            var card = new MetricCard
+            {
+                Label = "Active Focus",
+                Value = "3h 12m",
+                Subtitle = "Today's focused foreground time",
+                IconText = "◎",
+                AccentBrush = accentBrush,
+                IconBackground = iconBackgroundBrush
+            };
+            var window = new Window { Content = card };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Border iconCircle = FindByAutomationId<Border>(card, "MetricCardIconCircle");
+                TextBlock icon = FindByAutomationId<TextBlock>(card, "MetricCardIconText");
+
+                Assert.Same(iconBackgroundBrush, iconCircle.Background);
+                Assert.Same(accentBrush, icon.Foreground);
+                Assert.Equal("◎", icon.Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MetricCard_UsesSharedLabelTypography()
         => RunOnStaThread(() =>
         {
@@ -656,6 +726,30 @@ public sealed class MainWindowUiExpectationTests
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "HourlyActivityEmptyStateText"));
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "AppUsageEmptyStateText"));
                 Assert.NotNull(FindByAutomationId<TextBlock>(panel, "DomainUsageEmptyStateText"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void DashboardView_ChartsPanelUsesSeparateGoalCardSurfaces()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                ChartsPanel panel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
+
+                Assert.NotNull(FindByAutomationId<SectionCard>(panel, "HourlyChartCard"));
+                Assert.NotNull(FindByAutomationId<SectionCard>(panel, "AppUsageChartCard"));
+                Assert.NotNull(FindByAutomationId<SectionCard>(panel, "DomainUsageChartCard"));
             }
             finally
             {

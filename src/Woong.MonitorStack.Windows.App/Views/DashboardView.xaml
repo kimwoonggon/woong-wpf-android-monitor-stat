@@ -17,23 +17,31 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <views:HeaderStatusBar Grid.Row="0"
+                                   AutomationProperties.AutomationId="HeaderArea"
                                    Margin="0,0,0,12" />
 
             <views:ControlBar Grid.Row="1"
+                              AutomationProperties.AutomationId="PeriodSelector"
                               Margin="0,0,0,16" />
 
             <views:CurrentFocusPanel Grid.Row="2"
+                                     AutomationProperties.AutomationId="CurrentActivityPanel"
                                      Margin="0,0,0,16" />
 
-            <views:SummaryCardsPanel Grid.Row="3" />
+            <views:SummaryCardsPanel Grid.Row="3"
+                                     AutomationProperties.AutomationId="SummaryCardsContainer" />
 
-            <StackPanel Grid.Row="4">
-                <views:ChartsPanel />
-                <views:DetailsTabsPanel />
-            </StackPanel>
+            <views:ChartsPanel Grid.Row="4"
+                               AutomationProperties.AutomationId="ChartArea"
+                               Margin="0,16,0,0" />
+
+            <views:DetailsTabsPanel Grid.Row="5"
+                                    AutomationProperties.AutomationId="DetailsTabsPanel"
+                                    Margin="0,16,0,24" />
         </Grid>
     </ScrollViewer>
 </UserControl>

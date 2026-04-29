@@ -22,50 +22,73 @@
             <TextBlock Text="Current Focus"
                        Style="{StaticResource SectionTitleTextStyle}"
                        Margin="0,0,0,14" />
-            <UniformGrid Columns="3">
-                <controls:DetailRow Label="Tracking status"
-                                    Value="{Binding TrackingStatusText}"
-                                    ValueAutomationId="TrackingStatusText" />
-                <controls:DetailRow Label="Current app"
-                                    Value="{Binding CurrentAppNameText}"
-                                    ValueAutomationId="CurrentAppNameText" />
-                <controls:DetailRow Label="Current process"
-                                    Value="{Binding CurrentProcessNameText}"
-                                    ValueAutomationId="CurrentProcessNameText"
-                                    RowMargin="0,0,0,12" />
-                <controls:DetailRow Label="Current window title"
-                                    Value="{Binding CurrentWindowTitleText}"
-                                    ValueAutomationId="CurrentWindowTitleText"
-                                    ValueFontSize="14"
-                                    ValueFontWeight="Normal"
-                                    ValueTextWrapping="Wrap"
-                                    ValueTextTrimming="None" />
-                <controls:DetailRow Label="Current browser domain"
-                                    Value="{Binding CurrentBrowserDomainText}"
-                                    ValueAutomationId="CurrentBrowserDomainText"
-                                    ValueFontSize="14" />
-                <controls:DetailRow Label="Browser capture"
-                                    Value="{Binding BrowserCaptureStatusText}"
-                                    ValueAutomationId="BrowserCaptureStatusText"
-                                    RowMargin="0,0,0,12" />
-                <controls:DetailRow Label="Current session duration"
-                                    Value="{Binding CurrentSessionDurationText}"
-                                    ValueAutomationId="CurrentSessionDurationText" />
-                <controls:DetailRow Label="Last persisted session"
-                                    Value="{Binding LastPersistedSessionText}"
-                                    ValueAutomationId="LastPersistedSessionText"
-                                    RowMargin="0,0,18,0"
-                                    ValueFontSize="14"
-                                    ValueFontWeight="Normal"
-                                    ValueTextWrapping="Wrap"
-                                    ValueTextTrimming="None" />
-                <controls:DetailRow Label="Last poll time"
-                                    Value="{Binding LastPollTimeText}"
-                                    ValueAutomationId="LastPollTimeText"
-                                    RowMargin="0,0,18,0"
-                                    ValueFontSize="14"
-                                    ValueFontWeight="Normal" />
-                <StackPanel>
+            <Grid AutomationProperties.AutomationId="CurrentFocusMetricsGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel AutomationProperties.AutomationId="CurrentFocusIdentityColumn"
+                            Margin="0,0,28,0">
+                    <controls:DetailRow Label="Tracking state"
+                                        Value="{Binding TrackingStatusText}"
+                                        ValueAutomationId="TrackingStatusText" />
+                    <controls:DetailRow Label="Current app"
+                                        Value="{Binding CurrentAppNameText}"
+                                        ValueAutomationId="CurrentAppNameText" />
+                    <controls:DetailRow Label="Current process"
+                                        Value="{Binding CurrentProcessNameText}"
+                                        ValueAutomationId="CurrentProcessNameText" />
+                    <controls:DetailRow Label="Current window title"
+                                        Value="{Binding CurrentWindowTitleText}"
+                                        ValueAutomationId="CurrentWindowTitleText"
+                                        RowMargin="0,0,0,0"
+                                        ValueFontSize="14"
+                                        ValueFontWeight="Normal"
+                                        ValueTextWrapping="Wrap"
+                                        ValueTextTrimming="None" />
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Background="{StaticResource BorderBrush}" />
+
+                <StackPanel Grid.Column="2"
+                            AutomationProperties.AutomationId="CurrentFocusSessionColumn"
+                            Margin="28,0">
+                    <controls:DetailRow Label="Current browser domain"
+                                        Value="{Binding CurrentBrowserDomainText}"
+                                        ValueAutomationId="CurrentBrowserDomainText"
+                                        ValueFontSize="14" />
+                    <controls:DetailRow Label="Current session duration"
+                                        Value="{Binding CurrentSessionDurationText}"
+                                        ValueAutomationId="CurrentSessionDurationText" />
+                    <controls:DetailRow Label="Last persisted session"
+                                        Value="{Binding LastPersistedSessionText}"
+                                        ValueAutomationId="LastPersistedSessionText"
+                                        RowMargin="0,0,0,0"
+                                        ValueFontSize="14"
+                                        ValueFontWeight="Normal"
+                                        ValueTextWrapping="Wrap"
+                                        ValueTextTrimming="None" />
+                </StackPanel>
+
+                <Border Grid.Column="3"
+                        Background="{StaticResource BorderBrush}" />
+
+                <StackPanel Grid.Column="4"
+                            AutomationProperties.AutomationId="CurrentFocusPersistenceColumn"
+                            Margin="28,0,0,0">
+                    <controls:DetailRow Label="Last poll time"
+                                        Value="{Binding LastPollTimeText}"
+                                        ValueAutomationId="LastPollTimeText"
+                                        ValueFontSize="14"
+                                        ValueFontWeight="Normal" />
+                    <controls:DetailRow Label="Browser capture"
+                                        Value="{Binding BrowserCaptureStatusText}"
+                                        ValueAutomationId="BrowserCaptureStatusText" />
                     <TextBlock Text="Last DB write / Sync state"
                                Style="{StaticResource MutedTextStyle}" />
                     <TextBlock AutomationProperties.AutomationId="LastDbWriteTimeText"
@@ -77,7 +100,7 @@
                                TextWrapping="Wrap"
                                Margin="0,4,0,0" />
                 </StackPanel>
-            </UniformGrid>
+            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

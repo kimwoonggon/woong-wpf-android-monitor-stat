@@ -25,7 +25,35 @@ class SettingsActivity : AppCompatActivity() {
         binding.requestNotificationPermissionButton.setOnClickListener {
             notificationPermissionController.requestIfNeeded()
         }
+        renderLocationSettings(binding, SharedPreferencesAndroidLocationSettings(this))
         renderSyncStatus(binding)
+    }
+
+    private fun renderLocationSettings(
+        binding: ActivitySettingsBinding,
+        settings: SharedPreferencesAndroidLocationSettings
+    ) {
+        binding.locationContextCheckBox.isChecked = settings.isLocationCaptureEnabled()
+        binding.preciseLatitudeLongitudeCheckBox.isChecked =
+            settings.isPreciseLatitudeLongitudeEnabled()
+        binding.preciseLatitudeLongitudeCheckBox.isEnabled = settings.isLocationCaptureEnabled()
+        binding.requestLocationPermissionButton.isEnabled = settings.isLocationCaptureEnabled()
+        val locationPermissionController = LocationPermissionController(this)
+        binding.requestLocationPermissionButton.setOnClickListener {
+            locationPermissionController.requestIfNeeded(settings)
+        }
+
+        binding.locationContextCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            settings.setLocationCaptureEnabled(isChecked)
+            binding.preciseLatitudeLongitudeCheckBox.isEnabled = isChecked
+            binding.requestLocationPermissionButton.isEnabled = isChecked
+            if (!isChecked) {
+                binding.preciseLatitudeLongitudeCheckBox.isChecked = false
+            }
+        }
+        binding.preciseLatitudeLongitudeCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            settings.setPreciseLatitudeLongitudeEnabled(isChecked)
+        }
     }
 
     private fun renderSyncStatus(binding: ActivitySettingsBinding) {

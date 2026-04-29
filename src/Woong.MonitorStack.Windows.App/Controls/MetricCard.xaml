@@ -12,16 +12,40 @@
     </UserControl.Resources>
     <Border Margin="0,0,8,12"
             Style="{StaticResource DashboardCardBorderStyle}">
-        <StackPanel>
-            <TextBlock Text="{Binding Label, ElementName=Root}"
-                       Style="{StaticResource MetricLabelTextStyle}" />
-            <TextBlock Text="{Binding Value, ElementName=Root}"
-                       Style="{StaticResource MetricValueTextStyle}"
-                       Margin="0,8,0,0" />
-            <TextBlock Text="{Binding Subtitle, ElementName=Root}"
-                       Style="{StaticResource MutedTextStyle}"
-                       TextWrapping="Wrap"
-                       Margin="0,6,0,0" />
-        </StackPanel>
+        <Grid MinHeight="70">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border AutomationProperties.AutomationId="MetricCardIconCircle"
+                    Width="52"
+                    Height="52"
+                    CornerRadius="26"
+                    VerticalAlignment="Center"
+                    Background="{Binding IconBackground, ElementName=Root}"
+                    Margin="0,0,14,0">
+                <TextBlock AutomationProperties.AutomationId="MetricCardIconText"
+                           Text="{Binding IconText, ElementName=Root}"
+                           Foreground="{Binding AccentBrush, ElementName=Root}"
+                           FontSize="24"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <StackPanel Grid.Column="1"
+                        VerticalAlignment="Center">
+                <TextBlock Text="{Binding Label, ElementName=Root}"
+                           Style="{StaticResource MetricLabelTextStyle}" />
+                <TextBlock Text="{Binding Value, ElementName=Root}"
+                           Style="{StaticResource MetricValueTextStyle}"
+                           Margin="0,4,0,0" />
+                <TextBlock Text="{Binding Subtitle, ElementName=Root}"
+                           Style="{StaticResource MutedTextStyle}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

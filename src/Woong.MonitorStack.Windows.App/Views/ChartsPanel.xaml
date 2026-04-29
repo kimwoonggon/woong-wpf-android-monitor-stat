@@ -17,81 +17,103 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <controls:SectionCard>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="230" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-            <TextBlock Text="시간대별 Active Focus"
-                       Style="{StaticResource SectionTitleTextStyle}" />
-            <Grid Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="앱별 집중 시간"
-                           Style="{StaticResource SectionTitleTextStyle}"
-                           VerticalAlignment="Center" />
-                <Button Grid.Column="1"
-                        AutomationProperties.AutomationId="AppChartDetailsButton"
-                        Content="상세보기"
-                        Command="{Binding ShowAppFocusDetailsCommand}"
-                        Margin="8,0,18,0"
-                        Style="{StaticResource CompactActionButtonStyle}" />
-            </Grid>
-            <Grid Grid.Column="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="도메인별 집중 시간"
-                           Style="{StaticResource SectionTitleTextStyle}"
-                           VerticalAlignment="Center" />
-                <Button Grid.Column="1"
-                        AutomationProperties.AutomationId="DomainChartDetailsButton"
-                        Content="상세보기"
-                        Command="{Binding ShowDomainFocusDetailsCommand}"
-                        Style="{StaticResource CompactActionButtonStyle}" />
-            </Grid>
+        <controls:SectionCard AutomationProperties.AutomationId="HourlyChartCard"
+                              CardMargin="0,0,8,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="230" />
+                </Grid.RowDefinitions>
 
-            <lvc:CartesianChart Grid.Row="1"
-                                AutomationProperties.AutomationId="HourlyActivityChart"
-                                Margin="0,12,18,0"
-                                Series="{Binding HourlyActivityChart.Series}"
-                                XAxes="{Binding HourlyActivityChart.XAxes}"
-                                YAxes="{Binding HourlyActivityChart.YAxes}" />
-            <controls:EmptyState Grid.Row="1"
-                                 Text="{Binding HourlyActivityChart.EmptyStateText}"
-                                 TextAutomationId="HourlyActivityEmptyStateText" />
-            <lvc:CartesianChart Grid.Row="1"
-                                Grid.Column="1"
-                                AutomationProperties.AutomationId="AppUsageChart"
-                                Margin="0,12,18,0"
-                                Series="{Binding AppUsageChart.Series}"
-                                XAxes="{Binding AppUsageChart.XAxes}"
-                                YAxes="{Binding AppUsageChart.YAxes}" />
-            <controls:EmptyState Grid.Row="1"
-                                 Grid.Column="1"
-                                 Text="{Binding AppUsageChart.EmptyStateText}"
-                                 TextAutomationId="AppUsageEmptyStateText" />
-            <lvc:CartesianChart Grid.Row="1"
-                                Grid.Column="2"
-                                AutomationProperties.AutomationId="DomainUsageChart"
-                                Margin="0,12,0,0"
-                                Series="{Binding DomainUsageChart.Series}"
-                                XAxes="{Binding DomainUsageChart.XAxes}"
-                                YAxes="{Binding DomainUsageChart.YAxes}" />
-            <controls:EmptyState Grid.Row="1"
-                                 Grid.Column="2"
-                                 Text="{Binding DomainUsageChart.EmptyStateText}"
-                                 TextAutomationId="DomainUsageEmptyStateText" />
-        </Grid>
-    </controls:SectionCard>
+                <TextBlock Text="시간대별 Active Focus"
+                           Style="{StaticResource SectionTitleTextStyle}" />
+                <lvc:CartesianChart Grid.Row="1"
+                                    AutomationProperties.AutomationId="HourlyActivityChart"
+                                    Margin="0,12,0,0"
+                                    Series="{Binding HourlyActivityChart.Series}"
+                                    XAxes="{Binding HourlyActivityChart.XAxes}"
+                                    YAxes="{Binding HourlyActivityChart.YAxes}" />
+                <controls:EmptyState Grid.Row="1"
+                                     Text="{Binding HourlyActivityChart.EmptyStateText}"
+                                     TextAutomationId="HourlyActivityEmptyStateText" />
+            </Grid>
+        </controls:SectionCard>
+
+        <controls:SectionCard Grid.Column="1"
+                              AutomationProperties.AutomationId="AppUsageChartCard"
+                              CardMargin="8,0,8,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="230" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="앱별 집중 시간"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1"
+                            AutomationProperties.AutomationId="AppChartDetailsButton"
+                            Content="상세보기"
+                            Command="{Binding ShowAppFocusDetailsCommand}"
+                            Margin="8,0,0,0"
+                            Style="{StaticResource CompactActionButtonStyle}" />
+                </Grid>
+                <lvc:CartesianChart Grid.Row="1"
+                                    AutomationProperties.AutomationId="AppUsageChart"
+                                    Margin="0,12,0,0"
+                                    Series="{Binding AppUsageChart.Series}"
+                                    XAxes="{Binding AppUsageChart.XAxes}"
+                                    YAxes="{Binding AppUsageChart.YAxes}" />
+                <controls:EmptyState Grid.Row="1"
+                                     Text="{Binding AppUsageChart.EmptyStateText}"
+                                     TextAutomationId="AppUsageEmptyStateText" />
+            </Grid>
+        </controls:SectionCard>
+
+        <controls:SectionCard Grid.Column="2"
+                              AutomationProperties.AutomationId="DomainUsageChartCard"
+                              CardMargin="8,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="230" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="도메인별 집중 시간"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1"
+                            AutomationProperties.AutomationId="DomainChartDetailsButton"
+                            Content="상세보기"
+                            Command="{Binding ShowDomainFocusDetailsCommand}"
+                            Margin="8,0,0,0"
+                            Style="{StaticResource CompactActionButtonStyle}" />
+                </Grid>
+                <lvc:CartesianChart Grid.Row="1"
+                                    AutomationProperties.AutomationId="DomainUsageChart"
+                                    Margin="0,12,0,0"
+                                    Series="{Binding DomainUsageChart.Series}"
+                                    XAxes="{Binding DomainUsageChart.XAxes}"
+                                    YAxes="{Binding DomainUsageChart.YAxes}" />
+                <controls:EmptyState Grid.Row="1"
+                                     Text="{Binding DomainUsageChart.EmptyStateText}"
+                                     TextAutomationId="DomainUsageEmptyStateText" />
+            </Grid>
+        </controls:SectionCard>
+    </Grid>
 </UserControl>

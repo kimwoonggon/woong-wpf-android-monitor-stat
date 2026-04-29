@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Xml.Linq;
+using System.Xml;
 using NetArchTest.Rules;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Server.Summaries;
@@ -12,6 +13,18 @@ namespace Woong.MonitorStack.Architecture.Tests;
 public sealed class ProjectReferenceRulesTests
 {
     private static readonly string RepositoryRoot = FindRepositoryRoot();
+    private static readonly string[] ColorTargetProperties =
+    [
+        "Background",
+        "BorderBrush",
+        "CaretBrush",
+        "Color",
+        "Fill",
+        "Foreground",
+        "SelectionBrush",
+        "SelectionTextBrush",
+        "Stroke"
+    ];
 
     public static TheoryData<string, string[]> ProductionProjectRules =>
         new()
@@ -258,6 +271,88 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
+    public void WpfXaml_DoesNotUseColorLiteralsOutsideColorsDictionary()
+    {
+        string wpfAppRoot = Path.Combine(RepositoryRoot, "src", "Woong.MonitorStack.Windows.App");
+        string colorsDictionaryPath = Path.GetFullPath(Path.Combine(wpfAppRoot, "Styles", "Colors.xaml"));
+
+        string[] violations = Directory
+            .EnumerateFiles(wpfAppRoot, "*.xaml", SearchOption.AllDirectories)
+            .Where(path => !string.Equals(Path.GetFullPath(path), colorsDictionaryPath, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(FindColorLiteralViolations)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Empty(violations);
+    }
+
+    [Fact]
+    public void DashboardView_LaysOutDashboardSectionsAsDirectGridRows()
+    {
+        XDocument dashboardViewXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "Views",
+            "DashboardView.xaml"));
+
+        XElement layoutGrid = dashboardViewXaml
+            .Descendants()
+            .Single(element => element.Name.LocalName == "ScrollViewer")
+            .Elements()
+            .Single(element => element.Name.LocalName == "Grid");
+        string[] directDashboardSections = layoutGrid
+            .Elements()
+            .Where(element => element.Name.LocalName != "Grid.RowDefinitions")
+            .Select(element => element.Name.LocalName)
+            .ToArray();
+
+        Assert.Equal(
+            [
+                "HeaderStatusBar",
+                "ControlBar",
+                "CurrentFocusPanel",
+                "SummaryCardsPanel",
+                "ChartsPanel",
+                "DetailsTabsPanel"
+            ],
+            directDashboardSections);
+        Assert.Equal(6, layoutGrid.Elements().Single(element => element.Name.LocalName == "Grid.RowDefinitions").Elements().Count());
+        Assert.Equal("4", GetXamlAttribute(layoutGrid.Elements().Single(element => element.Name.LocalName == "ChartsPanel"), "Grid.Row"));
+        Assert.Equal("5", GetXamlAttribute(layoutGrid.Elements().Single(element => element.Name.LocalName == "DetailsTabsPanel"), "Grid.Row"));
+    }
+
+    [Fact]
+    public void DashboardView_DirectSectionsExposeStableAutomationIds()
+    {
+        XDocument dashboardViewXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "Views",
+            "DashboardView.xaml"));
+
+        XElement layoutGrid = dashboardViewXaml
+            .Descendants()
+            .Single(element => element.Name.LocalName == "ScrollViewer")
+            .Elements()
+            .Single(element => element.Name.LocalName == "Grid");
+        Dictionary<string, string?> automationIdsBySection = layoutGrid
+            .Elements()
+            .Where(element => element.Name.LocalName != "Grid.RowDefinitions")
+            .ToDictionary(
+                element => element.Name.LocalName,
+                element => GetXamlAttribute(element, "AutomationProperties.AutomationId"));
+
+        Assert.Equal("HeaderArea", automationIdsBySection["HeaderStatusBar"]);
+        Assert.Equal("PeriodSelector", automationIdsBySection["ControlBar"]);
+        Assert.Equal("CurrentActivityPanel", automationIdsBySection["CurrentFocusPanel"]);
+        Assert.Equal("SummaryCardsContainer", automationIdsBySection["SummaryCardsPanel"]);
+        Assert.Equal("ChartArea", automationIdsBySection["ChartsPanel"]);
+        Assert.Equal("DetailsTabsPanel", automationIdsBySection["DetailsTabsPanel"]);
+    }
+
+    [Fact]
     public void DomainProject_HasNoForbiddenPackages()
     {
         XDocument project = LoadProject("src/Woong.MonitorStack.Domain/Woong.MonitorStack.Domain.csproj");
@@ -300,6 +395,109 @@ public sealed class ProjectReferenceRulesTests
             .Descendants("UseWPF")
             .Any(value => string.Equals(value.Value.Trim(), "true", StringComparison.OrdinalIgnoreCase));
     }
+
+    private static IEnumerable<string> FindColorLiteralViolations(string xamlPath)
+    {
+        XDocument xaml = XDocument.Load(xamlPath, LoadOptions.SetLineInfo);
+
+        if (xaml.Root is null)
+        {
+            yield break;
+        }
+
+        foreach (XElement element in xaml.Root.DescendantsAndSelf())
+        {
+            foreach (XAttribute attribute in element.Attributes())
+            {
+                if (attribute.IsNamespaceDeclaration)
+                {
+                    continue;
+                }
+
+                string value = attribute.Value.Trim();
+                if (IsHexColorLiteral(value)
+                    || (IsColorTargetAttribute(element, attribute) && IsNamedColorLiteral(value)))
+                {
+                    yield return FormatXamlViolation(xamlPath, attribute, value);
+                }
+            }
+        }
+    }
+
+    private static bool IsColorTargetAttribute(XElement element, XAttribute attribute)
+    {
+        string attributeName = attribute.Name.LocalName;
+        if (ColorTargetProperties.Contains(attributeName, StringComparer.Ordinal))
+        {
+            return true;
+        }
+
+        if (element.Name.LocalName != "Setter" || attributeName != "Value")
+        {
+            return false;
+        }
+
+        string? setterProperty = element
+            .Attributes()
+            .FirstOrDefault(candidate => candidate.Name.LocalName == "Property")
+            ?.Value;
+
+        return IsColorTargetProperty(setterProperty);
+    }
+
+    private static bool IsColorTargetProperty(string? property)
+    {
+        if (string.IsNullOrWhiteSpace(property))
+        {
+            return false;
+        }
+
+        string propertyName = property.Trim();
+        if (propertyName.StartsWith('(') && propertyName.EndsWith(')'))
+        {
+            propertyName = propertyName[1..^1];
+        }
+
+        int qualifierIndex = propertyName.LastIndexOf('.');
+        if (qualifierIndex >= 0)
+        {
+            propertyName = propertyName[(qualifierIndex + 1)..];
+        }
+
+        return ColorTargetProperties.Contains(propertyName, StringComparer.Ordinal);
+    }
+
+    private static bool IsHexColorLiteral(string value)
+    {
+        if (!value.StartsWith('#'))
+        {
+            return false;
+        }
+
+        string hex = value[1..];
+        return hex.Length is 3 or 4 or 6 or 8
+            && hex.All(Uri.IsHexDigit);
+    }
+
+    private static bool IsNamedColorLiteral(string value)
+        => value.Length > 0
+            && value.All(char.IsAsciiLetter);
+
+    private static string FormatXamlViolation(string xamlPath, XAttribute attribute, string value)
+    {
+        string relativePath = Path.GetRelativePath(RepositoryRoot, xamlPath).Replace('\\', '/');
+        string lineSuffix = attribute is IXmlLineInfo lineInfo && lineInfo.HasLineInfo()
+            ? $":{lineInfo.LineNumber}"
+            : "";
+
+        return $"{relativePath}{lineSuffix}: `{attribute.Name.LocalName}` uses color literal `{value}`";
+    }
+
+    private static string? GetXamlAttribute(XElement element, string attributeName)
+        => element
+            .Attributes()
+            .FirstOrDefault(attribute => attribute.Name.LocalName == attributeName)
+            ?.Value;
 
     private static string NormalizePath(string path)
         => path.Replace('\\', '/');

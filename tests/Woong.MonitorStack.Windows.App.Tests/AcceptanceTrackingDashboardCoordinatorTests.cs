@@ -53,6 +53,19 @@ public sealed class AcceptanceTrackingDashboardCoordinatorTests : IDisposable
         Assert.All(outboxRepository.QueryAll(), item => Assert.Equal(SyncOutboxStatus.Synced, item.Status));
     }
 
+    [Fact]
+    public void AcceptanceScenarioClock_DefaultStartUsesLocalNoonToAvoidMidnightFilterFlakes()
+    {
+        var clock = new AcceptanceTrackingScenarioClock();
+        DateTimeOffset localStart = TimeZoneInfo.ConvertTime(clock.ScenarioStartedAtUtc, TimeZoneInfo.Local);
+        DateOnly localStartDate = DateOnly.FromDateTime(localStart.DateTime);
+        DateOnly localToday = DateOnly.FromDateTime(DateTimeOffset.Now.DateTime);
+
+        Assert.Equal(localToday, localStartDate);
+        Assert.Equal(12, localStart.Hour);
+        Assert.Equal(0, localStart.Minute);
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))

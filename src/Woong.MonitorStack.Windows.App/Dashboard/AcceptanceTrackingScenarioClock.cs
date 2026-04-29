@@ -5,7 +5,7 @@ namespace Woong.MonitorStack.Windows.App.Dashboard;
 public sealed class AcceptanceTrackingScenarioClock : IDashboardClock
 {
     public AcceptanceTrackingScenarioClock()
-        : this(DateTimeOffset.UtcNow.AddMinutes(-20))
+        : this(CreateLocalNoonTodayUtc())
     {
     }
 
@@ -18,4 +18,11 @@ public sealed class AcceptanceTrackingScenarioClock : IDashboardClock
     public DateTimeOffset ScenarioStartedAtUtc { get; }
 
     public DateTimeOffset UtcNow { get; set; }
+
+    private static DateTimeOffset CreateLocalNoonTodayUtc()
+    {
+        DateTime localNoonToday = DateTime.Today.AddHours(12);
+
+        return new DateTimeOffset(localNoonToday).ToUniversalTime();
+    }
 }

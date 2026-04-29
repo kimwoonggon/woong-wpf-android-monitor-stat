@@ -2,6 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F6F8FB" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TransparentBrush" Color="#00FFFFFF" />
     <SolidColorBrush x:Key="BorderBrush" Color="#DCE1E8" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#162033" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#5A6472" />
@@ -18,4 +19,17 @@
     <SolidColorBrush x:Key="PrivacyBadgeBackgroundBrush" Color="#EEF5FF" />
     <SolidColorBrush x:Key="PrivacyBadgeBorderBrush" Color="#BFD8FF" />
     <SolidColorBrush x:Key="PrivacyBadgeTextBrush" Color="#0B63CE" />
+
+    <SolidColorBrush x:Key="PrimaryActionBrush" Color="#0F6BDE" />
+    <SolidColorBrush x:Key="PrimaryActionTextBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="DangerActionBrush" Color="#EA3323" />
+
+    <SolidColorBrush x:Key="MetricBlueBrush" Color="#0F6BDE" />
+    <SolidColorBrush x:Key="MetricBlueBackgroundBrush" Color="#EAF3FF" />
+    <SolidColorBrush x:Key="MetricGreenBrush" Color="#16A34A" />
+    <SolidColorBrush x:Key="MetricGreenBackgroundBrush" Color="#ECFDF5" />
+    <SolidColorBrush x:Key="MetricAmberBrush" Color="#F59E0B" />
+    <SolidColorBrush x:Key="MetricAmberBackgroundBrush" Color="#FFF7ED" />
+    <SolidColorBrush x:Key="MetricPurpleBrush" Color="#6D5BD0" />
+    <SolidColorBrush x:Key="MetricPurpleBackgroundBrush" Color="#F5F3FF" />
 </ResourceDictionary>

@@ -611,8 +611,10 @@ milestones below are finished.
 - [x] Add architecture documentation guardrail test for Android latitude/longitude opt-in wording.
 - [x] Verify Android location plan slice with Architecture tests, full .NET tests, full .NET build, WPF acceptance after XAML resource changes, coverage generation (91.3% line), and Android `testDebugUnitTest assembleDebug`.
 - [x] Update PRD/privacy/screenshot docs so 위도/경도 is explicit opt-in metadata, not default tracking.
-- [ ] Add Android settings tests: location context defaults Off, approximate mode preferred, precise latitude/longitude requires explicit opt-in.
-- [ ] Add Android permission UI tests: missing location permission shows guidance and no coordinates.
+- [x] Add Android settings tests: location context defaults Off, approximate mode preferred, precise latitude/longitude requires explicit opt-in.
+- [x] Add Android foreground-only manifest guard for optional location context: coarse/fine permissions allowed, background location forbidden.
+- [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
+- [x] Add Android location permission policy/controller tests: approximate requests coarse only, precise latitude/longitude requests fine after separate opt-in.
 - [ ] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
 - [ ] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
 - [ ] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
@@ -976,6 +978,9 @@ milestones below are finished.
 - [x] Button style dictionary verification: full `.NET` tests passed (198 tests).
 - [x] Button style dictionary verification: `.NET` build passed.
 - [x] Button style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-130753`.
+- [x] Product UI goal polish: RED `ControlBar_RendersGoalActionAndPeriodGroups` verified action/period grouping and readable icon/text labels.
+- [x] Product UI goal polish: RED `MetricCard_RendersGoalIconAccentSlot` verified summary cards expose an icon/accent slot matching the provided UI reference.
+- [x] Product UI goal polish: RED `DashboardView_ChartsPanelUsesSeparateGoalCardSurfaces` verified chart cards remain separate, readable dashboard surfaces.
 - [x] Button style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [x] Align DashboardView root scrolling with `wpfelements.md`: root scroll is vertical-only and wide session grids keep their own horizontal scroll.
 - [x] Root scrolling verification: `DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll` and `MainWindow_AtMinimumSize_KeepsTabsReachableOrProvidesScrolling` passed.
@@ -1177,15 +1182,20 @@ milestones below are finished.
   - [x] App root style merge verification: RED architecture tests first failed because `Inputs.xaml` was not merged at `App.xaml` root and `MainWindow.xaml` duplicated the Colors dictionary.
   - [x] App root style merge verification: `App.xaml` now merges every shared style dictionary, including `Inputs.xaml`, and `MainWindow.xaml` no longer duplicates application-level style dictionaries.
   - [x] App root style merge verification: all Windows App tests passed (96 tests) after the MainWindow background expectation was updated to use test-local resources instead of creating a process-wide `Application`.
+  - [x] WPF color resource guard: RED `WpfXaml_DoesNotUseColorLiteralsOutsideColorsDictionary` failed first on `Tabs.xaml`, then passed after adding `TransparentBrush` to `Colors.xaml`.
+  - [x] Dashboard componentization guard: RED `DashboardView_LaysOutDashboardSectionsAsDirectGridRows` failed first, then passed after making chart/details sections direct `DashboardView` grid rows.
+  - [x] WPF UI automation stability: RED `DashboardView_DirectSectionsExposeStableAutomationIds` failed first, then passed after adding stable section AutomationIds.
+  - [x] WPF acceptance clock hardening: RED `AcceptanceScenarioClock_DefaultStartUsesLocalNoonToAvoidMidnightFilterFlakes` failed first at the local midnight boundary, then passed after pinning fake TrackingPipeline data to local noon.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
-- [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.
-- [ ] Run full `.NET` tests and build after componentization.
-- [ ] Run WPF UI acceptance after componentization.
+- [x] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during current component/style guard extraction.
+- [x] Run full `.NET` tests and build after current component/style guard extraction.
+- [x] Run WPF UI acceptance after current component/style guard extraction at `artifacts/wpf-ui-acceptance/20260430-001723`.
 - [ ] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
   - [x] Compact action style slice docs/TODO updated.
   - [x] App root style merge slice docs/TODO updated.
+  - [x] WPF color/direct-section/AutomationId/acceptance-clock guard slice docs/TODO updated.
 - [ ] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done

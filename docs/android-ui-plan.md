@@ -143,11 +143,27 @@ Android screenshot automation should capture the Settings location section and
 Dashboard location card when the feature exists. Screenshots remain local test
 artifacts only. They must not capture other apps as telemetry.
 
+## Implemented So Far
+
+- Settings copy states that location context is off by default.
+- Settings copy states that latitude/longitude are not stored unless location
+  context is enabled.
+- Settings copy states that precise latitude/longitude requires separate
+  explicit opt-in.
+- Foreground location permissions are declared for optional location context:
+  coarse and fine only. Background location is not declared.
+- Location settings persist with safe defaults: location capture off,
+  approximate mode preferred, and precise latitude/longitude disabled unless
+  location context is already enabled.
+- The location permission request button stays disabled until location context
+  is enabled.
+- Location permission policy requests coarse location for approximate mode and
+  adds fine location only after precise latitude/longitude opt-in.
+
 ## Not Implemented Yet
 
-- Runtime Android location permission flow.
+- Runtime location collector/provider.
 - Room `location_context_snapshot` table.
 - Dashboard location card.
-- Settings location section.
 - Server location DTO/storage.
 - Connected-device screenshot evidence for location UI.
