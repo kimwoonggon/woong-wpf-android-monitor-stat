@@ -450,6 +450,33 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void CurrentFocusPanel_UsesSharedTypographyForTitleAndPersistenceStatus()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                CurrentFocusPanel panel = FindByAutomationId<CurrentFocusPanel>(window, "CurrentActivityPanel");
+
+                Assert.IsType<Style>(panel.FindResource("CurrentFocusValueTextStyle"));
+                Assert.IsType<Style>(panel.FindResource("CurrentFocusSecondaryTextStyle"));
+                AssertSectionTitleStyle(FindTextBlock(panel, "Current Focus"));
+                AssertMutedTextStyle(FindTextBlock(panel, "Last DB write / Sync state"));
+                AssertCurrentFocusValueTextStyle(FindByAutomationId<TextBlock>(panel, "LastDbWriteTimeText"));
+                AssertCurrentFocusSecondaryTextStyle(FindByAutomationId<TextBlock>(panel, "LastSyncStatusText"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_HostsSummaryCardsPanelAndPreservesSummaryCardContent()
         => RunOnStaThread(() =>
         {
@@ -1308,6 +1335,36 @@ public sealed class MainWindowUiExpectationTests
         Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
         var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
         Assert.Equal(Color.FromRgb(0x8A, 0x4B, 0x00), foregroundBrush.Color);
+    }
+
+    private static void AssertMutedTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 12.0);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x5A, 0x64, 0x72), foregroundBrush.Color);
+    }
+
+    private static void AssertCurrentFocusValueTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 14.0);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x16, 0x20, 0x33), foregroundBrush.Color);
+    }
+
+    private static void AssertCurrentFocusSecondaryTextStyle(TextBlock textBlock)
+    {
+        Style style = Assert.IsType<Style>(textBlock.Style);
+        AssertStyleSetter(style, TextBlock.FontSizeProperty, 13.0);
+
+        Setter foregroundSetter = FindSetter(style, TextBlock.ForegroundProperty);
+        var foregroundBrush = Assert.IsType<SolidColorBrush>(foregroundSetter.Value);
+        Assert.Equal(Color.FromRgb(0x5A, 0x64, 0x72), foregroundBrush.Color);
     }
 
     private static void AssertSettingsCheckBoxStyle(CheckBox checkBox)

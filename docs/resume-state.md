@@ -2379,3 +2379,33 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should focus on `CurrentFocusPanel` inline title and
 browser-capture status typography, since SettingsPanel duplicated setters are
 now largely covered by shared styles.
+
+## 2026-04-29 WPF Current Focus Typography Slice
+
+- Added RED WPF expectation
+  `CurrentFocusPanel_UsesSharedTypographyForTitleAndPersistenceStatus`.
+- Added `CurrentFocusValueTextStyle` and `CurrentFocusSecondaryTextStyle` to
+  `Styles/Typography.xaml`.
+- Merged `Styles/Typography.xaml` into `CurrentFocusPanel` and replaced inline
+  section title, last DB write value, and sync status font/color setters with
+  shared typography resources.
+- Preserved Current Focus AutomationIds and existing bindings.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter CurrentFocusPanel_UsesSharedTypographyForTitleAndPersistenceStatus`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "CurrentFocusPanel_UsesSharedTypographyForTitleAndPersistenceStatus|DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings|TypographyStyleDictionary_DefinesDashboardTextStyles"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-204901`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should re-audit remaining XAML inline colors and
+decide whether the Milestone 31 style cleanup can close or needs one more
+targeted slice.

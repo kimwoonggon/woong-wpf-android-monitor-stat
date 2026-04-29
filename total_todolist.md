@@ -1061,6 +1061,14 @@ milestones below are finished.
   - [x] Settings checkbox style verification: `.NET` build passed.
   - [x] Settings checkbox style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-203158`.
   - [x] Settings checkbox style verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add `CurrentFocusValueTextStyle` and `CurrentFocusSecondaryTextStyle` to `Styles/Typography.xaml`.
+  - [x] Replace `CurrentFocusPanel` inline title, last DB write, and sync status font/color setters with shared typography resources.
+  - [x] Current Focus typography verification: RED `CurrentFocusPanel_UsesSharedTypographyForTitleAndPersistenceStatus` failed first, then passed.
+  - [x] Current Focus typography verification: all Windows App tests passed (85 tests).
+  - [x] Current Focus typography verification: full `.NET` tests passed (290 tests).
+  - [x] Current Focus typography verification: `.NET` build passed.
+  - [x] Current Focus typography verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-204901`.
+  - [x] Current Focus typography verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

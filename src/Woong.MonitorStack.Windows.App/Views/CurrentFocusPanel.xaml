@@ -12,6 +12,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -19,9 +20,7 @@
     <Border Style="{StaticResource DashboardCardBorderStyle}">
         <StackPanel>
             <TextBlock Text="Current Focus"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="#162033"
+                       Style="{StaticResource SectionTitleTextStyle}"
                        Margin="0,0,0,14" />
             <UniformGrid Columns="3">
                 <controls:DetailRow Label="Tracking status"
@@ -68,16 +67,13 @@
                                     ValueFontWeight="Normal" />
                 <StackPanel>
                     <TextBlock Text="Last DB write / Sync state"
-                               Foreground="#5A6472"
-                               FontSize="12" />
+                               Style="{StaticResource MutedTextStyle}" />
                     <TextBlock AutomationProperties.AutomationId="LastDbWriteTimeText"
                                Text="{Binding LastDbWriteTimeText}"
-                               Foreground="#162033"
-                               FontSize="14" />
+                               Style="{StaticResource CurrentFocusValueTextStyle}" />
                     <TextBlock AutomationProperties.AutomationId="LastSyncStatusText"
                                Text="{Binding LastSyncStatusText}"
-                               Foreground="#5A6472"
-                               FontSize="13"
+                               Style="{StaticResource CurrentFocusSecondaryTextStyle}"
                                TextWrapping="Wrap"
                                Margin="0,4,0,0" />
                 </StackPanel>

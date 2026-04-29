@@ -235,7 +235,10 @@ Current style dictionary implementation:
   `SettingsSectionTitleTextStyle` for Privacy/Sync/Runtime headings and
   `SettingsMutedTextStyle` for muted privacy/sync/runtime helper text.
   `SettingsWarningTextStyle` plus `WarningTextBrush` carry the local-only sync
-  warning/status color.
+  warning/status color. `CurrentFocusPanel` now uses shared typography for its
+  section title, last DB write value, and sync status helper text through
+  `SectionTitleTextStyle`, `CurrentFocusValueTextStyle`, and
+  `CurrentFocusSecondaryTextStyle`.
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in
