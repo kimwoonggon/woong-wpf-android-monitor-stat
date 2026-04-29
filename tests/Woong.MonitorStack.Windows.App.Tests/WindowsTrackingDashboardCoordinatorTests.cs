@@ -100,6 +100,40 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void SyncNow_WhenSyncIsOff_LeavesPendingOutboxRowsLocal()
+    {
+        var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 100,
+            processId: 10,
+            processName: "Code.exe",
+            executablePath: "C:\\Apps\\Code.exe",
+            windowTitle: "Project - Visual Studio Code"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            outboxRepository,
+            clock);
+        coordinator.StartTracking();
+        clock.UtcNow = clock.UtcNow.AddMinutes(2);
+        coordinator.StopTracking();
+
+        var result = coordinator.SyncNow(syncEnabled: false);
+
+        Assert.Equal("Sync skipped. Enable sync to upload.", result.StatusText);
+        SyncOutboxItem item = Assert.Single(outboxRepository.QueryAll());
+        Assert.Equal(SyncOutboxStatus.Pending, item.Status);
+        Assert.Null(item.SyncedAtUtc);
+        Assert.Equal(0, item.RetryCount);
+    }
+
+    [Fact]
     public void StartAfterStop_DoesNotExtendPreviousStoppedSession()
     {
         var clock = new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));

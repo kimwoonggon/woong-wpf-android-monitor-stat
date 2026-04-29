@@ -4,12 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 25 TrackingPipeline semantic WPF UI acceptance. The WPF app now has a
-metadata-only `WOONG_MONITOR_ACCEPTANCE_MODE=TrackingPipeline` mode with fake
-Code.exe, chrome.exe, `github.com`, and `chatgpt.com` activity. The local
-acceptance script runs both RealStart temp-SQLite persistence and the fake
-TrackingPipeline semantic UI checks, then writes screenshots, `report.md`,
-`manifest.json`, and `visual-review-prompt.md`.
+Milestone 28 browser URL privacy copy and sync opt-in enforcement. Windows now
+has a direct coordinator test proving Sync Now with opt-in off leaves pending
+outbox rows local, Android already has the matching Worker test proving disabled
+sync does not invoke the runner, and the WPF Settings tab visibly states that
+browser URL storage is domain-only by default.
 
 ## Completed
 
@@ -92,6 +91,23 @@ TrackingPipeline semantic UI checks, then writes screenshots, `report.md`,
 - Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
   92.2% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
   Windows.App 85.7%, and Server 96.3%.
+- Added a Windows coordinator opt-in enforcement test proving `SyncNow(false)`
+  returns the skipped status and leaves queued outbox rows pending, unsynced,
+  and retry count zero.
+- Verified the existing Android `AndroidSyncWorkerTest` still proves disabled
+  sync returns skipped success and does not invoke the sync runner.
+- Added WPF Settings copy for browser URL/domain privacy:
+  `Browser URL storage is domain-only by default. Full URLs require explicit
+  future opt-in.`
+- Re-verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1
+  -v minimal`; all 176 .NET tests passed.
+- Re-verified `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal`; build passed with 0 warnings/errors.
+- Re-verified Android `testDebugUnitTest` and `assembleDebug` from `android/`.
+- Re-verified `scripts/run-wpf-ui-acceptance.ps1 -Seconds 2`; the latest WPF
+  acceptance report remains PASS.
+- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+  92.3% overall.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
   `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,

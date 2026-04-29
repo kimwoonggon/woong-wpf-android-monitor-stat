@@ -211,6 +211,7 @@ public sealed class MainWindowUiExpectationTests
                 CheckBox syncEnabled = FindByAutomationId<CheckBox>(window, "SyncEnabledCheckBox");
                 TextBlock syncMode = FindByAutomationId<TextBlock>(window, "SyncModeLabel");
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(window, "SyncStatusLabel");
+                TextBlock browserUrlPrivacy = FindByAutomationId<TextBlock>(window, "BrowserUrlPrivacyText");
 
                 Assert.Equal("Collection visible", collectionVisible.Content);
                 Assert.True(collectionVisible.IsChecked);
@@ -218,6 +219,9 @@ public sealed class MainWindowUiExpectationTests
                 Assert.False(windowTitleVisible.IsChecked);
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
+                Assert.Equal(
+                    "Browser URL storage is domain-only by default. Full URLs require explicit future opt-in.",
+                    browserUrlPrivacy.Text);
                 Assert.Equal("Local only", syncMode.Text);
                 Assert.Equal("Sync is off. Data stays on this Windows device.", syncStatus.Text);
             }

@@ -563,8 +563,8 @@ milestones below are finished.
 - [x] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
 - [x] Add browser raw event retention enforcement.
 - [x] Add client-side raw event retention policy for Windows local SQLite.
-- [ ] Add UI copy for browser URL/domain privacy levels.
-- [ ] Add sync opt-in enforcement tests for Windows and Android.
+- [x] Add UI copy for browser URL/domain privacy levels.
+- [x] Add sync opt-in enforcement tests for Windows and Android.
 - [x] Verify UI screenshot tools only capture this app's UI.
 - [ ] Run full validation matrix.
 - [x] Commit and push privacy hardening slice.
@@ -573,14 +573,14 @@ milestones below are finished.
 
 - [x] Windows real foreground process/window tracking works from WPF Start/Stop.
 - [x] Windows local SQLite persistence and outbox are proven through fake pipeline and RealStart local validation.
-- [ ] Browser domain tracking is explicit, privacy-aware, and covered by tests.
+- [x] Browser domain tracking is explicit, privacy-aware, and covered by tests.
 - [x] Android UsageStats collection, Room persistence, WorkManager scheduling, and sync opt-in are proven.
 - [ ] Server schema supports required relationships and idempotent integrated storage.
 - [x] WPF semantic UI acceptance passes with expected content.
 - [ ] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
 - [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.
-- [ ] Full .NET tests/build pass.
-- [ ] Android tests/build pass.
+- [x] Full .NET tests/build pass.
+- [x] Android tests/build pass.
 - [ ] Completion audit updated.
 - [ ] Commit and push Original Intent completion.
 

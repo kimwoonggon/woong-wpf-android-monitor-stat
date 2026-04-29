@@ -153,6 +153,14 @@ browser raw events. In DomainOnly mode the raw event keeps the normalized
 domain but stores no full URL, and the resulting WebSession also has
 `Url = null`.
 
+The WPF Settings tab now includes visible browser URL privacy copy:
+`Browser URL storage is domain-only by default. Full URLs require explicit
+future opt-in.` This is intentionally conservative until a dedicated user-facing
+URL storage selector is implemented. The current tests cover browser process
+classification, DomainOnly and FullUrl sanitizer behavior, nullable URL
+persistence, domain-only raw event ingestion, web-session outbox payloads, and
+idempotent server upload.
+
 The Windows infrastructure can now generate the Chrome native messaging host
 manifest JSON through `NativeMessagingHostManifestGenerator`. The manifest
 declares the stable native host name, host executable path, `stdio` transport,

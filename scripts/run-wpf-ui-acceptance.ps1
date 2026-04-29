@@ -108,5 +108,10 @@ try {
     Write-Host "Latest report: $(Join-Path $latestRoot 'report.md')"
 }
 finally {
+    if (-not [string]::IsNullOrWhiteSpace($AppPath)) {
+        Get-Process Woong.MonitorStack.Windows.App -ErrorAction SilentlyContinue |
+            Where-Object { $_.Path -eq $AppPath } |
+            Stop-Process -Force
+    }
     Pop-Location
 }
