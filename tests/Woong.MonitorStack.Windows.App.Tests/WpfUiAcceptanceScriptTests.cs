@@ -52,6 +52,35 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ToleratesAutoStartedTrackingPipeline()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("EnsureTrackingRunning", tool);
+        Assert.Contains("TrackingStatusText", tool);
+        Assert.Contains("Tracking already running", tool);
+        Assert.Contains("StartTrackingButton is disabled because auto-start already ran", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_DoesNotRequireCodeAsInitialCurrentAppWhenAutoStartAlreadyAdvanced()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("CheckContainsAny", tool);
+        Assert.Contains("CurrentAppNameText start", tool);
+        Assert.Contains("\"Code.exe\", \"chrome.exe\"", tool);
+    }
+
+    [Fact]
     public void UiAcceptanceScript_RequestsRequiredViewportSnapshotMatrix()
     {
         string repoRoot = FindRepositoryRoot();

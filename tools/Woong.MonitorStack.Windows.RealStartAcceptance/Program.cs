@@ -57,7 +57,7 @@ internal static class RealStartAcceptanceRunner
                 ?? throw new InvalidOperationException("Main window did not appear.");
 
             mainWindow.Focus();
-            Invoke(mainWindow, "StartTrackingButton");
+            EnsureTrackingRunning(mainWindow);
             Thread.Sleep(options.ObservationDuration);
             Invoke(mainWindow, "StopTrackingButton");
             Thread.Sleep(TimeSpan.FromSeconds(1));
@@ -73,6 +73,8 @@ internal static class RealStartAcceptanceRunner
             {
                 throw new InvalidOperationException("No sync_outbox rows were queued.");
             }
+
+            VerifyRecentAppSessionVisible(mainWindow, options.DatabasePath, options.Timeout);
 
             Console.WriteLine($"PASS: persisted {focusCount} focus_session row(s) and queued {outboxCount} sync_outbox row(s).");
             return 0;
@@ -102,6 +104,32 @@ internal static class RealStartAcceptanceRunner
         }
     }
 
+    private static void EnsureTrackingRunning(Window mainWindow)
+    {
+        string trackingStatus = GetElementName(mainWindow, "TrackingStatusText");
+        if (trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine("PASS: Tracking already running; StartTrackingButton is disabled because auto-start already ran.");
+            return;
+        }
+
+        AutomationElement? startButton = mainWindow.FindFirstDescendant("StartTrackingButton")
+            ?? throw new InvalidOperationException("Could not find control `StartTrackingButton`.");
+        if (!startButton.IsEnabled)
+        {
+            throw new InvalidOperationException(
+                $"StartTrackingButton is disabled because auto-start already ran, but TrackingStatusText was `{trackingStatus}`.");
+        }
+
+        startButton.AsButton().Invoke();
+        Thread.Sleep(TimeSpan.FromMilliseconds(200));
+        trackingStatus = GetElementName(mainWindow, "TrackingStatusText");
+        if (!trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Tracking did not start. TrackingStatusText was `{trackingStatus}`.");
+        }
+    }
+
     private static void Invoke(Window mainWindow, string automationId)
     {
         AutomationElement? element = mainWindow.FindFirstDescendant(automationId);
@@ -113,6 +141,12 @@ internal static class RealStartAcceptanceRunner
         element.AsButton().Invoke();
     }
 
+    private static string GetElementName(Window mainWindow, string automationId)
+    {
+        AutomationElement? element = mainWindow.FindFirstDescendant(automationId);
+        return element?.Name ?? "";
+    }
+
     private static int CountRows(string databasePath, string tableName)
     {
         using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
@@ -121,6 +155,67 @@ internal static class RealStartAcceptanceRunner
         command.CommandText = $"SELECT COUNT(*) FROM {tableName};";
 
         return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static void VerifyRecentAppSessionVisible(Window mainWindow, string databasePath, TimeSpan timeout)
+    {
+        string processName = ReadLatestFocusSessionProcessName(databasePath);
+        AutomationElement? list = mainWindow.FindFirstDescendant("RecentAppSessionsList");
+        if (list is null)
+        {
+            throw new InvalidOperationException("Could not find control `RecentAppSessionsList`.");
+        }
+
+        bool appeared = WaitUntil(timeout, () => ElementContainsText(list, processName));
+        if (!appeared)
+        {
+            throw new InvalidOperationException(
+                $"Persisted focus session `{processName}` did not appear in RecentAppSessionsList.");
+        }
+
+        Console.WriteLine($"PASS: persisted focus session appeared in RecentAppSessionsList: {processName}");
+    }
+
+    private static string ReadLatestFocusSessionProcessName(string databasePath)
+    {
+        using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT COALESCE(process_name, platform_app_key)
+            FROM focus_session
+            ORDER BY ended_at_utc DESC
+            LIMIT 1;
+            """;
+
+        object? value = command.ExecuteScalar();
+        return value is string processName && !string.IsNullOrWhiteSpace(processName)
+            ? processName
+            : throw new InvalidOperationException("No readable focus_session process/app name was persisted.");
+    }
+
+    private static bool ElementContainsText(AutomationElement element, string expectedText)
+        => element
+            .FindAllDescendants()
+            .Select(descendant => descendant.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Any(name => name.Contains(expectedText, StringComparison.OrdinalIgnoreCase));
+
+    private static bool WaitUntil(TimeSpan timeout, Func<bool> condition)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        do
+        {
+            if (condition())
+            {
+                return true;
+            }
+
+            Thread.Sleep(TimeSpan.FromMilliseconds(100));
+        }
+        while (stopwatch.Elapsed < timeout);
+
+        return false;
     }
 }
 

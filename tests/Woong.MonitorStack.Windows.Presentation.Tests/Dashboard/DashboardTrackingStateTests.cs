@@ -74,6 +74,40 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void StartTrackingCommand_WhenSyncIsEnabled_AutomaticallyRequestsSync()
+    {
+        var coordinator = new FakeTrackingCoordinator
+        {
+            SyncResult = new DashboardSyncResult("Fake sync queued after start.")
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+        viewModel.Settings.IsSyncEnabled = true;
+
+        viewModel.StartTrackingCommand.Execute(null);
+
+        Assert.Equal("Running", viewModel.TrackingStatusText);
+        Assert.Equal("Fake sync queued after start.", viewModel.LastSyncStatusText);
+        Assert.Equal(1, coordinator.StartCount);
+        Assert.Equal(1, coordinator.SyncCount);
+        Assert.True(coordinator.LastSyncEnabled);
+    }
+
+    [Fact]
+    public void StartTrackingCommand_WhenSyncIsOff_AutomaticallyReportsLocalOnlySkippedStatus()
+    {
+        var coordinator = new FakeTrackingCoordinator();
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+
+        viewModel.StartTrackingCommand.Execute(null);
+
+        Assert.Equal("Running", viewModel.TrackingStatusText);
+        Assert.Equal("Sync skipped. Enable sync to upload.", viewModel.LastSyncStatusText);
+        Assert.Equal(1, coordinator.StartCount);
+        Assert.Equal(1, coordinator.SyncCount);
+        Assert.False(coordinator.LastSyncEnabled);
+    }
+
+    [Fact]
     public void StopTrackingCommand_RefreshesCurrentDashboardPeriodAfterFlush()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -241,6 +275,22 @@ public sealed class DashboardTrackingStateTests
         Assert.Equal("Window title hidden by privacy settings", viewModel.CurrentWindowTitleText);
         Assert.Equal("00:01:15", viewModel.CurrentSessionDurationText);
         Assert.Equal("Code.exe persisted at 21:00 for 1m", viewModel.LastPersistedSessionText);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenBrowserDomainMissing_ExplainsConnectionAndPrivacyState()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null,
+            CurrentBrowserDomain: null));
+
+        Assert.Equal("Browser domain not connected yet. Domain-only privacy is safe.", viewModel.CurrentBrowserDomainText);
     }
 
     [Fact]

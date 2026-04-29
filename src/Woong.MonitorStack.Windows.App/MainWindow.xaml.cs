@@ -7,10 +7,27 @@ namespace Woong.MonitorStack.Windows.App;
 public partial class MainWindow : Window
 {
     private readonly DispatcherTimer _trackingTimer;
+    private readonly DashboardViewModel _viewModel;
+    private readonly MainWindowStartupOptions _startupOptions;
+    private bool _hasAppliedStartupOptions;
 
     public MainWindow(DashboardViewModel viewModel)
+        : this(viewModel, MainWindowStartupOptions.Manual)
+    {
+    }
+
+    public MainWindow(DashboardViewModel viewModel, WindowsAppOptions options)
+        : this(
+            viewModel,
+            new MainWindowStartupOptions(options.AutoStartTracking))
+    {
+    }
+
+    public MainWindow(DashboardViewModel viewModel, MainWindowStartupOptions startupOptions)
     {
         InitializeComponent();
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        _startupOptions = startupOptions ?? throw new ArgumentNullException(nameof(startupOptions));
         DataContext = viewModel;
         _trackingTimer = new DispatcherTimer
         {
@@ -23,7 +40,25 @@ public partial class MainWindow : Window
                 viewModel.PollTrackingCommand.Execute(null);
             }
         };
-        Loaded += (_, _) => _trackingTimer.Start();
+        Loaded += (_, _) =>
+        {
+            ApplyStartupOptions();
+            _trackingTimer.Start();
+        };
         Closed += (_, _) => _trackingTimer.Stop();
+    }
+
+    private void ApplyStartupOptions()
+    {
+        if (_hasAppliedStartupOptions)
+        {
+            return;
+        }
+
+        _hasAppliedStartupOptions = true;
+        if (_startupOptions.AutoStartTracking && _viewModel.StartTrackingCommand.CanExecute(null))
+        {
+            _viewModel.StartTrackingCommand.Execute(null);
+        }
     }
 }

@@ -4,16 +4,19 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 Settings privacy coverage slice.
-Focused Settings tests first failed because `DashboardSettingsViewModel` lacked
-explicit safety properties for page-title capture, full URL capture,
-domain-only browser storage, sync endpoint, and guarded clear-local-data state.
-The Settings tab now exposes those states with safe defaults: page-title capture
-off/disabled, full URL capture off/disabled, domain-only storage on, sync
-endpoint disabled until sync opt-in, and clear local data disabled until a
-guarded flow exists. Verification passed: all `.NET` tests (204), full `.NET`
-build, WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-141606`, and
-coverage generation with overall line coverage 92.1%.
+Milestone 25/30 WPF auto-start and sync-at-start slice.
+Focused RED tests first proved that `StartTrackingCommand` should immediately
+attempt sync while still respecting sync opt-in, and that the WPF app can start
+tracking automatically on window load. Sync remains local-only by default:
+the automatic sync attempt reports `Sync skipped. Enable sync to upload.` until
+the user explicitly enables sync. The browser empty-domain text no longer says
+generic "metadata unavailable"; it now tells the user that browser domain
+capture is not connected yet and domain-only privacy is safe. RealStart and
+TrackingPipeline acceptance tools now tolerate an already-running auto-started
+app, while EmptyData snapshots force auto-start off. Verification passed: all
+`.NET` tests (222), full `.NET` build, RealStart, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-154548`, and coverage generation with
+overall line coverage 92.0%.
 
 ## Completed
 
@@ -1834,3 +1837,78 @@ Next highest priority is to decide the next WPF runtime acceptance gap from the
 subagent audit: RealStart evidence depth, semantic SQLite-backed UI acceptance,
 or a small refactor to extract the coordinator browser persistence helper
 without changing behavior.
+
+## 2026-04-29 WPF RealStart UI Evidence Slice
+
+- Added RED source-contract test
+  `RealStartTool_VerifiesPersistedFocusSessionAppearsInRecentAppSessionsList`.
+- The test failed first because the RealStart acceptance tool only counted
+  SQLite `focus_session` and `sync_outbox` rows.
+- Updated the RealStart tool so after Stop it reads the latest persisted
+  process/app name from the temp SQLite DB and verifies that the WPF
+  `RecentAppSessionsList` automation tree contains that value.
+- Kept the check environment-safe: it does not require a specific process name,
+  does not upload, and still prints the foreground metadata privacy warning.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter RealStartTool_VerifiesPersistedFocusSessionAppearsInRecentAppSessionsList`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-real-start-acceptance.ps1 -Seconds 2`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-152658`.
+
+Coverage after this slice: overall line coverage 92.2%.
+
+Next highest priority from the subagent audits is TrackingPipeline semantic DB
+evidence in the snapshot tool: prove it checks temp SQLite for focus_session,
+web_session, and sync_outbox rows instead of relying on visible text and
+screenshots alone.
+
+## 2026-04-29 WPF Auto-Start And Sync-At-Start Slice
+
+- Added RED Presentation tests proving `StartTrackingCommand` automatically
+  requests sync both when sync is enabled and when sync is off.
+- The sync-off path remains privacy/safety preserving: it calls the coordinator
+  with sync disabled and surfaces `Sync skipped. Enable sync to upload.`
+- Added RED WPF App test proving a `MainWindow` constructed with
+  `AutoStartTracking` starts tracking on load, shows the current foreground app,
+  attempts sync, and leaves the Start button disabled while Running.
+- Added `WindowsAppOptions.AutoStartTracking`, controlled by
+  `WOONG_MONITOR_AUTO_START_TRACKING` and defaulting on for normal WPF app
+  startup. Tests can still use the manual `MainWindow(DashboardViewModel)`
+  constructor.
+- Updated the browser-domain fallback copy to
+  `Browser domain not connected yet. Domain-only privacy is safe.` so a missing
+  browser-domain connection does not look like a broken privacy-hidden field.
+- Updated RealStart and UI snapshot acceptance tools to tolerate an
+  already-running auto-started app instead of assuming `StartTrackingButton` is
+  initially enabled.
+- The UI snapshot tool explicitly disables auto-start in EmptyData mode and
+  enables it in TrackingPipeline mode, preserving deterministic acceptance
+  semantics.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "StartTrackingCommand_WhenSyncIsEnabled_AutomaticallyRequestsSync|StartTrackingCommand_WhenSyncIsOff_AutomaticallyReportsLocalOnlySkippedStatus|UpdateCurrentActivity_WhenBrowserDomainMissing_ExplainsConnectionAndPrivacyState"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "MainWindow_WhenAutoStartEnabled_StartsTrackingOnLoadedAndAttemptsSync|UiSnapshotsTool_ToleratesAutoStartedTrackingPipeline|RealStartTool_ToleratesAutoStartedTracking|UiSnapshotsTool_DoesNotRequireCodeAsInitialCurrentAppWhenAutoStartAlreadyAdvanced"`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-real-start-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-154548`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority remains TrackingPipeline semantic DB evidence in the
+snapshot tool: prove the local UI snapshot report/manifest checks temp SQLite
+for `focus_session`, `web_session`, and `sync_outbox` rows rather than relying
+on visible text and screenshots alone.

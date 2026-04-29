@@ -383,7 +383,7 @@ public sealed class MainWindowUiExpectationTests
                     "Window title hidden by privacy settings",
                     FindByAutomationId<TextBlock>(panel, "CurrentWindowTitleText").Text);
                 Assert.Equal(
-                    "Browser metadata unavailable",
+                    "Browser domain not connected yet. Domain-only privacy is safe.",
                     FindByAutomationId<TextBlock>(panel, "CurrentBrowserDomainText").Text);
                 Assert.Equal("00:00:00", FindByAutomationId<TextBlock>(panel, "CurrentSessionDurationText").Text);
                 Assert.Equal("No session persisted", FindByAutomationId<TextBlock>(panel, "LastPersistedSessionText").Text);

@@ -410,3 +410,25 @@ grid refreshes before Stop. The latest local WPF acceptance run passed at:
 `artifacts/wpf-ui-acceptance/20260429-151739`
 
 Coverage after this slice is 92.2% overall.
+
+The RealStart acceptance tool now verifies more than SQLite row counts: after
+Stop, it reads the latest persisted focus-session process/app name from the
+temp DB and confirms that text appears in the WPF `RecentAppSessionsList`.
+The latest combined local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-152658`
+
+Coverage remains 92.2% overall.
+
+The auto-start and sync-at-start slice updated acceptance semantics for the
+normal product startup. RealStart and TrackingPipeline now accept an app that is
+already `Running` when automation attaches, instead of requiring the Start
+button to be initially enabled. EmptyData mode explicitly disables auto-start
+with `WOONG_MONITOR_AUTO_START_TRACKING=0`. TrackingPipeline still proves
+Code.exe, chrome.exe, `github.com`, and `chatgpt.com` appear in SQLite-backed
+UI surfaces, and Start-triggered sync remains local-only until sync is enabled.
+The latest combined local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-154548`
+
+Coverage after this slice is 92.0% overall.

@@ -21,6 +21,36 @@ public sealed class WpfRealStartAcceptanceScriptTests
         Assert.Contains("WOONG_MONITOR_LOCAL_DB", script);
     }
 
+    [Fact]
+    public void RealStartTool_VerifiesPersistedFocusSessionAppearsInRecentAppSessionsList()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.RealStartAcceptance", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "RealStart acceptance tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("RecentAppSessionsList", tool);
+        Assert.Contains("VerifyRecentAppSessionVisible", tool);
+        Assert.Contains("ReadLatestFocusSessionProcessName", tool);
+        Assert.Contains("persisted focus session appeared in RecentAppSessionsList", tool);
+    }
+
+    [Fact]
+    public void RealStartTool_ToleratesAutoStartedTracking()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.RealStartAcceptance", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "RealStart acceptance tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("EnsureTrackingRunning", tool);
+        Assert.Contains("TrackingStatusText", tool);
+        Assert.Contains("Tracking already running", tool);
+        Assert.Contains("StartTrackingButton is disabled because auto-start already ran", tool);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

@@ -11,12 +11,15 @@ public sealed class WindowsAppOptions
 
     public const string AcceptanceModeEnvironmentVariable = "WOONG_MONITOR_ACCEPTANCE_MODE";
 
+    public const string AutoStartTrackingEnvironmentVariable = "WOONG_MONITOR_AUTO_START_TRACKING";
+
     public WindowsAppOptions(
         DashboardOptions dashboardOptions,
         string deviceId,
         string localDatabaseConnectionString,
         TimeSpan idleThreshold,
-        WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None)
+        WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
+        bool autoStartTracking = true)
     {
         DashboardOptions = dashboardOptions ?? throw new ArgumentNullException(nameof(dashboardOptions));
         DeviceId = string.IsNullOrWhiteSpace(deviceId)
@@ -29,6 +32,7 @@ public sealed class WindowsAppOptions
             ? idleThreshold
             : throw new ArgumentOutOfRangeException(nameof(idleThreshold));
         AcceptanceMode = acceptanceMode;
+        AutoStartTracking = autoStartTracking;
     }
 
     public DashboardOptions DashboardOptions { get; }
@@ -40,6 +44,8 @@ public sealed class WindowsAppOptions
     public TimeSpan IdleThreshold { get; }
 
     public WindowsAppAcceptanceMode AcceptanceMode { get; }
+
+    public bool AutoStartTracking { get; }
 
     public static WindowsAppOptions CreateDefault(DashboardOptions dashboardOptions)
     {
@@ -65,7 +71,8 @@ public sealed class WindowsAppOptions
                 deviceId,
                 localDatabaseConnectionString: $"Data Source={localDbOverride};Pooling=False",
                 idleThreshold: TimeSpan.FromMinutes(5),
-                acceptanceMode: ParseAcceptanceMode());
+                acceptanceMode: ParseAcceptanceMode(),
+                autoStartTracking: ParseAutoStartTracking());
         }
 
         string dataDirectory = Path.Combine(
@@ -78,7 +85,25 @@ public sealed class WindowsAppOptions
             deviceId,
             localDatabaseConnectionString: $"Data Source={Path.Combine(dataDirectory, "windows-local.db")};Pooling=False",
             idleThreshold: TimeSpan.FromMinutes(5),
-            acceptanceMode: ParseAcceptanceMode());
+            acceptanceMode: ParseAcceptanceMode(),
+            autoStartTracking: ParseAutoStartTracking());
+    }
+
+    private static bool ParseAutoStartTracking()
+    {
+        string? value = Environment.GetEnvironmentVariable(AutoStartTrackingEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return true;
+        }
+
+        return value.Trim() switch
+        {
+            "1" => true,
+            "0" => false,
+            _ when bool.TryParse(value, out bool parsed) => parsed,
+            _ => throw new InvalidOperationException($"Unsupported auto-start tracking value: {value}. Use true/false or 1/0.")
+        };
     }
 
     private static WindowsAppAcceptanceMode ParseAcceptanceMode()

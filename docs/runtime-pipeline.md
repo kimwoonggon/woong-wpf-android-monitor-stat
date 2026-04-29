@@ -98,7 +98,9 @@ remain local device stores.
 
 - App starts without crashing.
 - Empty dashboard states are visible.
-- No tracking starts automatically.
+- No tracking starts automatically. The local snapshot tool enforces this with
+  `WOONG_MONITOR_AUTO_START_TRACKING=0` so EmptyData remains a pure empty-state
+  baseline even though the normal product startup can auto-start tracking.
 
 ### B. SampleDashboard
 
@@ -109,18 +111,22 @@ remain local device stores.
 
 - Fake foreground/browser readers generate deterministic events.
 - Temporary SQLite DB is used.
-- FlaUI clicks Start.
+- The WPF app auto-starts tracking or FlaUI clicks Start if it has not started
+  yet.
 - Sessions are persisted to SQLite and shown in the dashboard.
 - Expected content includes Visual Studio Code, Chrome, `github.com`, and
   `chatgpt.com`.
 - Stop flushes sessions.
-- Sync Now uses a fake sync client.
+- Start immediately attempts sync, but sync remains off/local-only by default
+  and reports a skipped upload. Sync Now uses a fake sync client only after the
+  acceptance flow explicitly enables sync.
 
 ### D. RealStart Local Validation
 
 - Real Windows readers are used.
 - A temp/local DB is used.
-- FlaUI clicks Start, waits a short interval, then clicks Stop.
+- The app may auto-start; otherwise FlaUI clicks Start. The flow waits a short
+  interval, then clicks Stop.
 - At least one real focus session is persisted.
 - UI shows a recent app session.
 - No real server upload occurs unless an explicit `--AllowServerSync` flag is
@@ -146,6 +152,12 @@ server sync disabled unless `--AllowServerSync` is explicitly passed.
 The latest local RealStart run launched the WPF app with real Windows readers,
 clicked Start/Stop through FlaUI, and verified that the temp DB contained one
 `focus_session` row and one `sync_outbox` row.
+
+RealStart now also verifies that the latest persisted focus session appears in
+the WPF `RecentAppSessionsList` after Stop. The check reads the process/app name
+from the temp SQLite `focus_session` table and searches the visible WPF
+automation tree, avoiding a hard-coded process name because real foreground
+metadata is environment-dependent.
 
 `WindowsTrackingDashboardCoordinator` now returns runtime evidence timestamps
 in each `DashboardTrackingSnapshot`. `LastPollAtUtc` is set on Start/Poll/Stop
@@ -173,3 +185,9 @@ completed `web_session` rows to Windows local SQLite, and queues pending
 Start/tick test: Chrome remains foreground, the domain changes from
 `github.com` to `chatgpt.com`, and the dashboard reloads `github.com` from
 SQLite before Stop is clicked.
+
+Normal WPF product startup now defaults to visible auto-start tracking through
+`WindowsAppOptions.AutoStartTracking`. `StartTrackingCommand` also performs an
+immediate sync attempt so users see sync state right away. This does not enable
+server upload by default: if sync is off, the visible status is
+`Sync skipped. Enable sync to upload.` and data remains local.

@@ -44,7 +44,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _currentWindowTitleText = "Window title hidden by privacy settings";
 
     [ObservableProperty]
-    private string _currentBrowserDomainText = "Browser metadata unavailable";
+    private string _currentBrowserDomainText = BrowserDomainUnavailableText;
 
     [ObservableProperty]
     private string _currentSessionDurationText = "00:00:00";
@@ -140,6 +140,8 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public string DetailsPageText => $"{CurrentDetailsPage} / {TotalDetailsPages}";
 
+    private const string BrowserDomainUnavailableText = "Browser domain not connected yet. Domain-only privacy is safe.";
+
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
@@ -162,7 +164,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
         CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
-        CurrentBrowserDomainText = TextOrDefault(snapshot.CurrentBrowserDomain, "Browser metadata unavailable");
+        CurrentBrowserDomainText = TextOrDefault(snapshot.CurrentBrowserDomain, BrowserDomainUnavailableText);
         _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
         UpdateCurrentWindowTitleText();
         CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
@@ -218,6 +220,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         TrackingStatusText = "Running";
         TrackingBadgeText = "Tracking Running";
         UpdateCurrentActivity(_trackingCoordinator.StartTracking());
+        SyncNow();
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
         PollTrackingCommand.NotifyCanExecuteChanged();

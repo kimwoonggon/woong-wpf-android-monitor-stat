@@ -126,6 +126,11 @@ internal static class UiSnapshotRunner
         {
             startInfo.Environment["WOONG_MONITOR_ACCEPTANCE_MODE"] = "TrackingPipeline";
             startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
+            startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "1";
+        }
+        else
+        {
+            startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "0";
         }
 
         return startInfo;
@@ -155,17 +160,16 @@ internal static class UiSnapshotRunner
     private static void RunTrackingPipelineAcceptance(Window mainWindow, UiSnapshotContext context)
     {
         CaptureWindow(mainWindow, "01-startup.png", context);
-        RequireEnabled(mainWindow, "StartTrackingButton", context);
+        RequireExists(mainWindow, "StartTrackingButton", context);
         RequireExists(mainWindow, "StopTrackingButton", context);
         RequireExists(mainWindow, "SyncNowButton", context);
         RequireExists(mainWindow, "SummaryCardsContainer", context);
         WarnIfMissing(mainWindow, "ChartArea", context, "Chart area may be below the current scroll viewport.");
 
-        InvokeRequired(mainWindow, "StartTrackingButton");
+        EnsureTrackingRunning(mainWindow, context);
         Thread.Sleep(300);
-        context.Pass("StartTrackingButton", "Invoked", "Invoked");
         context.CheckContains("TrackingStatusText", "Running", GetElementName(mainWindow, "TrackingStatusText"));
-        context.CheckContains("CurrentAppNameText start", "Code.exe", GetElementName(mainWindow, "CurrentAppNameText"));
+        context.CheckContainsAny("CurrentAppNameText start", GetElementName(mainWindow, "CurrentAppNameText"), "Code.exe", "chrome.exe");
         CaptureWindow(mainWindow, "02-after-start.png", context);
         CaptureElementOrWindowFallback(mainWindow, "CurrentActivityPanel", "current-activity.png", context);
 
@@ -216,6 +220,37 @@ internal static class UiSnapshotRunner
         context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementName(mainWindow, "LastSyncStatusText"));
         CaptureWindow(mainWindow, "05-after-sync.png", context);
         CaptureWindow(mainWindow, "06-settings.png", context);
+    }
+
+    private static void EnsureTrackingRunning(Window window, UiSnapshotContext context)
+    {
+        string trackingStatus = GetElementName(window, "TrackingStatusText");
+        if (trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Pass(
+                "StartTrackingButton",
+                "Tracking starts by button or auto-start",
+                "Tracking already running; StartTrackingButton is disabled because auto-start already ran.");
+            return;
+        }
+
+        AutomationElement? startButton = window.FindFirstDescendant("StartTrackingButton");
+        if (startButton is null)
+        {
+            context.Fail("StartTrackingButton", "Exists and can start tracking", "Missing");
+            throw new InvalidOperationException("Could not find required control `StartTrackingButton`.");
+        }
+
+        if (!startButton.IsEnabled)
+        {
+            string message =
+                $"StartTrackingButton is disabled because auto-start already ran, but TrackingStatusText was `{trackingStatus}`.";
+            context.Fail("StartTrackingButton", "Enabled unless tracking already running", message);
+            throw new InvalidOperationException(message);
+        }
+
+        startButton.AsButton().Invoke();
+        context.Pass("StartTrackingButton", "Invoked or already running", "Invoked");
     }
 
     private static void RequireEnabled(Window window, string automationId, UiSnapshotContext context)
@@ -687,6 +722,18 @@ internal sealed class UiSnapshotContext
             $"Contains `{expected}`",
             string.IsNullOrWhiteSpace(actual) ? "<empty>" : actual,
             actual.Contains(expected, StringComparison.OrdinalIgnoreCase) ? CheckStatus.Pass : CheckStatus.Fail);
+
+    public void CheckContainsAny(string name, string actual, params string[] expectedValues)
+    {
+        string expected = string.Join("`, `", expectedValues);
+        Add(
+            name,
+            $"Contains any of `{expected}`",
+            string.IsNullOrWhiteSpace(actual) ? "<empty>" : actual,
+            expectedValues.Any(expectedValue => actual.Contains(expectedValue, StringComparison.OrdinalIgnoreCase))
+                ? CheckStatus.Pass
+                : CheckStatus.Fail);
+    }
 
     public void Add(string name, string expected, string actual, CheckStatus status)
         => Results.Add(new CheckResult(name, expected, actual, status));

@@ -172,6 +172,15 @@ dashboard to reload from SQLite.
 The Windows infrastructure can now generate the Chrome native messaging host
 manifest JSON through `NativeMessagingHostManifestGenerator`. The manifest
 declares the stable native host name, host executable path, `stdio` transport,
-and explicit allowed extension origins. WPF browser connection status remains a
-deferred UI affordance because current restoration priority is non-UI
-tracking/schema correctness.
+and explicit allowed extension origins.
+
+WPF browser UI copy must not present a safe privacy state as a broken product
+state. When no browser domain is available in the Current Focus panel, the
+fallback text is:
+
+`Browser domain not connected yet. Domain-only privacy is safe.`
+
+This means foreground app/window focus tracking can still be working while the
+browser-domain capture channel is not connected, not configured, or has not yet
+reported a domain. Full URL capture remains off by default and must require a
+future explicit opt-in before any URL path/query is stored.

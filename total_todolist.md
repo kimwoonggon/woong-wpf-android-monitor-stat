@@ -512,10 +512,13 @@ milestones below are finished.
 - [ ] Implement EmptyData mode acceptance.
 - [ ] Implement SampleDashboard mode acceptance.
 - [x] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
+- [x] TrackingPipeline/RealStart acceptance tolerate product auto-start when the app is already Running.
+- [x] EmptyData snapshot mode explicitly disables product auto-start so empty-state evidence remains deterministic.
 - [x] Verify Start changes tracking status to Running.
 - [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Verify Stop changes tracking status to Stopped.
 - [x] Verify Sync Now updates last sync status using a fake sync client.
+- [x] Verify StartTracking immediately attempts sync and reports local-only skipped status while sync is off.
 - [x] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
 - [x] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
 - [x] Keep screenshot review local-only and optional for GPT/human review.
@@ -627,7 +630,7 @@ milestones below are finished.
 - [x] Ensure WPF semantic acceptance verifies SQLite focus/web/outbox rows plus UI values for VS Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
-- [ ] Update `docs/browser-tracking-policy.md` for any new browser UI state labels.
+- [x] Update `docs/browser-tracking-policy.md` for the browser-domain-not-connected safe privacy UI label.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.
@@ -747,6 +750,20 @@ milestones below are finished.
 - [x] WPF browser persistence verification: `.NET` build passed.
 - [x] WPF browser persistence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-151739`.
 - [x] WPF browser persistence verification: coverage report generated successfully with overall line coverage 92.2%.
+- [x] WPF RealStart UI evidence: RED source-contract test required RealStart to verify the persisted focus session appears in `RecentAppSessionsList`.
+- [x] WPF RealStart UI evidence: tool now reads the latest focus-session process/app name from temp SQLite and searches the WPF automation tree after Stop.
+- [x] WPF RealStart UI evidence verification: focused App test passed.
+- [x] WPF RealStart UI evidence verification: `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2` passed and reported the persisted row in `RecentAppSessionsList`.
+- [x] WPF RealStart UI evidence verification: all Windows App tests passed (58 tests).
+- [x] WPF RealStart UI evidence verification: full `.NET` tests passed (215 tests).
+- [x] WPF RealStart UI evidence verification: `.NET` build passed.
+- [x] WPF RealStart UI evidence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-152658`.
+- [x] WPF RealStart UI evidence verification: coverage report generated successfully with overall line coverage 92.2%.
+- [x] WPF auto-start/sync-at-start verification: RED tests proved StartTracking auto-syncs while sync-off remains local-only.
+- [x] WPF auto-start/sync-at-start verification: normal WPF startup defaults to auto-start via `WindowsAppOptions.AutoStartTracking`, with `WOONG_MONITOR_AUTO_START_TRACKING` override.
+- [x] WPF auto-start/sync-at-start verification: RealStart and UI snapshot tools accept an already Running app and no longer require Start to be initially enabled.
+- [x] WPF auto-start/sync-at-start verification: browser-domain fallback copy now says `Browser domain not connected yet. Domain-only privacy is safe.`
+- [x] WPF auto-start/sync-at-start verification: full `.NET` tests passed (222 tests), `.NET` build passed, WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-154548`, and coverage generated with overall line coverage 92.0%.
 - [x] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
 - [x] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
 - [x] SettingsPanel extraction verification: `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`, `SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`, `SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and `SettingsPanel_PreservesRuntimeAndStorageActions` passed.
@@ -834,6 +851,8 @@ milestones below are finished.
 - [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
+- [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
+- [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
 - [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.
 - [ ] Run full `.NET` tests and build after componentization.
 - [ ] Run WPF UI acceptance after componentization.
