@@ -201,6 +201,10 @@ Current details tab implementation:
 - Details tab headers include compact icon text elements with stable
   AutomationIds. The pager uses icon-sized previous/next buttons so the footer
   stays compact at 1024px while remaining automation-addressable.
+- Details pager icon controls also expose readable automation names. The
+  previous/next buttons keep compact glyph content for visual layout, while
+  `AutomationProperties.Name` describes "Previous details page" and "Next
+  details page" for semantic UI automation and assistive technology.
 - The App Sessions `App` column is a template column with a compact app glyph
   plus the app name. The process, time, state, window, and source columns remain
   explicit text columns with product-defined MinWidth values.

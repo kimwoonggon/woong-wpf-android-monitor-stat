@@ -871,6 +871,34 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DetailsTabsPanel_PagerControlsExposeReadableAutomationNames()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                DetailsTabsPanel panel = FindByAutomationId<DetailsTabsPanel>(window, "DetailsTabsPanel");
+                Button previous = FindByAutomationId<Button>(panel, "DetailsPreviousPageButton");
+                Button next = FindByAutomationId<Button>(panel, "DetailsNextPageButton");
+                TextBlock pageStatus = FindByAutomationId<TextBlock>(panel, "DetailsPageStatusText");
+
+                Assert.Equal("Previous details page", AutomationProperties.GetName(previous));
+                Assert.Equal("Next details page", AutomationProperties.GetName(next));
+                Assert.Equal("Current details page", AutomationProperties.GetName(pageStatus));
+                Assert.Equal("1 / 1", pageStatus.Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding()
         => RunOnStaThread(() =>
         {

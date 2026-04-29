@@ -1196,6 +1196,7 @@ milestones below are finished.
   - [x] WPF chart/details visual evidence: RED App tests required chart header icons, Details tab icons, compact pager icon buttons, and an App Sessions template column, then passed after XAML/resource updates.
   - [x] WPF Live Event acceptance evidence: RED snapshot-tool guard required Live Event Log checks across reachable details pages, then passed after the tool aggregated paged `LiveEventsList` text.
   - [x] WPF selected-tab details pager evidence: RED Presentation test proved switching from App Sessions page 2 to a shorter Web Sessions tab must reset to page 1 and use the selected tab's page count, then passed after ViewModel paging logic was scoped to `SelectedDetailsTab`.
+  - [x] WPF details pager automation names: RED App test required readable `AutomationProperties.Name` values for compact previous/next/page-status controls, then passed after preserving icon buttons with semantic names.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

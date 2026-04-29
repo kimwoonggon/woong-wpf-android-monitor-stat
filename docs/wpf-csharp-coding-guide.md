@@ -249,6 +249,10 @@ public partial class MainWindow : Window
 - Add AutomationIds for controls that are user-visible or automation-relevant:
   refresh button, period selector, summary cards, charts, tabs, grids, settings
   controls.
+- Icon-only or glyph-only controls must also expose readable
+  `AutomationProperties.Name` values. Keep the visible content compact when the
+  layout needs it, but do not make UI automation or assistive technology infer
+  behavior from symbols such as `‹` or `›`.
 - Keep visual-only WPF details such as tab icons, compact pager icons, and
   DataGrid cell templates in `Windows.App` XAML/resources. Presentation should
   expose row values and selected tab state, not WPF `DataTemplate` or control

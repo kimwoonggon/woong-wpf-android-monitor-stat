@@ -3158,6 +3158,30 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.3% (3559/3895), branch 70.3% (486/691).
 
+## 2026-04-30 WPF Details Pager Automation Names Slice
+
+- Added a RED WPF App expectation test requiring the compact Details pager
+  previous/next buttons and page-status text to expose readable automation
+  names.
+- Updated `DetailsTabsPanel.xaml` so the visible pager remains compact while UI
+  automation and assistive technology can read `Previous details page`, `Next
+  details page`, and `Current details page`.
+- This is an App/XAML-only accessibility and automation-stability slice. It
+  does not change tracking, SQLite, sync, browser capture, or privacy behavior.
+
+Verified:
+
+- Popper: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DetailsTabsPanel_PagerControlsExposeReadableAutomationNames"` passed.
+- Popper: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DetailsTabsPanel"` passed 5 tests.
+- Popper: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~MainWindow_TabsExposeExpectedListsAndSettingsControls"` passed.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DetailsTabsPanel_PagerControlsExposeReadableAutomationNames"` passed.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 107 WPF App tests.
+- Main: `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 53 WPF Presentation tests.
+- Main: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 337 total .NET tests. A transient MSB3101 cache write warning appeared because build validation was running at the same time; no test failed.
+- Main: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed and generated coverage artifacts; overall line coverage remained 91.3%.
+- Main: `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-020432`. RealStart persisted a focus session into the temp SQLite DB and queued one outbox row. TrackingPipeline UI snapshots and semantic checks passed. Cleanup emitted a non-fatal warning because the process was already closed.
+
 ## 2026-04-29 WPF Browser Stop Flush Slice
 
 - Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain
