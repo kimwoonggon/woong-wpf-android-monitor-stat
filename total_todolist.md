@@ -1150,6 +1150,12 @@ milestones below are finished.
   - [x] Close flush verification: `.NET` build passed.
   - [x] Close flush verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-221314`.
   - [x] Close flush verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Add WPF runtime integration test for Sync Now while sync is off after focus/web outbox rows are queued.
+  - [x] Sync-off pending verification: `MainWindow_SyncNowButton_WhenSyncOffAfterQueuedRows_LeavesOutboxPendingAndShowsSkippedStatus` passed and proved focus/web outbox rows remain pending with no synced timestamp or retry count changes.
+  - [x] Sync-off pending verification: full `.NET` tests passed (304 tests).
+  - [x] Sync-off pending verification: `.NET` build passed.
+  - [x] Sync-off pending verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-222624`.
+  - [x] Sync-off pending verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

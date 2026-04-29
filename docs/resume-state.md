@@ -2176,6 +2176,29 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.3%.
 
+## 2026-04-29 WPF Sync-Off Pending Outbox Slice
+
+- Added WPF runtime integration coverage for Sync Now after local outbox rows
+  exist. The test starts Chrome/github.com tracking, stops after seven minutes,
+  verifies queued `focus_session` and `web_session` rows, clicks `Sync Now`
+  while sync is still off, and proves rows remain `Pending` with null
+  `SyncedAtUtc` and zero `RetryCount`.
+- No production change was needed for this slice; the missing piece was
+  integration evidence at the WPF button + temp SQLite boundary.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_SyncNowButton_WhenSyncOffAfterQueuedRows_LeavesOutboxPendingAndShowsSkippedStatus`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-222624`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
 ## 2026-04-29 Chrome Cleanup-Only Sandbox Slice
 
 - Hardened `scripts/run-chrome-native-message-acceptance.ps1 -CleanupOnly` so

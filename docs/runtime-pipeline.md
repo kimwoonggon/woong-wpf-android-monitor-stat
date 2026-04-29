@@ -233,6 +233,12 @@ immediate sync attempt so users see sync state right away. This does not enable
 server upload by default: if sync is off, the visible status is
 `Sync skipped. Enable sync to upload.` and data remains local.
 
+The WPF `Sync Now` button is covered against real local outbox rows while sync
+is off. After Start/Stop queues both `focus_session` and `web_session` rows,
+clicking Sync Now leaves every row `Pending`, keeps `SyncedAtUtc` null and
+`RetryCount` at zero, and shows the skipped/local-only status. This preserves
+sync opt-in even when data is already waiting locally.
+
 On startup/Start, the Windows tracker reads the current foreground app/window
 metadata immediately and displays that current focus state. It does not treat
 all running or background processes as focus time; only the foreground

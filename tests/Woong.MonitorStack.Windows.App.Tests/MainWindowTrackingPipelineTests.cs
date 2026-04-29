@@ -661,6 +661,79 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void MainWindow_SyncNowButton_WhenSyncOffAfterQueuedRows_LeavesOutboxPendingAndShowsSkippedStatus()
+        => RunOnStaThread(() =>
+        {
+            var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            var clock = new MutableClock(startedAtUtc);
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 200,
+                processId: 20,
+                processName: "chrome.exe",
+                executablePath: "C:\\Apps\\chrome.exe",
+                windowTitle: "GitHub - Chrome"));
+            var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                startedAtUtc,
+                "https://github.com/org/repo?secret=1",
+                "github.com",
+                "Repository"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                browserReader);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+
+                clock.UtcNow = startedAtUtc.AddMinutes(7);
+                InvokeButton(FindByAutomationId<Button>(window, "StopTrackingButton"));
+                IReadOnlyList<SyncOutboxItem> queuedBeforeSync = outboxRepository.QueryAll();
+                Assert.Equal(2, queuedBeforeSync.Count);
+                Assert.Contains(queuedBeforeSync, row => row.AggregateType == "focus_session");
+                Assert.Contains(queuedBeforeSync, row => row.AggregateType == "web_session");
+
+                InvokeButton(FindByAutomationId<Button>(window, "SyncNowButton"));
+                window.UpdateLayout();
+
+                IReadOnlyList<SyncOutboxItem> queuedAfterSync = outboxRepository.QueryAll();
+                Assert.Equal(queuedBeforeSync.Count, queuedAfterSync.Count);
+                Assert.All(queuedAfterSync, row =>
+                {
+                    Assert.Equal(SyncOutboxStatus.Pending, row.Status);
+                    Assert.Null(row.SyncedAtUtc);
+                    Assert.Equal(0, row.RetryCount);
+                });
+                Assert.Equal(
+                    "Sync skipped. Enable sync to upload.",
+                    FindByAutomationId<TextBlock>(window, "LastSyncStatusText").Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_WithFakeBrowserPipeline_ShowsGithubAndChatgptInWebSessions()
         => RunOnStaThread(() =>
         {
