@@ -17,9 +17,10 @@ class LocationContextSyncPayloadFactoryTest {
             locationSettings = FakeLocationSettings(isLocationEnabled = true)
         )
 
-        val payload = factory.buildPayload(listOf(locationSnapshot()))
+        val payload = factory.buildPayload("android-device-1", listOf(locationSnapshot()))
 
-        assertTrue(payload.items.isEmpty())
+        assertEquals("android-device-1", payload.deviceId)
+        assertTrue(payload.contexts.isEmpty())
     }
 
     @Test
@@ -29,19 +30,23 @@ class LocationContextSyncPayloadFactoryTest {
             locationSettings = FakeLocationSettings(isLocationEnabled = false)
         )
 
-        val payload = factory.buildPayload(listOf(locationSnapshot()))
+        val payload = factory.buildPayload("android-device-1", listOf(locationSnapshot()))
 
-        assertTrue(payload.items.isEmpty())
+        assertEquals("android-device-1", payload.deviceId)
+        assertTrue(payload.contexts.isEmpty())
     }
 
     @Test
     fun buildPayloadIncludesNullableCoordinatesOnlyWhenSyncAndLocationAreEnabled() {
         val factory = LocationContextSyncPayloadFactory(
             syncSettings = FakeSyncSettings(isEnabled = true),
-            locationSettings = FakeLocationSettings(isLocationEnabled = true)
+            locationSettings = FakeLocationSettings(isLocationEnabled = true),
+            timezoneId = "Asia/Seoul"
         )
 
         val payload = factory.buildPayload(
+            deviceId = "android-device-1",
+            snapshots =
             listOf(
                 locationSnapshot(
                     id = "location-with-coordinates",
@@ -58,14 +63,20 @@ class LocationContextSyncPayloadFactoryTest {
             )
         )
 
-        assertEquals("location-with-coordinates", payload.items[0].clientSnapshotId)
-        assertEquals("2026-04-28T00:00:00Z", payload.items[0].capturedAtUtc)
-        assertEquals(37.5665, payload.items[0].latitude ?: 0.0, 0.0001)
-        assertEquals(126.9780, payload.items[0].longitude ?: 0.0, 0.0001)
-        assertEquals(35.5f, payload.items[0].accuracyMeters ?: 0f, 0.0001f)
-        assertEquals(null, payload.items[1].latitude)
-        assertEquals(null, payload.items[1].longitude)
-        assertEquals(null, payload.items[1].accuracyMeters)
+        assertEquals("android-device-1", payload.deviceId)
+        assertEquals("location-with-coordinates", payload.contexts[0].clientContextId)
+        assertEquals("2026-04-28T00:00:00Z", payload.contexts[0].capturedAtUtc)
+        assertEquals("2026-04-28", payload.contexts[0].localDate)
+        assertEquals("Asia/Seoul", payload.contexts[0].timezoneId)
+        assertEquals(37.5665, payload.contexts[0].latitude ?: 0.0, 0.0001)
+        assertEquals(126.9780, payload.contexts[0].longitude ?: 0.0, 0.0001)
+        assertEquals(35.5f, payload.contexts[0].accuracyMeters ?: 0f, 0.0001f)
+        assertEquals("AppUsageContext", payload.contexts[0].captureMode)
+        assertEquals("GrantedApproximate", payload.contexts[0].permissionState)
+        assertEquals("android_location_context", payload.contexts[0].source)
+        assertEquals(null, payload.contexts[1].latitude)
+        assertEquals(null, payload.contexts[1].longitude)
+        assertEquals(null, payload.contexts[1].accuracyMeters)
     }
 
     private fun locationSnapshot(

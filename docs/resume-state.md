@@ -3116,6 +3116,33 @@ Verified so far:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.3% (3559/3895), branch 70.3% (486/691).
 
+## 2026-04-30 Android Location Sync Client Contract Slice
+
+- Updated Android location-context upload DTOs to match the server
+  `/api/location-contexts/upload` contract: top-level `deviceId` plus
+  `contexts`.
+- `LocationContextSyncPayloadFactory` now emits `clientContextId`, UTC capture
+  instant, local date, timezone id, nullable latitude/longitude/accuracy,
+  capture mode, permission state, and `android_location_context` source.
+- Added `AndroidSyncApi.uploadLocationContexts` and implemented
+  `AndroidSyncClient` POSTing to `/api/location-contexts/upload`.
+- This slice preserves the privacy gate: payloads remain empty unless both sync
+  and location context capture are explicitly enabled. It does not yet wire the
+  local outbox/worker path to upload location-context rows.
+
+Verified:
+
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.LocationContextSyncPayloadFactoryTest" --no-daemon --stacktrace` passed.
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.AndroidSyncClientTest" --no-daemon --stacktrace` passed.
+- Carver: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.*" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sync.LocationContextSyncPayloadFactoryTest" --tests "com.woong.monitorstack.sync.AndroidSyncClientTest" --tests "com.woong.monitorstack.sync.AndroidOutboxSyncProcessorTest" --no-daemon --stacktrace` passed.
+- Main: `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+
+Remaining Android location sync work:
+
+- Wire local location-context outbox/worker processing into the sync runner so
+  rows upload only when both sync opt-in and location opt-in are enabled.
+
 ## 2026-04-30 Android SVG UI Flow Alignment Slice
 
 - Checked the planned Figma/SVG flow at

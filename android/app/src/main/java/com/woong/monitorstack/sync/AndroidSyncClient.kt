@@ -17,7 +17,8 @@ class AndroidSyncClient(
         .add(SyncUploadItemStatusJsonAdapter())
         .add(KotlinJsonAdapterFactory())
         .build()
-    private val requestAdapter = moshi.adapter(SyncFocusSessionUploadRequest::class.java)
+    private val focusSessionRequestAdapter = moshi.adapter(SyncFocusSessionUploadRequest::class.java)
+    private val locationContextRequestAdapter = moshi.adapter(SyncLocationContextUploadRequest::class.java)
     private val resultAdapter = moshi.adapter(SyncUploadBatchResult::class.java)
 
     init {
@@ -27,7 +28,7 @@ class AndroidSyncClient(
     override fun uploadFocusSessions(request: SyncFocusSessionUploadRequest): SyncUploadBatchResult {
         val httpRequest = Request.Builder()
             .url("$normalizedBaseUrl/api/focus-sessions/upload")
-            .post(requestAdapter.toJson(request).toRequestBody(JsonMediaType))
+            .post(focusSessionRequestAdapter.toJson(request).toRequestBody(JsonMediaType))
             .build()
 
         httpClient.newCall(httpRequest).execute().use { response ->
@@ -38,6 +39,23 @@ class AndroidSyncClient(
             val responseJson = response.body.string()
             return resultAdapter.fromJson(responseJson)
                 ?: throw IOException("Focus session upload returned an empty response.")
+        }
+    }
+
+    override fun uploadLocationContexts(request: SyncLocationContextUploadRequest): SyncUploadBatchResult {
+        val httpRequest = Request.Builder()
+            .url("$normalizedBaseUrl/api/location-contexts/upload")
+            .post(locationContextRequestAdapter.toJson(request).toRequestBody(JsonMediaType))
+            .build()
+
+        httpClient.newCall(httpRequest).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("Location context upload failed with HTTP ${response.code}.")
+            }
+
+            val responseJson = response.body.string()
+            return resultAdapter.fromJson(responseJson)
+                ?: throw IOException("Location context upload returned an empty response.")
         }
     }
 

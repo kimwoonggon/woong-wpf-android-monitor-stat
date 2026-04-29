@@ -126,6 +126,12 @@ class AndroidOutboxSyncProcessorTest {
             this.request = request
             return result
         }
+
+        override fun uploadLocationContexts(
+            request: SyncLocationContextUploadRequest
+        ): SyncUploadBatchResult {
+            throw AssertionError("Location context upload is not expected in this test.")
+        }
     }
 
     private data class FailedOutboxItem(

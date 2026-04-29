@@ -50,6 +50,56 @@ class AndroidSyncClientTest {
         assertEquals(SyncUploadItemStatus.Accepted, result.items.single().status)
     }
 
+    @Test
+    fun uploadLocationContextsPostsServerContractPayloadAndParsesBatchResult() {
+        val interceptor = CapturingInterceptor(
+            responseJson = """{"items":[{"clientId":"location-1","status":1,"errorMessage":null}]}"""
+        )
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient
+        )
+
+        val result = syncClient.uploadLocationContexts(
+            SyncLocationContextUploadRequest(
+                deviceId = "android-device-1",
+                contexts = listOf(
+                    SyncLocationContextUploadItem(
+                        clientContextId = "location-1",
+                        capturedAtUtc = "2026-04-28T00:00:00Z",
+                        localDate = "2026-04-28",
+                        timezoneId = "Asia/Seoul",
+                        latitude = 37.5665,
+                        longitude = 126.9780,
+                        accuracyMeters = 35.5f,
+                        captureMode = "AppUsageContext",
+                        permissionState = "GrantedApproximate",
+                        source = "android_location_context"
+                    )
+                )
+            )
+        )
+
+        assertEquals("/api/location-contexts/upload", interceptor.path)
+        assertTrue(interceptor.body.contains(""""deviceId":"android-device-1""""))
+        assertTrue(interceptor.body.contains(""""contexts":["""))
+        assertTrue(interceptor.body.contains(""""clientContextId":"location-1""""))
+        assertTrue(interceptor.body.contains(""""capturedAtUtc":"2026-04-28T00:00:00Z""""))
+        assertTrue(interceptor.body.contains(""""localDate":"2026-04-28""""))
+        assertTrue(interceptor.body.contains(""""timezoneId":"Asia/Seoul""""))
+        assertTrue(interceptor.body.contains(""""latitude":37.5665"""))
+        assertTrue(interceptor.body.contains(""""longitude":126.978"""))
+        assertTrue(interceptor.body.contains(""""accuracyMeters":35.5"""))
+        assertTrue(interceptor.body.contains(""""captureMode":"AppUsageContext""""))
+        assertTrue(interceptor.body.contains(""""permissionState":"GrantedApproximate""""))
+        assertTrue(interceptor.body.contains(""""source":"android_location_context""""))
+        assertEquals("location-1", result.items.single().clientId)
+        assertEquals(SyncUploadItemStatus.Accepted, result.items.single().status)
+    }
+
     private class CapturingInterceptor(
         private val responseJson: String
     ) : Interceptor {

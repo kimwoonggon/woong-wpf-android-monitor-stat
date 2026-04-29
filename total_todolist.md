@@ -625,6 +625,9 @@ milestones below are finished.
 - [x] Add server `location_contexts` upload contract, nullable coordinate storage, idempotency tests, and PostgreSQL migration.
   - [x] Verify server location context tests, full `.NET` tests/build, and coverage generation at 91.3% line coverage.
 - [ ] Integrate Android sync runner/client with server `location_contexts` upload endpoint while preserving sync/location opt-in gates.
+  - [x] Add Android sync API/client method for `/api/location-contexts/upload`.
+  - [x] Align Android location-context upload payload with the server contract: top-level `deviceId` and `contexts` with `clientContextId`, UTC/local date, timezone, nullable coordinates, capture mode, permission state, and source.
+  - [ ] Wire local location-context outbox/worker processing into the sync runner while preserving sync opt-in and location opt-in gates.
 - [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
 - [x] Commit and push Android optional location context slices.
 
