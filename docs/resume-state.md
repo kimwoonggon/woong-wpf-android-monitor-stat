@@ -2,6 +2,57 @@
 
 Updated: 2026-04-29
 
+## 2026-04-29 WPF App Root Style Merge Slice
+
+- Added RED architecture tests proving that `App.xaml` merges every shared
+  style dictionary under `Styles/` and that `MainWindow.xaml` does not duplicate
+  application-level style dictionaries.
+- Fixed the resource composition by adding `Styles/Inputs.xaml` to
+  `App.xaml` and removing the duplicate `Colors.xaml` merge from
+  `MainWindow.xaml`.
+- This keeps `MainWindow` as a thin WPF shell while preserving shared Settings
+  input/checkbox styles at the application root.
+- Updated the WPF background expectation to inject test-local resources into
+  the Window under test rather than creating a process-wide WPF `Application`,
+  keeping STA UI tests isolated.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AppResources_MergeEverySharedStyleDictionaryAtApplicationRoot|FullyQualifiedName~MainWindow_DoesNotDuplicateApplicationLevelStyleDictionaries" -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-233728`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+## 2026-04-29 Android Optional Location Context Plan Slice
+
+- Added `docs/android-ui-plan.md` with Android XML/View screen structure plus
+  optional latitude/longitude location context.
+- The plan treats 위도/경도 as sensitive metadata: off by default, Android
+  location permission required, explicit in-app opt-in required, approximate
+  mode preferred, and precise coordinates a separate choice.
+- Updated `docs/prd.md`, `docs/privacy-boundaries.md`,
+  `docs/android-ui-screenshot-testing.md`, and `total_todolist.md` so the new
+  location UI request does not conflict with the metadata-only privacy model.
+- Added an architecture documentation guardrail test so the Android UI plan
+  keeps latitude/longitude opt-in, permission-gated, and non-inferred from
+  other app content.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter AndroidUiPlan_DocumentsLatitudeLongitudeAsExplicitOptInMetadata -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` from `android/`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
 ## Last Completed Slice
 
 Chrome acceptance sandbox guard follow-up. RED test

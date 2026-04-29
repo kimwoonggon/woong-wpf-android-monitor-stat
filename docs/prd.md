@@ -97,6 +97,7 @@ Windows 앱은 Android DB를 알 필요가 없고, Android 앱도 Windows DB를 
 * WorkManager 기반 주기 수집/동기화
 * Android 대시보드 화면
 * 아침 요약 알림 또는 요약 화면
+* 선택형 위치 컨텍스트 UI: 위도/경도는 기본 수집하지 않으며 Android 위치 권한과 앱 내 명시적 opt-in이 있을 때만 표시/저장/동기화 후보로 다룬다.
 * 테스트 코드 기본 작성
 
 ### Server
@@ -119,6 +120,8 @@ Windows 앱은 Android DB를 알 필요가 없고, Android 앱도 Windows DB를 
 * 전역 키 입력 내용 기록
 * 비밀번호, 채팅 내용, 폼 입력 내용 수집
 * Android에서 타 앱의 터치 좌표 전역 수집
+* 사용자 동의 없는 Android 위치/위도/경도 수집
+* 다른 앱 화면/알림/메시지/브라우저 내용에서 위치를 추론하는 기능
 * 몰래 실행되는 감시형 기능
 * Android Chrome URL 단위 추적
 * 모든 차트의 고급 애니메이션/줌/팬
@@ -141,6 +144,7 @@ Windows 앱은 Android DB를 알 필요가 없고, Android 앱도 Windows DB를 
 6. 동기화는 opt-in으로 설계한다.
 7. raw_event는 디버깅 목적이며 장기 보관 정책을 별도로 둔다.
 8. 모든 시간은 UTC로 저장하고, 화면 표시 시 timezone 기준으로 변환한다.
+9. Android 위도/경도는 민감한 위치 메타데이터이므로 기본 Off이며, 위치 권한과 앱 내 명시적 opt-in이 모두 있을 때만 다룬다.
 
 ---
 
@@ -521,6 +525,7 @@ Dashboard 구성:
 * 총 활성 시간 카드
 * top app 카드
 * idle/비활동 시간 카드
+* 선택형 위치 컨텍스트 카드: 위치 수집 Off/권한 필요/위도/경도/정확도 상태
 * 시간대별 활동 차트
 * 앱별 사용량 차트
 * 최근 세션 RecyclerView
@@ -717,6 +722,8 @@ XML/View 기반이므로 Compose test가 아니라 Espresso를 사용한다.
 * summary card 표시
 * 빈 데이터 상태 표시
 * Sessions list 표시
+* 위치 수집 기본 Off 상태에서 위도/경도가 표시되지 않음
+* fake location + 명시적 opt-in 상태에서 위도/경도 표시
 
 UI Automator 테스트:
 

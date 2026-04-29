@@ -10,15 +10,7 @@
         MinHeight="768"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackgroundBrush}">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-
-    <Grid Background="{StaticResource AppBackgroundBrush}">
+    <Grid Background="{DynamicResource AppBackgroundBrush}">
         <views:DashboardView />
     </Grid>
 </Window>

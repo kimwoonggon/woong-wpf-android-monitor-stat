@@ -30,6 +30,9 @@ surveillance, input capture, or screen capture tool.
 - Browser domain or full URL only under documented privacy settings.
 - Android app usage duration through UsageStatsManager and user-granted Usage
   Access.
+- Optional Android latitude/longitude location context only after explicit
+  Android location permission and in-app opt-in. Location capture is off by
+  default and must remain nullable when disabled.
 - Local test screenshots of this app's own dashboard UI only.
 
 ## Screenshot Boundary
@@ -58,6 +61,11 @@ desktop or arbitrary screen regions.
   is not copied into device backup flows.
 - Browser URL capture must be opt-in beyond generic browser app duration.
 - Full URL capture must be separate from domain-only capture.
+- Android location metadata is sensitive. Approximate location should be the
+  default opt-in mode, and precise latitude/longitude requires a separate
+  explicit choice. The app must not infer location from other app content,
+  screenshots, notifications, messages, browser pages, form input, clipboard
+  content, or typed text.
 - Raw events need retention limits and must avoid sensitive content.
 - Windows browser raw events use a 30-day default local retention policy when
   the native-message ingestion flow is configured with the retention service.

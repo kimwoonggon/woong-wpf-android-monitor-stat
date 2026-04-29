@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1800" height="1100" viewBox="0 0 1800 1100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Woong Monitor Stack Android UI Flow</title>
+  <desc>Figma importable Android XML wireframe flow based on the Woong Monitor Stack Android UI plan, including optional latitude/longitude location context that is off by default.</desc>
+  <defs>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#0F6BDE"/>
+    </marker>
+    <style>
+      .label { font-family: Inter, Arial, sans-serif; fill: #0F172A; }
+      .muted { fill: #64748B; }
+      .secondary { fill: #475569; }
+      .primary { fill: #0F6BDE; }
+      .screen-title { font-size: 17px; font-weight: 700; }
+      .screen-subtitle { font-size: 13px; font-weight: 500; fill: #475569; }
+      .phone-text { font-size: 11px; font-weight: 500; }
+      .phone-small { font-size: 8px; font-weight: 500; }
+      .phone-title { font-size: 12px; font-weight: 700; }
+      .phone-value { font-size: 15px; font-weight: 800; }
+      .chip { font-size: 8px; font-weight: 700; }
+      .legend-title { font-size: 30px; font-weight: 800; fill: #0F6BDE; }
+      .legend-item { font-size: 16px; font-weight: 700; }
+      .legend-sub { font-size: 13px; font-weight: 500; fill: #475569; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1100" fill="#F8FAFC"/>
+  <rect x="24" y="24" width="1752" height="1052" rx="28" fill="white"/>
+
+  <!-- Top flow labels -->
+  <g transform="translate(100 32)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">1</text>
+    <text x="34" y="14" class="label screen-title">앱 시작 / Splash</text>
+    <text x="34" y="42" class="label screen-subtitle">앱 로딩 및 초기화</text>
+  </g>
+  <g transform="translate(470 32)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">2</text>
+    <text x="34" y="14" class="label screen-title">권한 안내</text>
+    <text x="34" y="42" class="label screen-subtitle">Usage Access 권한이 필요합니다</text>
+  </g>
+  <g transform="translate(840 32)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">3</text>
+    <text x="34" y="14" class="label screen-title">대시보드</text>
+    <text x="34" y="42" class="label screen-subtitle">사용 현황 요약 및 빠른 인사이트</text>
+  </g>
+
+  <!-- Splash phone -->
+  <g transform="translate(70 86)" filter="url(#cardShadow)">
+    <rect width="270" height="530" rx="18" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <rect x="7" y="7" width="256" height="516" rx="14" fill="#FFFFFF"/>
+    <text x="18" y="28" class="label phone-small muted">9:30</text>
+    <path d="M224 18 L232 18 L228 24 Z" fill="#64748B"/>
+    <rect x="238" y="18" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="251" y="17" width="5" height="12" rx="1" fill="#64748B"/>
+    <rect x="108" y="152" width="54" height="54" rx="11" fill="#0F6BDE"/>
+    <rect x="119" y="179" width="6" height="15" rx="2" fill="#FFFFFF"/>
+    <rect x="132" y="168" width="6" height="26" rx="2" fill="#FFFFFF"/>
+    <rect x="145" y="159" width="6" height="35" rx="2" fill="#FFFFFF"/>
+    <text x="135" y="254" text-anchor="middle" class="label" font-size="23" font-weight="800">Woong Monitor</text>
+    <text x="135" y="280" text-anchor="middle" class="label phone-text secondary">Android Focus Tracker</text>
+    <circle cx="135" cy="395" r="15" stroke="#E2E8F0" stroke-width="4"/>
+    <path d="M135 380 A15 15 0 0 1 150 395" stroke="#0F6BDE" stroke-width="4" stroke-linecap="round"/>
+    <text x="135" y="430" text-anchor="middle" class="label phone-small muted">로딩 중...</text>
+  </g>
+
+  <!-- Permission phone -->
+  <g transform="translate(440 86)" filter="url(#cardShadow)">
+    <rect width="270" height="530" rx="18" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <rect x="7" y="7" width="256" height="516" rx="14" fill="#FFFFFF"/>
+    <text x="18" y="28" class="label phone-small muted">9:30</text>
+    <path d="M224 18 L232 18 L228 24 Z" fill="#64748B"/>
+    <rect x="238" y="18" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="251" y="17" width="5" height="12" rx="1" fill="#64748B"/>
+    <path d="M24 56 L16 64 L24 72" stroke="#0F172A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="135" y="66" text-anchor="middle" class="label phone-title">권한 안내</text>
+    <circle cx="135" cy="126" r="32" fill="#EAF3FF"/>
+    <path d="M135 101 L153 109 V126 C153 143 135 151 135 151 C135 151 117 143 117 126 V109 L135 101Z" fill="#0F6BDE"/>
+    <rect x="128" y="121" width="14" height="13" rx="2" fill="#FFFFFF"/>
+    <path d="M130 121 V116 C130 112 133 109 135 109 C139 109 141 112 141 116 V121" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="135" y="190" text-anchor="middle" class="label phone-title">사용 시간 데이터를 수집하려면</text>
+    <text x="135" y="210" text-anchor="middle" class="label phone-title">Usage Access 권한이 필요합니다.</text>
+    <text x="135" y="239" text-anchor="middle" class="label phone-small secondary">이 권한은 앱 사용 시간 측정에만 사용되며,</text>
+    <text x="135" y="254" text-anchor="middle" class="label phone-small secondary">아래 원칙을 준수합니다.</text>
+    <rect x="22" y="286" width="226" height="103" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <g class="label phone-small secondary">
+      <circle cx="42" cy="311" r="4" fill="#EAF3FF" stroke="#0F6BDE"/>
+      <text x="55" y="315">데이터는 기기에만 저장됩니다</text>
+      <path d="M38 334 L42 338 L49 329" stroke="#0F6BDE" stroke-width="2" fill="none"/>
+      <text x="55" y="338">개인 정보는 외부로 전송되지 않습니다</text>
+      <path d="M38 357 L42 361 L49 352" stroke="#0F6BDE" stroke-width="2" fill="none"/>
+      <text x="55" y="361">사용자 동의 없이 동기화하지 않습니다</text>
+      <path d="M38 380 L42 384 L49 375" stroke="#0F6BDE" stroke-width="2" fill="none"/>
+      <text x="55" y="384">언제든지 권한을 취소할 수 있습니다</text>
+    </g>
+    <rect x="22" y="415" width="226" height="36" rx="8" fill="#0F6BDE"/>
+    <text x="135" y="438" text-anchor="middle" class="label phone-title" fill="#FFFFFF">설정 열기</text>
+  </g>
+
+  <!-- Dashboard phone -->
+  <g transform="translate(810 86)" filter="url(#cardShadow)">
+    <rect width="350" height="530" rx="18" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <rect x="7" y="7" width="336" height="516" rx="14" fill="#FFFFFF"/>
+    <text x="18" y="28" class="label phone-small muted">9:30</text>
+    <path d="M304 18 L312 18 L308 24 Z" fill="#64748B"/>
+    <rect x="318" y="18" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="331" y="17" width="5" height="12" rx="1" fill="#64748B"/>
+    <path d="M22 59 H34 M22 65 H34 M22 71 H34" stroke="#0F172A" stroke-width="2"/>
+    <text x="62" y="68" class="label phone-title">Woong Monitor</text>
+    <path d="M322 57 C322 53 318 52 315 52 C312 52 308 53 308 57 V65 L304 70 H326 L322 65Z" stroke="#0F172A" stroke-width="1.5" fill="none"/>
+    <line x1="8" y1="86" x2="342" y2="86" stroke="#E2E8F0"/>
+
+    <g transform="translate(20 100)">
+      <rect width="79" height="28" rx="7" fill="#ECFDF5" stroke="#BBF7D0"/>
+      <circle cx="17" cy="14" r="5" fill="#16A34A"/>
+      <text x="30" y="17" class="label chip" fill="#16A34A">Usage OK</text>
+      <rect x="93" width="78" height="28" rx="7" fill="#FFF7ED" stroke="#FED7AA"/>
+      <circle cx="111" cy="14" r="5" fill="#F97316"/>
+      <text x="124" y="17" class="label chip" fill="#F97316">Sync Off</text>
+      <rect x="185" width="120" height="28" rx="7" fill="#EFF6FF" stroke="#BFDBFE"/>
+      <circle cx="204" cy="14" r="5" fill="#2563EB"/>
+      <text x="217" y="17" class="label chip" fill="#2563EB">Privacy Safe</text>
+    </g>
+
+    <rect x="20" y="145" width="310" height="68" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="31" y="165" class="label phone-title">Current Focus</text>
+    <circle cx="50" cy="190" r="15" fill="#F97316"/>
+    <circle cx="50" cy="190" r="15" fill="#16A34A" opacity="0.6"/>
+    <circle cx="55" cy="186" r="12" fill="#2563EB" opacity="0.9"/>
+    <circle cx="50" cy="190" r="6" fill="#FFFFFF"/>
+    <text x="80" y="188" class="label phone-title">Chrome</text>
+    <text x="80" y="204" class="label phone-small secondary">com.android.chrome</text>
+    <text x="251" y="188" text-anchor="end" class="label phone-small secondary">세션 시간</text>
+    <text x="315" y="188" text-anchor="end" class="label phone-title">1h 42m</text>
+    <text x="251" y="205" text-anchor="end" class="label phone-small secondary">마지막 수집</text>
+    <text x="315" y="205" text-anchor="end" class="label phone-small">09:25 AM</text>
+
+    <g transform="translate(20 224)">
+      <rect width="144" height="53" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+      <text x="50" y="18" class="label phone-small" fill="#2563EB">Active Focus</text>
+      <text x="50" y="36" class="label phone-value">3h 12m</text>
+      <circle cx="25" cy="27" r="10" fill="#DBEAFE" stroke="#2563EB"/>
+      <rect x="172" width="138" height="53" rx="8" fill="#ECFDF5" stroke="#BBF7D0"/>
+      <text x="222" y="18" class="label phone-small" fill="#16A34A">Screen On</text>
+      <text x="222" y="36" class="label phone-value">4h 05m</text>
+      <circle cx="197" cy="27" r="10" fill="#DCFCE7" stroke="#16A34A"/>
+      <rect y="64" width="144" height="53" rx="8" fill="#FFF7ED" stroke="#FED7AA"/>
+      <text x="50" y="82" class="label phone-small" fill="#F59E0B">Idle / Gap</text>
+      <text x="50" y="100" class="label phone-value">53m</text>
+      <circle cx="25" cy="91" r="10" fill="#FFEDD5" stroke="#F59E0B"/>
+      <rect x="172" y="64" width="138" height="53" rx="8" fill="#F5F3FF" stroke="#DDD6FE"/>
+      <text x="222" y="82" class="label phone-small" fill="#7C3AED">Synced</text>
+      <text x="222" y="100" class="label phone-value">82%</text>
+      <circle cx="197" cy="91" r="10" fill="#EDE9FE" stroke="#7C3AED"/>
+    </g>
+
+    <g transform="translate(20 358)">
+      <rect width="60" height="22" rx="6" fill="#0F6BDE"/>
+      <text x="30" y="15" text-anchor="middle" class="label phone-small" fill="#FFFFFF">Today</text>
+      <rect x="70" width="50" height="22" rx="6" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="95" y="15" text-anchor="middle" class="label phone-small">1h</text>
+      <rect x="130" width="50" height="22" rx="6" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="155" y="15" text-anchor="middle" class="label phone-small">6h</text>
+      <rect x="190" width="50" height="22" rx="6" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="215" y="15" text-anchor="middle" class="label phone-small">24h</text>
+      <rect x="250" width="60" height="22" rx="6" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="280" y="15" text-anchor="middle" class="label phone-small">7d</text>
+    </g>
+
+    <rect x="20" y="391" width="310" height="92" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="31" y="412" class="label phone-title">집중 시간 추이 (오늘)</text>
+    <line x1="42" y1="462" x2="306" y2="462" stroke="#E2E8F0"/>
+    <g fill="#0F6BDE">
+      <rect x="55" y="446" width="10" height="16" rx="1"/>
+      <rect x="86" y="434" width="10" height="28" rx="1"/>
+      <rect x="117" y="422" width="10" height="40" rx="1"/>
+      <rect x="148" y="405" width="10" height="57" rx="1"/>
+      <rect x="179" y="425" width="10" height="37" rx="1"/>
+      <rect x="210" y="404" width="10" height="58" rx="1"/>
+      <rect x="241" y="412" width="10" height="50" rx="1" opacity="0.7"/>
+      <rect x="272" y="439" width="10" height="23" rx="1" opacity="0.45"/>
+    </g>
+    <g transform="translate(0 492)">
+      <text x="45" y="19" class="label phone-small" fill="#0F6BDE">대시보드</text>
+      <text x="132" y="19" class="label phone-small secondary">세션</text>
+      <text x="214" y="19" class="label phone-small secondary">리포트</text>
+      <text x="294" y="19" class="label phone-small secondary">설정</text>
+    </g>
+  </g>
+
+  <!-- Connectors top -->
+  <path d="M345 351 H424" stroke="#0F6BDE" stroke-width="2.5" marker-end="url(#arrowHead)"/>
+  <path d="M715 351 H794" stroke="#0F6BDE" stroke-width="2.5" marker-end="url(#arrowHead)"/>
+  <path d="M1163 351 H1240 C1268 351 1268 384 1268 412 V640" stroke="#0F6BDE" stroke-width="2.5" fill="none" marker-end="url(#arrowHead)"/>
+  <path d="M990 617 V650 H305" stroke="#0F6BDE" stroke-width="2.5" fill="none" marker-end="url(#arrowHead)"/>
+  <path d="M990 617 V650 H690" stroke="#0F6BDE" stroke-width="2.5" fill="none" marker-end="url(#arrowHead)"/>
+  <path d="M990 617 V650 H1045" stroke="#0F6BDE" stroke-width="2.5" fill="none" marker-end="url(#arrowHead)"/>
+
+  <!-- Bottom labels -->
+  <g transform="translate(46 640)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">4</text>
+    <text x="34" y="14" class="label screen-title">세션 목록</text>
+    <text x="34" y="42" class="label screen-subtitle">세션 히스토리 확인 및 필터링</text>
+  </g>
+  <g transform="translate(436 640)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">5</text>
+    <text x="34" y="14" class="label screen-title">앱 상세</text>
+    <text x="34" y="42" class="label screen-subtitle">선택한 앱의 상세 사용 분석</text>
+  </g>
+  <g transform="translate(826 640)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">6</text>
+    <text x="34" y="14" class="label screen-title">리포트</text>
+    <text x="34" y="42" class="label screen-subtitle">기간별 트렌드 및 요약 리포트</text>
+  </g>
+  <g transform="translate(1216 640)">
+    <circle cx="11" cy="11" r="11" fill="#0F6BDE"/>
+    <text x="11" y="16" text-anchor="middle" class="label" font-size="12" font-weight="800" fill="#FFFFFF">7</text>
+    <text x="34" y="14" class="label screen-title">설정</text>
+    <text x="34" y="42" class="label screen-subtitle">권한, 수집, 동기화, 개인정보, 저장소 관리</text>
+  </g>
+
+  <!-- Sessions phone -->
+  <g transform="translate(40 696)" filter="url(#cardShadow)">
+    <rect width="320" height="350" rx="16" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <text x="16" y="24" class="label phone-small muted">9:30</text>
+    <path d="M278 14 L286 14 L282 20 Z" fill="#64748B"/>
+    <rect x="292" y="14" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="305" y="13" width="5" height="12" rx="1" fill="#64748B"/>
+    <text x="18" y="55" class="label phone-title">세션</text>
+    <g transform="translate(18 70)">
+      <rect width="57" height="20" rx="5" fill="#0F6BDE"/>
+      <text x="28" y="14" text-anchor="middle" class="label phone-small" fill="#FFFFFF">Today</text>
+      <rect x="64" width="47" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="88" y="14" text-anchor="middle" class="label phone-small">1h</text>
+      <rect x="118" width="47" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="141" y="14" text-anchor="middle" class="label phone-small">6h</text>
+      <rect x="172" width="47" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="195" y="14" text-anchor="middle" class="label phone-small">24h</text>
+      <rect x="226" width="47" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="249" y="14" text-anchor="middle" class="label phone-small">7d</text>
+      <rect x="281" width="21" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <path d="M287 76 L296 76 L292 81 V86 L290 87 V81 Z" transform="translate(0 -64)" fill="#64748B"/>
+    </g>
+    <text x="18" y="112" class="label phone-small secondary">총 128개 세션</text>
+    <rect x="18" y="124" width="284" height="174" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <g class="label">
+      <circle cx="38" cy="148" r="10" fill="#16A34A"/>
+      <text x="58" y="146" class="phone-small" font-weight="700">Chrome</text>
+      <text x="58" y="160" class="phone-small secondary">com.android.chrome</text>
+      <text x="230" y="150" class="phone-small">09:10 AM - 09:22 AM</text>
+      <text x="286" y="150" text-anchor="end" class="phone-small" font-weight="700">12m 31s</text>
+      <line x1="18" y1="176" x2="302" y2="176" stroke="#E2E8F0"/>
+      <circle cx="38" cy="199" r="10" fill="#0EA5E9"/>
+      <text x="58" y="197" class="phone-small" font-weight="700">Visual Studio Code</text>
+      <text x="58" y="211" class="phone-small secondary">com.microsoft.vscode</text>
+      <text x="230" y="201" class="phone-small">09:00 AM - 09:10 AM</text>
+      <text x="286" y="201" text-anchor="end" class="phone-small" font-weight="700">10m 15s</text>
+      <line x1="18" y1="227" x2="302" y2="227" stroke="#E2E8F0"/>
+      <circle cx="38" cy="250" r="10" fill="#22C55E"/>
+      <text x="58" y="248" class="phone-small" font-weight="700">Woong Monitor</text>
+      <text x="58" y="262" class="phone-small secondary">com.woong.monitor</text>
+      <text x="230" y="252" class="phone-small">08:55 AM - 09:00 AM</text>
+      <text x="286" y="252" text-anchor="end" class="phone-small" font-weight="700">5m 01s</text>
+    </g>
+    <g transform="translate(0 310)">
+      <text x="44" y="19" class="label phone-small secondary">대시보드</text>
+      <text x="131" y="19" class="label phone-small" fill="#0F6BDE">세션</text>
+      <text x="211" y="19" class="label phone-small secondary">리포트</text>
+      <text x="281" y="19" class="label phone-small secondary">설정</text>
+    </g>
+  </g>
+
+  <!-- App detail phone -->
+  <g transform="translate(430 696)" filter="url(#cardShadow)">
+    <rect width="320" height="350" rx="16" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <text x="16" y="24" class="label phone-small muted">9:30</text>
+    <path d="M278 14 L286 14 L282 20 Z" fill="#64748B"/>
+    <rect x="292" y="14" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="305" y="13" width="5" height="12" rx="1" fill="#64748B"/>
+    <path d="M24 47 L17 54 L24 61" stroke="#0F172A" stroke-width="1.8" fill="none"/>
+    <circle cx="48" cy="78" r="18" fill="#16A34A"/>
+    <circle cx="54" cy="72" r="14" fill="#2563EB"/>
+    <circle cx="48" cy="78" r="7" fill="#FFFFFF"/>
+    <text x="82" y="77" class="label" font-size="15" font-weight="800">Chrome</text>
+    <text x="82" y="94" class="label phone-small secondary">com.android.chrome</text>
+    <g transform="translate(18 116)">
+      <rect width="138" height="48" rx="6" fill="#EFF6FF" stroke="#DBEAFE"/>
+      <text x="69" y="18" text-anchor="middle" class="label phone-small secondary">총 사용 시간</text>
+      <text x="69" y="38" text-anchor="middle" class="label phone-value">2h 18m</text>
+      <rect x="148" width="138" height="48" rx="6" fill="#EFF6FF" stroke="#DBEAFE"/>
+      <text x="217" y="18" text-anchor="middle" class="label phone-small secondary">세션 수</text>
+      <text x="217" y="38" text-anchor="middle" class="label phone-value">18회</text>
+    </g>
+    <rect x="18" y="176" width="284" height="83" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="30" y="196" class="label phone-title">시간별 사용 추이 (오늘)</text>
+    <line x1="40" y1="242" x2="282" y2="242" stroke="#E2E8F0"/>
+    <g fill="#0F6BDE">
+      <rect x="58" y="226" width="10" height="16" rx="1"/>
+      <rect x="88" y="216" width="10" height="26" rx="1"/>
+      <rect x="118" y="205" width="10" height="37" rx="1"/>
+      <rect x="148" y="197" width="10" height="45" rx="1"/>
+      <rect x="178" y="207" width="10" height="35" rx="1"/>
+      <rect x="208" y="226" width="10" height="16" rx="1"/>
+      <rect x="238" y="200" width="10" height="42" rx="1" opacity="0.8"/>
+      <rect x="268" y="225" width="10" height="17" rx="1" opacity="0.5"/>
+    </g>
+    <text x="18" y="285" class="label phone-title">세션 목록</text>
+    <rect x="18" y="296" width="284" height="28" rx="5" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="36" y="314" class="label phone-small secondary">09:10 AM - 09:22 AM</text>
+    <text x="284" y="314" text-anchor="end" class="label phone-small">12m 31s</text>
+  </g>
+
+  <!-- Report phone -->
+  <g transform="translate(820 696)" filter="url(#cardShadow)">
+    <rect width="320" height="350" rx="16" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <text x="16" y="24" class="label phone-small muted">9:30</text>
+    <path d="M278 14 L286 14 L282 20 Z" fill="#64748B"/>
+    <rect x="292" y="14" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="305" y="13" width="5" height="12" rx="1" fill="#64748B"/>
+    <text x="18" y="55" class="label phone-title">리포트</text>
+    <g transform="translate(18 70)">
+      <rect width="58" height="20" rx="5" fill="#0F6BDE"/>
+      <text x="29" y="14" text-anchor="middle" class="label phone-small" fill="#FFFFFF">7일</text>
+      <rect x="68" width="58" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="97" y="14" text-anchor="middle" class="label phone-small">30일</text>
+      <rect x="136" width="58" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="165" y="14" text-anchor="middle" class="label phone-small">90일</text>
+      <rect x="204" width="82" height="20" rx="5" fill="#FFFFFF" stroke="#DDE3EA"/>
+      <text x="245" y="14" text-anchor="middle" class="label phone-small">사용자 지정</text>
+    </g>
+    <text x="160" y="112" text-anchor="middle" class="label phone-small secondary">2024.05.11 - 2024.05.17</text>
+    <g transform="translate(18 124)">
+      <rect width="138" height="48" rx="6" fill="#F5F3FF" stroke="#DDD6FE"/>
+      <text x="69" y="17" text-anchor="middle" class="label phone-small secondary">총 사용 시간</text>
+      <text x="69" y="37" text-anchor="middle" class="label phone-value">28h 42m</text>
+      <rect x="148" width="138" height="48" rx="6" fill="#EFF6FF" stroke="#DBEAFE"/>
+      <text x="217" y="17" text-anchor="middle" class="label phone-small secondary">일 평균</text>
+      <text x="217" y="37" text-anchor="middle" class="label phone-value">4h 06m</text>
+    </g>
+    <rect x="18" y="184" width="284" height="86" rx="8" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="30" y="204" class="label phone-title">일별 사용 시간 추이</text>
+    <polyline points="45,246 78,236 111,222 144,230 177,214 210,238 243,234" stroke="#0F6BDE" stroke-width="2.2" fill="none"/>
+    <g fill="#FFFFFF" stroke="#0F6BDE" stroke-width="2">
+      <circle cx="45" cy="246" r="3"/>
+      <circle cx="78" cy="236" r="3"/>
+      <circle cx="111" cy="222" r="3"/>
+      <circle cx="144" cy="230" r="3"/>
+      <circle cx="177" cy="214" r="3"/>
+      <circle cx="210" cy="238" r="3"/>
+      <circle cx="243" cy="234" r="3"/>
+    </g>
+    <text x="18" y="296" class="label phone-title">상위 앱 (7일)</text>
+    <g transform="translate(18 304)">
+      <circle cx="14" cy="9" r="6" fill="#16A34A"/>
+      <text x="30" y="12" class="label phone-small">Chrome</text>
+      <rect x="110" y="5" width="120" height="4" rx="2" fill="#60A5FA"/>
+      <text x="280" y="12" text-anchor="end" class="label phone-small">9h 18m</text>
+      <circle cx="14" cy="29" r="6" fill="#EF4444"/>
+      <text x="30" y="32" class="label phone-small">YouTube</text>
+      <rect x="110" y="25" width="85" height="4" rx="2" fill="#0F6BDE"/>
+      <text x="280" y="32" text-anchor="end" class="label phone-small">6h 32m</text>
+    </g>
+    <g transform="translate(0 310)">
+      <text x="44" y="19" class="label phone-small secondary">대시보드</text>
+      <text x="131" y="19" class="label phone-small secondary">세션</text>
+      <text x="211" y="19" class="label phone-small" fill="#0F6BDE">리포트</text>
+      <text x="281" y="19" class="label phone-small secondary">설정</text>
+    </g>
+  </g>
+
+  <!-- Settings phone -->
+  <g transform="translate(1210 696)" filter="url(#cardShadow)">
+    <rect width="320" height="350" rx="16" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5"/>
+    <text x="16" y="24" class="label phone-small muted">9:30</text>
+    <path d="M278 14 L286 14 L282 20 Z" fill="#64748B"/>
+    <rect x="292" y="14" width="7" height="10" rx="2" fill="#64748B"/>
+    <rect x="305" y="13" width="5" height="12" rx="1" fill="#64748B"/>
+    <text x="18" y="55" class="label phone-title">설정</text>
+    <text x="18" y="82" class="label phone-small" fill="#0F6BDE">권한 (Permissions)</text>
+    <rect x="18" y="92" width="284" height="30" rx="7" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="36" y="111" class="label phone-small">Usage Access 권한</text>
+    <text x="252" y="111" text-anchor="end" class="label phone-small" fill="#16A34A">허용됨</text>
+    <text x="18" y="143" class="label phone-small" fill="#0F6BDE">수집 (Collection)</text>
+    <rect x="18" y="153" width="284" height="58" rx="7" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="36" y="172" class="label phone-small">백그라운드 수집</text>
+    <text x="36" y="188" class="label phone-small secondary">앱 사용 데이터를 백그라운드에서 수집</text>
+    <rect x="262" y="164" width="28" height="14" rx="7" fill="#0F6BDE"/>
+    <circle cx="281" cy="171" r="6" fill="#FFFFFF"/>
+    <text x="36" y="204" class="label phone-small">비활성 간격 감지</text>
+    <text x="268" y="204" text-anchor="end" class="label phone-small" fill="#0F6BDE">15분</text>
+    <text x="18" y="232" class="label phone-small" fill="#0F6BDE">동기화 (Sync)</text>
+    <rect x="18" y="242" width="284" height="48" rx="7" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <text x="36" y="262" class="label phone-small">자동 동기화</text>
+    <rect x="262" y="252" width="28" height="14" rx="7" fill="#CBD5E1"/>
+    <circle cx="269" cy="259" r="6" fill="#FFFFFF"/>
+    <text x="36" y="280" class="label phone-small secondary">수동 동기화</text>
+    <text x="18" y="312" class="label phone-small" fill="#0F6BDE">개인 정보 / 저장소</text>
+    <g transform="translate(0 310)">
+      <text x="44" y="19" class="label phone-small secondary">대시보드</text>
+      <text x="131" y="19" class="label phone-small secondary">세션</text>
+      <text x="211" y="19" class="label phone-small secondary">리포트</text>
+      <text x="281" y="19" class="label phone-small" fill="#0F6BDE">설정</text>
+    </g>
+  </g>
+
+  <!-- Side legend panel -->
+  <g transform="translate(1340 54)" filter="url(#cardShadow)">
+    <rect width="386" height="486" rx="18" fill="#FFFFFF" stroke="#DDE3EA"/>
+    <circle cx="58" cy="58" r="33" fill="#F8FAFC" stroke="#DDE3EA"/>
+    <g transform="translate(42 42)">
+      <rect x="6" y="12" width="20" height="18" rx="4" fill="#84CC16"/>
+      <rect x="2" y="15" width="4" height="16" rx="2" fill="#84CC16"/>
+      <rect x="28" y="15" width="4" height="16" rx="2" fill="#84CC16"/>
+      <rect x="9" y="30" width="5" height="9" rx="2" fill="#84CC16"/>
+      <rect x="18" y="30" width="5" height="9" rx="2" fill="#84CC16"/>
+      <path d="M9 8 L5 2 M23 8 L27 2" stroke="#84CC16" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="20" r="1.5" fill="#FFFFFF"/>
+      <circle cx="20" cy="20" r="1.5" fill="#FFFFFF"/>
+    </g>
+    <text x="104" y="54" class="label legend-title">Android UI Flow</text>
+    <text x="104" y="82" class="label" font-size="19" font-weight="500" fill="#475569">Woong Monitor Stack</text>
+    <g transform="translate(46 124)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">1</text>
+      <text x="36" y="13" class="label legend-item">시작</text>
+      <text x="36" y="38" class="label legend-sub">앱 실행 및 초기화</text>
+    </g>
+    <g transform="translate(46 184)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">2</text>
+      <text x="36" y="13" class="label legend-item">권한 확인</text>
+      <text x="36" y="38" class="label legend-sub">Usage Access 권한 안내</text>
+    </g>
+    <g transform="translate(46 244)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">3</text>
+      <text x="36" y="13" class="label legend-item">대시보드</text>
+      <text x="36" y="38" class="label legend-sub">사용 현황 요약 및 핵심 지표</text>
+    </g>
+    <g transform="translate(46 304)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">4</text>
+      <text x="36" y="13" class="label legend-item">세션 확인</text>
+      <text x="36" y="38" class="label legend-sub">세션 목록 및 필터링</text>
+    </g>
+    <g transform="translate(46 364)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">5</text>
+      <text x="36" y="13" class="label legend-item">상세 통계</text>
+      <text x="36" y="38" class="label legend-sub">앱별 상세 사용 분석</text>
+    </g>
+    <g transform="translate(214 364)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">6</text>
+      <text x="36" y="13" class="label legend-item">리포트</text>
+      <text x="36" y="38" class="label legend-sub">기간별 트렌드</text>
+    </g>
+    <g transform="translate(46 424)">
+      <circle cx="12" cy="12" r="12" fill="#0F6BDE"/>
+      <text x="12" y="17" text-anchor="middle" class="label" font-size="13" font-weight="800" fill="#FFFFFF">7</text>
+      <text x="36" y="13" class="label legend-item">설정</text>
+      <text x="36" y="38" class="label legend-sub">권한, 수집, 동기화 설정 관리</text>
+    </g>
+  </g>
+
+  <!-- Privacy note -->
+  <g transform="translate(70 1048)">
+    <rect width="1460" height="30" rx="8" fill="#ECFDF5" stroke="#BBF7D0"/>
+    <text x="16" y="9" class="label" font-size="10" font-weight="600" fill="#166534">Optional location: latitude/longitude is off by default and requires Android location permission plus explicit in-app opt-in.</text>
+    <text x="16" y="20" class="label" font-size="12" font-weight="600" fill="#166534">Privacy boundary: Android 앱은 앱 이름, 패키지명, 사용 시작/종료 시각, 사용 시간 메타데이터만 다룹니다. 키보드 입력, 화면 내용, 비밀번호, 터치 좌표는 수집하지 않습니다.</text>
+  </g>
+</svg>

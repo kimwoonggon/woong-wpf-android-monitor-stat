@@ -31,8 +31,12 @@ Not allowed:
 - Collection status.
 - Last sync status.
 - Local data status.
+- Optional location context status, including a safe default where latitude and
+  longitude are hidden because location capture is off.
 - Dashboard cards/charts/recent sessions with seeded sample usage.
 - Settings privacy boundaries and sync opt-in state.
+- Settings location controls when implemented: location context off by default,
+  approximate mode preferred, and precise latitude/longitude explicit opt-in.
 
 ## Test Strategy
 

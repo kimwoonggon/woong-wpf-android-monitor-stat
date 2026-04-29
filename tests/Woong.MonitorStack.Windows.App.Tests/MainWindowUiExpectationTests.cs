@@ -346,8 +346,10 @@ public sealed class MainWindowUiExpectationTests
     public void MainWindow_UsesSharedBackgroundBrush()
         => RunOnStaThread(() =>
         {
+            ResourceDictionary colors = LoadStyleResource("Colors.xaml");
             TestDashboard dashboard = CreateDashboard();
             var window = new MainWindow(dashboard.ViewModel);
+            window.Resources.MergedDictionaries.Add(colors);
 
             try
             {

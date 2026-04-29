@@ -605,6 +605,20 @@ milestones below are finished.
 - [ ] Repeat Android resource measurements on a physical device when connected.
 - [x] Commit and push Android screenshot/device automation slice.
 
+## Milestone 27.5: Android Optional Location Context UI
+
+- [x] Add Android UI plan for optional latitude/longitude location context.
+- [x] Add architecture documentation guardrail test for Android latitude/longitude opt-in wording.
+- [x] Verify Android location plan slice with Architecture tests, full .NET tests, full .NET build, WPF acceptance after XAML resource changes, coverage generation (91.3% line), and Android `testDebugUnitTest assembleDebug`.
+- [x] Update PRD/privacy/screenshot docs so 위도/경도 is explicit opt-in metadata, not default tracking.
+- [ ] Add Android settings tests: location context defaults Off, approximate mode preferred, precise latitude/longitude requires explicit opt-in.
+- [ ] Add Android permission UI tests: missing location permission shows guidance and no coordinates.
+- [ ] Add Room/component tests for nullable `latitude`, `longitude`, `accuracyMeters`, and `capturedAtUtc` storage.
+- [ ] Add Dashboard tests for location status card and fake opt-in latitude/longitude display.
+- [ ] Ensure sync payload excludes location while sync is off and includes nullable coordinates only when both sync and location opt-in are enabled.
+- [ ] Add connected-device screenshot coverage for Dashboard location card and Settings location section when a device/emulator is available.
+- [ ] Commit and push Android optional location context slices.
+
 ## Milestone 28: Privacy And Retention Hardening
 
 - [x] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
@@ -1160,6 +1174,9 @@ milestones below are finished.
   - [x] Sync-off pending verification: `.NET` build passed.
   - [x] Sync-off pending verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-222624`.
   - [x] Sync-off pending verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] App root style merge verification: RED architecture tests first failed because `Inputs.xaml` was not merged at `App.xaml` root and `MainWindow.xaml` duplicated the Colors dictionary.
+  - [x] App root style merge verification: `App.xaml` now merges every shared style dictionary, including `Inputs.xaml`, and `MainWindow.xaml` no longer duplicates application-level style dictionaries.
+  - [x] App root style merge verification: all Windows App tests passed (96 tests) after the MainWindow background expectation was updated to use test-local resources instead of creating a process-wide `Application`.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
@@ -1168,6 +1185,7 @@ milestones below are finished.
 - [ ] Run WPF UI acceptance after componentization.
 - [ ] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
   - [x] Compact action style slice docs/TODO updated.
+  - [x] App root style merge slice docs/TODO updated.
 - [ ] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done

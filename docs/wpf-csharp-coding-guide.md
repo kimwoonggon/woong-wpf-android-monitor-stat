@@ -243,6 +243,9 @@ public partial class MainWindow : Window
 - Use shared resource dictionaries for repeated button/card/tab/grid styles.
   Do not inline repeated MinWidth, MinHeight, Padding, FontSize, or brush
   setters in feature panels when an existing style can carry the rule.
+- Merge shared WPF style dictionaries at `App.xaml` root. `MainWindow.xaml`
+  should stay a shell and should not duplicate application-level style
+  dictionary merges.
 - Add AutomationIds for controls that are user-visible or automation-relevant:
   refresh button, period selector, summary cards, charts, tabs, grids, settings
   controls.

@@ -211,6 +211,10 @@ Current reusable control implementation:
 
 Current style dictionary implementation:
 
+- `App.xaml` is the application-level owner for shared style dictionary
+  composition. It currently merges every dictionary under `Styles/`, including
+  `Inputs.xaml`, so feature views and `MainWindow.xaml` do not need to
+  duplicate app-level style registration.
 - `Styles/Buttons.xaml` defines the shared dashboard, primary, danger,
   secondary, period, and compact action button styles.
 - `ControlBar`, `SettingsPanel`, and `DetailsTabsPanel` use the shared button

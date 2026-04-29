@@ -182,6 +182,25 @@ public sealed class PrivacyBoundaryRulesTests
         Assert.DoesNotContain("PrintWindow", source, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void AndroidUiPlan_DocumentsLatitudeLongitudeAsExplicitOptInMetadata()
+    {
+        string plan = File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "docs",
+            "android-ui-plan.md"));
+
+        Assert.Contains("latitude", plan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("longitude", plan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("위도", plan, StringComparison.Ordinal);
+        Assert.Contains("경도", plan, StringComparison.Ordinal);
+        Assert.Contains("off by default", plan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("explicit opt-in", plan, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ACCESS_COARSE_LOCATION", plan, StringComparison.Ordinal);
+        Assert.Contains("ACCESS_FINE_LOCATION", plan, StringComparison.Ordinal);
+        Assert.Contains("must not infer location from other app content", plan, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static IEnumerable<string> EnumerateProductSourceFiles(string[] roots, string[] extensions)
     {
         foreach (string root in roots)

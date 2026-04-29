@@ -210,6 +210,54 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
+    public void AppResources_MergeEverySharedStyleDictionaryAtApplicationRoot()
+    {
+        XDocument appXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "App.xaml"));
+
+        string[] expectedStyleDictionaries = Directory
+            .EnumerateFiles(
+                Path.Combine(RepositoryRoot, "src", "Woong.MonitorStack.Windows.App", "Styles"),
+                "*.xaml",
+                SearchOption.TopDirectoryOnly)
+            .Select(path => $"Styles/{Path.GetFileName(path)}")
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        string[] mergedDictionaries = appXaml
+            .Descendants()
+            .Where(element => element.Name.LocalName == "ResourceDictionary")
+            .Select(element => element.Attribute("Source")?.Value)
+            .OfType<string>()
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        Assert.Equal(expectedStyleDictionaries, mergedDictionaries);
+    }
+
+    [Fact]
+    public void MainWindow_DoesNotDuplicateApplicationLevelStyleDictionaries()
+    {
+        XDocument mainWindowXaml = XDocument.Load(Path.Combine(
+            RepositoryRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "MainWindow.xaml"));
+
+        string[] mergedDictionaries = mainWindowXaml
+            .Descendants()
+            .Where(element => element.Name.LocalName == "ResourceDictionary")
+            .Select(element => element.Attribute("Source")?.Value)
+            .OfType<string>()
+            .ToArray();
+
+        Assert.Empty(mergedDictionaries);
+    }
+
+    [Fact]
     public void DomainProject_HasNoForbiddenPackages()
     {
         XDocument project = LoadProject("src/Woong.MonitorStack.Domain/Woong.MonitorStack.Domain.csproj");
