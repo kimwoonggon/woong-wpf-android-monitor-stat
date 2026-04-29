@@ -64,6 +64,35 @@ public sealed class BrowserWebSessionizer
         return [completed];
     }
 
+    public IReadOnlyList<WebSession> CompleteCurrent(DateTimeOffset endedAtUtc)
+    {
+        if (_current is null)
+        {
+            return [];
+        }
+
+        BrowserActivitySnapshot current = _current;
+        _current = null;
+        if (endedAtUtc <= current.CapturedAtUtc)
+        {
+            return [];
+        }
+
+        return
+        [
+            new WebSession(
+                _focusSessionId,
+                current.BrowserName,
+                current.Url,
+                current.Domain!,
+                current.TabTitle,
+                TimeRange.FromUtc(current.CapturedAtUtc, endedAtUtc),
+                current.CaptureMethod.ToString(),
+                current.CaptureConfidence.ToString(),
+                current.IsPrivateOrUnknown)
+        ];
+    }
+
     private static bool HasWebIdentity(BrowserActivitySnapshot snapshot)
         => !string.IsNullOrWhiteSpace(snapshot.Domain);
 

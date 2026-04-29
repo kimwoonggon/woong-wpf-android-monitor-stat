@@ -540,6 +540,75 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void StopButton_WhenBrowserSessionIsOpen_PersistsWebSessionAndRefreshesDashboard()
+        => RunOnStaThread(() =>
+        {
+            var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            var clock = new MutableClock(startedAtUtc);
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 200,
+                processId: 20,
+                processName: "chrome.exe",
+                executablePath: "C:\\Apps\\chrome.exe",
+                windowTitle: "GitHub - Chrome"));
+            var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                startedAtUtc,
+                "https://github.com/org/repo?secret=1",
+                "github.com",
+                "Repository"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                browserReader);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+
+                clock.UtcNow = startedAtUtc.AddMinutes(7);
+                InvokeButton(FindByAutomationId<Button>(window, "StopTrackingButton"));
+                window.UpdateLayout();
+
+                string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
+                WebSession saved = Assert.Single(webRepository.QueryByFocusSessionId(chromeFocusSessionId));
+                Assert.Equal("github.com", saved.Domain);
+                Assert.Null(saved.Url);
+                Assert.Equal(420_000, saved.DurationMs);
+
+                Assert.Equal(2, outboxRepository.QueryAll().Count);
+                Assert.Contains(outboxRepository.QueryAll(), row => row.AggregateType == "web_session");
+                Assert.Contains(viewModel.SummaryCards, card => card.Label == "Web Focus" && card.Value == "7m");
+                Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "github.com" && row.Duration == "7m");
+                Assert.Contains(
+                    FindByAutomationId<DataGrid>(window, "RecentWebSessionsList").ItemsSource.Cast<DashboardWebSessionRow>(),
+                    row => row.Domain == "github.com" && row.Duration == "7m");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_WithFakeBrowserPipeline_ShowsGithubAndChatgptInWebSessions()
         => RunOnStaThread(() =>
         {

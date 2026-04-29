@@ -103,6 +103,28 @@ public sealed class BrowserWebSessionizerTests
         Assert.Empty(sessionizer.Apply(github));
     }
 
+    [Fact]
+    public void CompleteCurrent_WhenTrackingStops_CreatesWebSessionForOpenDomain()
+    {
+        var sessionizer = new BrowserWebSessionizer(focusSessionId: "focus-1");
+        BrowserActivitySnapshot github = CreateSnapshot(
+            capturedAtUtc: "2026-04-28T01:00:00Z",
+            url: null,
+            domain: "github.com",
+            tabTitle: "Repository");
+
+        Assert.Empty(sessionizer.Apply(github));
+        var completed = Assert.Single(sessionizer.CompleteCurrent(
+            new DateTimeOffset(2026, 4, 28, 1, 7, 0, TimeSpan.Zero)));
+
+        Assert.Equal("focus-1", completed.FocusSessionId);
+        Assert.Equal("github.com", completed.Domain);
+        Assert.Equal("Repository", completed.PageTitle);
+        Assert.Equal(420_000, completed.DurationMs);
+        Assert.Empty(sessionizer.CompleteCurrent(
+            new DateTimeOffset(2026, 4, 28, 1, 8, 0, TimeSpan.Zero)));
+    }
+
     private static BrowserActivitySnapshot CreateSnapshot(
         string capturedAtUtc,
         string? url,

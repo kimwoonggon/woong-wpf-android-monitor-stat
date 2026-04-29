@@ -92,6 +92,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
+        bool stoppedWebSession = CompleteCurrentWebSession(pollAtUtc, result.CurrentSession.DeviceId);
         persisted = Persist(result.CurrentSession);
         _isRunning = false;
         _trackingPoller = null;
@@ -105,7 +106,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             _lastDbWriteAtUtc,
             browserPersistence.CurrentDomain,
             browserPersistence.CaptureStatus,
-            browserPersistence.HasPersistedWebSession);
+            browserPersistence.HasPersistedWebSession || stoppedWebSession);
     }
 
     public DashboardTrackingSnapshot PollOnce()
@@ -224,6 +225,22 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             aggregateId,
             payloadJson: CreatePayload(session, deviceId),
             createdAtUtc: _lastDbWriteAtUtc.Value));
+    }
+
+    private bool CompleteCurrentWebSession(DateTimeOffset endedAtUtc, string deviceId)
+    {
+        if (_webSessionizer is null)
+        {
+            return false;
+        }
+
+        IReadOnlyList<WebSession> completedSessions = _webSessionizer.CompleteCurrent(endedAtUtc);
+        foreach (WebSession session in completedSessions)
+        {
+            PersistWebSession(session, deviceId);
+        }
+
+        return completedSessions.Count > 0;
     }
 
     private DateTimeOffset? ResolveSnapshotDbWriteTime(

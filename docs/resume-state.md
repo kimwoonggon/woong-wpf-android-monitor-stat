@@ -2618,3 +2618,34 @@ Next work should continue runtime confidence slices before returning to minor
 visual cleanup. Good candidates are proving stop/close flush behavior through
 the manual ticker path, or tightening Chrome native messaging acceptance
 without touching the user's real Chrome profile or real local DB.
+
+## 2026-04-29 WPF Browser Stop Flush Slice
+
+- Added `BrowserWebSessionizer.CompleteCurrent` so an open browser domain
+  session can be closed when tracking stops even if no later tab/domain event
+  arrives.
+- Kept privacy defaults intact: the WPF stop path persists domain-only
+  `web_session` rows by default and does not store full URLs unless a future
+  explicit opt-in policy enables them.
+- Updated `WindowsTrackingDashboardCoordinator.StopTracking` to flush the open
+  browser session, persist it to Windows local SQLite, enqueue a pending
+  `web_session` outbox item, and refresh the dashboard through the existing
+  web-persistence signal.
+- Added WPF behavior coverage proving that starting on Chrome/github.com,
+  waiting seven minutes, and clicking Stop writes the web session to SQLite,
+  adds a web outbox row, and shows `github.com` in the Web Focus summary and
+  Web Sessions grid.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter CompleteCurrent_WhenTrackingStops_CreatesWebSessionForOpenDomain`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter StopButton_WhenBrowserSessionIsOpen_PersistsWebSessionAndRefreshesDashboard`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-220702`.
+
+Coverage after this slice: overall line coverage 91.2%.

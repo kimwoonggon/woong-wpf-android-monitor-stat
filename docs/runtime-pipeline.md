@@ -214,6 +214,13 @@ Start/tick test: Chrome remains foreground, the domain changes from
 `github.com` to `chatgpt.com`, and the dashboard reloads `github.com` from
 SQLite before Stop is clicked.
 
+Stop now explicitly flushes an open browser domain session. If Chrome remains
+foreground on `github.com` and the user clicks Stop before another domain
+change occurs, the coordinator completes the current `WebSession`, persists it
+to Windows local SQLite in domain-only mode, queues a pending `web_session`
+outbox row, and refreshes the WPF Web Focus summary plus Web Sessions grid.
+Zero-duration browser sessions are discarded instead of being persisted.
+
 Normal WPF product startup now defaults to visible auto-start tracking through
 `WindowsAppOptions.AutoStartTracking`. `StartTrackingCommand` also performs an
 immediate sync attempt so users see sync state right away. This does not enable
