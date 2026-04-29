@@ -13,6 +13,12 @@ Privacy boundary tests verify that this tool captures only the launched Woong
 Monitor WPF window or elements inside it. It must not use desktop-wide,
 arbitrary screen, or other-app capture as telemetry.
 
+The TrackingPipeline mode may reference `Microsoft.Data.Sqlite` to inspect the
+temporary SQLite database created for local acceptance evidence. This is
+tooling-only: it is used to count local `focus_session`, `web_session`, and
+`sync_outbox` rows in generated artifacts, and must not introduce SQLite as a
+dependency of `Windows.App` or `Windows.Presentation`.
+
 ## Why AutomationId Matters
 
 The tool uses stable `AutomationProperties.AutomationId` values instead of only
@@ -92,7 +98,9 @@ every environment. In that case the tool records a skipped screenshot reason in
 `report.md` and `manifest.json`, then keeps the primary full-window screenshots.
 
 Open `artifacts/ui-snapshots/latest/report.md` first. It links the screenshots
-and includes pass/fail notes from the run.
+and includes pass/fail notes from the run. In TrackingPipeline mode, the report
+and manifest also include SQLite evidence proving that the fake activity flow
+created focus sessions, web sessions, and outbox rows in the temp DB.
 
 ## What The Tool Does
 

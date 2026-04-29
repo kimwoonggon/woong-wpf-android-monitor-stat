@@ -5,6 +5,7 @@ using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
+using Microsoft.Data.Sqlite;
 
 var exitCode = UiSnapshotRunner.Run(args);
 return exitCode;
@@ -220,6 +221,7 @@ internal static class UiSnapshotRunner
         context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementName(mainWindow, "LastSyncStatusText"));
         CaptureWindow(mainWindow, "05-after-sync.png", context);
         CaptureWindow(mainWindow, "06-settings.png", context);
+        VerifyTrackingPipelineDatabase(context);
     }
 
     private static void EnsureTrackingRunning(Window window, UiSnapshotContext context)
@@ -528,6 +530,57 @@ internal static class UiSnapshotRunner
         }
     }
 
+    private static void VerifyTrackingPipelineDatabase(UiSnapshotContext context)
+    {
+        string? databasePath = context.Options.DatabasePath;
+        if (string.IsNullOrWhiteSpace(databasePath))
+        {
+            context.Fail("TrackingPipeline SQLite database", "Temp database path is configured", "Missing");
+            return;
+        }
+
+        DatabaseEvidence evidence = new(
+            DatabasePath: databasePath,
+            FocusSessionRows: CountRows(databasePath, "focus_session"),
+            WebSessionRows: CountRows(databasePath, "web_session"),
+            SyncOutboxRows: CountRows(databasePath, "sync_outbox"));
+        context.DatabaseEvidence = evidence;
+
+        context.Add(
+            "TrackingPipeline focus_session rows",
+            "> 0",
+            evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.FocusSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "TrackingPipeline web_session rows",
+            "> 0",
+            evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.WebSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "TrackingPipeline sync_outbox rows",
+            "> 0",
+            evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+    }
+
+    private static int CountRows(string databasePath, string tableName)
+    {
+        string safeTableName = tableName switch
+        {
+            "focus_session" => tableName,
+            "web_session" => tableName,
+            "sync_outbox" => tableName,
+            _ => throw new ArgumentException($"Unsupported table name: {tableName}.", nameof(tableName))
+        };
+
+        using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+        connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM {safeTableName};";
+
+        return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     private static void WriteArtifacts(UiSnapshotContext context, bool isSuccess)
     {
         WriteReport(context, isSuccess);
@@ -581,6 +634,21 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## SQLite Evidence");
+        lines.Add("");
+        if (context.DatabaseEvidence is null)
+        {
+            lines.Add("- Not collected.");
+        }
+        else
+        {
+            lines.Add($"- Database: `{context.DatabaseEvidence.DatabasePath}`");
+            lines.Add($"- TrackingPipeline focus_session rows: {context.DatabaseEvidence.FocusSessionRows}");
+            lines.Add($"- TrackingPipeline web_session rows: {context.DatabaseEvidence.WebSessionRows}");
+            lines.Add($"- TrackingPipeline sync_outbox rows: {context.DatabaseEvidence.SyncOutboxRows}");
+        }
+
+        lines.Add("");
         lines.Add("## Notes");
         lines.Add("");
         foreach (string note in context.Notes)
@@ -612,6 +680,15 @@ internal static class UiSnapshotRunner
             mode = context.Options.Mode.ToString(),
             appPath = context.Options.AppPath,
             databasePath = context.Options.DatabasePath,
+            databaseEvidence = context.DatabaseEvidence is null
+                ? null
+                : new
+                {
+                    context.DatabaseEvidence.DatabasePath,
+                    context.DatabaseEvidence.FocusSessionRows,
+                    context.DatabaseEvidence.WebSessionRows,
+                    context.DatabaseEvidence.SyncOutboxRows
+                },
             viewportWidths = context.Options.ViewportWidths.ToArray(),
             screenshots = context.Screenshots.Distinct(StringComparer.Ordinal).ToArray(),
             skippedScreenshots = context.SkippedScreenshots.ToArray(),
@@ -701,6 +778,8 @@ internal sealed class UiSnapshotContext
 
     public List<string> SkippedScreenshots { get; } = [];
 
+    public DatabaseEvidence? DatabaseEvidence { get; set; }
+
     public void Pass(string name, string expected, string actual)
         => Add(name, expected, actual, CheckStatus.Pass);
 
@@ -740,6 +819,12 @@ internal sealed class UiSnapshotContext
 }
 
 internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
+
+internal sealed record DatabaseEvidence(
+    string DatabasePath,
+    int FocusSessionRows,
+    int WebSessionRows,
+    int SyncOutboxRows);
 
 internal enum CheckStatus
 {

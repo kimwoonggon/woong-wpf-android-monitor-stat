@@ -4,18 +4,15 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 25/30 WPF auto-start and sync-at-start slice.
-Focused RED tests first proved that `StartTrackingCommand` should immediately
-attempt sync while still respecting sync opt-in, and that the WPF app can start
-tracking automatically on window load. Sync remains local-only by default:
-the automatic sync attempt reports `Sync skipped. Enable sync to upload.` until
-the user explicitly enables sync. The browser empty-domain text no longer says
-generic "metadata unavailable"; it now tells the user that browser domain
-capture is not connected yet and domain-only privacy is safe. RealStart and
-TrackingPipeline acceptance tools now tolerate an already-running auto-started
-app, while EmptyData snapshots force auto-start off. Verification passed: all
-`.NET` tests (222), full `.NET` build, RealStart, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-154548`, and coverage generation with
+Milestone 25 WPF TrackingPipeline SQLite evidence slice.
+Focused RED tests first required the UI snapshot tool to query the temp SQLite
+DB and publish semantic DB evidence in both `report.md` and `manifest.json`.
+`tools/Woong.MonitorStack.Windows.UiSnapshots` now uses `Microsoft.Data.Sqlite`
+as a tool-only dependency to count `focus_session`, `web_session`, and
+`sync_outbox` rows after the fake TrackingPipeline run. The latest acceptance
+report shows `focus_session=2`, `web_session=2`, and `sync_outbox=4`.
+Verification passed: all `.NET` tests (225), full `.NET` build, WPF acceptance
+at `artifacts/wpf-ui-acceptance/20260429-155615`, and coverage generation with
 overall line coverage 92.0%.
 
 ## Completed
@@ -1908,7 +1905,34 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.0%.
 
-Next highest priority remains TrackingPipeline semantic DB evidence in the
-snapshot tool: prove the local UI snapshot report/manifest checks temp SQLite
-for `focus_session`, `web_session`, and `sync_outbox` rows rather than relying
-on visible text and screenshots alone.
+## 2026-04-29 WPF TrackingPipeline SQLite Evidence Slice
+
+- Added RED source-contract tests requiring the local UI snapshot tool to query
+  temp SQLite, write a `## SQLite Evidence` report section, and include a
+  `databaseEvidence` object in `manifest.json`.
+- Added `Microsoft.Data.Sqlite` to `tools/Woong.MonitorStack.Windows.UiSnapshots`
+  as a tooling-only dependency. It is used only to inspect local acceptance DB
+  artifacts and does not make SQLite a dependency of `Windows.App` or
+  `Windows.Presentation`.
+- `RunTrackingPipelineAcceptance` now counts `focus_session`, `web_session`,
+  and `sync_outbox` rows after the fake pipeline run and adds them to the
+  PASS/FAIL/WARN table.
+- The latest WPF acceptance report recorded `focus_session=2`,
+  `web_session=2`, and `sync_outbox=4`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "UiSnapshotsTool_TrackingPipelineQueriesTempSqliteDatabase|UiSnapshotsTool_ReportIncludesTrackingPipelineSqliteEvidence|UiSnapshotsTool_ManifestIncludesTrackingPipelineSqliteEvidence"`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-155615`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority is Milestone 25 EmptyData mode acceptance: prove the
+empty dashboard remains stopped, empty, and free of SQLite/outbox rows when the
+snapshot tool launches with auto-start disabled.

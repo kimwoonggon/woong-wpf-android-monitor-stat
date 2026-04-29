@@ -432,3 +432,14 @@ The latest combined local WPF acceptance run passed at:
 `artifacts/wpf-ui-acceptance/20260429-154548`
 
 Coverage after this slice is 92.0% overall.
+
+The TrackingPipeline SQLite evidence slice made the UI snapshot report
+semantically prove local persistence, not only visible text and screenshots.
+TrackingPipeline now writes DB checks into the PASS/FAIL/WARN table and a
+dedicated `## SQLite Evidence` section. The latest local acceptance run
+recorded `focus_session=2`, `web_session=2`, and `sync_outbox=4`, and the
+manifest includes the same `databaseEvidence` object.
+
+`artifacts/wpf-ui-acceptance/20260429-155615`
+
+Coverage after this slice remains 92.0% overall.

@@ -514,13 +514,14 @@ milestones below are finished.
 - [x] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
 - [x] TrackingPipeline/RealStart acceptance tolerate product auto-start when the app is already Running.
 - [x] EmptyData snapshot mode explicitly disables product auto-start so empty-state evidence remains deterministic.
+- [x] TrackingPipeline mode verifies temp SQLite `focus_session`, `web_session`, and `sync_outbox` row counts.
 - [x] Verify Start changes tracking status to Running.
 - [x] Verify fake pipeline shows Visual Studio Code, Chrome, `github.com`, and `chatgpt.com`.
 - [x] Verify Stop changes tracking status to Stopped.
 - [x] Verify Sync Now updates last sync status using a fake sync client.
 - [x] Verify StartTracking immediately attempts sync and reports local-only skipped status while sync is off.
 - [x] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
-- [x] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [x] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`, including TrackingPipeline SQLite evidence.
 - [x] Keep screenshot review local-only and optional for GPT/human review.
 - [x] Run current composed RealStart + UI snapshot WPF acceptance tool locally.
 - [x] Run full semantic WPF acceptance tool locally after fake TrackingPipeline/report upgrades.
@@ -628,6 +629,9 @@ milestones below are finished.
 - [x] Viewport acceptance verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-144429` with no skipped screenshots.
 - [x] Viewport acceptance verification: full `.NET` tests passed (210 tests), `.NET` build passed, and coverage report generated successfully with overall line coverage 91.9%.
 - [x] Ensure WPF semantic acceptance verifies SQLite focus/web/outbox rows plus UI values for VS Code, Chrome, `github.com`, and `chatgpt.com`.
+- [x] TrackingPipeline SQLite evidence verification: UiSnapshots checks temp `focus_session`, `web_session`, and `sync_outbox` row counts.
+- [x] TrackingPipeline SQLite evidence verification: `report.md` and `manifest.json` include the semantic DB checks and statuses.
+- [x] TrackingPipeline SQLite evidence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-155615`.
 - [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
 - [x] Update `docs/browser-tracking-policy.md` for the browser-domain-not-connected safe privacy UI label.

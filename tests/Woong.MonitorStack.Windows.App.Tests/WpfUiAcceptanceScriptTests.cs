@@ -145,6 +145,57 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("Reason", tool);
     }
 
+    [Fact]
+    public void UiSnapshotsTool_TrackingPipelineQueriesTempSqliteDatabase()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+        string projectPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Woong.MonitorStack.Windows.UiSnapshots.csproj");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        Assert.True(File.Exists(projectPath), "WPF UI snapshot project must exist.");
+        string tool = File.ReadAllText(toolPath);
+        string project = File.ReadAllText(projectPath);
+
+        Assert.Contains("Microsoft.Data.Sqlite", project);
+        Assert.Contains("VerifyTrackingPipelineDatabase", tool);
+        Assert.Contains("CountRows", tool);
+        Assert.Contains("focus_session", tool);
+        Assert.Contains("web_session", tool);
+        Assert.Contains("sync_outbox", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_ReportIncludesTrackingPipelineSqliteEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## SQLite Evidence", tool);
+        Assert.Contains("TrackingPipeline focus_session rows", tool);
+        Assert.Contains("TrackingPipeline web_session rows", tool);
+        Assert.Contains("TrackingPipeline sync_outbox rows", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_ManifestIncludesTrackingPipelineSqliteEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("databaseEvidence", tool);
+        Assert.Contains("FocusSessionRows", tool);
+        Assert.Contains("WebSessionRows", tool);
+        Assert.Contains("SyncOutboxRows", tool);
+        Assert.Contains("DatabasePath", tool);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);
