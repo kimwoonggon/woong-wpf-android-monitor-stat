@@ -255,7 +255,10 @@ Current style dictionary implementation:
 - `Styles/DataGrid.xaml` defines `SessionDataGridStyle` for readable,
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in
-  the view and preserving grid-level horizontal scrolling at 1024px.
+  the view and preserving grid-level horizontal scrolling at 1024px. The shared
+  style also owns the common top spacing for the three session grids, while the
+  column widths remain in the view because they encode product readability
+  requirements for each table.
 - `Styles/Tabs.xaml` defines shared dashboard tab styles. `DetailsTabsPanel`
   uses them for `DashboardTabs` while preserving selected-value binding, four
   tab headers, and minimum-size reachability.

@@ -403,6 +403,7 @@ public sealed class MainWindowUiExpectationTests
             AssertStyleSetter(sessionGridStyle, DataGrid.CanUserDeleteRowsProperty, false);
             AssertStyleSetter(sessionGridStyle, DataGrid.HeadersVisibilityProperty, DataGridHeadersVisibility.Column);
             AssertStyleSetter(sessionGridStyle, DataGrid.IsReadOnlyProperty, true);
+            AssertStyleSetter(sessionGridStyle, FrameworkElement.MarginProperty, new Thickness(0, 12, 0, 0));
             AssertStyleSetter(sessionGridStyle, FrameworkElement.MinHeightProperty, 260.0);
             AssertStyleSetter(
                 sessionGridStyle,

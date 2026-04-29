@@ -2523,3 +2523,31 @@ Coverage after this slice: overall line coverage 91.3%.
 Next componentization work should address `DetailsTabsPanel` DataGrid outer
 spacing (`DataGrid Margin="0,12,0,0"`) through `SessionDataGridStyle`, then
 continue the remaining style/resource cleanup audit in small TDD slices.
+
+## 2026-04-29 WPF Details DataGrid Spacing Slice
+
+- Added a RED expectation to `DataGridStyleDictionary_DefinesReadableSessionGridStyle`
+  for the common session-grid top margin.
+- Moved repeated `Margin="0,12,0,0"` from the App Sessions, Web Sessions, and
+  Live Event Log `DataGrid` elements into `SessionDataGridStyle`.
+- Preserved explicit per-table `DataGridTextColumn` widths and min-widths in
+  `DetailsTabsPanel` because those are product readability constraints, not
+  generic styling.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter DataGridStyleDictionary_DefinesReadableSessionGridStyle`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DataGridStyleDictionary_DefinesReadableSessionGridStyle|DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding|MainWindow_TabsExposeExpectedListsAndSettingsControls"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-213053`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work should move the Settings section-heading bottom
+spacing into `SettingsSectionTitleTextStyle`.

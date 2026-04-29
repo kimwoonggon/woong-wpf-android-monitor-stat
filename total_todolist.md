@@ -1099,6 +1099,14 @@ milestones below are finished.
   - [x] Status badge style verification: `.NET` build passed.
   - [x] Status badge style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-212314`.
   - [x] Status badge style verification: coverage report generated successfully with overall line coverage 91.3%.
+  - [x] Move repeated App/Web/Live session DataGrid top margins into `SessionDataGridStyle`.
+  - [x] Details DataGrid spacing verification: RED `DataGridStyleDictionary_DefinesReadableSessionGridStyle` failed first on missing `Margin`, then passed.
+  - [x] Details DataGrid spacing verification: adjacent Details tab tests passed.
+  - [x] Details DataGrid spacing verification: all Windows App tests passed (89 tests).
+  - [x] Details DataGrid spacing verification: full `.NET` tests passed (294 tests).
+  - [x] Details DataGrid spacing verification: `.NET` build passed.
+  - [x] Details DataGrid spacing verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-213053`.
+  - [x] Details DataGrid spacing verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.

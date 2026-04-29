@@ -6,6 +6,7 @@
         <Setter Property="CanUserDeleteRows" Value="False" />
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Margin" Value="0,12,0,0" />
         <Setter Property="MinHeight" Value="260" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     </Style>

@@ -35,8 +35,7 @@
                 <TabItem Header="App Sessions"
                          Tag="{x:Static dashboard:DetailsTab.AppSessions}"
                          AutomationProperties.AutomationId="AppSessionsTab">
-                    <DataGrid Margin="0,12,0,0"
-                              AutomationProperties.AutomationId="RecentAppSessionsList"
+                    <DataGrid AutomationProperties.AutomationId="RecentAppSessionsList"
                               Style="{StaticResource SessionDataGridStyle}"
                               ItemsSource="{Binding VisibleAppSessionRows}">
                         <DataGrid.Columns>
@@ -79,8 +78,7 @@
                 <TabItem Header="Web Sessions"
                          Tag="{x:Static dashboard:DetailsTab.WebSessions}"
                          AutomationProperties.AutomationId="WebSessionsTab">
-                    <DataGrid Margin="0,12,0,0"
-                              AutomationProperties.AutomationId="RecentWebSessionsList"
+                    <DataGrid AutomationProperties.AutomationId="RecentWebSessionsList"
                               Style="{StaticResource SessionDataGridStyle}"
                               ItemsSource="{Binding VisibleWebSessionRows}">
                         <DataGrid.Columns>
@@ -123,8 +121,7 @@
                 <TabItem Header="Live Event Log"
                          Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
                          AutomationProperties.AutomationId="LiveEventsTab">
-                    <DataGrid Margin="0,12,0,0"
-                              AutomationProperties.AutomationId="LiveEventsList"
+                    <DataGrid AutomationProperties.AutomationId="LiveEventsList"
                               Style="{StaticResource SessionDataGridStyle}"
                               ItemsSource="{Binding VisibleLiveEventRows}">
                         <DataGrid.Columns>
