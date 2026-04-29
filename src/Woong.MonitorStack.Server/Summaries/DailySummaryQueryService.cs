@@ -25,17 +25,20 @@ public sealed class DailySummaryQueryService
             .ToListAsync();
 
         List<FocusSessionEntity> focusSessions = await _dbContext.FocusSessions
-            .Where(session => deviceIds.Contains(session.DeviceId) && session.LocalDate == summaryDate)
+            .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
         List<WebSessionEntity> webSessions = await _dbContext.WebSessions
             .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
 
+        List<FocusSessionEntity> focusSessionsForDate = focusSessions
+            .Where(session => LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId) == summaryDate)
+            .ToList();
         List<WebSessionEntity> webSessionsForDate = webSessions
             .Where(session => LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId) == summaryDate)
             .ToList();
 
-        List<UsageTotal> topApps = focusSessions
+        List<UsageTotal> topApps = focusSessionsForDate
             .Where(session => !session.IsIdle)
             .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
             .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
@@ -51,8 +54,8 @@ public sealed class DailySummaryQueryService
 
         return new DailySummary(
             summaryDate,
-            focusSessions.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
-            focusSessions.Where(session => session.IsIdle).Sum(session => session.DurationMs),
+            focusSessionsForDate.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
+            focusSessionsForDate.Where(session => session.IsIdle).Sum(session => session.DurationMs),
             webSessionsForDate.Sum(session => session.DurationMs),
             topApps,
             topDomains);
@@ -78,15 +81,20 @@ public sealed class DailySummaryQueryService
             .ToListAsync();
 
         List<FocusSessionEntity> focusSessions = await _dbContext.FocusSessions
-            .Where(session =>
-                deviceIds.Contains(session.DeviceId) &&
-                session.LocalDate >= fromDate &&
-                session.LocalDate <= toDate)
+            .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
         List<WebSessionEntity> webSessions = await _dbContext.WebSessions
             .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
 
+        List<FocusSessionEntity> focusSessionsForRange = focusSessions
+            .Where(session =>
+            {
+                DateOnly localDate = LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId);
+
+                return localDate >= fromDate && localDate <= toDate;
+            })
+            .ToList();
         List<WebSessionEntity> webSessionsForRange = webSessions
             .Where(session =>
             {
@@ -96,7 +104,7 @@ public sealed class DailySummaryQueryService
             })
             .ToList();
 
-        List<UsageTotal> topApps = focusSessions
+        List<UsageTotal> topApps = focusSessionsForRange
             .Where(session => !session.IsIdle)
             .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
             .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
@@ -113,8 +121,8 @@ public sealed class DailySummaryQueryService
         return new DateRangeStatisticsResponse(
             fromDate,
             toDate,
-            focusSessions.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
-            focusSessions.Where(session => session.IsIdle).Sum(session => session.DurationMs),
+            focusSessionsForRange.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
+            focusSessionsForRange.Where(session => session.IsIdle).Sum(session => session.DurationMs),
             webSessionsForRange.Sum(session => session.DurationMs),
             topApps,
             topDomains);

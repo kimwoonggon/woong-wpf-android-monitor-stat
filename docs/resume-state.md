@@ -2674,6 +2674,32 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 91.2%.
 
+## 2026-04-29 Server Daily Summary Timezone Slice
+
+- Added a relational regression test proving that Windows and Android
+  FocusSessions are included in the same daily summary according to the
+  requested user timezone, even when the persisted `LocalDate` is on the
+  previous UTC date.
+- Updated `DailySummaryQueryService` so daily and date-range summary queries
+  filter focus sessions by `StartedAtUtc` converted through the requested
+  timezone, matching the existing web-session behavior and the PRD's
+  user-timezone rule.
+- Fixed a date-range API test fixture so each seeded focus session's UTC start
+  time matches its intended Asia/Seoul local date. This preserves the product
+  behavior under the stricter timezone rule instead of relying on EF InMemory
+  date shortcuts.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "GenerateAsync_UsesRequestedTimezoneWhenGroupingFocusSessionsAcrossUtcMidnight" -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~Summaries" -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Coverage after this slice: overall line coverage 91.3%; Server line coverage
+96.5%.
+
 ## 2026-04-29 WPF Close Flush Slice
 
 - Added a WPF behavior test proving that closing `MainWindow` while tracking is

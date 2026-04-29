@@ -120,6 +120,12 @@ Client registers device
 Server PostgreSQL is the only integrated store. Windows SQLite and Android Room
 remain local device stores.
 
+Daily summary and date-range statistics use the requested user timezone when
+assigning both focus sessions and web sessions to local dates. The server must
+not rely only on a client-provided `FocusSession.LocalDate`, because integrated
+Windows + Android summaries are user/timezone reports and a UTC-midnight
+boundary can otherwise drop valid sessions from the requested day.
+
 ## Acceptance Modes
 
 ### A. EmptyData

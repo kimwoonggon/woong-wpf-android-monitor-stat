@@ -3,6 +3,7 @@ using System.Text.Json;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Summaries;
+using Woong.MonitorStack.Server.Tests.Data;
 
 namespace Woong.MonitorStack.Server.Tests.Summaries;
 
@@ -90,6 +91,49 @@ public sealed class DailySummaryAggregationServiceTests
     }
 
     [Fact]
+    public async Task GenerateAsync_UsesRequestedTimezoneWhenGroupingFocusSessionsAcrossUtcMidnight()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid windowsDeviceId = Guid.NewGuid();
+        Guid androidDeviceId = Guid.NewGuid();
+        database.Context.Devices.AddRange(
+            Device(windowsDeviceId, "user-1", Platform.Windows, "windows-key"),
+            Device(androidDeviceId, "user-1", Platform.Android, "android-key"));
+        database.Context.FocusSessions.AddRange(
+            Focus(
+                windowsDeviceId,
+                "windows-boundary",
+                "chrome.exe",
+                localDate: new DateOnly(2026, 4, 27),
+                durationMs: 180_000,
+                isIdle: false,
+                startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 30, 0, TimeSpan.Zero)),
+            Focus(
+                androidDeviceId,
+                "android-boundary",
+                "com.android.chrome",
+                localDate: new DateOnly(2026, 4, 27),
+                durationMs: 120_000,
+                isIdle: false,
+                startedAtUtc: new DateTimeOffset(2026, 4, 27, 16, 0, 0, TimeSpan.Zero)));
+        await database.Context.SaveChangesAsync();
+        var service = new DailySummaryAggregationService(database.Context);
+
+        DailySummaryEntity summary = await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 28, 23, 0, 0, TimeSpan.Zero));
+
+        Assert.Equal(300_000, summary.TotalActiveMs);
+        Assert.Equal(0, summary.TotalIdleMs);
+        List<UsageTotal> topApps = JsonSerializer.Deserialize<List<UsageTotal>>(summary.TopAppsJson)!;
+        Assert.Single(topApps);
+        Assert.Equal("Chrome", topApps[0].Key);
+        Assert.Equal(300_000, topApps[0].DurationMs);
+    }
+
+    [Fact]
     public async Task GenerateAsync_WhenRunTwice_UpdatesSingleSummaryWithoutInflatingTotals()
     {
         var options = new DbContextOptionsBuilder<MonitorDbContext>()
@@ -174,6 +218,28 @@ public sealed class DailySummaryAggregationServiceTests
             DurationMs = durationMs,
             LocalDate = localDate,
             TimezoneId = "Asia/Seoul",
+            IsIdle = isIdle,
+            Source = "test"
+        };
+
+    private static FocusSessionEntity Focus(
+        Guid deviceId,
+        string clientSessionId,
+        string platformAppKey,
+        DateOnly localDate,
+        long durationMs,
+        bool isIdle,
+        DateTimeOffset startedAtUtc)
+        => new()
+        {
+            DeviceId = deviceId,
+            ClientSessionId = clientSessionId,
+            PlatformAppKey = platformAppKey,
+            StartedAtUtc = startedAtUtc,
+            EndedAtUtc = startedAtUtc.AddMilliseconds(durationMs),
+            DurationMs = durationMs,
+            LocalDate = localDate,
+            TimezoneId = "UTC",
             IsIdle = isIdle,
             Source = "test"
         };

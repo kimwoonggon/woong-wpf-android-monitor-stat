@@ -298,6 +298,7 @@ milestones below are finished.
 - [x] Compute top app.
 - [x] Compute top domain.
 - [x] Respect user timezone local date.
+- [x] Add relational regression test proving focus sessions are grouped by requested user timezone across UTC midnight.
 - [x] Test mixed Windows + Android data summary.
 - [x] Test timezone boundaries.
 - [x] Test duplicate data does not inflate summary.

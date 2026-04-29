@@ -94,19 +94,25 @@ public sealed class DateRangeStatisticsApiTests
         DateOnly localDate,
         long durationMs,
         bool isIdle)
-        => new()
+    {
+        DateTimeOffset startedAtUtc = new DateTimeOffset(
+            localDate.ToDateTime(new TimeOnly(9, 0)),
+            TimeSpan.FromHours(9)).ToUniversalTime();
+
+        return new()
         {
             DeviceId = deviceId,
             ClientSessionId = clientSessionId,
             PlatformAppKey = platformAppKey,
-            StartedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
-            EndedAtUtc = new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
+            StartedAtUtc = startedAtUtc,
+            EndedAtUtc = startedAtUtc.AddMilliseconds(durationMs),
             DurationMs = durationMs,
             LocalDate = localDate,
             TimezoneId = "Asia/Seoul",
             IsIdle = isIdle,
             Source = "test"
         };
+    }
 
     private static WebSessionEntity Web(
         Guid deviceId,
