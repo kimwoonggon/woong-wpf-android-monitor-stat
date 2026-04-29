@@ -260,6 +260,30 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void TypographyStyleDictionary_DefinesDashboardTextStyles()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("Typography.xaml");
+
+            Assert.True(resources.Contains("HeadingTextStyle"));
+            Assert.True(resources.Contains("SubtitleTextStyle"));
+            Assert.True(resources.Contains("SectionTitleTextStyle"));
+            Assert.True(resources.Contains("BodyTextStyle"));
+            Assert.True(resources.Contains("MutedTextStyle"));
+
+            Style headingStyle = Assert.IsType<Style>(resources["HeadingTextStyle"]);
+            AssertStyleSetter(headingStyle, TextBlock.FontSizeProperty, 24.0);
+            AssertStyleSetter(headingStyle, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+
+            Style sectionTitleStyle = Assert.IsType<Style>(resources["SectionTitleTextStyle"]);
+            AssertStyleSetter(sectionTitleStyle, TextBlock.FontSizeProperty, 16.0);
+            AssertStyleSetter(sectionTitleStyle, TextBlock.FontWeightProperty, FontWeights.SemiBold);
+
+            Style mutedStyle = Assert.IsType<Style>(resources["MutedTextStyle"]);
+            AssertStyleSetter(mutedStyle, TextBlock.FontSizeProperty, 12.0);
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {

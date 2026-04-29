@@ -8,6 +8,13 @@
              mc:Ignorable="d"
              AutomationProperties.AutomationId="HeaderArea"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -16,12 +23,9 @@
 
         <StackPanel>
             <TextBlock Text="Woong Monitor Stack"
-                       FontSize="24"
-                       FontWeight="SemiBold"
-                       Foreground="#162033" />
+                       Style="{StaticResource HeadingTextStyle}" />
             <TextBlock Text="Windows Focus Tracker"
-                       FontSize="13"
-                       Foreground="#5A6472"
+                       Style="{StaticResource SubtitleTextStyle}"
                        Margin="0,4,0,0" />
         </StackPanel>
 

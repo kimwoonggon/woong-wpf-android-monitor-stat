@@ -222,6 +222,12 @@ Current style dictionary implementation:
   border brushes, and the dashboard shell content uses the app background brush.
   Remaining color work includes replacing repeated text and badge/status
   hard-coded brushes.
+- `Styles/Typography.xaml` defines shared heading, subtitle, section title,
+  body, muted, and metric-value `TextBlock` styles. `HeaderStatusBar`,
+  `SectionCard`, `DetailRow`, and `MetricCard` consume those styles while
+  preserving their AutomationIds and existing bindings. Remaining typography
+  work is to migrate repeated chart/settings text setters as those panels are
+  split further.
 
 Open `wpfelements.md` alignment decisions:
 

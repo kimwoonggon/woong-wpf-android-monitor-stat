@@ -6,6 +6,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -13,17 +14,13 @@
             Style="{StaticResource DashboardCardBorderStyle}">
         <StackPanel>
             <TextBlock Text="{Binding Label, ElementName=Root}"
-                       Foreground="#162033"
-                       FontSize="14"
+                       Style="{StaticResource BodyTextStyle}"
                        FontWeight="SemiBold" />
             <TextBlock Text="{Binding Value, ElementName=Root}"
-                       Foreground="#162033"
-                       FontSize="28"
-                       FontWeight="SemiBold"
+                       Style="{StaticResource MetricValueTextStyle}"
                        Margin="0,8,0,0" />
             <TextBlock Text="{Binding Subtitle, ElementName=Root}"
-                       Foreground="#5A6472"
-                       FontSize="12"
+                       Style="{StaticResource MutedTextStyle}"
                        TextWrapping="Wrap"
                        Margin="0,6,0,0" />
         </StackPanel>

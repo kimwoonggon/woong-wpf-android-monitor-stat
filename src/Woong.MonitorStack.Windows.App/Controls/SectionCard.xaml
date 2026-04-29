@@ -5,6 +5,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -21,9 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#162033"
+                           Style="{StaticResource SectionTitleTextStyle}"
                            VerticalAlignment="Center" />
                 <Button Grid.Column="1"
                         AutomationProperties.AutomationId="SectionCardActionButton"

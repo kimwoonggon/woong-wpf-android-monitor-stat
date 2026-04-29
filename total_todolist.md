@@ -754,6 +754,14 @@ milestones below are finished.
 - [x] Colors style dictionary verification: `.NET` build passed.
 - [x] Colors style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-132937`.
 - [x] Colors style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Add `Styles/Typography.xaml` with heading, subtitle, section title, body, muted, and metric value text styles.
+- [x] Wire typography resources into `App.xaml`, `HeaderStatusBar`, `SectionCard`, `DetailRow`, and `MetricCard`.
+- [x] Typography style dictionary verification: RED missing-resource test failed first, then focused resource/header/detail/metric/section tests passed.
+- [x] Typography style dictionary verification: all Windows App tests passed (48 tests).
+- [x] Typography style dictionary verification: full `.NET` tests passed (202 tests).
+- [x] Typography style dictionary verification: `.NET` build passed.
+- [x] Typography style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-134019`.
+- [x] Typography style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.

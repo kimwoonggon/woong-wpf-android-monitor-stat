@@ -4,14 +4,15 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 colors style dictionary slice.
-`ColorStyleDictionary_DefinesCoreDashboardBrushes` proves `Styles/Colors.xaml`
-defines the app background, surface, border, primary text, and muted text
-brushes. `Cards.xaml` now consumes the shared surface/border brushes, and the
-dashboard content background uses the app background brush. Verification
-passed: all `.NET` tests (201), full `.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-132937`, and coverage generation with
-overall line coverage 92.1%.
+Milestone 31 typography style dictionary slice.
+`TypographyStyleDictionary_DefinesDashboardTextStyles` first failed because
+`Styles/Typography.xaml` did not exist, then passed after shared heading,
+subtitle, section title, body, muted, and metric-value `TextBlock` styles were
+added. `HeaderStatusBar`, `SectionCard`, `DetailRow`, and `MetricCard` now
+consume the shared typography resources while preserving behavior and
+AutomationIds. Verification passed: all `.NET` tests (202), full `.NET` build,
+WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-134019`, and coverage
+generation with overall line coverage 92.1%.
 
 ## Completed
 
@@ -954,14 +955,15 @@ Remaining Milestone 30 work:
 ## Next Highest Priority
 
 Continue Milestone 31 with the next style dictionary slice. Remaining style
-work is `Typography.xaml`, `DataGrid.xaml`, and `Tabs.xaml`, plus follow-up
-replacement of repeated text and badge/status brushes. Prefer typography next
-because repeated heading/body/muted text setters remain across Header,
-Settings, cards, chart headings, and detail rows. Preserve the extracted
-dashboard views, reusable controls, chart `상세보기` tab-switch behavior, and
-keep remaining `wpfelements.md` audit gaps visible: domain chart type decision,
-Details pagination decision, and style dictionary migration away from
-hard-coded local styles.
+work is `DataGrid.xaml` and `Tabs.xaml`, plus follow-up replacement of repeated
+chart/settings text and badge/status brushes. Prefer `DataGrid.xaml` next
+because the App/Web/Live grids intentionally exceed the 1024px content width and
+must keep readable columns plus their own horizontal scrolling. Preserve the
+extracted dashboard views, reusable controls, chart `상세보기` tab-switch
+behavior, and keep remaining `wpfelements.md` audit gaps visible: domain chart
+type decision, Details pagination decision, Settings coverage, acceptance
+viewport variants, and style dictionary migration away from hard-coded local
+styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1512,3 +1514,33 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is typography style extraction. Keep it narrow by moving
 common heading/subtitle/section/muted/body TextBlock setters first and leaving
 badge/status colors for a separate slice.
+
+## 2026-04-29 WPF Typography Style Dictionary Slice
+
+- Added the RED resource test
+  `TypographyStyleDictionary_DefinesDashboardTextStyles`; it failed first on
+  the missing `Styles/Typography.xaml` resource.
+- Added `Styles/Typography.xaml` with shared heading, subtitle, section title,
+  body, muted, and metric-value `TextBlock` styles.
+- Merged the typography dictionary from `App.xaml`.
+- Updated `HeaderStatusBar`, `SectionCard`, `DetailRow`, and `MetricCard` to
+  consume shared typography styles while preserving their bindings and
+  AutomationIds.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "TypographyStyleDictionary_DefinesDashboardTextStyles|DashboardView_HostsHeaderStatusBarAndPreservesHeaderContent|DetailRow_RendersLabelAndValueWithStableValueAutomationId|MetricCard_RendersLabelValueAndSubtitle|SectionCard_RendersContentAndOptionalActionCommand"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-134019`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is `DataGrid.xaml` extraction. Add a RED resource/style
+test first, keep column MinWidth definitions in `DetailsTabsPanel.xaml`, and
+preserve DataGrid-level horizontal scrolling for 1024px readability.
