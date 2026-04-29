@@ -4,6 +4,18 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 30 Live Event Log runtime semantics slice. RED tests first required
+the public `DashboardViewModel` Start/Poll/Stop/Sync commands to publish visible
+runtime log rows for Tracking started, FocusSession closed/started,
+FocusSession persisted, WebSession closed/started, WebSession persisted, outbox
+row created, sync skipped, and Tracking stopped. The ViewModel now keeps
+runtime event rows separate from SQLite-derived focus/web rows, then publishes a
+combined Live Event Log without losing runtime evidence on dashboard refresh.
+Verification passed: full `.NET` tests (244), full `.NET` build with 0
+warnings/errors, coverage generation with 91.0% line coverage, WPF UI
+acceptance at `artifacts/wpf-ui-acceptance/20260429-171411`, and the Windows
+smoke tool.
+
 Milestone 4.5/23 native browser host slice. RED tests first required a
 `ChromeNativeMessageHostRunner`, a local Chrome native host install script, and
 a persistent `chrome.runtime.connectNative` extension path. The Windows layer

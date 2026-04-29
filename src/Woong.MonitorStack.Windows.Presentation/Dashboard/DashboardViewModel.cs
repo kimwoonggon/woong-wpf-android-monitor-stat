@@ -12,6 +12,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardClock _clock;
     private readonly IDashboardTrackingCoordinator _trackingCoordinator;
     private readonly TimeZoneInfo _timeZone;
+    private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
+    private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
     private string? _currentWindowTitle;
     private bool _isTrackingRunning;
     private TimeRange? _customRange;
@@ -223,7 +225,10 @@ public sealed partial class DashboardViewModel : ObservableObject
         _isTrackingRunning = true;
         TrackingStatusText = "Running";
         TrackingBadgeText = "Tracking Running";
-        UpdateCurrentActivity(_trackingCoordinator.StartTracking());
+        DashboardTrackingSnapshot snapshot = _trackingCoordinator.StartTracking();
+        UpdateCurrentActivity(snapshot);
+        AddRuntimeEvent("Tracking started", snapshot.AppName, snapshot.CurrentBrowserDomain, "Tracking started.");
+        AddSessionStartedEvents(snapshot);
         SyncNow();
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
@@ -236,7 +241,10 @@ public sealed partial class DashboardViewModel : ObservableObject
         _isTrackingRunning = false;
         TrackingStatusText = "Stopped";
         TrackingBadgeText = "Tracking Stopped";
-        UpdateCurrentActivity(_trackingCoordinator.StopTracking());
+        DashboardTrackingSnapshot snapshot = _trackingCoordinator.StopTracking();
+        UpdateCurrentActivity(snapshot);
+        AddPersistenceEvents(snapshot);
+        AddRuntimeEvent("Tracking stopped", snapshot.AppName, snapshot.CurrentBrowserDomain, "Tracking stopped.");
         RefreshSummary(ResolveRange(SelectedPeriod));
         StartTrackingCommand.NotifyCanExecuteChanged();
         StopTrackingCommand.NotifyCanExecuteChanged();
@@ -250,6 +258,8 @@ public sealed partial class DashboardViewModel : ObservableObject
         UpdateCurrentActivity(snapshot);
         if (snapshot.LastPersistedSession is not null || snapshot.HasPersistedWebSession)
         {
+            AddPersistenceEvents(snapshot);
+            AddSessionStartedEvents(snapshot);
             RefreshSummary(ResolveRange(SelectedPeriod));
         }
     }
@@ -257,9 +267,14 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void SyncNow()
     {
-        LastSyncStatusText = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled).StatusText;
+        DashboardSyncResult syncResult = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled);
+        LastSyncStatusText = syncResult.StatusText;
         Settings.SyncStatusLabel = LastSyncStatusText;
         UpdateSyncBadge();
+        if (!Settings.IsSyncEnabled)
+        {
+            AddRuntimeEvent("Sync skipped", CurrentAppNameText, CurrentBrowserDomainText, syncResult.StatusText);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanGoToPreviousDetailsPage))]
@@ -362,10 +377,71 @@ public sealed partial class DashboardViewModel : ObservableObject
         DomainUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Domains", DomainUsagePoints);
         RecentSessions = BuildRecentSessionRows(focusSessions);
         RecentWebSessions = BuildRecentWebSessionRows(webSessions);
-        LiveEvents = BuildLiveEventRows(focusSessions, webSessions);
+        _persistedLiveEvents = BuildLiveEventRows(focusSessions, webSessions);
+        PublishLiveEvents();
         CurrentDetailsPage = 1;
         UpdateVisibleDetailsRows();
     }
+
+    private void AddRuntimeEvent(string eventType, string? appName, string? domain, string message)
+    {
+        _runtimeLiveEvents.Insert(
+            0,
+            new DashboardEventLogRow(
+                eventType,
+                FormatLocalTime(_clock.UtcNow, _timeZone),
+                TextOrDefault(appName, ""),
+                TextOrDefault(domain, ""),
+                message));
+        PublishLiveEvents();
+        UpdateVisibleDetailsRows();
+    }
+
+    private void AddSessionStartedEvents(DashboardTrackingSnapshot snapshot)
+    {
+        if (!string.IsNullOrWhiteSpace(snapshot.AppName))
+        {
+            AddRuntimeEvent(
+                "FocusSession started",
+                snapshot.AppName,
+                snapshot.CurrentBrowserDomain,
+                $"FocusSession started for {snapshot.AppName}.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.CurrentBrowserDomain))
+        {
+            AddRuntimeEvent(
+                "WebSession started",
+                snapshot.AppName,
+                snapshot.CurrentBrowserDomain,
+                $"WebSession started for {snapshot.CurrentBrowserDomain}.");
+        }
+    }
+
+    private void AddPersistenceEvents(DashboardTrackingSnapshot snapshot)
+    {
+        if (snapshot.LastPersistedSession is not null)
+        {
+            string appName = TextOrDefault(
+                snapshot.LastPersistedSession.AppName,
+                TextOrDefault(snapshot.LastPersistedSession.ProcessName, "Unknown app"));
+            AddRuntimeEvent("FocusSession closed", appName, snapshot.CurrentBrowserDomain, $"FocusSession closed for {appName}.");
+            AddRuntimeEvent("FocusSession persisted", appName, snapshot.CurrentBrowserDomain, $"FocusSession persisted for {appName}.");
+            AddRuntimeEvent("Outbox row created", appName, snapshot.CurrentBrowserDomain, $"Outbox row created for {appName}.");
+        }
+
+        if (snapshot.HasPersistedWebSession)
+        {
+            AddRuntimeEvent("WebSession closed", snapshot.AppName, snapshot.CurrentBrowserDomain, "WebSession closed.");
+            AddRuntimeEvent("WebSession persisted", snapshot.AppName, snapshot.CurrentBrowserDomain, "WebSession persisted.");
+            AddRuntimeEvent("Outbox row created", snapshot.AppName, snapshot.CurrentBrowserDomain, "Outbox row created for WebSession.");
+        }
+    }
+
+    private void PublishLiveEvents()
+        => LiveEvents = _runtimeLiveEvents
+            .Concat(_persistedLiveEvents)
+            .ToList();
 
     private int CalculateTotalDetailsPages()
     {

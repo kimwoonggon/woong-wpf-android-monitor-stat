@@ -60,7 +60,9 @@ Examples:
 - Recent app sessions list contains expected app sessions.
 - Recent web sessions list contains expected web sessions.
 - Summary cards show expected durations.
-- Live event log shows `FocusChanged` and `BrowserVisit`.
+- Live event log shows focus/web activity plus runtime semantics: Tracking
+  started, FocusSession closed/started, WebSession closed/started,
+  persisted/outbox events, sync skipped, and Tracking stopped.
 - Settings contains privacy controls.
 - Window and page titles are privacy-masked unless the explicit title setting
   allows them.

@@ -635,7 +635,7 @@ milestones below are finished.
 - [x] Update App Sessions grid columns: App, Process, Start, End, Duration, State, Window, Source with required MinWidths.
 - [x] Add Web Sessions grid tests for required columns, readable widths, domain-only privacy, empty state, and fake github/chatgpt rows.
 - [x] Update Web Sessions grid columns: Domain, Title, URL Mode, Start, End, Duration, Browser, Confidence with required MinWidths.
-- [ ] Add Live Event Log tests for Tracking started, FocusSession closed/started, WebSession closed/started, persisted/outbox, sync skipped, and stopped events.
+- [x] Add Live Event Log tests for Tracking started, FocusSession closed/started, WebSession closed/started, persisted/outbox, sync skipped, and stopped events.
 - [x] Update Live Event Log columns: Time, Event Type, App, Domain, Message.
 - [x] Add Settings tests for readable privacy controls, full URL off by default, sync off by default, local-only status, and local DB/log folder commands disabled or available.
 - [x] Add Settings tests for Capture page title off by default, domain-only browser storage on by default, sync endpoint disabled until opt-in, and guarded Clear local data disabled.
@@ -684,6 +684,14 @@ milestones below are finished.
   at 90.8% line coverage, and WPF UI acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-170610`; the Windows smoke tool
   reported real Chrome foreground metadata without content capture.
+- [x] Live Event Log runtime verification: RED tests added command-level
+  coverage for Tracking started, FocusSession closed/started, WebSession
+  closed/started, FocusSession/WebSession persisted, outbox row created, sync
+  skipped, and Tracking stopped events; full `.NET` tests passed (244), `.NET`
+  build passed with 0 warnings/errors, coverage generated at 91.0% line
+  coverage, WPF UI acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-171411`, and the Windows smoke tool
+  reported real foreground metadata only.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.

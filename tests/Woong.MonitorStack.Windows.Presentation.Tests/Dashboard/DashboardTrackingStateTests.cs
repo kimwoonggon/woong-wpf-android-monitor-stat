@@ -109,6 +109,108 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void StartTrackingCommand_AddsTrackingStartedAndFocusSessionStartedLiveEvents()
+    {
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromSeconds(1),
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "github.com",
+                BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive)
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+
+        viewModel.StartTrackingCommand.Execute(null);
+
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Tracking started");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession started" && row.AppName == "Chrome");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "WebSession started" && row.Domain == "github.com");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Sync skipped");
+    }
+
+    [Fact]
+    public void PollTrackingCommand_WhenSessionsPersist_AddsClosedPersistedOutboxAndStartedLiveEvents()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Code.exe",
+                ProcessName: "Code.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null),
+            PollSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromSeconds(5),
+                LastPersistedSession: new DashboardPersistedSessionSnapshot(
+                    "Code.exe",
+                    "Code.exe",
+                    now.AddMinutes(-1),
+                    TimeSpan.FromMinutes(9)),
+                CurrentBrowserDomain: "chatgpt.com",
+                BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive,
+                LastPollAtUtc: now,
+                LastDbWriteAtUtc: now,
+                HasPersistedWebSession: true)
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+        viewModel.StartTrackingCommand.Execute(null);
+
+        viewModel.PollTrackingCommand.Execute(null);
+
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession closed" && row.AppName == "Code.exe");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession persisted" && row.AppName == "Code.exe");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Outbox row created" && row.AppName == "Code.exe");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession started" && row.AppName == "Chrome");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "WebSession closed");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "WebSession persisted");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "WebSession started" && row.Domain == "chatgpt.com");
+    }
+
+    [Fact]
+    public void StopTrackingCommand_WhenSessionFlushes_AddsStoppedAndFlushLiveEvents()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null),
+            StopSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromMinutes(3),
+                LastPersistedSession: new DashboardPersistedSessionSnapshot(
+                    "Chrome",
+                    "chrome.exe",
+                    now,
+                    TimeSpan.FromMinutes(3)),
+                LastPollAtUtc: now,
+                LastDbWriteAtUtc: now)
+        };
+        DashboardViewModel viewModel = CreateViewModel(coordinator);
+        viewModel.StartTrackingCommand.Execute(null);
+
+        viewModel.StopTrackingCommand.Execute(null);
+
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession closed" && row.AppName == "Chrome");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "FocusSession persisted" && row.AppName == "Chrome");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Outbox row created" && row.AppName == "Chrome");
+        Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Tracking stopped");
+    }
+
+    [Fact]
     public void StopTrackingCommand_RefreshesCurrentDashboardPeriodAfterFlush()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
