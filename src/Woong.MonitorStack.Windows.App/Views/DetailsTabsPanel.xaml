@@ -13,12 +13,15 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/DataGrid.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Border Style="{StaticResource DashboardCardBorderStyle}">
         <TabControl AutomationProperties.AutomationId="DashboardTabs"
+                    Style="{StaticResource DashboardTabControlStyle}"
+                    ItemContainerStyle="{StaticResource DashboardTabItemStyle}"
                     SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
                     SelectedValuePath="Tag">
             <TabItem Header="App Sessions"

@@ -232,6 +232,9 @@ Current style dictionary implementation:
   read-only session grids. `DetailsTabsPanel` uses it for App Sessions, Web
   Sessions, and Live Event Log while keeping explicit column MinWidth values in
   the view and preserving grid-level horizontal scrolling at 1024px.
+- `Styles/Tabs.xaml` defines shared dashboard tab styles. `DetailsTabsPanel`
+  uses them for `DashboardTabs` while preserving selected-value binding, four
+  tab headers, and minimum-size reachability.
 
 Open `wpfelements.md` alignment decisions:
 
@@ -243,8 +246,8 @@ Open `wpfelements.md` alignment decisions:
   local data.
 - Dashboard root scrolling is now vertical-only; horizontal scrolling remains
   on the wide App Sessions, Web Sessions, and Live Event Log grids.
-- Style dictionary migration should remove hard-coded colors and duplicate
-  local styles from extracted panels.
+- Follow-up style migration should remove remaining repeated chart/settings text
+  setters and badge/status hard-coded brushes from extracted panels.
 
 ## Current Problems
 

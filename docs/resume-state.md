@@ -4,14 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 DataGrid style dictionary slice.
-`DataGridStyleDictionary_DefinesReadableSessionGridStyle` first failed because
-`Styles/DataGrid.xaml` did not exist, then passed after `SessionDataGridStyle`
-was added. App Sessions, Web Sessions, and Live Event Log now consume the shared
-read-only grid behavior while preserving explicit column MinWidth values,
-ItemsSource bindings, AutomationIds, and per-grid horizontal scrolling.
-Verification passed: all `.NET` tests (203), full `.NET` build, WPF acceptance
-at `artifacts/wpf-ui-acceptance/20260429-134913`, and coverage generation with
+Milestone 31 tabs style dictionary slice.
+`TabsStyleDictionary_DefinesReadableDashboardTabsStyle` first failed because
+`Styles/Tabs.xaml` did not exist, then passed after shared dashboard TabControl
+and TabItem styles were added. `DashboardTabs` now consumes the shared styles
+while preserving selected-value binding, four tab headers, tab reachability, and
+the DataGrid contracts. Verification passed: all `.NET` tests (204), full
+`.NET` build, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-135614`, and coverage generation with
 overall line coverage 92.1%.
 
 ## Completed
@@ -954,13 +954,11 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with the final style dictionary slice: `Tabs.xaml`.
-Preserve `DashboardTabs` selection binding, four tab headers, 1024px
-reachability, and DataGrid horizontal scrolling. After `Tabs.xaml`, move to the
-next product/UI correctness gaps from the read-only audits: Domain Focus chart
-should become a Cartesian/ranking chart, Settings privacy coverage should be
-completed before Details pagination, and acceptance viewport variants remain
-open.
+Continue with the next product/UI correctness gap from the read-only audits:
+Domain Focus chart should become a Cartesian/ranking chart instead of a
+PieChart so domain labels/durations remain readable and align with
+`wpfelements.md`. After that, complete Settings privacy coverage before Details
+pagination. Acceptance viewport variants remain open.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1570,3 +1568,33 @@ Coverage after this slice: overall line coverage 92.1%.
 
 Next highest priority is `Tabs.xaml` extraction. Add a RED resource/style test
 first and keep `DashboardTabs` selected-value binding intact.
+
+## 2026-04-29 WPF Tabs Style Dictionary Slice
+
+- Added the RED resource test
+  `TabsStyleDictionary_DefinesReadableDashboardTabsStyle`; it failed first on
+  the missing `Styles/Tabs.xaml` resource.
+- Added `Styles/Tabs.xaml` with shared `DashboardTabControlStyle` and
+  `DashboardTabItemStyle`.
+- Merged the tabs dictionary from `App.xaml`.
+- Updated `DetailsTabsPanel` so `DashboardTabs` uses the shared tab styles.
+- Preserved selected-value binding, four tab headers, tab reachability at
+  minimum size, and existing DataGrid contracts.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "TabsStyleDictionary_DefinesReadableDashboardTabsStyle|MainWindow_TabsExposeExpectedListsAndSettingsControls|MainWindow_AtMinimumSize_KeepsTabsReachableOrProvidesScrolling"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-135614`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is the Domain Focus chart mismatch. Convert the current
+PieChart to the same Cartesian/ranking chart shape used for app focus, with
+tests in Presentation and Windows.App.

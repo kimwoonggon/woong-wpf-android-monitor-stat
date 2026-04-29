@@ -770,7 +770,15 @@ milestones below are finished.
 - [x] DataGrid style dictionary verification: `.NET` build passed.
 - [x] DataGrid style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-134913`.
 - [x] DataGrid style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
-- [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
+- [x] Add `Styles/Tabs.xaml` with readable dashboard TabControl and TabItem styles.
+- [x] Wire `DashboardTabs` to shared tab styles while preserving selection binding, tab headers, and 1024px reachability.
+- [x] Tabs style dictionary verification: RED missing-resource test failed first, then focused tabs and minimum-size tests passed.
+- [x] Tabs style dictionary verification: all Windows App tests passed (50 tests).
+- [x] Tabs style dictionary verification: full `.NET` tests passed (204 tests).
+- [x] Tabs style dictionary verification: `.NET` build passed.
+- [x] Tabs style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-135614`.
+- [x] Tabs style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Keep all current WPF UI expectation, semantic pipeline, and acceptance tests passing during component extraction.

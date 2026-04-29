@@ -305,6 +305,20 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void TabsStyleDictionary_DefinesReadableDashboardTabsStyle()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("Tabs.xaml");
+
+            Assert.True(resources.Contains("DashboardTabControlStyle"));
+            Assert.True(resources.Contains("DashboardTabItemStyle"));
+
+            Style tabItemStyle = Assert.IsType<Style>(resources["DashboardTabItemStyle"]);
+            AssertStyleSetter(tabItemStyle, FrameworkElement.MinHeightProperty, 36.0);
+            AssertStyleSetter(tabItemStyle, Control.PaddingProperty, new Thickness(14, 8, 14, 8));
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
@@ -882,6 +896,8 @@ public sealed class MainWindowUiExpectationTests
                 window.UpdateLayout();
 
                 TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
+                Assert.NotNull(tabs.Style);
+                Assert.NotNull(tabs.ItemContainerStyle);
                 Assert.Equal(["App Sessions", "Web Sessions", "Live Event Log", "Settings"], TabHeaders(tabs));
 
                 tabs.SelectedIndex = 0;
