@@ -227,6 +227,26 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void CardStyleDictionary_DefinesReusableDashboardCardStyles()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("Cards.xaml");
+
+            Assert.True(resources.Contains("DashboardCardBorderStyle"));
+            Assert.True(resources.Contains("CompactSurfaceBorderStyle"));
+
+            Style dashboardCardStyle = Assert.IsType<Style>(resources["DashboardCardBorderStyle"]);
+            AssertStyleSetter(dashboardCardStyle, Border.CornerRadiusProperty, new CornerRadius(8));
+            AssertStyleSetter(dashboardCardStyle, Border.PaddingProperty, new Thickness(18));
+            AssertStyleSetter(dashboardCardStyle, Border.BorderThicknessProperty, new Thickness(1));
+
+            Style compactSurfaceStyle = Assert.IsType<Style>(resources["CompactSurfaceBorderStyle"]);
+            AssertStyleSetter(compactSurfaceStyle, Border.CornerRadiusProperty, new CornerRadius(8));
+            AssertStyleSetter(compactSurfaceStyle, Border.PaddingProperty, new Thickness(12));
+            AssertStyleSetter(compactSurfaceStyle, Border.BorderThicknessProperty, new Thickness(1));
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {

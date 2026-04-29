@@ -11,15 +11,12 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Padding="12"
-            CornerRadius="8"
-            Background="White"
-            BorderBrush="#DCE1E8"
-            BorderThickness="1">
+    <Border Style="{StaticResource CompactSurfaceBorderStyle}">
         <WrapPanel>
             <Button Content="Start Tracking"
                     AutomationProperties.AutomationId="StartTrackingButton"

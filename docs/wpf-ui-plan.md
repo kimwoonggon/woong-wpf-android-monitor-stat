@@ -212,6 +212,11 @@ Current style dictionary implementation:
   duplicate local `DashboardButtonStyle` definitions. The remaining style
   dictionary work is `Colors.xaml`, `Typography.xaml`, `Cards.xaml`,
   `DataGrid.xaml`, and `Tabs.xaml`.
+- `Styles/Cards.xaml` defines the shared dashboard card and compact surface
+  border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
+  `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces. The
+  remaining style dictionary work is color, typography, data grid, and tab
+  styling.
 
 Open `wpfelements.md` alignment decisions:
 

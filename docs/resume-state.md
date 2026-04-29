@@ -4,15 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 root scrolling alignment slice.
-`DashboardView_UsesVerticalRootScrollAndKeepsGridHorizontalScroll` proves the
-dashboard root scroll is vertical-only while App Sessions, Web Sessions, and
-Live Event Log grids keep their own horizontal scrolling. The older
-minimum-size WPF test was updated to the same product rule and still proves the
-details tabs remain reachable. Verification passed: all `.NET` tests (199),
-full `.NET` build, WPF acceptance at
-`artifacts/wpf-ui-acceptance/20260429-131541`, and coverage generation with
-overall line coverage 92.1%.
+Milestone 31 cards style dictionary slice.
+`CardStyleDictionary_DefinesReusableDashboardCardStyles` proves
+`Styles/Cards.xaml` exposes the shared dashboard-card and compact-surface
+Border styles. MetricCard, SectionCard, CurrentFocusPanel, DetailsTabsPanel,
+and ControlBar now use those shared card surfaces while preserving behavior and
+AutomationIds. Verification passed: all `.NET` tests (200), full `.NET` build,
+WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-132227`, and coverage
+generation with overall line coverage 92.1%.
 
 ## Completed
 
@@ -954,10 +953,10 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with the next style dictionary slice. The read-only audit
-recommends `Cards.xaml` next because the duplicated border shape is concentrated
-in `MetricCard`, `SectionCard`, `CurrentFocusPanel`, `DetailsTabsPanel`, and
-the compact `ControlBar` surface. Preserve the extracted dashboard views,
+Continue Milestone 31 with the next style dictionary slice. Remaining style
+work is `Colors.xaml`, `Typography.xaml`, `DataGrid.xaml`, and `Tabs.xaml`.
+Prefer `Colors.xaml` next because hard-coded brushes now remain across text,
+background, border, and badge surfaces. Preserve the extracted dashboard views,
 reusable controls, chart `상세보기` tab-switch behavior, and keep remaining
 `wpfelements.md` audit gaps visible: domain chart type decision, Details
 pagination decision, and style dictionary migration away from hard-coded local
@@ -1455,3 +1454,32 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is `Cards.xaml` extraction. Keep the slice narrow:
 resource test first, then move only duplicated card `Border` setters before
 the broader color/typography migration.
+
+## 2026-04-29 WPF Cards Style Dictionary Slice
+
+- Added the RED resource test
+  `CardStyleDictionary_DefinesReusableDashboardCardStyles`.
+- Added `Styles/Cards.xaml` with `DashboardCardBorderStyle` and
+  `CompactSurfaceBorderStyle`.
+- Merged the cards dictionary from `App.xaml`.
+- Replaced duplicated card border setters in `MetricCard`, `SectionCard`,
+  `CurrentFocusPanel`, `DetailsTabsPanel`, and the compact `ControlBar`
+  surface.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "CardStyleDictionary_DefinesReusableDashboardCardStyles|MetricCard_RendersLabelValueAndSubtitle|SectionCard_RendersContentAndOptionalActionCommand|DashboardView_HostsControlBarAndPreservesCommandBindings|DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings|DashboardView_HostsDetailsTabsPanelAndPreservesTabsBinding"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-132227`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is `Colors.xaml` extraction. Keep it staged: shared
+background/surface/border/text brushes first, then badge/status colors in a
+separate follow-up if needed.

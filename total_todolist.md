@@ -738,6 +738,14 @@ milestones below are finished.
 - [x] Root scrolling verification: `.NET` build passed.
 - [x] Root scrolling verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-131541`.
 - [x] Root scrolling verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Add `Styles/Cards.xaml` with reusable dashboard card and compact surface border styles.
+- [x] Replace duplicated card border setters in `MetricCard`, `SectionCard`, `CurrentFocusPanel`, `DetailsTabsPanel`, and `ControlBar`.
+- [x] Cards style dictionary verification: focused card/resource and affected panel tests passed.
+- [x] Cards style dictionary verification: all Windows App tests passed (46 tests).
+- [x] Cards style dictionary verification: full `.NET` tests passed (200 tests).
+- [x] Cards style dictionary verification: `.NET` build passed.
+- [x] Cards style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-132227`.
+- [x] Cards style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.

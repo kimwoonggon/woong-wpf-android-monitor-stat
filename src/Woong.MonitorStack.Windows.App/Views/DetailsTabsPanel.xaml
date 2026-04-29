@@ -8,11 +8,15 @@
              mc:Ignorable="d"
              AutomationProperties.AutomationId="DetailsTabsPanel"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
-    <Border Padding="18"
-            CornerRadius="8"
-            Background="White"
-            BorderBrush="#DCE1E8"
-            BorderThickness="1">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource DashboardCardBorderStyle}">
         <TabControl AutomationProperties.AutomationId="DashboardTabs"
                     SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
                     SelectedValuePath="Tag">

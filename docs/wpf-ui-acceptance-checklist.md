@@ -315,6 +315,16 @@ acceptance run passed at:
 
 Coverage remains 92.1% overall.
 
+The cards style dictionary slice added `Styles/Cards.xaml` and moved duplicated
+card border shape into shared dashboard-card and compact-surface styles.
+MetricCard, SectionCard, CurrentFocusPanel, DetailsTabsPanel, and ControlBar
+continue to pass behavior/layout tests. The latest local WPF acceptance run
+passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-132227`
+
+Coverage remains 92.1% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

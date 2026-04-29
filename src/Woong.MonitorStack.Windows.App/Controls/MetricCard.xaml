@@ -2,12 +2,15 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Border Margin="0,0,8,12"
-            Padding="18"
-            CornerRadius="8"
-            Background="White"
-            BorderBrush="#DCE1E8"
-            BorderThickness="1">
+            Style="{StaticResource DashboardCardBorderStyle}">
         <StackPanel>
             <TextBlock Text="{Binding Label, ElementName=Root}"
                        Foreground="#162033"
