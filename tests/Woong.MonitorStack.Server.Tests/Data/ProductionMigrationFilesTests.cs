@@ -44,6 +44,28 @@ public sealed class ProductionMigrationFilesTests
         Assert.DoesNotContain("defaultValue: \"\"", migrationText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ServerSessionForeignKeyMigration_AddsDeviceAndFocusRelationships()
+    {
+        var migrationsDirectory = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Server",
+            "Data",
+            "Migrations");
+        var migrationFile = Directory
+            .EnumerateFiles(migrationsDirectory, "*_AddServerSessionForeignKeys.cs")
+            .Single();
+        string migrationText = File.ReadAllText(migrationFile);
+
+        Assert.Contains("FK_focus_sessions_devices_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_web_sessions_devices_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_raw_events_devices_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_device_state_sessions_devices_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_web_sessions_focus_sessions_DeviceId_FocusSessionId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("ReferentialAction.Restrict", migrationText, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

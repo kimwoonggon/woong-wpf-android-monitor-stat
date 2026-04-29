@@ -8,6 +8,7 @@ Updated: 2026-04-29
 - Migration: `20260428165251_AddFocusSessionWindowMetadata`
 - Migration: `20260428170042_AddDeviceStateAndAppFamilyTables`
 - Migration: `20260429101507_AddWebSessionClientSessionId`
+- Migration: `20260429102602_AddServerSessionForeignKeys`
 - Context: `MonitorDbContext`
 - Provider: Npgsql / PostgreSQL
 - Local tool: `dotnet-ef` 10.0.4 in `dotnet-tools.json`
@@ -55,6 +56,16 @@ idempotency with the PRD:
 - Replaces the prior nullable-URL-based duplicate key with unique
   `(DeviceId, ClientSessionId)`.
 
+`20260429102602_AddServerSessionForeignKeys` enforces the integrated server
+relationships that were previously scalar ids only:
+
+- `focus_sessions`, `web_sessions`, `raw_events`, and
+  `device_state_sessions` reference `devices`.
+- `web_sessions(DeviceId, FocusSessionId)` references
+  `focus_sessions(DeviceId, ClientSessionId)`.
+- Foreign keys use `Restrict` delete behavior so device/session history is not
+  accidentally cascade-deleted.
+
 ## Idempotency Indexes
 
 - `devices`: unique `(UserId, Platform, DeviceKey)`
@@ -65,6 +76,14 @@ idempotency with the PRD:
 - `device_state_sessions`: unique `(DeviceId, ClientSessionId)`
 - `app_families`: unique `(Key)`
 - `app_family_mappings`: unique `(MappingType, MatchKey)`
+
+## Relationship Constraints
+
+- `focus_sessions.DeviceId -> devices.Id`
+- `web_sessions.DeviceId -> devices.Id`
+- `web_sessions(DeviceId, FocusSessionId) -> focus_sessions(DeviceId, ClientSessionId)`
+- `raw_events.DeviceId -> devices.Id`
+- `device_state_sessions.DeviceId -> devices.Id`
 
 ## Review Notes
 

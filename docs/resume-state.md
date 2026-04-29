@@ -17,6 +17,18 @@ Verification passed: domain tests (22), server tests (25), Chrome-native
 focused tests (33), full `.NET` tests (277), full `.NET` build with 0 warnings
 and 0 errors, and coverage generation with 91.2% line coverage.
 
+Server relationship constraint follow-up slice. RED model tests first proved
+that focus/web/raw/device-state sessions did not have required Device foreign
+keys and WebSession did not have a composite relationship to its FocusSession.
+`MonitorDbContext` now enforces required device FKs and
+`web_sessions(DeviceId, FocusSessionId)` -> `focus_sessions(DeviceId,
+ClientSessionId)` with restrict delete behavior. Migration
+`20260429102602_AddServerSessionForeignKeys` applies the relationship
+constraints, and relational SQLite tests prove missing parent rows are rejected.
+Verification passed: focused server tests (29), full `.NET` tests (281), full
+`.NET` build with 0 warnings and 0 errors, and coverage generation with 91.3%
+line coverage.
+
 Chrome native messaging acceptance safety hardening slice. RED/focused tests
 now guard against closing the user's normal Chrome and against dangerous HKCU
 native-messaging cleanup. The acceptance script launches Chrome with a temp

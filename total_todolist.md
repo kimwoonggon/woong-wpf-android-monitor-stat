@@ -621,6 +621,17 @@ milestones below are finished.
   added first, relational SQLite duplicate enforcement passed for domain-only
   web sessions, full `.NET` tests passed (277), `.NET` build passed with 0
   warnings/errors, and coverage generated at 91.2% line coverage.
+- [x] Server relationship constraint hardening: RED model tests first proved
+  missing Device FKs and missing WebSession-to-FocusSession linkage; server
+  schema now enforces focus/web/raw/device-state session `DeviceId` FKs and
+  `web_sessions(DeviceId, FocusSessionId)` to
+  `focus_sessions(DeviceId, ClientSessionId)` with restrict delete behavior.
+- [x] Server relationship verification: migration
+  `20260429102602_AddServerSessionForeignKeys` added the FK constraints,
+  migration contract tests verify the generated names and restrict behavior,
+  relational SQLite tests prove missing parent rows are rejected, full `.NET`
+  tests passed (281), `.NET` build passed with 0 warnings/errors, and coverage
+  generated at 91.3% line coverage.
 - [x] WPF semantic UI acceptance passes with expected content.
 - [x] Android UI screenshot/device automation evidence is generated or blocked only by unavailable device.
 - [ ] Unsafe/impossible/out-of-scope features are documented and not implemented.

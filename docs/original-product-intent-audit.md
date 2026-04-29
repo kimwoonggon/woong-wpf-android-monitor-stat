@@ -88,6 +88,9 @@ Already present:
 - EF Core relational schema for devices, focus sessions, web sessions, device
   state sessions, raw events, daily summaries, app families, and app-family
   mappings.
+- Server relationship constraints from focus/web/raw/device-state sessions to
+  devices, plus web-session linkage to focus sessions through
+  `(DeviceId, FocusSessionId) -> (DeviceId, ClientSessionId)`.
 - Device registration, focus/web/raw upload endpoints, date-range statistics,
   and daily summary query.
 - Idempotency tests for key upload flows.

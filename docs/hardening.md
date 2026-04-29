@@ -27,6 +27,9 @@ Release-candidate requirement:
   `(UserId, Platform, DeviceKey)`, `(DeviceId, ClientSessionId)`,
   `(DeviceId, ClientSessionId)` for web sessions, `(DeviceId, ClientEventId)`, and
   `(UserId, SummaryDate, TimezoneId)`.
+- Verify required server relationships remain in place:
+  focus/web/raw/device-state rows reference `devices`, and web-session rows
+  reference their focus session through `(DeviceId, FocusSessionId)`.
 - Treat `daily_summaries` as a derived table. It may be rebuilt from
   `focus_sessions` and `web_sessions`.
 

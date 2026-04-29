@@ -45,6 +45,10 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(session => session.ProcessPath).HasMaxLength(1024);
             entity.Property(session => session.WindowTitle).HasMaxLength(512);
             entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(session => session.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<WebSessionEntity>(entity =>
@@ -60,6 +64,15 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(session => session.CaptureMethod).HasMaxLength(64);
             entity.Property(session => session.CaptureConfidence).HasMaxLength(64);
             entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(session => session.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<FocusSessionEntity>()
+                .WithMany()
+                .HasPrincipalKey(session => new { session.DeviceId, session.ClientSessionId })
+                .HasForeignKey(session => new { session.DeviceId, session.FocusSessionId })
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<RawEventEntity>(entity =>
@@ -70,6 +83,10 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(rawEvent => rawEvent.EventType).HasMaxLength(128).IsRequired();
             entity.Property(rawEvent => rawEvent.PayloadJson).IsRequired();
             entity.HasIndex(rawEvent => new { rawEvent.DeviceId, rawEvent.ClientEventId }).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(rawEvent => rawEvent.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<DailySummaryEntity>(entity =>
@@ -96,6 +113,10 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(session => session.StateType).HasMaxLength(64).IsRequired();
             entity.Property(session => session.TimezoneId).HasMaxLength(128).IsRequired();
             entity.HasIndex(session => new { session.DeviceId, session.ClientSessionId }).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(session => session.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<AppFamilyEntity>(entity =>

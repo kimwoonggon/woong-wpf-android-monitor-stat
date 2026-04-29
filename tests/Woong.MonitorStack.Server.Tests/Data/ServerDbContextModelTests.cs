@@ -120,4 +120,59 @@ public sealed class ServerDbContextModelTests
         Assert.Equal(64, mappingEntityType.FindProperty(nameof(AppFamilyMappingEntity.MappingType))!.GetMaxLength());
         Assert.Equal(512, mappingEntityType.FindProperty(nameof(AppFamilyMappingEntity.MatchKey))!.GetMaxLength());
     }
+
+    [Fact]
+    public void ServerSessionEntities_HaveRequiredDeviceForeignKeys()
+    {
+        using var dbContext = CreateModelContext();
+
+        AssertForeignKey<FocusSessionEntity, DeviceEntity>(
+            dbContext,
+            nameof(FocusSessionEntity.DeviceId));
+        AssertForeignKey<WebSessionEntity, DeviceEntity>(
+            dbContext,
+            nameof(WebSessionEntity.DeviceId));
+        AssertForeignKey<RawEventEntity, DeviceEntity>(
+            dbContext,
+            nameof(RawEventEntity.DeviceId));
+        AssertForeignKey<DeviceStateSessionEntity, DeviceEntity>(
+            dbContext,
+            nameof(DeviceStateSessionEntity.DeviceId));
+    }
+
+    [Fact]
+    public void WebSessionEntity_HasCompositeForeignKeyToFocusSessionClientSession()
+    {
+        using var dbContext = CreateModelContext();
+
+        var entityType = dbContext.Model.FindEntityType(typeof(WebSessionEntity));
+        var foreignKey = Assert.Single(entityType!.GetForeignKeys(), key =>
+            key.PrincipalEntityType.ClrType == typeof(FocusSessionEntity) &&
+            key.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(WebSessionEntity.DeviceId), nameof(WebSessionEntity.FocusSessionId)]) &&
+            key.PrincipalKey.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(FocusSessionEntity.DeviceId), nameof(FocusSessionEntity.ClientSessionId)]));
+
+        Assert.True(foreignKey.IsRequired);
+    }
+
+    private static MonitorDbContext CreateModelContext()
+    {
+        var options = new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseNpgsql("Host=localhost;Database=woong_monitor_test;Username=test;Password=test")
+            .Options;
+        return new MonitorDbContext(options);
+    }
+
+    private static void AssertForeignKey<TEntity, TPrincipal>(
+        MonitorDbContext dbContext,
+        params string[] propertyNames)
+    {
+        var entityType = dbContext.Model.FindEntityType(typeof(TEntity));
+        var foreignKey = Assert.Single(entityType!.GetForeignKeys(), key =>
+            key.PrincipalEntityType.ClrType == typeof(TPrincipal) &&
+            key.Properties.Select(property => property.Name).SequenceEqual(propertyNames));
+
+        Assert.True(foreignKey.IsRequired);
+    }
 }
