@@ -994,6 +994,15 @@ milestones below are finished.
 - [x] Tabs style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [x] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
+  - [x] Add `CompactActionButtonStyle` to `Styles/Buttons.xaml` for reusable chart/card action buttons.
+  - [x] Replace duplicate inline compact action button sizing in `ChartsPanel` and `SectionCard`.
+  - [x] Compact action style verification: RED `ButtonStyleDictionary_DefinesReadableDashboardButtonStyles` failed first, then passed after the shared style was added.
+  - [x] Compact action style verification: focused SectionCard/chart details tests passed.
+  - [x] Compact action style verification: all Windows App tests passed (77 tests).
+  - [x] Compact action style verification: full `.NET` tests passed (281 tests).
+  - [x] Compact action style verification: `.NET` build passed.
+  - [x] Compact action style verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-193853`.
+  - [x] Compact action style verification: coverage report generated successfully with overall line coverage 91.3%.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
 - [ ] Extract WPF tracking/browser persistence orchestration from `Windows.App` coordinator into a Windows infrastructure/application service if the coordinator grows beyond composition/adaptation.
 - [ ] Extract WPF startup lifecycle orchestration into an app startup service if auto-start, initial refresh, sync-at-start, permission checks, or tracking timer policy grow beyond simple MainWindow composition glue.
@@ -1001,6 +1010,7 @@ milestones below are finished.
 - [ ] Run full `.NET` tests and build after componentization.
 - [ ] Run WPF UI acceptance after componentization.
 - [ ] Update `docs/wpf-csharp-coding-guide.md`, `docs/wpf-ui-plan.md`, `docs/resume-state.md`, and this TODO after componentization.
+  - [x] Compact action style slice docs/TODO updated.
 - [ ] Commit and push WPF componentization slices.
 
 ## Final Definition Of Done

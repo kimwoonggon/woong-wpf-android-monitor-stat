@@ -9,6 +9,13 @@
              mc:Ignorable="d"
              AutomationProperties.AutomationId="ChartArea"
              d:DataContext="{d:DesignInstance dashboard:DashboardViewModel, IsDesignTimeCreatable=False}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <controls:SectionCard>
         <Grid>
             <Grid.RowDefinitions>
@@ -39,11 +46,8 @@
                         AutomationProperties.AutomationId="AppChartDetailsButton"
                         Content="상세보기"
                         Command="{Binding ShowAppFocusDetailsCommand}"
-                        MinHeight="28"
-                        MinWidth="72"
-                        Padding="10,0"
-                        FontSize="12"
-                        Margin="8,0,18,0" />
+                        Margin="8,0,18,0"
+                        Style="{StaticResource CompactActionButtonStyle}" />
             </Grid>
             <Grid Grid.Column="2">
                 <Grid.ColumnDefinitions>
@@ -59,10 +63,7 @@
                         AutomationProperties.AutomationId="DomainChartDetailsButton"
                         Content="상세보기"
                         Command="{Binding ShowDomainFocusDetailsCommand}"
-                        MinHeight="28"
-                        MinWidth="72"
-                        Padding="10,0"
-                        FontSize="12" />
+                        Style="{StaticResource CompactActionButtonStyle}" />
             </Grid>
 
             <lvc:CartesianChart Grid.Row="1"

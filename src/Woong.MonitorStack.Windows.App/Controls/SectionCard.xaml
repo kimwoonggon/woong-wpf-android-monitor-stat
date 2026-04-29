@@ -6,6 +6,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -28,10 +29,7 @@
                         AutomationProperties.AutomationId="SectionCardActionButton"
                         Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                         Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                        MinHeight="28"
-                        MinWidth="72"
-                        Padding="10,0"
-                        FontSize="12"
+                        Style="{StaticResource CompactActionButtonStyle}"
                         Visibility="{Binding HasAction, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </Grid>
             <ContentPresenter Content="{Binding CardContent, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />

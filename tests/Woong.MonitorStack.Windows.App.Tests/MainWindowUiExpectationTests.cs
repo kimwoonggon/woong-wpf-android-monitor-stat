@@ -199,7 +199,9 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("상세보기", text);
                 Assert.Contains("Chrome", text);
 
-                Invoke(FindByAutomationId<Button>(card, "SectionCardActionButton"));
+                Button actionButton = FindByAutomationId<Button>(card, "SectionCardActionButton");
+                AssertCompactActionButton(actionButton);
+                Invoke(actionButton);
                 Assert.Equal(1, command.ExecuteCount);
             }
             finally
@@ -219,11 +221,18 @@ public sealed class MainWindowUiExpectationTests
             Assert.True(resources.Contains("DangerButtonStyle"));
             Assert.True(resources.Contains("SecondaryButtonStyle"));
             Assert.True(resources.Contains("PeriodButtonStyle"));
+            Assert.True(resources.Contains("CompactActionButtonStyle"));
 
             Style primaryButtonStyle = Assert.IsType<Style>(resources["PrimaryButtonStyle"]);
             AssertStyleSetter(primaryButtonStyle, Button.MinWidthProperty, 96.0);
             AssertStyleSetter(primaryButtonStyle, Button.MinHeightProperty, 40.0);
             AssertStyleSetter(primaryButtonStyle, Control.PaddingProperty, new Thickness(12, 0, 12, 0));
+
+            Style compactActionButtonStyle = Assert.IsType<Style>(resources["CompactActionButtonStyle"]);
+            AssertStyleSetter(compactActionButtonStyle, Button.MinWidthProperty, 72.0);
+            AssertStyleSetter(compactActionButtonStyle, Button.MinHeightProperty, 28.0);
+            AssertStyleSetter(compactActionButtonStyle, Control.PaddingProperty, new Thickness(10, 0, 10, 0));
+            AssertStyleSetter(compactActionButtonStyle, Control.FontSizeProperty, 12.0);
         });
 
     [Fact]
@@ -518,6 +527,8 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Same(dashboard.ViewModel.ShowAppFocusDetailsCommand, appDetails.Command);
                 Assert.Same(dashboard.ViewModel.ShowDomainFocusDetailsCommand, domainDetails.Command);
+                AssertCompactActionButton(appDetails);
+                AssertCompactActionButton(domainDetails);
 
                 Invoke(domainDetails);
                 window.UpdateLayout();
@@ -1051,6 +1062,14 @@ public sealed class MainWindowUiExpectationTests
         Assert.True(button.MinWidth >= 96, $"{AutomationProperties.GetAutomationId(button)} should have MinWidth >= 96.");
         Assert.True(button.Padding.Left >= 12, $"{AutomationProperties.GetAutomationId(button)} should have horizontal padding >= 12.");
         Assert.True(button.Padding.Right >= 12, $"{AutomationProperties.GetAutomationId(button)} should have horizontal padding >= 12.");
+    }
+
+    private static void AssertCompactActionButton(Button button)
+    {
+        Assert.Equal(28.0, button.MinHeight);
+        Assert.Equal(72.0, button.MinWidth);
+        Assert.Equal(new Thickness(10, 0, 10, 0), button.Padding);
+        Assert.Equal(12.0, button.FontSize);
     }
 
     private static void AssertColumnMinWidths(DataGrid dataGrid, IReadOnlyList<double> expectedMinWidths)

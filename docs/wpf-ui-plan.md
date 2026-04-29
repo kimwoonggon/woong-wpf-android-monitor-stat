@@ -209,9 +209,11 @@ Current reusable control implementation:
 Current style dictionary implementation:
 
 - `Styles/Buttons.xaml` defines the shared dashboard, primary, danger,
-  secondary, and period button styles.
+  secondary, period, and compact action button styles.
 - `ControlBar`, `SettingsPanel`, and `DetailsTabsPanel` use the shared button
   dictionary instead of duplicate local button style definitions.
+- `ChartsPanel` and `SectionCard` use `CompactActionButtonStyle` for small
+  top-right action buttons instead of inline sizing setters.
 - `Styles/Cards.xaml` defines the shared dashboard card and compact surface
   border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.

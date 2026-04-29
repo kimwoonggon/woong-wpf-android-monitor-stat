@@ -2138,3 +2138,33 @@ Coverage after this slice: overall line coverage 92.0%.
 
 Next highest priority is Milestone 25 SampleDashboard mode acceptance: add a
 deterministic, non-tracking dashboard sample mode for beginner visual review.
+
+## 2026-04-29 WPF Compact Action Button Style Slice
+
+- Added a RED WPF style expectation to require a reusable
+  `CompactActionButtonStyle`.
+- Added `CompactActionButtonStyle` to `Styles/Buttons.xaml` with compact,
+  readable sizing for small chart/card action buttons.
+- Replaced duplicate inline MinWidth, MinHeight, Padding, and FontSize setters
+  in `ChartsPanel` and `SectionCard` with the shared style.
+- Preserved chart detail tab-switch behavior and `SectionCard` action command
+  behavior.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter ButtonStyleDictionary_DefinesReadableDashboardButtonStyles`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "SectionCard_RendersContentAndOptionalActionCommand|DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs|ButtonStyleDictionary_DefinesReadableDashboardButtonStyles"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-193853`.
+
+Coverage after this slice: overall line coverage 91.3%.
+
+Next componentization work remains the larger hard-coded color/brush cleanup
+and any child ViewModel/adaptor extraction that improves testability without
+moving behavior into code-behind.

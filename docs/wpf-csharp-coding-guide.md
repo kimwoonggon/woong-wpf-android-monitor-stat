@@ -240,6 +240,9 @@ public partial class MainWindow : Window
 - Do not add code-behind event handlers for ordinary dashboard actions.
 - Keep `x:Class` and namespaces stable.
 - Use readable, formatted XAML; do not commit minified or unreadable XAML.
+- Use shared resource dictionaries for repeated button/card/tab/grid styles.
+  Do not inline repeated MinWidth, MinHeight, Padding, FontSize, or brush
+  setters in feature panels when an existing style can carry the rule.
 - Add AutomationIds for controls that are user-visible or automation-relevant:
   refresh button, period selector, summary cards, charts, tabs, grids, settings
   controls.

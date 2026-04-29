@@ -24,4 +24,12 @@
     <Style x:Key="PeriodButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DashboardButtonStyle}" />
+
+    <Style x:Key="CompactActionButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="MinWidth" Value="72" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
 </ResourceDictionary>
