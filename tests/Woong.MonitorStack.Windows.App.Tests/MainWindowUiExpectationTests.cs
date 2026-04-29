@@ -924,7 +924,7 @@ public sealed class MainWindowUiExpectationTests
                 AssertSessionDataGridContract(appSessions);
                 Assert.Equal(["App", "Process", "Start", "End", "Duration", "State", "Window", "Source"], ColumnHeaders(appSessions));
                 AssertColumnMinWidths(appSessions, [160, 180, 90, 90, 100, 80, 260, 100]);
-                Assert.Same(dashboard.ViewModel.RecentSessions, appSessions.ItemsSource);
+                Assert.Same(dashboard.ViewModel.VisibleAppSessionRows, appSessions.ItemsSource);
 
                 tabs.SelectedIndex = 1;
                 window.UpdateLayout();
@@ -932,14 +932,18 @@ public sealed class MainWindowUiExpectationTests
                 AssertSessionDataGridContract(webSessions);
                 Assert.Equal(["Domain", "Title", "URL Mode", "Start", "End", "Duration", "Browser", "Confidence"], ColumnHeaders(webSessions));
                 AssertColumnMinWidths(webSessions, [180, 260, 120, 90, 90, 100, 120, 100]);
-                Assert.Same(dashboard.ViewModel.RecentWebSessions, webSessions.ItemsSource);
+                Assert.Same(dashboard.ViewModel.VisibleWebSessionRows, webSessions.ItemsSource);
 
                 tabs.SelectedIndex = 2;
                 window.UpdateLayout();
                 DataGrid liveEvents = FindByAutomationId<DataGrid>(window, "LiveEventsList");
                 AssertSessionDataGridContract(liveEvents);
                 Assert.Equal(["Time", "Event Type", "App", "Domain", "Message"], ColumnHeaders(liveEvents));
-                Assert.Same(dashboard.ViewModel.LiveEvents, liveEvents.ItemsSource);
+                Assert.Same(dashboard.ViewModel.VisibleLiveEventRows, liveEvents.ItemsSource);
+                Assert.NotNull(FindByAutomationId<ComboBox>(window, "DetailsRowsPerPageComboBox"));
+                Assert.Same(dashboard.ViewModel.PreviousDetailsPageCommand, FindByAutomationId<Button>(window, "DetailsPreviousPageButton").Command);
+                Assert.Same(dashboard.ViewModel.NextDetailsPageCommand, FindByAutomationId<Button>(window, "DetailsNextPageButton").Command);
+                Assert.Equal("1 / 1", FindByAutomationId<TextBlock>(window, "DetailsPageStatusText").Text);
 
                 tabs.SelectedIndex = 3;
                 window.UpdateLayout();

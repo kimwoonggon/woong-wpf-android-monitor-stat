@@ -118,6 +118,61 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void DetailsTabs_DefaultRowsPerPageIsTen()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        Assert.Equal(10, viewModel.RowsPerPage);
+        Assert.Equal([10, 25, 50], viewModel.RowsPerPageOptions);
+        Assert.Equal(1, viewModel.CurrentDetailsPage);
+        Assert.Equal("1 / 1", viewModel.DetailsPageText);
+    }
+
+    [Fact]
+    public void DetailsTabs_NextAndPreviousPageUpdateVisibleRows()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(0, 12)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index - 1),
+                now.AddMinutes(-index),
+                isIdle: false))
+            .ToArray();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Equal(12, viewModel.RecentSessions.Count);
+        Assert.Equal(10, viewModel.VisibleAppSessionRows.Count);
+        Assert.Equal("app-0", viewModel.VisibleAppSessionRows[0].AppName);
+        Assert.True(viewModel.NextDetailsPageCommand.CanExecute(null));
+
+        viewModel.NextDetailsPageCommand.Execute(null);
+
+        Assert.Equal(2, viewModel.CurrentDetailsPage);
+        Assert.Equal("2 / 2", viewModel.DetailsPageText);
+        Assert.Equal(2, viewModel.VisibleAppSessionRows.Count);
+        Assert.Equal("app-10", viewModel.VisibleAppSessionRows[0].AppName);
+        Assert.False(viewModel.NextDetailsPageCommand.CanExecute(null));
+        Assert.True(viewModel.PreviousDetailsPageCommand.CanExecute(null));
+
+        viewModel.PreviousDetailsPageCommand.Execute(null);
+
+        Assert.Equal(1, viewModel.CurrentDetailsPage);
+        Assert.Equal(10, viewModel.VisibleAppSessionRows.Count);
+        Assert.Equal("app-0", viewModel.VisibleAppSessionRows[0].AppName);
+    }
+
+    [Fact]
     public void SelectPeriod_TodayQueriesCurrentLocalDayRange()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

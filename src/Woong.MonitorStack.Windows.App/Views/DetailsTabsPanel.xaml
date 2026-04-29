@@ -12,6 +12,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/DataGrid.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -19,136 +20,176 @@
     </UserControl.Resources>
 
     <Border Style="{StaticResource DashboardCardBorderStyle}">
-        <TabControl AutomationProperties.AutomationId="DashboardTabs"
-                    Style="{StaticResource DashboardTabControlStyle}"
-                    ItemContainerStyle="{StaticResource DashboardTabItemStyle}"
-                    SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
-                    SelectedValuePath="Tag">
-            <TabItem Header="App Sessions"
-                     Tag="{x:Static dashboard:DetailsTab.AppSessions}"
-                     AutomationProperties.AutomationId="AppSessionsTab">
-                <DataGrid Margin="0,12,0,0"
-                          AutomationProperties.AutomationId="RecentAppSessionsList"
-                          Style="{StaticResource SessionDataGridStyle}"
-                          ItemsSource="{Binding RecentSessions}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="App"
-                                            Binding="{Binding AppName}"
-                                            MinWidth="160"
-                                            Width="160" />
-                        <DataGridTextColumn Header="Process"
-                                            Binding="{Binding ProcessName}"
-                                            MinWidth="180"
-                                            Width="180" />
-                        <DataGridTextColumn Header="Start"
-                                            Binding="{Binding StartedAtLocal}"
-                                            MinWidth="90"
-                                            Width="90" />
-                        <DataGridTextColumn Header="End"
-                                            Binding="{Binding EndedAtLocal}"
-                                            MinWidth="90"
-                                            Width="90" />
-                        <DataGridTextColumn Header="Duration"
-                                            Binding="{Binding Duration}"
-                                            MinWidth="100"
-                                            Width="100" />
-                        <DataGridTextColumn Header="State"
-                                            Binding="{Binding State}"
-                                            MinWidth="80"
-                                            Width="80" />
-                        <DataGridTextColumn Header="Window"
-                                            Binding="{Binding WindowTitle}"
-                                            MinWidth="260"
-                                            Width="260" />
-                        <DataGridTextColumn Header="Source"
-                                            Binding="{Binding Source}"
-                                            MinWidth="100"
-                                            Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <TabItem Header="Web Sessions"
-                     Tag="{x:Static dashboard:DetailsTab.WebSessions}"
-                     AutomationProperties.AutomationId="WebSessionsTab">
-                <DataGrid Margin="0,12,0,0"
-                          AutomationProperties.AutomationId="RecentWebSessionsList"
-                          Style="{StaticResource SessionDataGridStyle}"
-                          ItemsSource="{Binding RecentWebSessions}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Domain"
-                                            Binding="{Binding Domain}"
-                                            MinWidth="180"
-                                            Width="180" />
-                        <DataGridTextColumn Header="Title"
-                                            Binding="{Binding PageTitle}"
-                                            MinWidth="260"
-                                            Width="260" />
-                        <DataGridTextColumn Header="URL Mode"
-                                            Binding="{Binding UrlMode}"
-                                            MinWidth="120"
-                                            Width="120" />
-                        <DataGridTextColumn Header="Start"
-                                            Binding="{Binding StartedAtLocal}"
-                                            MinWidth="90"
-                                            Width="90" />
-                        <DataGridTextColumn Header="End"
-                                            Binding="{Binding EndedAtLocal}"
-                                            MinWidth="90"
-                                            Width="90" />
-                        <DataGridTextColumn Header="Duration"
-                                            Binding="{Binding Duration}"
-                                            MinWidth="100"
-                                            Width="100" />
-                        <DataGridTextColumn Header="Browser"
-                                            Binding="{Binding Browser}"
-                                            MinWidth="120"
-                                            Width="120" />
-                        <DataGridTextColumn Header="Confidence"
-                                            Binding="{Binding Confidence}"
-                                            MinWidth="100"
-                                            Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
+            <TabControl AutomationProperties.AutomationId="DashboardTabs"
+                        Style="{StaticResource DashboardTabControlStyle}"
+                        ItemContainerStyle="{StaticResource DashboardTabItemStyle}"
+                        SelectedValue="{Binding SelectedDetailsTab, Mode=TwoWay}"
+                        SelectedValuePath="Tag">
+                <TabItem Header="App Sessions"
+                         Tag="{x:Static dashboard:DetailsTab.AppSessions}"
+                         AutomationProperties.AutomationId="AppSessionsTab">
+                    <DataGrid Margin="0,12,0,0"
+                              AutomationProperties.AutomationId="RecentAppSessionsList"
+                              Style="{StaticResource SessionDataGridStyle}"
+                              ItemsSource="{Binding VisibleAppSessionRows}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="App"
+                                                Binding="{Binding AppName}"
+                                                MinWidth="160"
+                                                Width="160" />
+                            <DataGridTextColumn Header="Process"
+                                                Binding="{Binding ProcessName}"
+                                                MinWidth="180"
+                                                Width="180" />
+                            <DataGridTextColumn Header="Start"
+                                                Binding="{Binding StartedAtLocal}"
+                                                MinWidth="90"
+                                                Width="90" />
+                            <DataGridTextColumn Header="End"
+                                                Binding="{Binding EndedAtLocal}"
+                                                MinWidth="90"
+                                                Width="90" />
+                            <DataGridTextColumn Header="Duration"
+                                                Binding="{Binding Duration}"
+                                                MinWidth="100"
+                                                Width="100" />
+                            <DataGridTextColumn Header="State"
+                                                Binding="{Binding State}"
+                                                MinWidth="80"
+                                                Width="80" />
+                            <DataGridTextColumn Header="Window"
+                                                Binding="{Binding WindowTitle}"
+                                                MinWidth="260"
+                                                Width="260" />
+                            <DataGridTextColumn Header="Source"
+                                                Binding="{Binding Source}"
+                                                MinWidth="100"
+                                                Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
 
-            <TabItem Header="Live Event Log"
-                     Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
-                     AutomationProperties.AutomationId="LiveEventsTab">
-                <DataGrid Margin="0,12,0,0"
-                          AutomationProperties.AutomationId="LiveEventsList"
-                          Style="{StaticResource SessionDataGridStyle}"
-                          ItemsSource="{Binding LiveEvents}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"
-                                            Binding="{Binding OccurredAtLocal}"
-                                            MinWidth="100"
-                                            Width="100" />
-                        <DataGridTextColumn Header="Event Type"
-                                            Binding="{Binding EventType}"
-                                            MinWidth="130"
-                                            Width="130" />
-                        <DataGridTextColumn Header="App"
-                                            Binding="{Binding AppName}"
-                                            MinWidth="160"
-                                            Width="160" />
-                        <DataGridTextColumn Header="Domain"
-                                            Binding="{Binding Domain}"
-                                            MinWidth="160"
-                                            Width="160" />
-                        <DataGridTextColumn Header="Message"
-                                            Binding="{Binding Message}"
-                                            MinWidth="260"
-                                            Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
+                <TabItem Header="Web Sessions"
+                         Tag="{x:Static dashboard:DetailsTab.WebSessions}"
+                         AutomationProperties.AutomationId="WebSessionsTab">
+                    <DataGrid Margin="0,12,0,0"
+                              AutomationProperties.AutomationId="RecentWebSessionsList"
+                              Style="{StaticResource SessionDataGridStyle}"
+                              ItemsSource="{Binding VisibleWebSessionRows}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Domain"
+                                                Binding="{Binding Domain}"
+                                                MinWidth="180"
+                                                Width="180" />
+                            <DataGridTextColumn Header="Title"
+                                                Binding="{Binding PageTitle}"
+                                                MinWidth="260"
+                                                Width="260" />
+                            <DataGridTextColumn Header="URL Mode"
+                                                Binding="{Binding UrlMode}"
+                                                MinWidth="120"
+                                                Width="120" />
+                            <DataGridTextColumn Header="Start"
+                                                Binding="{Binding StartedAtLocal}"
+                                                MinWidth="90"
+                                                Width="90" />
+                            <DataGridTextColumn Header="End"
+                                                Binding="{Binding EndedAtLocal}"
+                                                MinWidth="90"
+                                                Width="90" />
+                            <DataGridTextColumn Header="Duration"
+                                                Binding="{Binding Duration}"
+                                                MinWidth="100"
+                                                Width="100" />
+                            <DataGridTextColumn Header="Browser"
+                                                Binding="{Binding Browser}"
+                                                MinWidth="120"
+                                                Width="120" />
+                            <DataGridTextColumn Header="Confidence"
+                                                Binding="{Binding Confidence}"
+                                                MinWidth="100"
+                                                Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
 
-            <TabItem Header="Settings"
-                     Tag="{x:Static dashboard:DetailsTab.Settings}"
-                     AutomationProperties.AutomationId="SettingsTab">
-                <views:SettingsPanel />
-            </TabItem>
-        </TabControl>
+                <TabItem Header="Live Event Log"
+                         Tag="{x:Static dashboard:DetailsTab.LiveEventLog}"
+                         AutomationProperties.AutomationId="LiveEventsTab">
+                    <DataGrid Margin="0,12,0,0"
+                              AutomationProperties.AutomationId="LiveEventsList"
+                              Style="{StaticResource SessionDataGridStyle}"
+                              ItemsSource="{Binding VisibleLiveEventRows}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Time"
+                                                Binding="{Binding OccurredAtLocal}"
+                                                MinWidth="100"
+                                                Width="100" />
+                            <DataGridTextColumn Header="Event Type"
+                                                Binding="{Binding EventType}"
+                                                MinWidth="130"
+                                                Width="130" />
+                            <DataGridTextColumn Header="App"
+                                                Binding="{Binding AppName}"
+                                                MinWidth="160"
+                                                Width="160" />
+                            <DataGridTextColumn Header="Domain"
+                                                Binding="{Binding Domain}"
+                                                MinWidth="160"
+                                                Width="160" />
+                            <DataGridTextColumn Header="Message"
+                                                Binding="{Binding Message}"
+                                                MinWidth="260"
+                                                Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+
+                <TabItem Header="Settings"
+                         Tag="{x:Static dashboard:DetailsTab.Settings}"
+                         AutomationProperties.AutomationId="SettingsTab">
+                    <views:SettingsPanel />
+                </TabItem>
+            </TabControl>
+
+            <DockPanel Grid.Row="1"
+                       Margin="0,12,0,0"
+                       LastChildFill="False">
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Left"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Rows per page:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <ComboBox AutomationProperties.AutomationId="DetailsRowsPerPageComboBox"
+                              ItemsSource="{Binding RowsPerPageOptions}"
+                              SelectedItem="{Binding RowsPerPage, Mode=TwoWay}"
+                              MinWidth="72" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Right"
+                            HorizontalAlignment="Right">
+                    <Button AutomationProperties.AutomationId="DetailsPreviousPageButton"
+                            Content="Previous"
+                            Command="{Binding PreviousDetailsPageCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    <TextBlock AutomationProperties.AutomationId="DetailsPageStatusText"
+                               Text="{Binding DetailsPageText}"
+                               VerticalAlignment="Center"
+                               Margin="8,0" />
+                    <Button AutomationProperties.AutomationId="DetailsNextPageButton"
+                            Content="Next"
+                            Command="{Binding NextDetailsPageCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+            </DockPanel>
+        </Grid>
     </Border>
 </UserControl>

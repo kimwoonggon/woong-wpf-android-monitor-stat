@@ -169,16 +169,16 @@ Details chart actions:
   presentation state, chart buttons live in `ChartsPanel`, and `DashboardTabs`
   binds its selected value to this state.
 
-Future pagination:
+Details pagination:
 
-- Details tables should initially show 10 rows per page when pagination is
-  implemented.
-- Keep the current SQLite-backed row source as the truth; pagination should
-  bind to visible row collections derived from those rows.
-- Milestone 31 must explicitly decide whether rows-per-page pagination is in
-  scope now or deferred. If it is in scope, add `RowsPerPageOptions`,
-  `CurrentPage`, visible row collections, and tests for
-  `DetailsTabs_ShowRowsPerPageRows`.
+- Details rows-per-page pagination is in Milestone 31 scope.
+- The default is 10 rows per page with `RowsPerPageOptions` of 10, 25, and 50.
+- The SQLite-backed full row collections remain the source of truth.
+- `VisibleAppSessionRows`, `VisibleWebSessionRows`, and
+  `VisibleLiveEventRows` are derived presentation collections used by the
+  DataGrids.
+- `CurrentDetailsPage`, `DetailsPageText`, `PreviousDetailsPageCommand`, and
+  `NextDetailsPageCommand` drive the shared details pager footer.
 
 Current details tab implementation:
 
@@ -187,6 +187,8 @@ Current details tab implementation:
   tab content.
 - `DashboardTabs.SelectedValue` binds two-way to
   `DashboardViewModel.SelectedDetailsTab`.
+- The App/Web/Live DataGrids bind to visible paged row collections and share a
+  footer with rows-per-page and previous/next controls.
 - `SettingsPanel` is now hosted inside the Settings tab and inherits the
   existing dashboard `DataContext`.
 
@@ -208,15 +210,11 @@ Current style dictionary implementation:
 
 - `Styles/Buttons.xaml` defines the shared dashboard, primary, danger,
   secondary, and period button styles.
-- `ControlBar` and `SettingsPanel` use the shared button dictionary instead of
-  duplicate local `DashboardButtonStyle` definitions. The remaining style
-  dictionary work is `Colors.xaml`, `Typography.xaml`, `Cards.xaml`,
-  `DataGrid.xaml`, and `Tabs.xaml`.
+- `ControlBar`, `SettingsPanel`, and `DetailsTabsPanel` use the shared button
+  dictionary instead of duplicate local button style definitions.
 - `Styles/Cards.xaml` defines the shared dashboard card and compact surface
   border styles. `MetricCard`, `SectionCard`, `CurrentFocusPanel`,
-  `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces. The
-  remaining style dictionary work is color, typography, data grid, and tab
-  styling.
+  `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces.
 - `Styles/Colors.xaml` defines the core app background, surface, border,
   primary text, and muted text brushes. `Cards.xaml` now consumes surface and
   border brushes, and the dashboard shell content uses the app background brush.
@@ -416,6 +414,16 @@ Required tabs:
 
 Tabs must remain reachable at minimum window size. Vertical scrolling is
 allowed and preferred over clipped content.
+
+Details pagination:
+
+- The details area shows 10 rows per page by default.
+- The user can choose 10, 25, or 50 rows per page.
+- A shared previous/next pager applies to App Sessions, Web Sessions, and Live
+  Event Log.
+- The visible paged collections are presentation-only projections; the full
+  SQLite-backed query result remains available for totals, charts, and future
+  exports.
 
 ## App Sessions Grid
 

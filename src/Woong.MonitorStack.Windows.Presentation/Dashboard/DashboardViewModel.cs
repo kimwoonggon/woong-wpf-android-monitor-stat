@@ -115,6 +115,31 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<DashboardEventLogRow> _liveEvents = [];
 
+    [ObservableProperty]
+    private IReadOnlyList<DashboardSessionRow> _visibleAppSessionRows = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardWebSessionRow> _visibleWebSessionRows = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardEventLogRow> _visibleLiveEventRows = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DetailsPageText))]
+    [NotifyPropertyChangedFor(nameof(TotalDetailsPages))]
+    private int _currentDetailsPage = 1;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DetailsPageText))]
+    [NotifyPropertyChangedFor(nameof(TotalDetailsPages))]
+    private int _rowsPerPage = 10;
+
+    public IReadOnlyList<int> RowsPerPageOptions { get; } = [10, 25, 50];
+
+    public int TotalDetailsPages => Math.Max(1, CalculateTotalDetailsPages());
+
+    public string DetailsPageText => $"{CurrentDetailsPage} / {TotalDetailsPages}";
+
     public DashboardViewModel(
         IDashboardDataSource dataSource,
         IDashboardClock clock,
@@ -230,11 +255,48 @@ public sealed partial class DashboardViewModel : ObservableObject
         UpdateSyncBadge();
     }
 
+    [RelayCommand(CanExecute = nameof(CanGoToPreviousDetailsPage))]
+    private void PreviousDetailsPage()
+    {
+        if (CurrentDetailsPage <= 1)
+        {
+            return;
+        }
+
+        CurrentDetailsPage--;
+        UpdateVisibleDetailsRows();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoToNextDetailsPage))]
+    private void NextDetailsPage()
+    {
+        if (CurrentDetailsPage >= TotalDetailsPages)
+        {
+            return;
+        }
+
+        CurrentDetailsPage++;
+        UpdateVisibleDetailsRows();
+    }
+
     private bool CanStartTracking()
         => !_isTrackingRunning;
 
     private bool CanStopTracking()
         => _isTrackingRunning;
+
+    private bool CanGoToPreviousDetailsPage()
+        => CurrentDetailsPage > 1;
+
+    private bool CanGoToNextDetailsPage()
+        => CurrentDetailsPage < TotalDetailsPages;
+
+    partial void OnRowsPerPageChanged(int value)
+    {
+        RowsPerPage = RowsPerPageOptions.Contains(value) ? value : 10;
+        CurrentDetailsPage = 1;
+        UpdateVisibleDetailsRows();
+    }
 
     private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -294,6 +356,33 @@ public sealed partial class DashboardViewModel : ObservableObject
         RecentSessions = BuildRecentSessionRows(focusSessions);
         RecentWebSessions = BuildRecentWebSessionRows(webSessions);
         LiveEvents = BuildLiveEventRows(focusSessions, webSessions);
+        CurrentDetailsPage = 1;
+        UpdateVisibleDetailsRows();
+    }
+
+    private int CalculateTotalDetailsPages()
+    {
+        int largestRowCount = Math.Max(RecentSessions.Count, Math.Max(RecentWebSessions.Count, LiveEvents.Count));
+
+        return (int)Math.Ceiling(largestRowCount / (double)Math.Max(1, RowsPerPage));
+    }
+
+    private void UpdateVisibleDetailsRows()
+    {
+        int totalPages = TotalDetailsPages;
+        if (CurrentDetailsPage > totalPages)
+        {
+            CurrentDetailsPage = totalPages;
+        }
+
+        int skip = (CurrentDetailsPage - 1) * RowsPerPage;
+        VisibleAppSessionRows = RecentSessions.Skip(skip).Take(RowsPerPage).ToList();
+        VisibleWebSessionRows = RecentWebSessions.Skip(skip).Take(RowsPerPage).ToList();
+        VisibleLiveEventRows = LiveEvents.Skip(skip).Take(RowsPerPage).ToList();
+        OnPropertyChanged(nameof(TotalDetailsPages));
+        OnPropertyChanged(nameof(DetailsPageText));
+        PreviousDetailsPageCommand.NotifyCanExecuteChanged();
+        NextDetailsPageCommand.NotifyCanExecuteChanged();
     }
 
     private TimeRange ResolveRange(DashboardPeriod period)

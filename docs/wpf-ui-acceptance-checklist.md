@@ -377,6 +377,16 @@ acceptance run passed at:
 
 Coverage remains 92.1% overall.
 
+The Details pagination slice moved App Sessions, Web Sessions, and Live Event
+Log grids onto visible paged collections. The details footer exposes 10/25/50
+rows-per-page plus previous/next commands, and semantic tests verify the footer
+bindings through public ViewModel state and XAML AutomationIds. The latest
+local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-143059`
+
+Coverage after this slice is 91.9% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

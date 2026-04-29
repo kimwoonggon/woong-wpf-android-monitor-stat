@@ -1661,3 +1661,38 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is the Details pagination decision. Decide whether rows
 per page belongs in Milestone 31; if yes, start with ViewModel visible row
 collections and page command behavior tests before XAML.
+
+## 2026-04-29 WPF Details Pagination Slice
+
+- Treated Details rows-per-page pagination as Milestone 31 scope.
+- Added RED Presentation tests for default rows-per-page state and
+  next/previous page behavior.
+- Added visible App/Web/Live row collections, `RowsPerPageOptions`,
+  `CurrentDetailsPage`, `DetailsPageText`, and pager commands to
+  `DashboardViewModel`.
+- Updated `DetailsTabsPanel` so App Sessions, Web Sessions, and Live Event Log
+  bind to visible paged rows and expose a footer with rows-per-page,
+  previous/next, and page status controls.
+- Added a RED WPF test assertion that caught a missing `Buttons.xaml` merge in
+  `DetailsTabsPanel`; fixed it by merging the shared button dictionary.
+- Updated `AGENTS.md` to make completed subagent reassignment an explicit
+  working rule.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "DetailsTabs_DefaultRowsPerPageIsTen|DetailsTabs_NextAndPreviousPageUpdateVisibleRows"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter MainWindow_TabsExposeExpectedListsAndSettingsControls`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-143059`.
+
+Coverage after this slice: overall line coverage 91.9%.
+
+Next highest priority is viewport-aware WPF acceptance/snapshot automation:
+add RED script/tool contract tests for 1920/1366/1024 screenshots, section
+scroll/crops, manifest viewport metadata, and skipped screenshot reasons.

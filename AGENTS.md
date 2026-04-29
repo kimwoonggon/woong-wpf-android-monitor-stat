@@ -87,6 +87,10 @@ skill suggests Compose.
 ## Agent Ownership
 
 - Main agent owns integration, final decisions, and conflict resolution.
+- Completed subagents should not sit idle while the project still has
+  independent work. When a subagent finishes, the main agent should either close
+  it if no suitable work exists or immediately assign the next non-conflicting
+  discovery, verification, documentation, or implementation slice.
 - Architecture Agent owns common domain models, DTO contracts, DB/API contract
   docs, sync protocol docs, and milestone docs.
 - Windows Agent owns future `src/Woong.MonitorStack.Windows*` projects and

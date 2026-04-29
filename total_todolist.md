@@ -19,6 +19,7 @@ milestones below are finished.
 - [x] Install and verify Python for skill installer usage.
 - [x] Install/verify default skills: `tdd`, `wpf-best-practices`, `find-skills`, `android-kotlin`, `android-device-automation`, `wpf-mvvm-generator`.
 - [x] Add root `AGENTS.md`.
+- [x] Document the rule that completed subagents must either be closed or reassigned to the next non-conflicting project slice.
 - [x] Keep this `total_todolist.md` updated for every feature slice.
 - [x] For each completed slice: run tests, run build, update docs, commit, push.
 - [x] After every push: leave a concise resume summary for future context resets.
@@ -706,7 +707,15 @@ milestones below are finished.
 - [x] DetailsTabsPanel extraction verification: `.NET` build passed.
 - [x] DetailsTabsPanel extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-121155`.
 - [x] DetailsTabsPanel extraction verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
+- [x] Decide and document whether Details rows-per-page pagination is Milestone 31 or future; if Milestone 31, add `DetailsTabs_ShowRowsPerPageRows`, `RowsPerPageOptions`, `CurrentPage`, and visible row collections.
+- [x] Details pagination verification: RED Presentation tests covered default 10 rows per page and previous/next visible-row paging.
+- [x] Details pagination verification: WPF test caught the missing `Buttons.xaml` resource merge before the footer could render.
+- [x] Details pagination verification: App/Web/Live DataGrids bind to `VisibleAppSessionRows`, `VisibleWebSessionRows`, and `VisibleLiveEventRows`.
+- [x] Details pagination verification: all Windows App tests passed (50 tests).
+- [x] Details pagination verification: full `.NET` tests passed (206 tests).
+- [x] Details pagination verification: `.NET` build passed.
+- [x] Details pagination verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-143059`.
+- [x] Details pagination verification: coverage report generated successfully with overall line coverage 91.9%.
 - [x] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
 - [x] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
 - [x] SettingsPanel extraction verification: `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`, `SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`, `SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and `SettingsPanel_PreservesRuntimeAndStorageActions` passed.
