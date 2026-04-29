@@ -63,26 +63,32 @@ If no emulator or physical device is connected, the script exits successfully
 with `Status: BLOCKED` and a clear reason. This is intentional: unavailable
 device evidence should be explicit, not a silent failure.
 
-Current first slice behavior:
+Current behavior:
 
 - Builds can be skipped with `-SkipBuild` for fast device-availability checks.
 - The script checks `adb devices -l`.
 - When no device is connected, it records the blocked state for dashboard,
   settings, sessions, and daily summary capture.
+- When a device is connected and `-SkipBuild` is not used, it builds and
+  installs the debug APK before launching screens.
+- When a device is connected, it launches Dashboard, Settings, Sessions, and
+  Daily Summary activities and captures local PNG screenshots into the artifact
+  folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
   model configuration and device steps.
 
-Future connected-device behavior:
+Future connected-device improvements:
 
-- Build the debug and androidTest APKs.
-- Install or launch the app on a connected emulator/device.
 - Seed deterministic sample data when possible.
-- Capture dashboard/settings/sessions/daily-summary screenshots.
 - State whether it used an emulator or physical device.
+- Add optional Midscene visual review when model environment variables are
+  configured.
 
 ## Current Gaps
 
-- Connected-device screenshot capture is not implemented yet.
+- This environment currently has no connected Android device or emulator, so
+  the connected-device capture path is covered with fake-adb tests and remains
+  blocked for real visual evidence.
 - Deterministic sample app-usage seeding for screenshot runs is not implemented
   yet.
 - Optional Midscene/android-device-automation requires model environment

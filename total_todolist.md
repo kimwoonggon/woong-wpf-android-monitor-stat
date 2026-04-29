@@ -593,6 +593,7 @@ milestones below are finished.
 - [x] Add `docs/android-ui-screenshot-testing.md` follow-up implementation notes after tooling exists.
 - [x] Add local Android screenshot script/tool that writes `artifacts/android-ui-snapshots/<timestamp>/`.
 - [x] Generate Android `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+- [x] Implement connected-device script branch that installs/launches the app and captures dashboard/settings/sessions/daily-summary screenshots when a device is available.
 - [ ] Capture dashboard, settings, sessions, and daily summary screens.
 - [ ] Seed deterministic sample app usage where possible.
 - [x] Run screenshot flow availability check; blocked because `adb devices -l`

@@ -2750,6 +2750,37 @@ Verified so far:
 Coverage after this slice: overall line coverage 91.3%; Server line coverage
 96.7%.
 
+## 2026-04-29 Android UI Snapshot Connected-Branch Slice
+
+- Added a fake-adb architecture test proving that
+  `scripts/run-android-ui-snapshots.ps1` no longer stops at the old connected
+  device "capture is not implemented" blocker.
+- The script now launches Dashboard, Settings, Sessions, and Daily Summary
+  activities with adb, captures screenshots with `screencap`, pulls stable PNG
+  files into the artifact folder, and records them in `manifest.json`.
+- When `-SkipBuild` is not used, the script installs the debug APK before
+  launching screens. With `-SkipBuild`, it assumes the app is already installed.
+- The current local environment still has no connected Android device or
+  emulator, so the real artifact run remains `BLOCKED` with an explicit report;
+  fake-adb verifies the connected branch without weakening the physical-device
+  evidence requirement.
+
+Verified so far:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens" -v minimal`
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -SkipBuild`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest Android UI snapshot artifact:
+`artifacts/android-ui-snapshots/20260429-230721` (`BLOCKED`, no connected
+device).
+
+Coverage after this slice: overall line coverage 91.3%; Server line coverage
+96.7%.
+
 ## 2026-04-29 WPF Close Flush Slice
 
 - Added a WPF behavior test proving that closing `MainWindow` while tracking is

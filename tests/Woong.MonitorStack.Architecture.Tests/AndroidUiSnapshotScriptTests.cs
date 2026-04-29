@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Woong.MonitorStack.Architecture.Tests;
 
@@ -61,6 +62,88 @@ public sealed class AndroidUiSnapshotScriptTests
             Assert.True(File.Exists(Path.Combine(latest, "visual-review-prompt.md")));
             Assert.Contains("BLOCKED", File.ReadAllText(Path.Combine(latest, "report.md")));
             Assert.Contains("No connected Android device", File.ReadAllText(Path.Combine(latest, "manifest.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-snapshots-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, $$"""
+@echo off
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  exit /b 0
+)
+if "%1"=="pull" (
+  echo fake png>"%3"
+  exit /b 0
+)
+exit /b 0
+""");
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            process.WaitForExit(30_000);
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+            Assert.DoesNotContain("capture is not implemented", stdout + stderr, StringComparison.OrdinalIgnoreCase);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string[] expectedScreenshots =
+            [
+                "dashboard.png",
+                "settings.png",
+                "sessions.png",
+                "daily-summary.png"
+            ];
+            foreach (string screenshot in expectedScreenshots)
+            {
+                Assert.True(File.Exists(Path.Combine(latest, screenshot)), $"{screenshot} should be captured.");
+            }
+
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+            Assert.Equal("PASS", manifest.RootElement.GetProperty("status").GetString());
+            string manifestText = manifest.RootElement.GetRawText();
+            Assert.Contains("dashboard.png", manifestText);
+            Assert.Contains("settings.png", manifestText);
+            Assert.Contains("sessions.png", manifestText);
+            Assert.Contains("daily-summary.png", manifestText);
+
+            string commands = File.ReadAllText(adbLog);
+            Assert.Contains("com.woong.monitorstack/.dashboard.DashboardActivity", commands);
+            Assert.Contains("com.woong.monitorstack/.settings.SettingsActivity", commands);
+            Assert.Contains("com.woong.monitorstack/.sessions.SessionsActivity", commands);
+            Assert.Contains("com.woong.monitorstack/.summary.DailySummaryActivity", commands);
+            Assert.Contains("screencap", commands);
         }
         finally
         {

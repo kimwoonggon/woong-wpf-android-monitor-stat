@@ -18,6 +18,7 @@ if ([string]::IsNullOrWhiteSpace($AdbPath)) {
 if ([string]::IsNullOrWhiteSpace($GradleWrapperPath)) {
     $GradleWrapperPath = Join-Path $repoRoot "android\gradlew.bat"
 }
+$androidRoot = Split-Path -Parent $GradleWrapperPath
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $runRoot = Join-Path $OutputRoot $timestamp
@@ -29,6 +30,40 @@ $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
 $notes = New-Object System.Collections.Generic.List[string]
+$screenTargets = @(
+    [ordered]@{
+        Name = "dashboard"
+        FileName = "dashboard.png"
+        Activity = "com.woong.monitorstack/.dashboard.DashboardActivity"
+    },
+    [ordered]@{
+        Name = "settings"
+        FileName = "settings.png"
+        Activity = "com.woong.monitorstack/.settings.SettingsActivity"
+    },
+    [ordered]@{
+        Name = "sessions"
+        FileName = "sessions.png"
+        Activity = "com.woong.monitorstack/.sessions.SessionsActivity"
+    },
+    [ordered]@{
+        Name = "daily summary"
+        FileName = "daily-summary.png"
+        Activity = "com.woong.monitorstack/.summary.DailySummaryActivity"
+    }
+)
+
+function Invoke-AdbChecked {
+    param(
+        [string[]]$Arguments,
+        [string]$Description
+    )
+
+    & $AdbPath @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed with adb exit code $LASTEXITCODE."
+    }
+}
 
 function Write-AndroidSnapshotArtifacts {
     param(
@@ -71,6 +106,15 @@ function Write-AndroidSnapshotArtifacts {
     foreach ($note in $notes) {
         $reportLines += "- $note"
     }
+    if ($screenshots.Count -gt 0) {
+        $reportLines += @(
+            "",
+            "## Screenshots"
+        )
+        foreach ($screenshot in $screenshots) {
+            $reportLines += "- $($screenshot.name): $($screenshot.fileName)"
+        }
+    }
     Set-Content -Path (Join-Path $runRoot "report.md") -Value $reportLines
 
     $manifest = [ordered]@{
@@ -106,7 +150,6 @@ try {
             throw "Gradle wrapper not found: $GradleWrapperPath"
         }
 
-        $androidRoot = Split-Path -Parent $GradleWrapperPath
         Push-Location $androidRoot
         try {
             & $GradleWrapperPath assembleDebug --no-daemon --stacktrace
@@ -137,12 +180,42 @@ try {
         exit 0
     }
 
-    $status = "BLOCKED"
-    $blockedReason = "Connected-device screenshot capture is not implemented in this first local artifact slice."
+    if (-not $SkipBuild) {
+        $debugApk = Join-Path $androidRoot "app\build\outputs\apk\debug\app-debug.apk"
+        if (-not (Test-Path $debugApk)) {
+            throw "Debug APK not found after build: $debugApk"
+        }
+
+        $notes.Add("Installing debug APK: $debugApk")
+        Invoke-AdbChecked -Arguments @("install", "-r", $debugApk) -Description "Install debug APK"
+    } else {
+        $notes.Add("Install skipped by -SkipBuild; assuming the debug app is already installed on the connected device.")
+    }
+
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")
-    $notes.Add("Next slice should run instrumentation screenshot capture for dashboard, settings, sessions, and daily summary.")
+    foreach ($target in $screenTargets) {
+        $notes.Add("Capturing $($target.Name) via $($target.Activity).")
+        Invoke-AdbChecked -Arguments @("shell", "am", "start", "-W", "-n", $target.Activity) -Description "Launch $($target.Name)"
+        Start-Sleep -Milliseconds 750
+
+        $remotePath = "/sdcard/Download/woong-monitor-$($target.Name -replace '\s+', '-').png"
+        $localPath = Join-Path $runRoot $target.FileName
+        Invoke-AdbChecked -Arguments @("shell", "screencap", "-p", $remotePath) -Description "Capture $($target.Name)"
+        Invoke-AdbChecked -Arguments @("pull", $remotePath, $localPath) -Description "Pull $($target.Name) screenshot"
+        & $AdbPath shell rm $remotePath | Out-Null
+
+        if (-not (Test-Path $localPath)) {
+            throw "Expected screenshot was not created: $localPath"
+        }
+
+        $screenshots += [ordered]@{
+            name = $target.Name
+            fileName = $target.FileName
+            path = $localPath
+            activity = $target.Activity
+        }
+    }
     Write-AndroidSnapshotArtifacts -Status $status -BlockedReason $blockedReason
-    Write-Host "Android device detected, but screenshot capture is deferred to the next slice."
     Write-Host "Android UI snapshot artifacts: $runRoot"
     exit 0
 }
