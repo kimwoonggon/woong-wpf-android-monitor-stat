@@ -325,6 +325,14 @@ passed at:
 
 Coverage remains 92.1% overall.
 
+The colors style dictionary slice added `Styles/Colors.xaml` and wired the core
+background/surface/border/text brushes into the app shell and card styles. The
+latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-132937`
+
+Coverage remains 92.1% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

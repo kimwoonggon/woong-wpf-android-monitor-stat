@@ -247,6 +247,19 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void ColorStyleDictionary_DefinesCoreDashboardBrushes()
+        => RunOnStaThread(() =>
+        {
+            ResourceDictionary resources = LoadStyleResource("Colors.xaml");
+
+            AssertSolidBrush(resources, "AppBackgroundBrush", Color.FromRgb(0xF6, 0xF8, 0xFB));
+            AssertSolidBrush(resources, "SurfaceBrush", Colors.White);
+            AssertSolidBrush(resources, "BorderBrush", Color.FromRgb(0xDC, 0xE1, 0xE8));
+            AssertSolidBrush(resources, "TextPrimaryBrush", Color.FromRgb(0x16, 0x20, 0x33));
+            AssertSolidBrush(resources, "TextMutedBrush", Color.FromRgb(0x5A, 0x64, 0x72));
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
@@ -1002,6 +1015,14 @@ public sealed class MainWindowUiExpectationTests
         T actualValue = Assert.IsType<T>(setter.Value);
 
         Assert.Equal(expectedValue, actualValue);
+    }
+
+    private static void AssertSolidBrush(ResourceDictionary resources, string key, Color expectedColor)
+    {
+        Assert.True(resources.Contains(key), $"Resource dictionary should contain `{key}`.");
+        var brush = Assert.IsType<SolidColorBrush>(resources[key]);
+
+        Assert.Equal(expectedColor, brush.Color);
     }
 
     private static Setter FindSetter(Style style, DependencyProperty property)

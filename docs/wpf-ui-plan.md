@@ -217,6 +217,11 @@ Current style dictionary implementation:
   `DetailsTabsPanel`, and `ControlBar` now use those shared card surfaces. The
   remaining style dictionary work is color, typography, data grid, and tab
   styling.
+- `Styles/Colors.xaml` defines the core app background, surface, border,
+  primary text, and muted text brushes. `Cards.xaml` now consumes surface and
+  border brushes, and the dashboard shell content uses the app background brush.
+  Remaining color work includes replacing repeated text and badge/status
+  hard-coded brushes.
 
 Open `wpfelements.md` alignment decisions:
 

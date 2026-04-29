@@ -1,10 +1,14 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <Style x:Key="DashboardCardBorderStyle" TargetType="{x:Type Border}">
         <Setter Property="Padding" Value="18" />
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#DCE1E8" />
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 

@@ -4,14 +4,14 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 cards style dictionary slice.
-`CardStyleDictionary_DefinesReusableDashboardCardStyles` proves
-`Styles/Cards.xaml` exposes the shared dashboard-card and compact-surface
-Border styles. MetricCard, SectionCard, CurrentFocusPanel, DetailsTabsPanel,
-and ControlBar now use those shared card surfaces while preserving behavior and
-AutomationIds. Verification passed: all `.NET` tests (200), full `.NET` build,
-WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-132227`, and coverage
-generation with overall line coverage 92.1%.
+Milestone 31 colors style dictionary slice.
+`ColorStyleDictionary_DefinesCoreDashboardBrushes` proves `Styles/Colors.xaml`
+defines the app background, surface, border, primary text, and muted text
+brushes. `Cards.xaml` now consumes the shared surface/border brushes, and the
+dashboard content background uses the app background brush. Verification
+passed: all `.NET` tests (201), full `.NET` build, WPF acceptance at
+`artifacts/wpf-ui-acceptance/20260429-132937`, and coverage generation with
+overall line coverage 92.1%.
 
 ## Completed
 
@@ -954,13 +954,14 @@ Remaining Milestone 30 work:
 ## Next Highest Priority
 
 Continue Milestone 31 with the next style dictionary slice. Remaining style
-work is `Colors.xaml`, `Typography.xaml`, `DataGrid.xaml`, and `Tabs.xaml`.
-Prefer `Colors.xaml` next because hard-coded brushes now remain across text,
-background, border, and badge surfaces. Preserve the extracted dashboard views,
-reusable controls, chart `상세보기` tab-switch behavior, and keep remaining
-`wpfelements.md` audit gaps visible: domain chart type decision, Details
-pagination decision, and style dictionary migration away from hard-coded local
-styles.
+work is `Typography.xaml`, `DataGrid.xaml`, and `Tabs.xaml`, plus follow-up
+replacement of repeated text and badge/status brushes. Prefer typography next
+because repeated heading/body/muted text setters remain across Header,
+Settings, cards, chart headings, and detail rows. Preserve the extracted
+dashboard views, reusable controls, chart `상세보기` tab-switch behavior, and
+keep remaining `wpfelements.md` audit gaps visible: domain chart type decision,
+Details pagination decision, and style dictionary migration away from
+hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1483,3 +1484,31 @@ Coverage after this slice: overall line coverage 92.1%.
 Next highest priority is `Colors.xaml` extraction. Keep it staged: shared
 background/surface/border/text brushes first, then badge/status colors in a
 separate follow-up if needed.
+
+## 2026-04-29 WPF Colors Style Dictionary Slice
+
+- Added the RED resource test
+  `ColorStyleDictionary_DefinesCoreDashboardBrushes`.
+- Added `Styles/Colors.xaml` with shared app background, surface, border,
+  primary text, and muted text brushes.
+- Merged the colors dictionary before button/card dictionaries in `App.xaml`.
+- Updated `Styles/Cards.xaml` to consume `SurfaceBrush` and `BorderBrush`.
+- Updated `MainWindow.xaml` content background to use `AppBackgroundBrush`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "ColorStyleDictionary_DefinesCoreDashboardBrushes|CardStyleDictionary_DefinesReusableDashboardCardStyles|MainWindow_ExposesDashboardControlsAndCommandBindings|MetricCard_RendersLabelValueAndSubtitle|SectionCard_RendersContentAndOptionalActionCommand"`
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-132937`.
+
+Coverage after this slice: overall line coverage 92.1%.
+
+Next highest priority is typography style extraction. Keep it narrow by moving
+common heading/subtitle/section/muted/body TextBlock setters first and leaving
+badge/status colors for a separate slice.

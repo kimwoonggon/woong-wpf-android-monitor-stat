@@ -746,6 +746,14 @@ milestones below are finished.
 - [x] Cards style dictionary verification: `.NET` build passed.
 - [x] Cards style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-132227`.
 - [x] Cards style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
+- [x] Add `Styles/Colors.xaml` with core app background, surface, border, primary text, and muted text brushes.
+- [x] Wire core color resources into `App.xaml`, `Cards.xaml`, and the dashboard content background.
+- [x] Colors style dictionary verification: focused color/resource, card, MainWindow, MetricCard, and SectionCard tests passed.
+- [x] Colors style dictionary verification: all Windows App tests passed (47 tests).
+- [x] Colors style dictionary verification: full `.NET` tests passed (201 tests).
+- [x] Colors style dictionary verification: `.NET` build passed.
+- [x] Colors style dictionary verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-132937`.
+- [x] Colors style dictionary verification: coverage report generated successfully with overall line coverage 92.1%.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Add presentation child ViewModels or adapter properties only where they improve testability without breaking existing behavior.
