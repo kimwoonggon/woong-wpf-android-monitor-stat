@@ -709,7 +709,14 @@ milestones below are finished.
 - [x] StatusBadge extraction verification: `.NET` build passed.
 - [x] StatusBadge extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-123308`.
 - [x] StatusBadge extraction verification: coverage report generated successfully with overall line coverage 92.3%.
-- [ ] Add reusable `Controls/SectionCard.xaml` and `Controls/DetailRow.xaml`.
+- [x] Add reusable `Controls/DetailRow.xaml` and replace Current Focus label/value rows while preserving value AutomationIds.
+- [x] DetailRow extraction verification: focused `DetailRow_RendersLabelAndValueWithStableValueAutomationId` and `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings` passed.
+- [x] DetailRow extraction verification: all Windows App tests passed (42 tests).
+- [x] DetailRow extraction verification: full `.NET` tests passed (196 tests).
+- [x] DetailRow extraction verification: `.NET` build passed.
+- [x] DetailRow extraction verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-124239`.
+- [x] DetailRow extraction verification: coverage report generated successfully with overall line coverage 92.0%.
+- [ ] Add reusable `Controls/SectionCard.xaml`.
 - [ ] Add style dictionaries: `Colors.xaml`, `Typography.xaml`, `Buttons.xaml`, `Cards.xaml`, `DataGrid.xaml`, `Tabs.xaml`.
 - [ ] Merge style dictionaries from `App.xaml` and replace hard-coded colors/duplicate local button/card styles in extracted panels.
 - [ ] Align DashboardView root scrolling with `wpfelements.md`: prefer vertical dashboard scrolling and keep horizontal scrolling inside wide grids/charts where needed.

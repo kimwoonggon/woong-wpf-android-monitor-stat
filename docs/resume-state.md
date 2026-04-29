@@ -4,14 +4,15 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 31 StatusBadge extraction slice.
-`StatusBadge_RendersTextAndPreservesAutomationId` proves the reusable WPF
-badge renders bound text under a stable AutomationId. The header test now
-asserts `TrackingStatusBadge`, `SyncStatusBadge`, and `PrivacyStatusBadge` are
-`StatusBadge` controls rather than raw `Border`s, while preserving the visible
-header content. Verification passed: all `.NET` tests (195), full `.NET` build,
-WPF acceptance at `artifacts/wpf-ui-acceptance/20260429-123308`, and coverage
-generation with overall line coverage 92.3%.
+Milestone 31 DetailRow extraction slice.
+`DetailRow_RendersLabelAndValueWithStableValueAutomationId` proves the reusable
+WPF detail row renders a label/value pair with a stable value AutomationId and
+ellipsis trimming. `DashboardView_HostsCurrentFocusPanelAndPreservesCurrentFocusBindings`
+continues to prove the Current Focus panel exposes the same tracking, app,
+process, title, domain, duration, poll, DB write, and sync text AutomationIds.
+Verification passed: all `.NET` tests (196), full `.NET` build, WPF acceptance
+at `artifacts/wpf-ui-acceptance/20260429-124239`, and coverage generation with
+overall line coverage 92.0%.
 
 ## Completed
 
@@ -953,13 +954,12 @@ Remaining Milestone 30 work:
 
 ## Next Highest Priority
 
-Continue Milestone 31 with reusable `DetailRow` extraction, then `SectionCard`
-extraction. Preserve the extracted `DetailsTabsPanel`/`SettingsPanel` and
-`StatusBadge`, the chart `상세보기` tab-switch behavior, and keep the
-`wpfelements.md` audit gaps visible: domain chart type decision, Details
-pagination decision, Settings sync endpoint/privacy/runtime storage controls,
-root scrolling alignment, and style dictionary migration away from hard-coded
-local styles.
+Continue Milestone 31 with reusable `SectionCard` extraction. Preserve the
+extracted `DetailsTabsPanel`/`SettingsPanel`, `StatusBadge`, and `DetailRow`,
+the chart `상세보기` tab-switch behavior, and keep the `wpfelements.md` audit
+gaps visible: domain chart type decision, Details pagination decision, Settings
+sync endpoint/privacy/runtime storage controls, root scrolling alignment, and
+style dictionary migration away from hard-coded local styles.
 
 ## 2026-04-29 WPF Chart Axis Slice
 
@@ -1339,6 +1339,34 @@ Latest WPF UI acceptance artifact:
 
 Coverage after this slice: overall line coverage 92.3%.
 
-Next highest priority is reusable `DetailRow` extraction, then `SectionCard`
-extraction. Keep all WPF-only controls in `Windows.App` and avoid adding WPF
-references to `Windows.Presentation`.
+## 2026-04-29 WPF DetailRow Extraction Slice
+
+- Added the RED reusable-control test
+  `DetailRow_RendersLabelAndValueWithStableValueAutomationId`.
+- Added `Controls/DetailRow.xaml` and `Controls/DetailRow.xaml.cs`.
+- Replaced repeated Current Focus label/value `StackPanel` markup with
+  `controls:DetailRow`.
+- Preserved key Current Focus value AutomationIds including
+  `TrackingStatusText`, `CurrentAppNameText`, `CurrentProcessNameText`,
+  `CurrentWindowTitleText`, `CurrentBrowserDomainText`,
+  `CurrentSessionDurationText`, `LastPersistedSessionText`, and
+  `LastPollTimeText`.
+- Kept the two-value Last DB write / Sync state block explicit for now to avoid
+  hiding behavior inside an over-generalized row control.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-124239`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority is reusable `SectionCard` extraction. Keep all WPF-only
+controls in `Windows.App` and avoid adding WPF references to
+`Windows.Presentation`.

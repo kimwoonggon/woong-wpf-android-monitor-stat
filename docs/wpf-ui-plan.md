@@ -197,6 +197,8 @@ Current reusable control implementation:
   AutomationId.
 - `StatusBadge` renders header tracking/sync/privacy badges and preserves the
   original badge AutomationIds.
+- `DetailRow` renders Current Focus label/value rows while preserving the
+  value AutomationIds used by semantic tests and snapshot automation.
 
 Open `wpfelements.md` alignment decisions:
 

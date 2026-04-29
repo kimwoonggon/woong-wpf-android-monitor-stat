@@ -277,6 +277,14 @@ passed at:
 
 Coverage is 92.3% overall.
 
+The DetailRow extraction slice moved repeated Current Focus label/value rows
+into `Controls/DetailRow.xaml` while preserving key Current Focus value
+AutomationIds. The latest local WPF acceptance run passed at:
+
+`artifacts/wpf-ui-acceptance/20260429-124239`
+
+Coverage is 92.0% overall.
+
 Remaining UI acceptance gap: the snapshot tool still does not capture explicit
 1920/1366/1024 viewport variants, and `chart-area.png` may still be skipped
 when the chart area is below the current UI Automation viewport. The semantic

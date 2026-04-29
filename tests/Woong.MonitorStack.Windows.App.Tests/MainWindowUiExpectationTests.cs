@@ -146,6 +146,36 @@ public sealed class MainWindowUiExpectationTests
         });
 
     [Fact]
+    public void DetailRow_RendersLabelAndValueWithStableValueAutomationId()
+        => RunOnStaThread(() =>
+        {
+            var row = new DetailRow
+            {
+                Label = "Current app",
+                Value = "Chrome",
+                ValueAutomationId = "CurrentAppNameText"
+            };
+            var window = new Window { Content = row };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                IReadOnlySet<string> text = CollectText(row);
+                Assert.Contains("Current app", text);
+                Assert.Contains("Chrome", text);
+                TextBlock value = FindByAutomationId<TextBlock>(row, "CurrentAppNameText");
+                Assert.Equal("Chrome", value.Text);
+                Assert.Equal(TextTrimming.CharacterEllipsis, value.TextTrimming);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void DashboardView_HostsControlBarAndPreservesCommandBindings()
         => RunOnStaThread(() =>
         {
