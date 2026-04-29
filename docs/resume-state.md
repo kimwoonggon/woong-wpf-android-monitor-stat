@@ -4,12 +4,11 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
-Milestone 28 privacy boundary guardrails plus the first Milestone 25 semantic
-WPF tracking-pipeline UI test. The new WPF App test invokes the real Start/Stop
-buttons through UI Automation peers, drives fake foreground activity through
-the real `WindowsTrackingDashboardCoordinator`, persists focus sessions and
-outbox rows into temp SQLite, and verifies the dashboard renders the persisted
-session back from the SQLite-backed data source.
+Milestone 25 WPF UI acceptance orchestration. The new
+`scripts/run-wpf-ui-acceptance.ps1` script composes the FlaUI RealStart
+Start/Stop/temp-SQLite persistence check with the local WPF UI snapshot tool,
+stores artifacts under `artifacts/wpf-ui-acceptance/`, and keeps server sync
+disabled unless `-AllowServerSync` is explicitly passed.
 
 ## Completed
 
@@ -52,6 +51,23 @@ session back from the SQLite-backed data source.
   `scripts/test-coverage.ps1`. Current .NET line coverage remains 92.9%
   overall; Domain 89.3%, Windows 92.5%, Windows.Presentation 97.6%,
   Windows.App 85.3%, Server 96.3%.
+- Added `scripts/run-wpf-ui-acceptance.ps1`, which composes the RealStart
+  semantic Start/Stop/temp-SQLite verification with local UI snapshot evidence
+  under `artifacts/wpf-ui-acceptance/`.
+- Added `WpfUiAcceptanceScriptTests` so the WPF App test suite guards the
+  acceptance script's RealStart composition, temp SQLite focus/outbox checks,
+  local artifact path, sync opt-in flag, and privacy warning text.
+- Verified `scripts/run-wpf-ui-acceptance.ps1 -Seconds 2`; it launched the WPF
+  app through FlaUI, invoked Start/Stop, persisted temp SQLite
+  `focus_session` and `sync_outbox` rows, ran UI snapshots, and wrote
+  `artifacts/wpf-ui-acceptance/latest/report.md`.
+- Re-verified `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1
+  -v minimal`; all 172 .NET tests passed.
+- Re-verified `dotnet build Woong.MonitorStack.sln --no-restore
+  -maxcpucount:1 -v minimal`; build passed with 0 warnings/errors.
+- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+  92.9% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
+  Windows.App 86.6%, and Server 96.3%.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
   `DashboardTrackingSnapshot`, structured `DashboardPersistedSessionSnapshot`,

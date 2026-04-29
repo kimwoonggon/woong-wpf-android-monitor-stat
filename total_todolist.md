@@ -500,7 +500,7 @@ milestones below are finished.
 - [x] Add testable `PollTrackingCommand` and WPF timer path so Running tracking advances current session duration beyond zero.
 - [x] Add WPF App semantic test proving fake browser github/chatgpt web sessions render in the Web Sessions tab from SQLite.
 - [x] Add WPF App semantic test proving minimum-size windows provide scrolling while keeping dashboard tabs reachable.
-- [ ] Create `scripts/run-wpf-ui-acceptance.ps1`.
+- [x] Create `scripts/run-wpf-ui-acceptance.ps1`.
 - [ ] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
 - [x] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
 - [ ] Implement EmptyData mode acceptance.
@@ -513,7 +513,8 @@ milestones below are finished.
 - [ ] Capture required screenshots: startup, after start, generated activity, after stop, after sync, settings, current activity, summary cards, sessions, web sessions, live events, and chart area when visible.
 - [ ] Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
 - [ ] Keep screenshot review local-only and optional for GPT/human review.
-- [ ] Run WPF acceptance tool locally.
+- [x] Run current composed RealStart + UI snapshot WPF acceptance tool locally.
+- [ ] Run full semantic WPF acceptance tool locally after fake TrackingPipeline/report upgrades.
 - [ ] Commit and push WPF semantic acceptance slice.
 
 ## Milestone 26: Android Usage Tracking Restoration

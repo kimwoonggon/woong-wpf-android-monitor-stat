@@ -174,6 +174,17 @@ Additional semantic coverage now proves:
 - The minimum-size WPF window exposes scrolling so the lower dashboard tabs are
   still reachable.
 
-Still to do: move these in-process semantic checks into the local FlaUI
-acceptance executable/script with `report.md`, `manifest.json`, screenshots,
-and explicit PASS/FAIL/WARN rows.
+`scripts/run-wpf-ui-acceptance.ps1` now composes the local RealStart semantic
+check with snapshot evidence. It builds the WPF app and tools, launches the app
+through FlaUI, invokes Start/Stop, verifies temp SQLite `focus_session` and
+`sync_outbox` rows through the RealStart tool, runs UI snapshots, and writes
+`artifacts/wpf-ui-acceptance/<timestamp>/report.md` plus `latest/report.md`.
+This composed local script was verified with `-Seconds 2`; it is the current
+beginner-friendly command for proving the runtime pipeline works before visual
+review. The solution also has 172 passing .NET tests and current line coverage
+of 92.9% overall.
+
+Still to do: upgrade the acceptance report to include a richer
+PASS/FAIL/WARN table, `manifest.json`, `visual-review-prompt.md`, and fake
+TrackingPipeline sample content for Visual Studio Code, Chrome, `github.com`,
+and `chatgpt.com`.
