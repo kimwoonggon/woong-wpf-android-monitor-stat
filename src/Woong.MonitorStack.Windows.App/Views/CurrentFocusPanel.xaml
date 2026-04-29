@@ -45,10 +45,13 @@
                                     Value="{Binding CurrentBrowserDomainText}"
                                     ValueAutomationId="CurrentBrowserDomainText"
                                     ValueFontSize="14" />
+                <controls:DetailRow Label="Browser capture"
+                                    Value="{Binding BrowserCaptureStatusText}"
+                                    ValueAutomationId="BrowserCaptureStatusText"
+                                    RowMargin="0,0,0,12" />
                 <controls:DetailRow Label="Current session duration"
                                     Value="{Binding CurrentSessionDurationText}"
-                                    ValueAutomationId="CurrentSessionDurationText"
-                                    RowMargin="0,0,0,12" />
+                                    ValueAutomationId="CurrentSessionDurationText" />
                 <controls:DetailRow Label="Last persisted session"
                                     Value="{Binding LastPersistedSessionText}"
                                     ValueAutomationId="LastPersistedSessionText"

@@ -385,6 +385,9 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Equal(
                     "No browser domain yet. Connect browser capture; app focus is tracked.",
                     FindByAutomationId<TextBlock>(panel, "CurrentBrowserDomainText").Text);
+                Assert.Equal(
+                    "Browser capture unavailable",
+                    FindByAutomationId<TextBlock>(panel, "BrowserCaptureStatusText").Text);
                 Assert.Equal("00:00:00", FindByAutomationId<TextBlock>(panel, "CurrentSessionDurationText").Text);
                 Assert.Equal("No session persisted", FindByAutomationId<TextBlock>(panel, "LastPersistedSessionText").Text);
                 Assert.Equal("No poll yet", FindByAutomationId<TextBlock>(panel, "LastPollTimeText").Text);

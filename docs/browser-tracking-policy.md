@@ -124,6 +124,15 @@ from privacy state:
 - Product state: foreground app/window focus remains valid and should display
   immediately even when browser-domain capture is unavailable.
 
+The WPF Current Focus panel keeps domain and capture status separate. The
+domain value should be a domain such as `github.com` when available. The
+browser capture status should communicate the source or problem:
+
+- `Browser extension connected`
+- `Domain from address bar fallback`
+- `Browser capture unavailable`
+- `Browser capture error`
+
 ## Required Tests
 
 - `chrome.exe` is classified as a browser.

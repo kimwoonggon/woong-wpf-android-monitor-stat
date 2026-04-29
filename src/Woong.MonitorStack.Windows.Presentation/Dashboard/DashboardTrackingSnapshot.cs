@@ -7,6 +7,7 @@ public sealed record DashboardTrackingSnapshot(
     TimeSpan CurrentSessionDuration,
     DashboardPersistedSessionSnapshot? LastPersistedSession,
     string? CurrentBrowserDomain = null,
+    DashboardBrowserCaptureStatus BrowserCaptureStatus = DashboardBrowserCaptureStatus.Unavailable,
     DateTimeOffset? LastPollAtUtc = null,
     DateTimeOffset? LastDbWriteAtUtc = null,
     bool HasPersistedWebSession = false)
@@ -17,6 +18,14 @@ public sealed record DashboardTrackingSnapshot(
         WindowTitle: null,
         CurrentSessionDuration: TimeSpan.Zero,
         LastPersistedSession: null);
+}
+
+public enum DashboardBrowserCaptureStatus
+{
+    Unavailable = 0,
+    ExtensionConnected = 1,
+    UiAutomationFallbackActive = 2,
+    Error = 3
 }
 
 public sealed record DashboardPersistedSessionSnapshot(

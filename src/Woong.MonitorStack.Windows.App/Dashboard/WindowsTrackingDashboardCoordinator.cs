@@ -77,6 +77,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             pollAtUtc,
             ResolveSnapshotDbWriteTime(persisted, browserPersistence),
             browserPersistence.CurrentDomain,
+            browserPersistence.CaptureStatus,
             browserPersistence.HasPersistedWebSession);
     }
 
@@ -103,6 +104,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             pollAtUtc,
             _lastDbWriteAtUtc,
             browserPersistence.CurrentDomain,
+            browserPersistence.CaptureStatus,
             browserPersistence.HasPersistedWebSession);
     }
 
@@ -124,6 +126,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             pollAtUtc,
             ResolveSnapshotDbWriteTime(persisted, browserPersistence),
             browserPersistence.CurrentDomain,
+            browserPersistence.CaptureStatus,
             browserPersistence.HasPersistedWebSession);
     }
 
@@ -165,7 +168,16 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             return BrowserPersistenceResult.Empty;
         }
 
-        BrowserActivitySnapshot? rawSnapshot = _browserActivityReader.TryRead(result.ForegroundWindow);
+        BrowserActivitySnapshot? rawSnapshot;
+        try
+        {
+            rawSnapshot = _browserActivityReader.TryRead(result.ForegroundWindow);
+        }
+        catch (Exception)
+        {
+            return BrowserPersistenceResult.Error;
+        }
+
         if (rawSnapshot is null)
         {
             return BrowserPersistenceResult.Empty;
@@ -181,6 +193,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
         return new BrowserPersistenceResult(
             sanitizedSnapshot.Domain,
+            MapBrowserCaptureStatus(sanitizedSnapshot),
             completedSessions.Count > 0);
     }
 
@@ -226,6 +239,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset lastPollAtUtc,
         DateTimeOffset? lastDbWriteAtUtc,
         string? currentBrowserDomain = null,
+        DashboardBrowserCaptureStatus browserCaptureStatus = DashboardBrowserCaptureStatus.Unavailable,
         bool hasPersistedWebSession = false)
         => new(
             AppName: session.PlatformAppKey,
@@ -234,9 +248,18 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             CurrentSessionDuration: TimeSpan.FromMilliseconds(session.DurationMs),
             LastPersistedSession: persistedSession,
             CurrentBrowserDomain: currentBrowserDomain,
+            BrowserCaptureStatus: browserCaptureStatus,
             LastPollAtUtc: lastPollAtUtc,
             LastDbWriteAtUtc: lastDbWriteAtUtc,
             HasPersistedWebSession: hasPersistedWebSession);
+
+    private static DashboardBrowserCaptureStatus MapBrowserCaptureStatus(BrowserActivitySnapshot snapshot)
+        => snapshot.CaptureMethod switch
+        {
+            CaptureMethod.BrowserExtensionFuture => DashboardBrowserCaptureStatus.ExtensionConnected,
+            CaptureMethod.UIAutomationAddressBar => DashboardBrowserCaptureStatus.UiAutomationFallbackActive,
+            _ => DashboardBrowserCaptureStatus.Unavailable
+        };
 
     private static string CreatePayload(FocusSession session)
     {
@@ -292,8 +315,17 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private sealed record BrowserPersistenceResult(
         string? CurrentDomain,
+        DashboardBrowserCaptureStatus CaptureStatus,
         bool HasPersistedWebSession)
     {
-        public static BrowserPersistenceResult Empty { get; } = new(null, HasPersistedWebSession: false);
+        public static BrowserPersistenceResult Empty { get; } = new(
+            null,
+            DashboardBrowserCaptureStatus.Unavailable,
+            HasPersistedWebSession: false);
+
+        public static BrowserPersistenceResult Error { get; } = new(
+            null,
+            DashboardBrowserCaptureStatus.Error,
+            HasPersistedWebSession: false);
     }
 }

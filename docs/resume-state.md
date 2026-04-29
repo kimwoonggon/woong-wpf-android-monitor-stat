@@ -4,6 +4,20 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 23/25 browser connection status UI slice. RED tests first required a
+presentation-level `DashboardBrowserCaptureStatus`, a visible
+`BrowserCaptureStatusText`, and a stable `BrowserCaptureStatusText`
+AutomationId. The WPF Current Focus panel now keeps browser domain and browser
+capture status separate: `github.com` remains the domain value, while the
+status can say `Browser capture unavailable`, `Browser extension connected`,
+`Domain from address bar fallback`, or `Browser capture error`. The coordinator
+maps capture methods to the presentation status and catches browser reader
+failures so app/window focus tracking continues even when browser metadata
+capture fails. Verification passed: full `.NET` tests (238), full `.NET` build
+with 0 warnings/errors, coverage generation with 90.6% line coverage, WPF UI
+acceptance at `artifacts/wpf-ui-acceptance/20260429-164942`, and the Windows
+smoke tool.
+
 Milestone 23/25 browser-domain immediate capture slice. The WPF app now
 registers a metadata-only UI Automation address-bar fallback through DI, wires
 `WindowsTrackingDashboardCoordinator` with `SqliteWebSessionRepository`,

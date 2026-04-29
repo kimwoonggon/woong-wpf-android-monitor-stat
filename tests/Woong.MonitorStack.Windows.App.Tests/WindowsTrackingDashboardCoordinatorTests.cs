@@ -3,6 +3,7 @@ using System.Text.Json;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
+using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
 
@@ -202,7 +203,43 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         var snapshot = coordinator.StartTracking();
 
         Assert.Equal("github.com", snapshot.CurrentBrowserDomain);
+        Assert.Equal(DashboardBrowserCaptureStatus.UiAutomationFallbackActive, snapshot.BrowserCaptureStatus);
         Assert.False(snapshot.HasPersistedWebSession);
+        Assert.Empty(webRepository.QueryByFocusSessionId("20:200:1777334400000"));
+        Assert.Empty(outboxRepository.QueryAll());
+    }
+
+    [Fact]
+    public void StartTracking_WhenBrowserReaderFails_ReturnsCaptureErrorWithoutBreakingFocusTracking()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "GitHub - Chrome"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteWebSessionRepository webRepository = CreateWebSessionRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            webRepository,
+            outboxRepository,
+            clock,
+            new ThrowingBrowserActivityReader());
+
+        var snapshot = coordinator.StartTracking();
+
+        Assert.Equal("chrome.exe", snapshot.AppName);
+        Assert.Null(snapshot.CurrentBrowserDomain);
+        Assert.Equal(DashboardBrowserCaptureStatus.Error, snapshot.BrowserCaptureStatus);
         Assert.Empty(webRepository.QueryByFocusSessionId("20:200:1777334400000"));
         Assert.Empty(outboxRepository.QueryAll());
     }
@@ -388,5 +425,11 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
 
         public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
             => Snapshot;
+    }
+
+    private sealed class ThrowingBrowserActivityReader : IBrowserActivityReader
+    {
+        public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
+            => throw new InvalidOperationException("Address bar reader failed.");
     }
 }

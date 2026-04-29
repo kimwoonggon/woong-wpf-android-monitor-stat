@@ -41,6 +41,7 @@ public sealed class MainWindowAutomationIdTests
                 Assert.Contains("CurrentAppNameText", automationIds);
                 Assert.Contains("CurrentProcessNameText", automationIds);
                 Assert.Contains("CurrentWindowTitleText", automationIds);
+                Assert.Contains("BrowserCaptureStatusText", automationIds);
                 Assert.Contains("CurrentSessionDurationText", automationIds);
                 Assert.Contains("LastPersistedSessionText", automationIds);
                 Assert.Contains("LastSyncStatusText", automationIds);

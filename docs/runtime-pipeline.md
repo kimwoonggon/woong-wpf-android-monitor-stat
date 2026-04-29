@@ -213,3 +213,8 @@ app/window becomes the active FocusSession. Browser domain metadata is a
 separate capture channel: show domain-only metadata immediately when capture is
 available, and otherwise report the missing domain as a capture-connection
 status rather than a privacy block.
+
+The dashboard separates browser domain from browser capture status. Domain text
+is reserved for metadata such as `github.com`; capture status reports whether
+the domain came from extension/native messaging, the UI Automation address-bar
+fallback, is unavailable, or failed while normal foreground tracking continues.

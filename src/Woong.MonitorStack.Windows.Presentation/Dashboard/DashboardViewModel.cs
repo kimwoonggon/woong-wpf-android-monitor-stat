@@ -47,6 +47,9 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _currentBrowserDomainText = BrowserDomainUnavailableText;
 
     [ObservableProperty]
+    private string _browserCaptureStatusText = "Browser capture unavailable";
+
+    [ObservableProperty]
     private string _currentSessionDurationText = "00:00:00";
 
     [ObservableProperty]
@@ -165,6 +168,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
         CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
         CurrentBrowserDomainText = TextOrDefault(snapshot.CurrentBrowserDomain, BrowserDomainUnavailableText);
+        BrowserCaptureStatusText = FormatBrowserCaptureStatus(snapshot.BrowserCaptureStatus);
         _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
         UpdateCurrentWindowTitleText();
         CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
@@ -530,4 +534,13 @@ public sealed partial class DashboardViewModel : ObservableObject
             ? $"{hours}h {minutes:D2}m"
             : $"{Math.Max(1, minutes)}m";
     }
+
+    private static string FormatBrowserCaptureStatus(DashboardBrowserCaptureStatus status)
+        => status switch
+        {
+            DashboardBrowserCaptureStatus.ExtensionConnected => "Browser extension connected",
+            DashboardBrowserCaptureStatus.UiAutomationFallbackActive => "Domain from address bar fallback",
+            DashboardBrowserCaptureStatus.Error => "Browser capture error",
+            _ => "Browser capture unavailable"
+        };
 }

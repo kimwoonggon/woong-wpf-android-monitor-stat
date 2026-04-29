@@ -16,6 +16,7 @@ public sealed class DashboardTrackingStateTests
         Assert.Equal("00:00:00", viewModel.CurrentSessionDurationText);
         Assert.Equal("No session persisted", viewModel.LastPersistedSessionText);
         Assert.Equal("Sync is off. Data stays on this Windows device.", viewModel.LastSyncStatusText);
+        Assert.Equal("Browser capture unavailable", viewModel.BrowserCaptureStatusText);
         Assert.False(viewModel.Settings.IsWindowTitleVisible);
     }
 
@@ -291,6 +292,60 @@ public sealed class DashboardTrackingStateTests
             CurrentBrowserDomain: null));
 
         Assert.Equal("No browser domain yet. Connect browser capture; app focus is tracked.", viewModel.CurrentBrowserDomainText);
+        Assert.Equal("Browser capture unavailable", viewModel.BrowserCaptureStatusText);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenUiAutomationFallbackActive_ShowsBrowserCaptureStatus()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null,
+            CurrentBrowserDomain: "github.com",
+            BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive));
+
+        Assert.Equal("github.com", viewModel.CurrentBrowserDomainText);
+        Assert.Equal("Domain from address bar fallback", viewModel.BrowserCaptureStatusText);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenBrowserExtensionConnected_ShowsBrowserCaptureStatus()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null,
+            CurrentBrowserDomain: "github.com",
+            BrowserCaptureStatus: DashboardBrowserCaptureStatus.ExtensionConnected));
+
+        Assert.Equal("Browser extension connected", viewModel.BrowserCaptureStatusText);
+    }
+
+    [Fact]
+    public void UpdateCurrentActivity_WhenBrowserCaptureError_ShowsBrowserCaptureStatus()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null,
+            CurrentBrowserDomain: null,
+            BrowserCaptureStatus: DashboardBrowserCaptureStatus.Error));
+
+        Assert.Equal("No browser domain yet. Connect browser capture; app focus is tracked.", viewModel.CurrentBrowserDomainText);
+        Assert.Equal("Browser capture error", viewModel.BrowserCaptureStatusText);
     }
 
     [Fact]

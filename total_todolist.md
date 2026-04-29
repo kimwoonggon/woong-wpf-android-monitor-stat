@@ -480,7 +480,7 @@ milestones below are finished.
 - [x] Create WebSession outbox items and upload payloads with domain/duration.
 - [x] Verify duplicate WebSession uploads are idempotent.
 - [x] Add native messaging host manifest generation.
-- [ ] Add WPF browser connection status after higher-priority non-UI tracking/schema work.
+- [x] Add WPF browser connection status after higher-priority non-UI tracking/schema work.
 - [x] Document browser-domain capture status semantics for the
   current slice: Administrator is not enough; missing domain is a
   capture-connection status, not a privacy block.
@@ -489,7 +489,7 @@ milestones below are finished.
   recognizable address bar.
 - [x] Keep extension/native messaging documented as the stable browser capture
   path while UI Automation remains best-effort.
-- [ ] Add WPF browser connection/status UI that distinguishes extension
+- [x] Add WPF browser connection/status UI that distinguishes extension
   connected, UI Automation fallback active, unavailable, and error states.
 - [x] Add URL sanitizer/redaction policy before storing raw browser events.
 - [x] Run browser/domain tests, Windows tests, solution build/test.
@@ -660,6 +660,15 @@ milestones below are finished.
   `artifacts/wpf-ui-acceptance/20260429-163949`, and the Windows smoke tool
   reported current foreground metadata without capturing keystrokes or screen
   contents.
+- [x] Browser connection status UI verification: RED tests added
+  `DashboardBrowserCaptureStatus` and `BrowserCaptureStatusText`; UI now
+  distinguishes unavailable, extension connected, address-bar fallback active,
+  and capture error states without overloading the domain value.
+- [x] Browser connection status verification: full `.NET` tests passed (238),
+  `.NET` build passed with 0 warnings/errors, coverage generated at 90.6% line
+  coverage, WPF UI acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-164942`, and the Windows smoke tool
+  reported foreground metadata only.
 - [x] Update `docs/resume-state.md` after each completed WPF UI slice.
 - [x] Run focused WPF/App tests for each slice.
 - [x] Run full `.NET` tests and build.
