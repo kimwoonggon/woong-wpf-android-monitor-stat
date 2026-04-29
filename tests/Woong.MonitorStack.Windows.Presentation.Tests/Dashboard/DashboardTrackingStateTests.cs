@@ -180,6 +180,47 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void PollTrackingCommand_WhenWebSessionPersistsWithoutFocusChange_RefreshesDashboard()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new MutableDashboardDataSource();
+        var coordinator = new FakeTrackingCoordinator
+        {
+            OnPoll = () => dataSource.WebSessions =
+            [
+                Domain.Common.WebSession.FromUtc(
+                    "focus-1",
+                    "Chrome",
+                    "https://github.com/org/repo",
+                    "GitHub",
+                    now.AddMinutes(-5),
+                    now)
+            ],
+            PollSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromMinutes(5),
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "github.com",
+                HasPersistedWebSession: true)
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            coordinator);
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        viewModel.PollTrackingCommand.Execute(null);
+
+        var row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("github.com", row.Domain);
+        Assert.Equal("github.com", viewModel.CurrentBrowserDomainText);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenWindowTitleHidden_MasksWindowTitle()
     {
         DashboardViewModel viewModel = CreateViewModel();

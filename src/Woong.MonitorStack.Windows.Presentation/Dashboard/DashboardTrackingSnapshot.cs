@@ -8,7 +8,8 @@ public sealed record DashboardTrackingSnapshot(
     DashboardPersistedSessionSnapshot? LastPersistedSession,
     string? CurrentBrowserDomain = null,
     DateTimeOffset? LastPollAtUtc = null,
-    DateTimeOffset? LastDbWriteAtUtc = null)
+    DateTimeOffset? LastDbWriteAtUtc = null,
+    bool HasPersistedWebSession = false)
 {
     public static DashboardTrackingSnapshot Empty { get; } = new(
         AppName: null,

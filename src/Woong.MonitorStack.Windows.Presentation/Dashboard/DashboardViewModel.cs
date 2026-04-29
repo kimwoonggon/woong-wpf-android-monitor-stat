@@ -241,7 +241,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         DashboardTrackingSnapshot snapshot = _trackingCoordinator.PollOnce();
         UpdateCurrentActivity(snapshot);
-        if (snapshot.LastPersistedSession is not null)
+        if (snapshot.LastPersistedSession is not null || snapshot.HasPersistedWebSession)
         {
             RefreshSummary(ResolveRange(SelectedPeriod));
         }

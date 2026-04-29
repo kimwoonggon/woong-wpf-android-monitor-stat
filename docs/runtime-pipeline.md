@@ -157,3 +157,10 @@ The WPF product UI now keeps the last persisted session and last DB write time
 visible until a newer persistence event replaces them. A later poll without a
 closed session must not reset the display to "No session persisted"; this is
 covered by `UpdateCurrentActivity_WhenLaterPollHasNoPersistedSession_KeepsLastPersistedSession`.
+
+The tracking snapshot also carries a web-persistence refresh signal. When a
+browser domain change persists only a `web_session` and no focus session closes,
+`DashboardTrackingSnapshot.HasPersistedWebSession` tells the WPF dashboard to
+reload the SQLite-backed summary, app/web rows, charts, and live events. This
+keeps browser-domain totals current without waiting for Stop or a later app
+switch.

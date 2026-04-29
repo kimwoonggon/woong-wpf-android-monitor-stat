@@ -1761,3 +1761,34 @@ Coverage after this slice: overall line coverage 92.0%.
 Next highest priority is the web persistence refresh signal gap:
 `DashboardViewModel.PollTrackingCommand` should refresh when a web session
 persists even if no focus session closed.
+
+## 2026-04-29 WPF Web Persistence Refresh Signal Slice
+
+- Added RED Presentation test
+  `PollTrackingCommand_WhenWebSessionPersistsWithoutFocusChange_RefreshesDashboard`.
+- The test failed first at compile time because `DashboardTrackingSnapshot` did
+  not expose a public web-persistence signal.
+- Added `DashboardTrackingSnapshot.HasPersistedWebSession`.
+- Updated `DashboardViewModel.PollTrackingCommand` so a web-only persistence
+  signal refreshes SQLite-backed dashboard data even when no focus session
+  closed.
+- Documented the signal in `docs/runtime-pipeline.md`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter PollTrackingCommand_WhenWebSessionPersistsWithoutFocusChange_RefreshesDashboard`
+- `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal`
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1 -Seconds 2`
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`
+
+Latest WPF UI acceptance artifact:
+`artifacts/wpf-ui-acceptance/20260429-150004`.
+
+Coverage after this slice: overall line coverage 92.0%.
+
+Next highest priority is proving real coordinator browser-domain persistence:
+add a RED `WindowsTrackingDashboardCoordinator` test that a domain change
+persists a linked `web_session`, creates a pending outbox item, and surfaces
+the refresh signal to the dashboard.

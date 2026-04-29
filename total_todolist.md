@@ -726,6 +726,14 @@ milestones below are finished.
 - [x] Details pagination verification: `.NET` build passed.
 - [x] Details pagination verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-143059`.
 - [x] Details pagination verification: coverage report generated successfully with overall line coverage 91.9%.
+- [x] WPF web persistence refresh signal: RED `PollTrackingCommand_WhenWebSessionPersistsWithoutFocusChange_RefreshesDashboard` failed first because `DashboardTrackingSnapshot` had no public web-persistence signal.
+- [x] WPF web persistence refresh signal: added `HasPersistedWebSession` and refreshed SQLite-backed dashboard data when a web-only persistence event occurs.
+- [x] WPF web persistence refresh signal verification: focused Presentation test passed.
+- [x] WPF web persistence refresh signal verification: all Presentation tests passed (42 tests).
+- [x] WPF web persistence refresh signal verification: full `.NET` tests passed (212 tests).
+- [x] WPF web persistence refresh signal verification: `.NET` build passed.
+- [x] WPF web persistence refresh signal verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-150004`.
+- [x] WPF web persistence refresh signal verification: coverage report generated successfully with overall line coverage 92.0%.
 - [x] Add `Views/SettingsPanel.xaml` for privacy/sync/runtime settings.
 - [x] SettingsPanel must include or explicitly disable Sync endpoint, Capture page title, Domain-only browser storage, Poll interval, Idle threshold, Open DB/log folder, and guarded Clear local data controls.
 - [x] SettingsPanel extraction verification: `DetailsTabsPanel_HostsSettingsPanelInsideSettingsTab`, `SettingsPanel_PreservesPrivacyControlsAndSafeDefaults`, `SettingsPanel_PreservesSyncControlsAndTwoWayBinding`, and `SettingsPanel_PreservesRuntimeAndStorageActions` passed.
