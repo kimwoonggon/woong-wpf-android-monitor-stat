@@ -228,3 +228,9 @@ installer script `scripts/install-chrome-native-host.ps1` publishes the host and
 registers the current-user Chrome native-messaging manifest. Foreground
 app/window focus still comes from the WPF tracking pipeline; extension tab
 events provide browser-domain metadata.
+
+`SampleDashboard` acceptance mode is intentionally not a tracking pipeline. It
+injects deterministic read-only dashboard rows for visual review and beginner
+verification, while leaving the temp SQLite `focus_session`, `web_session`, and
+`sync_outbox` tables empty. Use `TrackingPipeline` or RealStart acceptance when
+the goal is to prove Start/Poll/Stop persistence.

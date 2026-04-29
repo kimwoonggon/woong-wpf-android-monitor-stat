@@ -123,5 +123,6 @@ public sealed class WindowsAppOptions
 public enum WindowsAppAcceptanceMode
 {
     None = 0,
-    TrackingPipeline = 1
+    TrackingPipeline = 1,
+    SampleDashboard = 2
 }

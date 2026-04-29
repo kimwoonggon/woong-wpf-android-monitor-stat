@@ -4,6 +4,19 @@ Updated: 2026-04-29
 
 ## Last Completed Slice
 
+Milestone 25 SampleDashboard acceptance slice. RED tests first required
+`WindowsAppAcceptanceMode.SampleDashboard`, deterministic DI registration for a
+sample dashboard data source, and snapshot-tool support for `--mode
+SampleDashboard`. The WPF app now has a non-tracking sample dashboard mode that
+shows deterministic Chrome, Code.exe, `github.com`, `chatgpt.com`, and
+`docs.microsoft.com` data without writing focus/web/outbox rows to SQLite.
+`scripts/run-ui-snapshots.ps1 -Mode SampleDashboard` produces screenshots,
+`report.md`, `manifest.json`, and `visual-review-prompt.md`. Verification
+passed: full `.NET` tests (247), full `.NET` build with 0 warnings/errors,
+coverage generation with 91.2% line coverage, SampleDashboard snapshot
+artifacts at `artifacts/ui-snapshots/latest`, WPF UI acceptance at
+`artifacts/wpf-ui-acceptance/20260429-172417`, and the Windows smoke tool.
+
 Milestone 30 Live Event Log runtime semantics slice. RED tests first required
 the public `DashboardViewModel` Start/Poll/Stop/Sync commands to publish visible
 runtime log rows for Tracking started, FocusSession closed/started,

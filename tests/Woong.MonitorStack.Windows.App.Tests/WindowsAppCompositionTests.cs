@@ -89,6 +89,43 @@ public sealed class WindowsAppCompositionTests
         }
     }
 
+    [Fact]
+    public void AddWindowsApp_WhenSampleDashboardMode_RegistersDeterministicSampleDashboardDataSource()
+    {
+        string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new WindowsAppOptions(
+                new DashboardOptions("Asia/Seoul"),
+                deviceId: "windows-device-1",
+                localDatabaseConnectionString: $"Data Source={dbPath};Pooling=False",
+                idleThreshold: TimeSpan.FromMinutes(5),
+                acceptanceMode: WindowsAppAcceptanceMode.SampleDashboard,
+                autoStartTracking: false));
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+
+            Assert.IsType<SampleDashboardDataSource>(
+                provider.GetRequiredService<IDashboardDataSource>());
+            Assert.IsType<NoopDashboardTrackingCoordinator>(
+                provider.GetRequiredService<IDashboardTrackingCoordinator>());
+
+            IReadOnlyList<Domain.Common.FocusSession> focusSessions = provider
+                .GetRequiredService<IDashboardDataSource>()
+                .QueryFocusSessions(DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+            Assert.Contains(focusSessions, session => session.PlatformAppKey == "chrome.exe");
+            Assert.Contains(focusSessions, session => session.PlatformAppKey == "Code.exe");
+        }
+        finally
+        {
+            if (File.Exists(dbPath))
+            {
+                File.Delete(dbPath);
+            }
+        }
+    }
+
     private static void RunOnStaThread(Action action)
     {
         Exception? failure = null;

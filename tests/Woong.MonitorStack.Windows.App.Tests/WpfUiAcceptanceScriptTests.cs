@@ -214,6 +214,27 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("= 0", tool);
     }
 
+    [Fact]
+    public void UiSnapshotsTool_SupportsSampleDashboardModeAcceptance()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        Assert.True(File.Exists(scriptPath), "WPF UI snapshot script must exist.");
+        string tool = File.ReadAllText(toolPath);
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("SampleDashboard", tool);
+        Assert.Contains("RunSampleDashboardAcceptance", tool);
+        Assert.Contains("SampleDashboard shows Chrome", tool);
+        Assert.Contains("SampleDashboard shows github.com", tool);
+        Assert.Contains("sample-dashboard.db", tool);
+        Assert.Contains("--mode", script);
+        Assert.Contains("SampleDashboard", script);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

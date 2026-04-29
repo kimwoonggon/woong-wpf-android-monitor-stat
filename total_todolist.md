@@ -528,7 +528,7 @@ milestones below are finished.
 - [x] Upgrade `tools/Woong.MonitorStack.Windows.UiSnapshots` or add a new tool for semantic FlaUI checks.
 - [x] Rework dashboard vertical layout or add scrolling so App Sessions, Web Sessions, and Live Event Log are not cramped below the current activity and chart areas.
 - [x] Implement EmptyData mode acceptance.
-- [ ] Implement SampleDashboard mode acceptance.
+- [x] Implement SampleDashboard mode acceptance.
 - [x] Implement TrackingPipeline mode with fake foreground/browser readers and temp SQLite.
 - [x] TrackingPipeline/RealStart acceptance tolerate product auto-start when the app is already Running.
 - [x] EmptyData snapshot mode explicitly disables product auto-start so empty-state evidence remains deterministic.
@@ -653,6 +653,15 @@ milestones below are finished.
 - [x] TrackingPipeline SQLite evidence verification: `report.md` and `manifest.json` include the semantic DB checks and statuses.
 - [x] TrackingPipeline SQLite evidence verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-155615`.
 - [x] EmptyData SQLite evidence verification: `run-ui-snapshots.ps1` passed and reported zero `focus_session`, `web_session`, and `sync_outbox` rows in `artifacts/ui-snapshots/latest`.
+- [x] SampleDashboard acceptance verification: RED tests added
+  `WindowsAppAcceptanceMode.SampleDashboard`, deterministic
+  `SampleDashboardDataSource`, snapshot-tool `--mode SampleDashboard`, and
+  `scripts/run-ui-snapshots.ps1 -Mode SampleDashboard`; full `.NET` tests
+  passed (247), `.NET` build passed with 0 warnings/errors, coverage generated
+  at 91.2% line coverage, SampleDashboard snapshots passed at
+  `artifacts/ui-snapshots/latest`, WPF UI acceptance passed at
+  `artifacts/wpf-ui-acceptance/20260429-172417`, and the Windows smoke tool
+  reported real foreground metadata only.
 - [x] Update `docs/wpf-ui-acceptance-checklist.md` after UI implementation.
 - [x] Update `docs/runtime-pipeline.md` for last poll time, last DB write time, current duration, and flush behavior if changed.
 - [x] Update `docs/browser-tracking-policy.md` for the browser-domain-not-connected safe privacy UI label.

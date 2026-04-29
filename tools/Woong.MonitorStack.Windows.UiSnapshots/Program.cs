@@ -25,7 +25,7 @@ internal static class UiSnapshotRunner
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             Console.Error.WriteLine($"[FAIL] {exception.Message}");
-            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--db <path>] [--mode EmptyData|TrackingPipeline] [--timeout-seconds <seconds>] [--viewport-widths <csv>] [--allow-server-sync]");
+            Console.Error.WriteLine("Usage: dotnet run --project tools/Woong.MonitorStack.Windows.UiSnapshots -- [--app <path>] [--output-root <path>] [--db <path>] [--mode EmptyData|SampleDashboard|TrackingPipeline] [--timeout-seconds <seconds>] [--viewport-widths <csv>] [--allow-server-sync]");
             return 2;
         }
 
@@ -66,6 +66,10 @@ internal static class UiSnapshotRunner
             if (options.Mode == UiSnapshotMode.TrackingPipeline)
             {
                 RunTrackingPipelineAcceptance(mainWindow, context);
+            }
+            else if (options.Mode == UiSnapshotMode.SampleDashboard)
+            {
+                RunSampleDashboardAcceptance(mainWindow, context);
             }
             else
             {
@@ -129,6 +133,11 @@ internal static class UiSnapshotRunner
             startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
             startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "1";
         }
+        else if (options.Mode == UiSnapshotMode.SampleDashboard)
+        {
+            startInfo.Environment["WOONG_MONITOR_ACCEPTANCE_MODE"] = "SampleDashboard";
+            startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "0";
+        }
         else
         {
             startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "0";
@@ -157,6 +166,43 @@ internal static class UiSnapshotRunner
         Thread.Sleep(500);
         CaptureWindow(mainWindow, "04-settings.png", context);
         VerifyEmptyDataDatabase(context);
+    }
+
+    private static void RunSampleDashboardAcceptance(Window mainWindow, UiSnapshotContext context)
+    {
+        CaptureWindow(mainWindow, "01-startup.png", context);
+        RequireExists(mainWindow, "RefreshButton", context);
+        InvokeRequired(mainWindow, "RefreshButton");
+        Thread.Sleep(500);
+        context.Pass("RefreshButton", "Invoked", "Invoked");
+        CaptureWindow(mainWindow, "02-dashboard-after-refresh.png", context);
+        CaptureViewportMatrix(mainWindow, context);
+
+        string dashboardText = GetAllVisibleText(mainWindow);
+        context.CheckContains("SampleDashboard shows Chrome", "chrome.exe", dashboardText);
+        context.CheckContains("SampleDashboard shows VS Code", "Code.exe", dashboardText);
+        context.CheckContains("SampleDashboard shows active focus", "3h 38m", dashboardText);
+        context.CheckContains("SampleDashboard shows web focus", "1h 32m", dashboardText);
+
+        SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "RecentWebSessionsList", "recent-web-sessions.png", context);
+        string webText = GetAllVisibleText(mainWindow);
+        context.CheckContains("SampleDashboard shows github.com", "github.com", webText);
+        context.CheckContains("SampleDashboard shows chatgpt.com", "chatgpt.com", webText);
+        context.CheckContains("SampleDashboard shows docs.microsoft.com", "docs.microsoft.com", webText);
+
+        SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", "recent-sessions.png", context);
+
+        SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "LiveEventsList", "live-events.png", context);
+
+        CaptureElementIfAvailable(mainWindow, "SummaryCardsContainer", "summary-cards.png", context);
+        CaptureElementIfAvailable(mainWindow, "ChartArea", "chart-area.png", context);
+        VerifySampleDashboardDatabase(context);
     }
 
     private static void RunTrackingPipelineAcceptance(Window mainWindow, UiSnapshotContext context)
@@ -589,6 +635,35 @@ internal static class UiSnapshotRunner
             evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
     }
 
+    private static void VerifySampleDashboardDatabase(UiSnapshotContext context)
+    {
+        string? databasePath = context.Options.DatabasePath;
+        if (string.IsNullOrWhiteSpace(databasePath))
+        {
+            context.Fail("SampleDashboard SQLite database", "Temp database path is configured", "Missing");
+            return;
+        }
+
+        DatabaseEvidence evidence = ReadDatabaseEvidence("SampleDashboard", databasePath);
+        context.DatabaseEvidence = evidence;
+
+        context.Add(
+            "SampleDashboard focus_session rows",
+            "= 0",
+            evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "SampleDashboard web_session rows",
+            "= 0",
+            evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.Add(
+            "SampleDashboard sync_outbox rows",
+            "= 0",
+            evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+    }
+
     private static DatabaseEvidence ReadDatabaseEvidence(string scenarioName, string databasePath)
         => new(
             ScenarioName: scenarioName,
@@ -965,6 +1040,10 @@ internal sealed record UiSnapshotOptions(
         {
             databasePath ??= Path.Combine(runDirectory, "tracking-pipeline.db");
         }
+        else if (mode == UiSnapshotMode.SampleDashboard)
+        {
+            databasePath ??= Path.Combine(runDirectory, "sample-dashboard.db");
+        }
         else
         {
             databasePath ??= Path.Combine(runDirectory, "empty-data.db");
@@ -1036,7 +1115,8 @@ internal sealed record UiSnapshotOptions(
 internal enum UiSnapshotMode
 {
     EmptyData = 0,
-    TrackingPipeline = 1
+    TrackingPipeline = 1,
+    SampleDashboard = 2
 }
 
 internal static class NativeMethods

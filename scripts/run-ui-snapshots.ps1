@@ -1,6 +1,8 @@
 param(
     [string]$AppPath = "",
-    [string]$OutputRoot = ""
+    [string]$OutputRoot = "",
+    [ValidateSet("EmptyData", "SampleDashboard", "TrackingPipeline")]
+    [string]$Mode = "SampleDashboard"
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,6 +27,8 @@ try {
     }
     $toolArgs += "--viewport-widths"
     $toolArgs += "1920,1366,1024"
+    $toolArgs += "--mode"
+    $toolArgs += $Mode
 
     dotnet run --project $toolProject --no-build -- @toolArgs
 

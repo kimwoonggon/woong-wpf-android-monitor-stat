@@ -16,6 +16,8 @@ do not by themselves prove the feature works.
 Examples:
 
 - Start/Stop must be clicked through FlaUI and change visible tracking state.
+- SampleDashboard mode must show deterministic app/domain/summary data without
+  starting tracking or writing focus/web/outbox rows to SQLite.
 - TrackingPipeline mode must generate fake foreground/browser activity and show
   the expected apps/domains in the dashboard.
 - Stop must flush sessions into the temp SQLite database.

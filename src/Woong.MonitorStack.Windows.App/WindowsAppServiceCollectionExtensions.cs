@@ -30,6 +30,10 @@ public static class WindowsAppServiceCollectionExtensions
         {
             services.AddTrackingPipelineAcceptanceMode();
         }
+        else if (options.AcceptanceMode == WindowsAppAcceptanceMode.SampleDashboard)
+        {
+            services.AddSampleDashboardMode();
+        }
 
         services.AddSingleton<MainWindow>();
 
@@ -119,6 +123,15 @@ public static class WindowsAppServiceCollectionExtensions
                 options.DeviceId,
                 options.DashboardOptions.TimeZoneId);
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddSampleDashboardMode(this IServiceCollection services)
+    {
+        services.AddSingleton<IDashboardClock>(new SampleDashboardClock(SampleDashboardDataSource.SampleNowUtc));
+        services.AddSingleton<IDashboardDataSource, SampleDashboardDataSource>();
+        services.AddSingleton<IDashboardTrackingCoordinator, NoopDashboardTrackingCoordinator>();
 
         return services;
     }

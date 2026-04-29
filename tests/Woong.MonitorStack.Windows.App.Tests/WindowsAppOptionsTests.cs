@@ -49,4 +49,22 @@ public sealed class WindowsAppOptionsTests
             Environment.SetEnvironmentVariable(WindowsAppOptions.AcceptanceModeEnvironmentVariable, previousMode);
         }
     }
+
+    [Fact]
+    public void CreateDefault_WhenAcceptanceModeIsSampleDashboard_EnablesSampleDashboardAcceptanceMode()
+    {
+        string? previousMode = Environment.GetEnvironmentVariable(WindowsAppOptions.AcceptanceModeEnvironmentVariable);
+        try
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.AcceptanceModeEnvironmentVariable, "SampleDashboard");
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.Equal(WindowsAppAcceptanceMode.SampleDashboard, options.AcceptanceMode);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.AcceptanceModeEnvironmentVariable, previousMode);
+        }
+    }
 }
