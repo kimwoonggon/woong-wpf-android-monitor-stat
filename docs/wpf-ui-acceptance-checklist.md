@@ -520,7 +520,9 @@ Expected evidence:
 - The same Chrome HWND/PID navigation persists `youtube.com`, `github.com`, and `chatgpt.com` as separate WebSessions without closing the Chrome FocusSession.
 - The second Chrome process/window and arbitrary app switches close/persist FocusSessions.
 - The default browser privacy path persists domains only and does not persist full URLs, page titles, or page content.
-- The local report and PNG package live under `artifacts/wpf-check/latest/`.
+- The consolidated WPF check package under `artifacts/wpf-check/latest/`
+  contains report/manifest pointers only; PNGs stay in the ignored
+  WPF acceptance/snapshot artifact folders and are referenced from the package.
 
 Latest local run passed at:
 

@@ -170,8 +170,9 @@ Forbidden:
 - WPF acceptance must use temp SQLite databases and must not touch the user's
   production/local DB.
 - The consolidated `artifacts/wpf-check/latest/` package aggregates WPF
-  acceptance, UI snapshot, Chrome native, and RealStart evidence without
-  committing PNG artifacts to git.
+  acceptance, UI snapshot, Chrome native, and RealStart evidence as report and
+  manifest pointers. PNG artifacts remain in their owning ignored artifact
+  folders and are referenced only.
 
 ## WPF Same-Window Browser Navigation Evidence 2026-04-30
 
@@ -179,22 +180,20 @@ Forbidden:
 - [x] Update TrackingPipeline acceptance to capture before/during/after PNGs for same-window Chrome navigation, second Chrome process/window, Notepad, File Explorer, Stop, Sync, and Settings.
 - [x] Verify TrackingPipeline temp SQLite evidence: focus_session rows = 5, web_session rows = 4, sync_outbox rows = 9.
 - [x] Verify default browser privacy evidence: domain rows exist for youtube.com, github.com, chatgpt.com, learn.microsoft.com; full URL/page title/page content are not stored.
-- [x] Generate consolidated package at `artifacts/wpf-check/latest/`.
+- [x] Generate consolidated pointer package at `artifacts/wpf-check/latest/`.
 
-Key PNGs:
+Key referenced PNGs remain in the WPF acceptance/snapshot artifact folders, not
+inside the consolidated check package:
 
-- `artifacts/wpf-check/latest/01-startup.png`
-- `artifacts/wpf-check/latest/02-after-start.png`
-- `artifacts/wpf-check/latest/03a-during-chrome-youtube-window.png`
-- `artifacts/wpf-check/latest/03b-during-chrome-github-same-window.png`
-- `artifacts/wpf-check/latest/03c-during-chrome-chatgpt-same-window.png`
-- `artifacts/wpf-check/latest/03d-during-chrome-second-process-docs.png`
-- `artifacts/wpf-check/latest/03e-during-notepad-switch.png`
-- `artifacts/wpf-check/latest/03f-during-explorer-switch.png`
-- `artifacts/wpf-check/latest/04-after-stop.png`
-- `artifacts/wpf-check/latest/05-after-sync.png`
-- `artifacts/wpf-check/latest/06-settings.png`
-- `artifacts/wpf-check/latest/app-sessions-window-titles-visible.png`
+- `artifacts/wpf-check/latest/report.md`
+- `artifacts/wpf-check/latest/manifest.json`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03a-during-chrome-youtube-window.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03b-during-chrome-github-same-window.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03c-during-chrome-chatgpt-same-window.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03d-during-chrome-second-process-docs.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03e-during-notepad-switch.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/03f-during-explorer-switch.png`
+- `artifacts/wpf-ui-acceptance/latest/ui-snapshots/latest/app-sessions-window-titles-visible.png`
 
 ## WPF Same-Window Browser Navigation Regression Tests 2026-04-30
 
