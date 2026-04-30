@@ -779,7 +779,7 @@ public sealed partial class DashboardViewModel : ObservableObject
                 TextOrDefault(session.ProcessName, session.PlatformAppKey),
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                FormatDuration(session.DurationMs),
+                FormatSessionDuration(session.DurationMs),
                 session.IsIdle ? "Idle" : "Active",
                 Settings.IsWindowTitleVisible
                     ? TextOrDefault(session.WindowTitle, "No window title")
@@ -802,7 +802,7 @@ public sealed partial class DashboardViewModel : ObservableObject
                 FormatUrlMode(session),
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                FormatDuration(session.DurationMs),
+                FormatSessionDuration(session.DurationMs),
                 session.BrowserFamily,
                 TextOrDefault(session.CaptureConfidence, "Unknown")))
             .ToList();
@@ -912,6 +912,35 @@ public sealed partial class DashboardViewModel : ObservableObject
         return hours > 0
             ? $"{hours}h {minutes:D2}m"
             : $"{Math.Max(1, minutes)}m";
+    }
+
+    private static string FormatSessionDuration(long durationMs)
+    {
+        if (durationMs <= 0)
+        {
+            return "0s";
+        }
+
+        long totalSeconds = Math.Max(1, (durationMs + 999) / 1_000);
+        long hours = totalSeconds / 3_600;
+        long minutes = totalSeconds % 3_600 / 60;
+        long seconds = totalSeconds % 60;
+
+        if (hours > 0)
+        {
+            return seconds > 0
+                ? $"{hours}h {minutes:D2}m {seconds:D2}s"
+                : $"{hours}h {minutes:D2}m";
+        }
+
+        if (minutes > 0)
+        {
+            return seconds > 0
+                ? $"{minutes}m {seconds:D2}s"
+                : $"{minutes}m";
+        }
+
+        return $"{seconds}s";
     }
 
     private static string FormatBrowserCaptureStatus(DashboardBrowserCaptureStatus status)

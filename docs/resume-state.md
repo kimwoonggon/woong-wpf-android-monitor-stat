@@ -4643,3 +4643,17 @@ Validation:
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 470 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing a stale running WPF process that locked Release binaries.
 - Coverage collection passed: line 89.4% (4714/5270), branch 73.4% (859/1169). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF Session Duration Display Precision Fix
+
+- Investigated the user-reported App/Web Sessions `1m` duration issue.
+- Root cause was presentation formatting: persisted duration stayed in milliseconds, but row display used the summary-card minute formatter, so `45s`, `75s`, and similar short sessions appeared as `1m`.
+- Added behavior tests for App Sessions and Web Sessions rows with second-precision durations.
+- Updated row formatting only; summary card totals remain minute-oriented.
+
+Validation:
+
+- Focused Windows Presentation tests passed: 72 passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 472 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 89.3% (4737/5300), branch 73.4% (870/1185). Report: artifacts/coverage/SummaryGithub.md.

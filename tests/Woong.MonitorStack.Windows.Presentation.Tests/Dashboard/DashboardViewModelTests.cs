@@ -554,6 +554,24 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectPeriod_PublishesRecentSessionRowsWithSecondPrecisionDurations()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [
+                Session("session-1", "Code.exe", now.AddSeconds(-75), now, isIdle: false),
+                Session("session-2", "chrome.exe", now.AddSeconds(-45), now, isIdle: false)
+            ],
+            []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Contains(viewModel.RecentSessions, row => row.AppName == "Code.exe" && row.Duration == "1m 15s");
+        Assert.Contains(viewModel.RecentSessions, row => row.AppName == "chrome.exe" && row.Duration == "45s");
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesRecentSessionRowsWithProcessPathForAppIcons()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -618,6 +636,36 @@ public sealed class DashboardViewModelTests
                 Assert.Equal("11:40", row.StartedAtLocal);
                 Assert.Equal("15m", row.Duration);
             });
+    }
+
+    [Fact]
+    public void SelectPeriod_PublishesRecentWebSessionRowsWithSecondPrecisionDurations()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "chrome.exe", now.AddMinutes(-30), now, isIdle: false)],
+            [
+                WebSession.FromUtc(
+                    "session-1",
+                    "Chrome",
+                    "https://github.com/",
+                    "GitHub",
+                    now.AddSeconds(-75),
+                    now),
+                WebSession.FromUtc(
+                    "session-2",
+                    "Chrome",
+                    "https://chatgpt.com/",
+                    "ChatGPT",
+                    now.AddSeconds(-45),
+                    now)
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "github.com" && row.Duration == "1m 15s");
+        Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "chatgpt.com" && row.Duration == "45s");
     }
 
     [Fact]
