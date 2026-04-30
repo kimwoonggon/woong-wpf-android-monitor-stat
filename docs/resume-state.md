@@ -4628,3 +4628,18 @@ Final validation for this slice:
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 464 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal initially failed because stale process Woong.MonitorStack.Windows.App (PID 16904) locked Release binaries. After stopping that local app process, the Release build passed with 0 warnings and 0 errors.
 - Coverage collection passed for this slice: line 89.1% (4548/5100), branch 71.6% (734/1024). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF Compact Top Charts, Detail Windows, And App Icons
+
+- Dashboard App Focus and Domain Focus charts now publish only top 3 points for the main card surfaces.
+- `상세보기` now goes through `IDashboardChartDetailsPresenter` and opens a dedicated WPF detail window with up to 10 horizontal bars.
+- App Sessions rows now include `ProcessPath`; WPF renders real executable icons from that path when available and falls back to a glyph when missing.
+- Added focused tests for top 3 vs top 10 chart behavior, chart detail presenter requests, detail window rendering, process icon conversion, and process path propagation.
+
+Validation:
+
+- Focused Windows Presentation tests passed: 70 passed.
+- Focused Windows App tests passed: 158 passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 470 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing a stale running WPF process that locked Release binaries.
+- Coverage collection passed: line 89.4% (4714/5270), branch 73.4% (859/1169). Report: artifacts/coverage/SummaryGithub.md.

@@ -455,6 +455,73 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectPeriod_LimitsDashboardBarChartsToTopThreeAndKeepsTopTenForDetails()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(1, 12)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index),
+                now.AddMinutes(-index).AddMinutes(index),
+                isIdle: false))
+            .ToArray();
+        WebSession[] webSessions = Enumerable.Range(1, 5)
+            .Select(index => WebSession.FromUtc(
+                $"web-{index}",
+                "Chrome",
+                $"https://domain-{index}.example/",
+                $"Domain {index}",
+                now.AddMinutes(-index),
+                now.AddMinutes(-index).AddMinutes(index)))
+            .ToArray();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, webSessions),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Equal(["app-12", "app-11", "app-10"], viewModel.AppUsagePoints.Select(point => point.Label));
+        Assert.Equal(10, viewModel.AppUsageDetailPoints.Count);
+        Assert.Equal("app-12", viewModel.AppUsageDetailPoints[0].Label);
+        Assert.Equal("app-3", viewModel.AppUsageDetailPoints[^1].Label);
+        Assert.Equal(["domain-5.example", "domain-4.example", "domain-3.example"], viewModel.DomainUsagePoints.Select(point => point.Label));
+        Assert.Equal(5, viewModel.DomainUsageDetailPoints.Count);
+    }
+
+    [Fact]
+    public void ShowAppFocusDetailsCommand_OpensChartDetailsWithTopTenAppPoints()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions = Enumerable.Range(1, 12)
+            .Select(index => Session(
+                $"session-{index}",
+                $"app-{index}",
+                now.AddMinutes(-index),
+                now.AddMinutes(-index).AddMinutes(index),
+                isIdle: false))
+            .ToArray();
+        var presenter = new RecordingChartDetailsPresenter();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            chartDetailsPresenter: presenter);
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.ShowAppFocusDetailsCommand.Execute(null);
+
+        DashboardChartDetailsRequest request = Assert.Single(presenter.Requests);
+        Assert.Equal("App focus details", request.Title);
+        Assert.Equal("Apps", request.SeriesName);
+        Assert.Equal(10, request.Points.Count);
+        Assert.Equal("app-12", request.Points[0].Label);
+        Assert.Equal("app-3", request.Points[^1].Label);
+        Assert.Equal(DetailsTab.AppSessions, viewModel.SelectedDetailsTab);
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesRecentSessionRows()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -484,6 +551,29 @@ public sealed class DashboardViewModelTests
                 Assert.Equal("10m", row.Duration);
                 Assert.False(row.IsIdle);
             });
+    }
+
+    [Fact]
+    public void SelectPeriod_PublishesRecentSessionRowsWithProcessPathForAppIcons()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [
+                Session(
+                    "session-1",
+                    "chrome.exe",
+                    now.AddMinutes(-30),
+                    now,
+                    isIdle: false,
+                    processPath: @"C:\Program Files\Google\Chrome\Application\chrome.exe")
+            ],
+            []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        DashboardSessionRow row = Assert.Single(viewModel.RecentSessions);
+        Assert.Equal(@"C:\Program Files\Google\Chrome\Application\chrome.exe", row.ProcessPath);
     }
 
     [Fact]
@@ -743,7 +833,8 @@ public sealed class DashboardViewModelTests
         string appKey,
         DateTimeOffset startedAtUtc,
         DateTimeOffset endedAtUtc,
-        bool isIdle)
+        bool isIdle,
+        string? processPath = null)
         => FocusSession.FromUtc(
             clientSessionId,
             deviceId: "windows-device-1",
@@ -752,7 +843,9 @@ public sealed class DashboardViewModelTests
             endedAtUtc,
             timezoneId: "Asia/Seoul",
             isIdle,
-            source: "foreground_window");
+            source: "foreground_window",
+            processName: appKey,
+            processPath: processPath);
 
     private sealed class FakeDashboardDataSource(
         IReadOnlyList<FocusSession> focusSessions,
@@ -866,5 +959,13 @@ public sealed class DashboardViewModelTests
 
         public DashboardSyncResult SyncNow(bool syncEnabled)
             => new("Sync skipped. Enable sync to upload.");
+    }
+
+    private sealed class RecordingChartDetailsPresenter : IDashboardChartDetailsPresenter
+    {
+        public List<DashboardChartDetailsRequest> Requests { get; } = [];
+
+        public void ShowChartDetails(DashboardChartDetailsRequest request)
+            => Requests.Add(request);
     }
 }

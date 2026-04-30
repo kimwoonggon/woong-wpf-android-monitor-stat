@@ -54,6 +54,7 @@ public static class WindowsAppServiceCollectionExtensions
 
         services.AddSingleton<IDashboardClock, SystemDashboardClock>();
         services.AddSingleton<IDashboardTrackingCoordinator, NoopDashboardTrackingCoordinator>();
+        services.AddSingleton<IDashboardChartDetailsPresenter, DashboardChartDetailsWindowPresenter>();
         services.AddTransient<DashboardViewModel>();
 
         return services;

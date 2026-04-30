@@ -452,10 +452,12 @@ Required charts:
 
 - Hourly Active Focus: hour labels such as `09`, `10`, `11`; Y labels in
   minutes such as `0m`, `30m`, `60m`.
-- Top Apps by Focus Time: horizontal bar chart with readable app/process
-  labels on the left side and duration on the horizontal axis.
-- Top Domains by Web Focus Time: horizontal bar chart with readable site/domain
-  labels on the left side and duration on the horizontal axis.
+- Top Apps by Focus Time: compact horizontal bar chart with the top 3
+  app/process labels on the left side and duration on the horizontal axis.
+  The `상세보기` action opens a dedicated details window with up to 10 rows.
+- Top Domains by Web Focus Time: compact horizontal bar chart with the top 3
+  site/domain labels on the left side and duration on the horizontal axis. The
+  `상세보기` action opens a dedicated details window with up to 10 rows.
 
 Rules:
 
@@ -677,6 +679,9 @@ Current implementation:
 - `Today`, `1h`, `6h`, and `24h` use fixed range rules. `Custom` uses the
   inline local date/time editor and converts that range to UTC before querying
   SQLite.
+- App Sessions should use the stored executable path to render real Windows
+  process icons when available. If the path is missing or the file no longer
+  exists, use a readable fallback glyph instead of blocking the grid.
 
 ## Acceptance Script
 

@@ -9,4 +9,5 @@ public sealed record DashboardSessionRow(
     string State,
     string WindowTitle,
     string Source,
-    bool IsIdle);
+    bool IsIdle,
+    string? ProcessPath = null);

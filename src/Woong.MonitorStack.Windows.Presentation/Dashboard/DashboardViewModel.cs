@@ -14,6 +14,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardDatabaseController _databaseController;
     private readonly IDashboardRuntimeLogSink _runtimeLogSink;
     private readonly IDashboardApplicationLifetime _applicationLifetime;
+    private readonly IDashboardChartDetailsPresenter _chartDetailsPresenter;
     private readonly TimeZoneInfo _timeZone;
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
@@ -121,7 +122,13 @@ public sealed partial class DashboardViewModel : ObservableObject
     private IReadOnlyList<DashboardChartPoint> _appUsagePoints = [];
 
     [ObservableProperty]
+    private IReadOnlyList<DashboardChartPoint> _appUsageDetailPoints = [];
+
+    [ObservableProperty]
     private IReadOnlyList<DashboardChartPoint> _domainUsagePoints = [];
+
+    [ObservableProperty]
+    private IReadOnlyList<DashboardChartPoint> _domainUsageDetailPoints = [];
 
     [ObservableProperty]
     private DashboardLiveChartsData _hourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", []);
@@ -175,7 +182,8 @@ public sealed partial class DashboardViewModel : ObservableObject
         IDashboardTrackingCoordinator? trackingCoordinator = null,
         IDashboardDatabaseController? databaseController = null,
         IDashboardRuntimeLogSink? runtimeLogSink = null,
-        IDashboardApplicationLifetime? applicationLifetime = null)
+        IDashboardApplicationLifetime? applicationLifetime = null,
+        IDashboardChartDetailsPresenter? chartDetailsPresenter = null)
     {
         _dataSource = dataSource;
         _clock = clock;
@@ -183,6 +191,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         _databaseController = databaseController ?? new NullDashboardDatabaseController();
         _runtimeLogSink = runtimeLogSink ?? new NullDashboardRuntimeLogSink();
         _applicationLifetime = applicationLifetime ?? new NullDashboardApplicationLifetime();
+        _chartDetailsPresenter = chartDetailsPresenter ?? new NullDashboardChartDetailsPresenter();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
         InitializeCustomRangeDefaults();
@@ -271,11 +280,23 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand]
     private void ShowAppFocusDetails()
-        => ShowDetailsTab(DetailsTab.AppSessions);
+    {
+        ShowDetailsTab(DetailsTab.AppSessions);
+        _chartDetailsPresenter.ShowChartDetails(new DashboardChartDetailsRequest(
+            "App focus details",
+            "Apps",
+            AppUsageDetailPoints));
+    }
 
     [RelayCommand]
     private void ShowDomainFocusDetails()
-        => ShowDetailsTab(DetailsTab.WebSessions);
+    {
+        ShowDetailsTab(DetailsTab.WebSessions);
+        _chartDetailsPresenter.ShowChartDetails(new DashboardChartDetailsRequest(
+            "Domain focus details",
+            "Domains",
+            DomainUsageDetailPoints));
+    }
 
     [RelayCommand]
     private void RefreshDashboard()
@@ -528,8 +549,12 @@ public sealed partial class DashboardViewModel : ObservableObject
             new("Web Focus", FormatDuration(summary.TotalWebMs), $"{periodDescriptor} browser domain time")
         ];
         HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
-        AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
-        DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
+        IReadOnlyList<DashboardChartPoint> allAppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
+        IReadOnlyList<DashboardChartPoint> allDomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
+        AppUsageDetailPoints = allAppUsagePoints.Take(10).ToList();
+        DomainUsageDetailPoints = allDomainUsagePoints.Take(10).ToList();
+        AppUsagePoints = allAppUsagePoints.Take(3).ToList();
+        DomainUsagePoints = allDomainUsagePoints.Take(3).ToList();
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
         AppUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", AppUsagePoints);
         DomainUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Domains", DomainUsagePoints);
@@ -760,7 +785,8 @@ public sealed partial class DashboardViewModel : ObservableObject
                     ? TextOrDefault(session.WindowTitle, "No window title")
                     : "Hidden by privacy setting",
                 session.Source,
-                session.IsIdle))
+                session.IsIdle,
+                session.ProcessPath))
             .ToList();
     }
 
