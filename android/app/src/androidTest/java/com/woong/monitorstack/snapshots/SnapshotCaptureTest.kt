@@ -43,6 +43,10 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "09-main-shell.png")
         )
+        captureActivity<MainActivity>(
+            device = device,
+            output = File(outputDir, "13-permission-onboarding.png")
+        )
         captureMainShellSessions(
             device = device,
             output = File(outputDir, "10-main-shell-sessions.png")

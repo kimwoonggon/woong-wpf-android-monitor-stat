@@ -64,7 +64,8 @@ public sealed class AndroidUiSnapshotScriptTests
             "09-main-shell.png",
             "10-main-shell-sessions.png",
             "11-main-shell-settings.png",
-            "12-main-shell-report.png"
+            "12-main-shell-report.png",
+            "13-permission-onboarding.png"
         ];
 
         foreach (string screen in expectedFeatureScreens)
@@ -76,6 +77,7 @@ public sealed class AndroidUiSnapshotScriptTests
         Assert.Contains("dashboard overview", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("settings location permission", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("main shell", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("permission onboarding", script, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -239,7 +241,8 @@ exit /b 0
                 "09-main-shell.png",
                 "10-main-shell-sessions.png",
                 "11-main-shell-settings.png",
-                "12-main-shell-report.png"
+                "12-main-shell-report.png",
+                "13-permission-onboarding.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -260,6 +263,7 @@ exit /b 0
             Assert.Contains("10-main-shell-sessions.png", manifestText);
             Assert.Contains("11-main-shell-settings.png", manifestText);
             Assert.Contains("12-main-shell-report.png", manifestText);
+            Assert.Contains("13-permission-onboarding.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
@@ -274,6 +278,7 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/10-main-shell-sessions.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/11-main-shell-settings.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/12-main-shell-report.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/13-permission-onboarding.png", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }

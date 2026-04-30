@@ -111,3 +111,11 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measuremen
 Physical-device resource measurement remains open until a real Android device
 is connected. Emulator PASS evidence must not be used to close that physical
 device TODO.
+
+## Usage Access Onboarding Gate 2026-04-30
+
+- [x] MainActivity shows permission onboarding when Usage Access is missing.
+- [x] MainActivity shows Dashboard when Usage Access is granted.
+- [x] Permission onboarding button opens Android Usage Access Settings.
+- [x] Android UI snapshot package now includes `13-permission-onboarding.png`.
+- [x] Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-171242`.

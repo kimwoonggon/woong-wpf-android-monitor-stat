@@ -206,6 +206,25 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
     }
 
     [Fact]
+    public void AcceptanceScript_ReportsSandboxChromeAndTempProfileCleanupFailuresInArtifacts()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$cleanupFailures = New-Object System.Collections.Generic.List[string]", script, StringComparison.Ordinal);
+        Assert.Contains("Add-CleanupFailure", script, StringComparison.Ordinal);
+        Assert.Contains("Sandbox Chrome process cleanup failed", script, StringComparison.Ordinal);
+        Assert.Contains("Temp profile cleanup failed", script, StringComparison.Ordinal);
+        Assert.Contains("Temp work root cleanup failed", script, StringComparison.Ordinal);
+        Assert.Contains("cleanupFailures = @($cleanupFailures)", script, StringComparison.Ordinal);
+        Assert.Contains("Cleanup failures", script, StringComparison.Ordinal);
+        Assert.Contains("Status = $(if ($cleanupFailures.Count -eq 0) { \"Pass\" } else { \"Warn\" })", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("Stop-SandboxChromeProcesses $tempProfile\r\n    } catch {}", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("Remove-Item -Recurse -Force $tempProfile\r\n    } catch {}", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AcceptanceScript_EnumeratesSqliteJsonRowsForWaitCondition()
     {
         string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");

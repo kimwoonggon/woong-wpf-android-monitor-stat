@@ -38,6 +38,7 @@ $featureScreens = @(
     "sessions list",
     "main shell settings",
     "main shell report",
+    "permission onboarding",
     "daily summary"
 )
 $expectedLocationChecks = @(
@@ -127,6 +128,11 @@ $screenTargets = @(
     [ordered]@{
         Name = "main shell report"
         FileName = "12-main-shell-report.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "permission onboarding"
+        FileName = "13-permission-onboarding.png"
         Capture = "SnapshotCaptureTest"
     }
 )
@@ -231,6 +237,7 @@ function Write-AndroidSnapshotArtifacts {
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
         "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Main shell screenshots include Dashboard, Sessions, Report, and Settings tab states.",
+        "Permission onboarding screenshot 13 shows the Usage Access guidance shown when permission is missing.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",
         "Check the Dashboard location card shows seeded opt-in location context when screenshots exist.",
         "Check the Settings location section shows location off by default, precise latitude/longitude explicit opt-in, and the permission action.",

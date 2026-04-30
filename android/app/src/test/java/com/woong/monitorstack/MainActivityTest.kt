@@ -3,18 +3,22 @@ package com.woong.monitorstack
 import android.content.Context
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.dashboard.DashboardFragment
 import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
+import com.woong.monitorstack.usage.PermissionOnboardingFragment
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -25,8 +29,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class MainActivityTest {
+    @After
+    fun tearDown() {
+        MainActivity.usageAccessGateFactory = MainActivity.defaultUsageAccessGateFactory()
+    }
+
     @Test
     fun launcherShowsMainShellWithoutRedirectingToAnotherActivity() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
             .get()
@@ -44,7 +54,63 @@ class MainActivityTest {
     }
 
     @Test
+    fun whenUsageAccessMissingShowsPermissionOnboarding() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            PermissionOnboardingFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertNotNull(activity.findViewById(R.id.openUsageAccessSettingsButton))
+    }
+
+    @Test
+    fun whenUsageAccessGrantedShowsDashboard() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            DashboardFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertEquals(
+            R.id.navDashboard,
+            activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            ).selectedItemId
+        )
+    }
+
+    @Test
+    fun permissionOnboardingOpenSettingsButtonLaunchesUsageAccessSettings() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        activity.findViewById<Button>(R.id.openUsageAccessSettingsButton).performClick()
+
+        assertEquals(
+            android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS,
+            shadowOf(activity).nextStartedActivity.action
+        )
+    }
+
+    @Test
     fun settingsTabShowsRuntimePrivacySyncAndLocationControls() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences(
             SharedPreferencesAndroidLocationSettings.PreferenceName,
@@ -81,6 +147,7 @@ class MainActivityTest {
 
     @Test
     fun reportTabLoadsRoomBackedSevenDaySummary() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         val database = MonitorDatabase.getInstance(context)
         val today = LocalDate.now().toString()
@@ -128,5 +195,11 @@ class MainActivityTest {
     private fun waitForMainThreadWork() {
         Thread.sleep(250)
         shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private class FakeUsageAccessGate(
+        private val hasAccess: Boolean
+    ) : MainActivity.UsageAccessGate {
+        override fun hasUsageAccess(packageName: String): Boolean = hasAccess
     }
 }

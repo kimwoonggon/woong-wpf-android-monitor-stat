@@ -52,6 +52,7 @@ $nativeHostCleanupAlreadyRan = $false
 $status = "PASS"
 $blockedReason = ""
 $notes = New-Object System.Collections.Generic.List[string]
+$cleanupFailures = New-Object System.Collections.Generic.List[string]
 $rawEvents = @()
 $webSessions = @()
 $outboxRows = @()
@@ -204,6 +205,7 @@ function Update-CleanupStatusArtifacts {
         if (-not $replaced) {
             $updatedReport += "- Cleanup status: $CleanupStatus"
         }
+        $updatedReport += "- Cleanup failures: $((@($cleanupFailures) | ForEach-Object { $_ }) -join '; ')"
 
         Set-Content -Path $reportPath -Value $updatedReport -Encoding UTF8
     }
@@ -212,6 +214,18 @@ function Update-CleanupStatusArtifacts {
     if (Test-Path $manifestPath) {
         $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
         $manifest.cleanupStatus = $CleanupStatus
+        $manifest | Add-Member -NotePropertyName cleanupFailures -NotePropertyValue @($cleanupFailures) -Force
+        $manifest | Add-Member -NotePropertyName nativeMessagingSafetyEvidence -NotePropertyValue @(
+            New-NativeMessagingSafetyEvidence $CleanupStatus | ForEach-Object {
+                $item = $_
+                [ordered]@{
+                    claim = $item.Claim
+                    expected = $item.Expected
+                    actual = $item.Actual
+                    status = $item.Status
+                }
+            }
+        ) -Force
         $manifest | ConvertTo-Json -Depth 8 | Set-Content -Path $manifestPath -Encoding UTF8
     }
 
@@ -221,6 +235,17 @@ function Update-CleanupStatusArtifacts {
     if (Test-Path $runRoot) {
         Copy-Item -Recurse -Path $runRoot -Destination $latestRoot
     }
+}
+
+function Add-CleanupFailure {
+    param(
+        [string]$Scope,
+        [System.Exception]$Exception
+    )
+
+    $message = "${Scope}: $($Exception.Message)"
+    $cleanupFailures.Add($message)
+    Write-Warning $message
 }
 
 function New-NativeMessagingSafetyEvidence {
@@ -240,6 +265,11 @@ function New-NativeMessagingSafetyEvidence {
         "Cleanup status will be updated in finally."
     } else {
         $CleanupStatus
+    }
+    $cleanupFailureActual = if ($cleanupFailures.Count -eq 0) {
+        "None"
+    } else {
+        (@($cleanupFailures) | ForEach-Object { $_ }) -join "; "
     }
 
     @(
@@ -272,6 +302,12 @@ function New-NativeMessagingSafetyEvidence {
             Expected = "Previous scoped HKCU default value is restored, otherwise only the scoped test key is removed."
             Actual = $cleanupActual
             Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "Cleanup failures"
+            Expected = "Sandbox Chrome process, temp profile, and temp work root cleanup failures are reported in artifacts."
+            Actual = $cleanupFailureActual
+            Status = $(if ($cleanupFailures.Count -eq 0) { "Pass" } else { "Warn" })
         }
     )
 }
@@ -425,6 +461,7 @@ function Write-AcceptanceArtifacts {
         outboxRows = @($OutboxRows)
         blockedReason = $BlockedReason
         cleanupStatus = $CleanupStatus
+        cleanupFailures = @($cleanupFailures)
         nativeMessagingSafetyEvidence = @($safetyEvidence | ForEach-Object {
             $item = $_
             [ordered]@{
@@ -647,7 +684,9 @@ catch {
 finally {
     try {
         Stop-SandboxChromeProcesses $tempProfile
-    } catch {}
+    } catch {
+        Add-CleanupFailure "Sandbox Chrome process cleanup failed" $_.Exception
+    }
 
     try {
         if ($httpServerProcess -and -not $httpServerProcess.HasExited) {
@@ -679,13 +718,21 @@ finally {
         if (Test-Path $tempProfile) {
             Remove-Item -Recurse -Force $tempProfile
         }
-    } catch {}
+    } catch {
+        Add-CleanupFailure "Temp profile cleanup failed" $_.Exception
+    }
 
     try {
         if (Test-Path $tempWorkRoot) {
             Remove-Item -Recurse -Force $tempWorkRoot
         }
-    } catch {}
+    } catch {
+        Add-CleanupFailure "Temp work root cleanup failed" $_.Exception
+    }
+
+    if ($cleanupFailures.Count -gt 0 -and $cleanupStatus -notlike "*Cleanup failures:*") {
+        $cleanupStatus = "$cleanupStatus Cleanup failures: $((@($cleanupFailures) | ForEach-Object { $_ }) -join '; ')"
+    }
 
     Remove-Item Env:WOONG_MONITOR_LOCAL_DB -ErrorAction SilentlyContinue
     Remove-Item Env:WOONG_MONITOR_DEVICE_ID -ErrorAction SilentlyContinue

@@ -205,3 +205,11 @@ Key PNGs:
 - [x] Verify domain-only privacy: URL path/query data is not stored in SQLite or outbox payloads.
 - [x] Verify full solution tests, build, coverage, and WPF UI acceptance.
 - [x] Latest WPF acceptance artifact: `artifacts/wpf-ui-acceptance/20260430-165524`.
+
+## Chrome Native Messaging Cleanup Failure Evidence 2026-04-30
+
+- [x] Chrome native acceptance reports sandbox Chrome process cleanup failures.
+- [x] Chrome native acceptance reports temp profile cleanup failures.
+- [x] Chrome native acceptance reports temp work root cleanup failures.
+- [x] `manifest.json` includes `cleanupFailures` and refreshed `nativeMessagingSafetyEvidence` after cleanup.
+- [x] Latest cleanup-only dry-run: `artifacts/chrome-native-acceptance/20260430-170711`.

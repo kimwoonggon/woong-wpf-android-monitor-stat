@@ -20,6 +20,17 @@ public sealed class RawEventUploadService
         Guid deviceId = Guid.Parse(request.DeviceId);
         var results = new List<UploadItemResult>();
 
+        bool deviceExists = await _dbContext.Devices.AnyAsync(device => device.Id == deviceId);
+        if (!deviceExists)
+        {
+            return new UploadBatchResult(request.Events
+                .Select(item => new UploadItemResult(
+                    item.ClientEventId,
+                    UploadItemStatus.Error,
+                    ErrorMessage: $"Device '{request.DeviceId}' is not registered."))
+                .ToList());
+        }
+
         foreach (RawEventUploadItem item in request.Events)
         {
             bool exists = await _dbContext.RawEvents.AnyAsync(rawEvent =>

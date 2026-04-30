@@ -1610,3 +1610,36 @@ milestones below are finished.
 - [x] Run full solution tests and solution build.
 - [x] Run coverage generation and WPF UI acceptance.
 - [x] Update WPF resume/checklist docs for the regression slice.
+
+## Milestone 57: Chrome Native Messaging Cleanup Failure Evidence
+
+- [x] Add RED test requiring sandbox Chrome process cleanup, temp profile cleanup, and temp work root cleanup failures to appear in Chrome native acceptance artifacts.
+- [x] Add `cleanupFailures` report/manifest evidence and a grouped `Cleanup failures` safety row.
+- [x] Replace silent cleanup catches for sandbox Chrome/temp profile/temp root with explicit warnings and artifact evidence.
+- [x] Run focused Chrome native messaging script tests.
+- [x] Run Chrome native cleanup-only dry-run and confirm artifacts.
+
+## Milestone 58: Server Raw Event Unknown Device Guard
+
+- [x] Add relational API test proving unknown-device raw-event upload returns controlled per-item Error.
+- [x] Prevent orphan raw-event persistence before relational FK failures.
+- [x] Update accepted/duplicate raw-event test to seed a registered device.
+- [x] Run focused server raw-event API tests.
+
+## Milestone 59: Android Usage Access Onboarding Gate
+
+- [x] Add MainActivity Usage Access gate with Dashboard when granted and permission onboarding when missing.
+- [x] Add permission onboarding settings button intent handling.
+- [x] Add Robolectric tests for missing/granted Usage Access and settings intent.
+- [x] Add explicit permission onboarding screenshot target `13-permission-onboarding.png`.
+- [x] Run Android unit/build/androidTest verification.
+- [x] Run Android emulator screenshot automation and capture `artifacts/android-ui-snapshots/20260430-171242`.
+
+## Milestone 60: Cross-Slice Verification 2026-04-30 17:15
+
+- [x] Full `.NET` solution tests passed: 411 tests.
+- [x] Full `.NET` solution build passed.
+- [x] Coverage generated: line 91.9% (3783/4113), branch 70.8% (538/759).
+- [x] WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260430-170819`.
+- [x] Chrome native cleanup-only dry-run passed at `artifacts/chrome-native-acceptance/20260430-170711`.
+- [x] Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-171242`.

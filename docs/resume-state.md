@@ -4199,3 +4199,46 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3774/4104), branch 70.8% (536/757).
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-165524`. The known non-fatal cleanup warning appeared because the process was already closed.
+
+## 2026-04-30 Chrome Native Messaging Cleanup Failure Evidence Slice
+
+- Added Chrome native messaging acceptance script coverage requiring sandbox Chrome process cleanup, temp profile cleanup, and temp work root cleanup failures to be recorded in report/manifest artifacts.
+- Added `$cleanupFailures` and grouped `Cleanup failures` safety evidence to `scripts/run-chrome-native-message-acceptance.ps1`.
+- Replaced silent cleanup catches for sandbox Chrome process, temp profile, and temp work root cleanup with explicit warning/evidence rows.
+- Verified cleanup-only dry-run keeps HKCU scoped to `com.woong.monitorstack.chrome_test` and writes `cleanupFailures` plus `nativeMessagingSafetyEvidence` under `artifacts/chrome-native-acceptance/latest/`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore --filter "FullyQualifiedName~ChromeNativeMessagingAcceptanceScriptTests" -maxcpucount:1 -v minimal` passed 14 tests.
+- PowerShell parse check passed for `scripts\run-chrome-native-message-acceptance.ps1`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -CleanupOnly -DryRun` passed and generated `artifacts/chrome-native-acceptance/20260430-170711`.
+
+## 2026-04-30 Server Raw Event Unknown Device Guard Slice
+
+- Added relational API coverage proving `/api/raw-events/upload` returns per-item `Error` for an unknown device and persists zero rows.
+- Updated `RawEventUploadService` to pre-check device registration before raw-event persistence, matching the safer focus/web/location upload behavior.
+- Updated the existing accepted/duplicate raw-event test to seed a registered device explicitly.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~RawEventUploadApiTests" -maxcpucount:1 -v minimal` passed 2 tests.
+
+## 2026-04-30 Android Usage Access Onboarding Gate Slice
+
+- Added MainActivity launcher gating: Dashboard selection now shows `PermissionOnboardingFragment` when Usage Access is missing and `DashboardFragment` when granted.
+- Added permission onboarding button behavior that launches `Settings.ACTION_USAGE_ACCESS_SETTINGS`.
+- Added Robolectric tests for missing/granted Usage Access and the settings button intent.
+- Added explicit Android UI snapshot evidence for permission onboarding as `13-permission-onboarding.png`.
+
+Verified:
+
+- `android\gradlew.bat -p android testDebugUnitTest --tests "com.woong.monitorstack.MainActivityTest" --no-daemon --rerun-tasks` passed after Kotlin daemon fallback recovered.
+- `android\gradlew.bat -p android testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-171242` and screenshot `13-permission-onboarding.png`.
+
+## 2026-04-30 Cross-Slice Verification
+
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 411 total `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3783/4113), branch 70.8% (538/759).
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-170819`. The known non-fatal already-closed process cleanup warning remains.
