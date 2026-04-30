@@ -1729,3 +1729,17 @@ milestones below are finished.
 - [x] Full `.NET` solution tests passed: 418 tests.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.7% (3830/4173), branch 70.9% (544/767).
+
+## Milestone 68: Server Web Upload Mixed-Batch Idempotency
+
+- [x] Add RED relational test for web upload batch containing an existing duplicate, one new session, an intra-batch duplicate, and a missing focus parent.
+- [x] Fix `WebSessionUploadService` to track existing and newly accepted `clientSessionId` values within the request batch.
+- [x] Verify per-item statuses are Duplicate, Accepted, Duplicate, Error and only existing + one new row persist.
+- [x] Run focused mixed-batch test and web-session upload tests.
+- [x] Update `server_check_todo.md` web upload coverage.
+
+### Milestone 68 Verification Update
+
+- [x] Full `.NET` solution tests passed: 419 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3838/4181), branch 70.9% (544/767).

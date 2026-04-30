@@ -56,8 +56,10 @@ Status legend:
 - [x] Relational schema links `web_sessions(DeviceId, FocusSessionId)` to
   `focus_sessions(DeviceId, ClientSessionId)`.
   Evidence: `ServerDbContextModelTests.WebSessionEntity_HasCompositeForeignKeyToFocusSessionClientSession`.
-- [ ] Add mixed-batch web upload coverage: duplicate, accepted, and missing
-  focus parent in one request.
+- [x] Mixed-batch web upload returns independent statuses for existing
+  duplicate, accepted new item, intra-batch duplicate, and missing focus parent
+  while persisting only accepted rows.
+  Evidence: `WebSessionUploadApiRelationalTests.UploadWebSessions_WhenBatchContainsDuplicateAcceptedIntraBatchDuplicateAndMissingFocusParent_ReturnsIndependentStatuses`.
 
 ## Raw Event Upload
 

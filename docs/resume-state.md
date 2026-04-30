@@ -4343,3 +4343,17 @@ Milestone 67 final verification update:
 - Full `.NET` solution tests passed 418 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3830/4173), branch 70.9% (544/767).
+
+## 2026-04-30 Server Web Upload Mixed-Batch Idempotency Slice
+
+- Added relational coverage for a web upload batch containing an existing duplicate, a new accepted web session, an intra-batch duplicate of that new session, and a web session whose focus parent is missing.
+- Fixed `WebSessionUploadService` to seed a request-local idempotency set with existing DB web-session ids and add newly accepted ids as it processes the batch.
+- This prevents relational unique-index failures and returns item-level `Duplicate`, `Accepted`, `Duplicate`, and `Error` statuses while persisting only one new row.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~UploadWebSessions_WhenBatchContainsDuplicateAcceptedIntraBatchDuplicateAndMissingFocusParent_ReturnsIndependentStatuses"` passed.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~WebSessionUpload"` passed 5 tests.
+- Full `.NET` solution tests passed 419 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3838/4181), branch 70.9% (544/767).
