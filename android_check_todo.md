@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260430-174439/
+artifacts/android-ui-snapshots/20260430-184358/
 ```
 
 Latest location opt-in emulator evidence:
@@ -49,7 +49,7 @@ artifacts/android-check/20260430-183032/
 Latest Android resource measurement evidence:
 
 ```text
-artifacts/android-resource-measurements/20260430-174552/
+artifacts/android-resource-measurements/20260430-184442/
 ```
 
 Each checked feature should have:
@@ -190,3 +190,13 @@ device TODO.
 - [x] Dashboard renders seeded active, idle, sync, and location context values from Room.
 - [x] Sessions tab renders seeded active and idle session rows from Room.
 - [x] Before/action/after emulator evidence: `artifacts/android-check/20260430-183032`.
+
+## Emulator Screenshot And Resource Evidence Refresh 2026-04-30
+
+- [x] Re-ran Android UI screenshot automation on `emulator-5554` using the already-installed debug/debugAndroidTest APKs.
+- [x] Captured dashboard, settings, sessions, daily summary, launcher shell tabs, permission onboarding, and location UI screenshots.
+- [x] Re-ran package-scoped resource measurement on `emulator-5554` with a 3 second sample window.
+- [x] Captured app-only `pidof`, `dumpsys meminfo`, and `dumpsys gfxinfo` diagnostics.
+- [x] Fresh UI evidence: `artifacts/android-ui-snapshots/20260430-184358`.
+- [x] Fresh resource evidence: `artifacts/android-resource-measurements/20260430-184442`.
+- [x] Physical-device resource measurement remains open; emulator evidence does not close that TODO.

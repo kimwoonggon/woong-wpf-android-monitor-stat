@@ -106,6 +106,8 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
+- Latest emulator refresh with already-installed debug/debugAndroidTest APKs:
+  `artifacts/android-ui-snapshots/20260430-184358`.
 - Artifact: `artifacts/android-ui-snapshots/20260430-133732`.
 - Latest SettingsFragment runtime-wiring evidence:
   `artifacts/android-ui-snapshots/20260430-140141`.

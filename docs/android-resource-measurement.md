@@ -64,9 +64,9 @@ artifacts/android-resource-measurements/latest/
 ## Latest Emulator Evidence
 
 - Command:
-  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1`
+  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -SkipBuild -DurationSeconds 3`
 - Result: PASS on `emulator-5554` / `Medium_Phone` emulator.
-- Artifact: `artifacts/android-resource-measurements/20260430-153804`.
+- Artifact: `artifacts/android-resource-measurements/20260430-184442`.
 - Captured package-scoped process, memory, and graphics frame diagnostics.
 
 ## Remaining Gap
