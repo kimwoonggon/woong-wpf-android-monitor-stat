@@ -19,6 +19,7 @@ class DashboardChartMapperTest {
         assertEquals(30f, mapped.activityEntries.single().y)
         assertEquals(0f, mapped.appEntries.single().x)
         assertEquals(45f, mapped.appEntries.single().y)
+        assertEquals("Chrome", mapped.appLabels.single())
         assertEquals("example.com", mapped.domainEntries.single().label)
         assertEquals(15f, mapped.domainEntries.single().value)
     }

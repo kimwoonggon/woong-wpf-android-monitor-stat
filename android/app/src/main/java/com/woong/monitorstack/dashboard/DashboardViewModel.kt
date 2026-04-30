@@ -11,7 +11,7 @@ class DashboardViewModel(
         state = DashboardUiState(
             selectedPeriod = period,
             totalActiveMs = snapshot.totalActiveMs,
-            topAppPackageName = snapshot.topAppPackageName,
+            topAppName = snapshot.topAppName,
             idleMs = snapshot.idleMs,
             recentSessions = snapshot.recentSessions,
             chartData = snapshot.chartData,

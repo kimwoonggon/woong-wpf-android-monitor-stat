@@ -9,8 +9,6 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.LineData
@@ -30,6 +28,7 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var viewModel: DashboardViewModel
     private val sessionAdapter = SessionsAdapter()
     private val chartMapper = DashboardChartMapper()
+    private val chartConfigurator = DashboardChartConfigurator()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +45,8 @@ class DashboardActivity : AppCompatActivity() {
 
         binding.recentSessionsList.layoutManager = LinearLayoutManager(this)
         binding.recentSessionsList.adapter = sessionAdapter
-        configureChart(binding.activityLineChart)
-        configureChart(binding.appUsageBarChart)
+        chartConfigurator.configureHourlyChart(binding.activityLineChart)
+        chartConfigurator.configureAppUsageChart(binding.appUsageBarChart)
 
         val usageAccessSettings = UsageAccessSettingsIntentFactory()
         binding.usageAccessSettingsButton.setOnClickListener {
@@ -60,16 +59,6 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         loadPeriod(binding, DashboardPeriod.Today)
-    }
-
-    private fun configureChart(chart: LineChart) {
-        chart.description.isEnabled = false
-        chart.setNoDataText(getString(com.woong.monitorstack.R.string.empty_sessions))
-    }
-
-    private fun configureChart(chart: BarChart) {
-        chart.description.isEnabled = false
-        chart.setNoDataText(getString(com.woong.monitorstack.R.string.empty_sessions))
     }
 
     private fun loadPeriod(binding: ActivityDashboardBinding, period: DashboardPeriod) {
@@ -90,7 +79,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun render(binding: ActivityDashboardBinding, state: DashboardUiState) {
         binding.totalActiveText.text = formatDuration(state.totalActiveMs)
-        binding.topAppText.text = state.topAppPackageName ?: getString(com.woong.monitorstack.R.string.no_top_app)
+        binding.topAppText.text = state.topAppName ?: getString(com.woong.monitorstack.R.string.no_top_app)
         binding.idleText.text = formatDuration(state.idleMs)
         binding.locationStatusText.text = state.locationContext.statusText
         binding.locationLatitudeText.text = getString(
@@ -120,6 +109,8 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun renderCharts(binding: ActivityDashboardBinding, chartData: DashboardChartData) {
         val chartEntries = chartMapper.map(chartData)
+        chartConfigurator.configureAppUsageChart(binding.appUsageBarChart, chartEntries.appLabels)
+
         if (chartEntries.activityEntries.isEmpty()) {
             binding.activityLineChart.clear()
         } else {
@@ -182,10 +173,11 @@ class DashboardActivity : AppCompatActivity() {
         private val binding: ItemFocusSessionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(row: DashboardSessionRow) {
-            binding.sessionAppIconPlaceholder.text = row.packageName.firstOrNull()
+            binding.sessionAppIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
                 ?: "A"
+            binding.sessionAppNameText.text = row.appName
             binding.sessionPackageText.text = row.packageName
             binding.sessionTimeRangeText.text = row.startedAtLocalText
             binding.sessionDurationText.text = row.durationText

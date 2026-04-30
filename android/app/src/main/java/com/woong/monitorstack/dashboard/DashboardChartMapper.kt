@@ -13,6 +13,7 @@ class DashboardChartMapper {
             appEntries = data.appUsage.mapIndexed { index, slice ->
                 BarEntry(index.toFloat(), slice.durationMs.toMinutesFloat())
             },
+            appLabels = data.appUsage.map { it.label },
             domainEntries = data.domainUsage.map { slice ->
                 PieEntry(slice.durationMs.toMinutesFloat(), slice.label)
             }

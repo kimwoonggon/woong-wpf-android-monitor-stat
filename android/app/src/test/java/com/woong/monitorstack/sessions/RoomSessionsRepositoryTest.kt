@@ -54,6 +54,7 @@ class RoomSessionsRepositoryTest {
 
         val rows = repository.loadRecentSessions(limit = 10)
 
+        assertEquals(listOf("Slack", "Chrome"), rows.map { it.appName })
         assertEquals(listOf("com.slack", "com.android.chrome"), rows.map { it.packageName })
         assertEquals("2m 5s", rows.first().durationText)
         assertEquals("09:00 - 09:02", rows.first().timeRangeText)

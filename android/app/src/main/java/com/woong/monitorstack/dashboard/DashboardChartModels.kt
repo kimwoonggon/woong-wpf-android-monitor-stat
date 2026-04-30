@@ -33,5 +33,6 @@ data class DashboardChartData(
 data class DashboardChartEntries(
     val activityEntries: List<Entry>,
     val appEntries: List<BarEntry>,
+    val appLabels: List<String>,
     val domainEntries: List<PieEntry>
 )

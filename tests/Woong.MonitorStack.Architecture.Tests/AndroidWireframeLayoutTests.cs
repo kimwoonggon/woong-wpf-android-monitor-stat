@@ -129,10 +129,21 @@ public sealed class AndroidWireframeLayoutTests
         string row = ReadAndroidLayout(repoRoot, "item_focus_session.xml");
 
         Assert.Contains("@+id/sessionAppIconPlaceholder", row);
+        Assert.Contains("@+id/sessionAppNameText", row);
         Assert.Contains("@+id/sessionPackageText", row);
         Assert.Contains("@+id/sessionTimeRangeText", row);
         Assert.Contains("@+id/sessionDurationText", row);
         Assert.Contains("@+id/sessionStateText", row);
+    }
+
+    [Fact]
+    public void AndroidFocusSessionRowLayout_UsesReadableHeightForAppPackageTimeAndState()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string row = ReadAndroidLayout(repoRoot, "item_focus_session.xml");
+
+        Assert.Contains("android:layout_height=\"wrap_content\"", row);
+        Assert.Contains("android:minHeight=\"116dp\"", row);
     }
 
     [Fact]

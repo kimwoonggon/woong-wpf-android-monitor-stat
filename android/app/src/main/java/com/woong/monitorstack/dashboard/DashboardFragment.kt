@@ -53,11 +53,11 @@ class DashboardFragment : Fragment() {
     }
 
     private fun render(state: DashboardUiState) {
-        val topPackage = state.topAppPackageName ?: getString(R.string.no_top_app)
+        val topApp = state.topAppName ?: getString(R.string.no_top_app)
         val latestSession = state.recentSessions.firstOrNull()
 
-        binding.currentAppText.text = "Current app   $topPackage"
-        binding.currentPackageText.text = "Package       $topPackage"
+        binding.currentAppText.text = "Current app   $topApp"
+        binding.currentPackageText.text = "Package       ${latestSession?.packageName ?: topApp}"
         binding.currentSessionDurationText.text = "Session duration   ${formatClockDuration(state.totalActiveMs)}"
         binding.lastCollectedText.text = "Last collected   ${latestSession?.startedAtLocalText ?: getString(R.string.no_poll_yet)}"
         binding.lastDbWriteText.text = "Last DB write   ${latestSession?.startedAtLocalText ?: getString(R.string.no_db_write_yet)}"
@@ -136,10 +136,11 @@ class DashboardFragment : Fragment() {
         private val binding: ItemFocusSessionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(row: DashboardSessionRow) {
-            binding.sessionAppIconPlaceholder.text = row.packageName.firstOrNull()
+            binding.sessionAppIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
                 ?: "A"
+            binding.sessionAppNameText.text = row.appName
             binding.sessionPackageText.text = row.packageName
             binding.sessionTimeRangeText.text = row.startedAtLocalText
             binding.sessionDurationText.text = row.durationText

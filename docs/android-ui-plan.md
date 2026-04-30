@@ -255,6 +255,17 @@ and feature screenshots for each tab.
 - Dashboard fragment ordering now keeps the period filter directly after the
   summary cards before optional location context, preserving the wireframe
   dashboard flow while still including latitude/longitude evidence.
+- Dashboard chart configuration now uses human-readable hour/minute/app labels
+  instead of decimal placeholder axes. The latest chart evidence shows `09`,
+  `10`, `11` hour labels, `0m` to `60m` minute labels, and app labels such as
+  `Chrome`, `YouTube`, and `Slack`.
+- Room-backed Dashboard and Sessions rows now separate user-facing app names
+  from package names. Rows keep package metadata such as `com.android.chrome`
+  while showing `Chrome` as the primary label.
+- Android screenshot scrolling now targets nested descendants correctly, so the
+  `03-dashboard-charts.png` artifact captures the actual chart section.
+- The shared focus-session row layout now uses enough height for app name,
+  package name, time range, active/idle state, and duration without clipping.
 
 ## Current Fragment Shell Gaps
 
@@ -264,11 +275,6 @@ enough:
 
 - The launcher toolbar/header is too large and must be normalized to the
   compact MaterialToolbar shell from the XML skeleton.
-- Dashboard fragment charts still need polished axis labels. Current
-  MPAndroidChart output can show decimal axis labels such as `9.0` and `-0.5`,
-  which should be replaced with human-readable hour/minute/app labels.
-- Sessions rows are Room-backed, but they still show package names as the
-  primary label; a user-facing app label should be preferred when available.
 - Report and Settings fragments still need to be wired to runtime repositories
   instead of remaining skeleton-only views.
 - Screenshot automation should keep adding one feature screenshot per shell tab

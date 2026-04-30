@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/focusSessionRowRoot"
     android:layout_width="match_parent"
-    android:layout_height="82dp"
+    android:layout_height="wrap_content"
+    android:minHeight="116dp"
     android:padding="8dp">
 
     <TextView
@@ -20,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/sessionPackageText"
+        android:id="@+id/sessionAppNameText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
@@ -31,13 +32,23 @@
         app:layout_constraintTop_toTopOf="@id/sessionAppIconPlaceholder" />
 
     <TextView
+        android:id="@+id/sessionPackageText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/wms_text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
+        app:layout_constraintStart_toStartOf="@id/sessionAppNameText"
+        app:layout_constraintTop_toBottomOf="@id/sessionAppNameText" />
+
+    <TextView
         android:id="@+id/sessionTimeRangeText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="@color/wms_text_secondary"
         android:textSize="12sp"
         app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
-        app:layout_constraintStart_toStartOf="@id/sessionPackageText"
+        app:layout_constraintStart_toStartOf="@id/sessionAppNameText"
         app:layout_constraintTop_toBottomOf="@id/sessionPackageText" />
 
     <TextView
@@ -48,7 +59,7 @@
         android:textSize="12sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
-        app:layout_constraintStart_toStartOf="@id/sessionPackageText"
+        app:layout_constraintStart_toStartOf="@id/sessionAppNameText"
         app:layout_constraintTop_toBottomOf="@id/sessionTimeRangeText" />
 
     <TextView
@@ -58,5 +69,5 @@
         android:textColor="@color/wms_text_primary"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/sessionPackageText" />
+        app:layout_constraintTop_toTopOf="@id/sessionAppNameText" />
 </androidx.constraintlayout.widget.ConstraintLayout>

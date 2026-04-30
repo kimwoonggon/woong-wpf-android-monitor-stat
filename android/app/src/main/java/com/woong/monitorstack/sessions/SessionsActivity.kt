@@ -71,10 +71,11 @@ class SessionsActivity : AppCompatActivity() {
         private val binding: ItemFocusSessionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(row: SessionRow) {
-            binding.sessionAppIconPlaceholder.text = row.packageName.firstOrNull()
+            binding.sessionAppIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
                 ?: "A"
+            binding.sessionAppNameText.text = row.appName
             binding.sessionPackageText.text = row.packageName
             binding.sessionTimeRangeText.text = row.timeRangeText
             binding.sessionDurationText.text = row.durationText

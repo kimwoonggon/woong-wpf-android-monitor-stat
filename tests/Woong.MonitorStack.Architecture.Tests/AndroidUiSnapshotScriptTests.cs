@@ -77,6 +77,30 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidSnapshotCapture_UsesNestedScrollViewDescendantCoordinates()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string captureTestPath = Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "androidTest",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "snapshots",
+            "SnapshotCaptureTest.kt");
+
+        string captureTest = File.ReadAllText(captureTestPath);
+
+        Assert.Contains("offsetDescendantRectToMyCoords", captureTest);
+        Assert.Contains("getDrawingRect", captureTest);
+        Assert.DoesNotContain("scrollView.scrollTo(0, target.top)", captureTest);
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_WhenNoDeviceConnected_WritesBlockedArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

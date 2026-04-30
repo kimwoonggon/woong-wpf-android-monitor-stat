@@ -3,6 +3,7 @@ package com.woong.monitorstack.snapshots
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.view.View
 import androidx.core.widget.NestedScrollView
 import androidx.test.core.app.ActivityScenario
@@ -149,7 +150,10 @@ class SnapshotCaptureTest {
         scenario.onActivity { activity ->
             val scrollView = activity.findViewById<NestedScrollView>(R.id.dashboardScroll)
             val target = activity.findViewById<View>(targetViewId)
-            scrollView.scrollTo(0, target.top)
+            val targetRect = Rect()
+            target.getDrawingRect(targetRect)
+            scrollView.offsetDescendantRectToMyCoords(target, targetRect)
+            scrollView.scrollTo(0, targetRect.top.coerceAtLeast(0))
         }
     }
 

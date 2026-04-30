@@ -1,6 +1,27 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Chart Axis And App Label Slice
+
+- Treated the user-provided Android XML wireframe skeleton as the visual target and fixed the latest mismatch where charts and session rows looked like debug/package-name output.
+- Added RED Android repository tests requiring Room-backed dashboard and sessions rows to expose user-facing app labels such as `Chrome` and `Slack` while preserving package names as secondary metadata.
+- Added RED architecture tests requiring the shared focus-session row to include a primary `sessionAppNameText` and enough row height for app name, package, time range, state, and duration.
+- Added `AppDisplayNameFormatter` and wired Dashboard/Sessions repositories plus Activity/Fragment adapters so app labels are primary and package names remain visible metadata.
+- Added `DashboardChartConfigurator` and tests so MPAndroidChart hour/minute/app axes use `09`, `10`, `60m`, `Chrome`, `YouTube`, and `Slack` instead of decimal placeholder labels.
+- Repaired Android snapshot scrolling with descendant coordinate mapping so `03-dashboard-charts.png` captures the actual chart section.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-133732`; charts show human-readable axes, Dashboard/Sessions rows show app labels first, and row state text is no longer clipped.
+
+Verified:
+
+- RED first: `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.dashboard.RoomDashboardRepositoryTest" --tests "com.woong.monitorstack.sessions.RoomSessionsRepositoryTest" --no-daemon --stacktrace` failed on missing `topAppName`/`appName`, then passed.
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFocusSessionRowLayout_SeparatesPackageTimeDurationAndState" -maxcpucount:1 -v minimal` failed on missing `sessionAppNameText`, then passed.
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFocusSessionRowLayout_UsesReadableHeightForAppPackageTimeAndState" -maxcpucount:1 -v minimal` failed on missing readable row height, then passed.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-133732`.
+- Full Android verification passed: `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
+- Full `.NET` verification passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 393 tests.
+- Full `.NET` build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` with 0 warnings and 0 errors.
+- Coverage passed: `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1`; latest report shows 91.7% line coverage and 70.7% branch coverage.
 ## 2026-04-30 WPF Acceptance Root Report RealStart Links Slice
 
 - Audited WPF acceptance evidence after Milestone 48 and found no incomplete WPF runtime TODO, but the composed root WPF acceptance report did not link the deeper RealStart report/manifest evidence.
@@ -506,7 +527,7 @@ and full Chrome for Testing acceptance at
 was absent after cleanup.
 
 Milestone 27 Android UI snapshot blocked-evidence slice. RED tests first
-required a repo-level `scripts/run-android-ui-snapshots.ps1` contract and a
+required a repo-level `scripts\run-android-ui-snapshots.ps1` contract and a
 fake-ADB execution path that writes `report.md`, `manifest.json`, and
 `visual-review-prompt.md` even when no Android device is connected. The script
 now checks `adb devices -l`, writes artifacts under
@@ -630,7 +651,7 @@ overall line coverage 92.0%.
   WPF XAML/STA window tests more deterministic.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal`, `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
-  minimal`, and `scripts/test-coverage.ps1`; current .NET line coverage is
+  minimal`, and `scripts\test-coverage.ps1`; current .NET line coverage is
   92.9% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.6%,
   Windows.App 85.3%, and Server 96.3%.
 - Verified `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2` exits
@@ -650,7 +671,7 @@ overall line coverage 92.0%.
   (171 tests passed), `dotnet build Woong.MonitorStack.sln --no-restore
   -maxcpucount:1 -v minimal` (0 warnings/errors),
   `scripts/run-wpf-real-start-acceptance.ps1 -Seconds 2`, and
-  `scripts/test-coverage.ps1`. Current .NET line coverage remains 92.9%
+  `scripts\test-coverage.ps1`. Current .NET line coverage remains 92.9%
   overall; Domain 89.3%, Windows 92.5%, Windows.Presentation 97.6%,
   Windows.App 85.3%, Server 96.3%.
 - Added `scripts/run-wpf-ui-acceptance.ps1`, which composes the RealStart
@@ -667,7 +688,7 @@ overall line coverage 92.0%.
   -v minimal`; all 172 .NET tests passed.
 - Re-verified `dotnet build Woong.MonitorStack.sln --no-restore
   -maxcpucount:1 -v minimal`; build passed with 0 warnings/errors.
-- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+- Re-verified `scripts\test-coverage.ps1`; current .NET line coverage is
   92.9% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
   Windows.App 86.6%, and Server 96.3%.
 - Added `WindowsAppAcceptanceMode.TrackingPipeline` and an
@@ -690,7 +711,7 @@ overall line coverage 92.0%.
   -v minimal`; all 175 .NET tests passed.
 - Re-verified `dotnet build Woong.MonitorStack.sln --no-restore
   -maxcpucount:1 -v minimal`; build passed with 0 warnings/errors.
-- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+- Re-verified `scripts\test-coverage.ps1`; current .NET line coverage is
   92.2% overall, Domain 89.3%, Windows 92.5%, Windows.Presentation 97.4%,
   Windows.App 85.7%, and Server 96.3%.
 - Added a Windows coordinator opt-in enforcement test proving `SyncNow(false)`
@@ -708,7 +729,7 @@ overall line coverage 92.0%.
 - Re-verified Android `testDebugUnitTest` and `assembleDebug` from `android/`.
 - Re-verified `scripts/run-wpf-ui-acceptance.ps1 -Seconds 2`; the latest WPF
   acceptance report remains PASS.
-- Re-verified `scripts/test-coverage.ps1`; current .NET line coverage is
+- Re-verified `scripts\test-coverage.ps1`; current .NET line coverage is
   92.3% overall.
 - Completed Milestone 21 with Presentation-first MVVM state and tests.
 - Added `IDashboardTrackingCoordinator`, `NoopDashboardTrackingCoordinator`,
@@ -729,7 +750,7 @@ overall line coverage 92.0%.
   Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
   test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 120
   .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 91.9%, Domain 88.6%, Windows.Presentation 98.2%,
   Windows 91.1%, Windows.App 52.0%, and Server 96.0%.
 - Verified local WPF UI snapshots with `scripts/run-ui-snapshots.ps1`;
@@ -761,7 +782,7 @@ overall line coverage 92.0%.
   Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
   test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 127
   .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.0%, Domain 88.6%, Windows.Presentation 97.6%,
   Windows 91.1%, Windows.App 83.6%, and Server 96.0%.
 - Verified WPF local snapshot smoke with `scripts/run-ui-snapshots.ps1`;
@@ -781,7 +802,7 @@ overall line coverage 92.0%.
   Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet
   test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v minimal`; all 129
   .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.1%, Domain 88.6%, Windows.Presentation 97.6%,
   Windows 91.1%, Windows.App 85.0%, and Server 96.0%.
 - Added `BrowserActivitySnapshot`, `CaptureMethod`, `CaptureConfidence`,
@@ -795,7 +816,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 140 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.6%, Windows.Presentation 97.6%,
   Windows 91.5%, Windows.App 85.0%, and Server 96.0%.
 - Added `BrowserUrlSanitizer`, which clears URL/domain capture when browser
@@ -804,7 +825,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 143 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.0%, Domain 88.6%, Windows.Presentation 97.6%,
   Windows 91.0%, Windows.App 85.0%, and Server 96.0%.
 - Updated `WebSession` and `WebSessionUploadItem` so `Url` and `PageTitle` are
@@ -819,7 +840,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 145 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.1%, Domain 88.7%, Windows.Presentation 97.6%,
   Windows 91.2%, Windows.App 85.0%, and Server 96.0%.
 - Added optional `CaptureMethod`, `CaptureConfidence`, and
@@ -831,7 +852,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 146 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.2%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.4%, Windows.App 85.0%, and Server 96.0%.
 - Updated `ChromeNativeMessageIngestionFlow` so completed web sessions can
@@ -842,7 +863,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 147 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
 - Added nullable raw browser event records so browser raw events can preserve
@@ -854,7 +875,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 149 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.6%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 92.3%, Windows.App 85.0%, and Server 96.0%.
 - Updated server EF web-session model configuration so URL and page title are
@@ -864,7 +885,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 148 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.3%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 91.7%, Windows.App 85.0%, and Server 96.0%.
 - Added `NativeMessagingHostManifestGenerator`, which emits the Chrome native
@@ -874,7 +895,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 150 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.7%, Domain 88.8%, Windows.Presentation 97.6%,
   Windows 92.4%, Windows.App 85.0%, and Server 96.0%.
 - Added nullable process/window metadata fields to `FocusSession` and
@@ -897,7 +918,7 @@ overall line coverage 92.0%.
 - Verified `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v
   minimal` and `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1
   -v minimal`; all 154 .NET tests passed.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.8%, Domain 89.3%, Windows.Presentation 97.6%,
   Windows 92.5%, Windows.App 85.3%, and Server 96.1%.
 - Added `DeviceStateSessionEntity`, `AppFamilyEntity`, and
@@ -916,7 +937,7 @@ overall line coverage 92.0%.
   XAML lazy-load failure in `MainWindowSmokeTests`; rerunning the WPF App test
   project passed, then rerunning full `dotnet test Woong.MonitorStack.sln
   --no-build -maxcpucount:1 -v minimal` passed all 158 tests.
-- Verified coverage generation with `scripts/test-coverage.ps1`; current
+- Verified coverage generation with `scripts\test-coverage.ps1`; current
   overall line coverage is 92.9%, Domain 89.3%, Windows.Presentation 97.6%,
   Windows 92.5%, Windows.App 85.3%, and Server 96.3%.
 - Added `docs/android-app-usage-contract-decision.md`.
@@ -978,7 +999,7 @@ overall line coverage 92.0%.
 - Expanded dashboard ViewModel tests for Today, rolling, and custom ranges,
   empty state, invalid timezone behavior, top domain, row ordering, chart mapper
   empty input, timezone labels, and retained LiveCharts mapper behavior.
-- Added `coverage.runsettings`, `scripts/test-coverage.ps1`,
+- Added `coverage.runsettings`, `scripts\test-coverage.ps1`,
   `scripts/test-coverage.sh`, and ReportGenerator local tool registration.
 - Added `docs/architecture/coverage-quality-gate.md`; current coverage snapshot
   is overall 91.7%, Domain 88.6%, Windows.Presentation 99.0%, Windows 91.1%,
@@ -1385,7 +1406,7 @@ overall line coverage 92.0%.
   `android/`.
 - Verified `.\gradlew.bat assembleDebug --no-daemon --stacktrace` from
   `android/`.
-- Verified `.NET` coverage generation with `scripts/test-coverage.ps1`;
+- Verified `.NET` coverage generation with `scripts\test-coverage.ps1`;
   current overall line coverage is 92.9%, Domain 89.3%, Windows 92.5%,
   Windows.Presentation 97.6%, Windows.App 85.3%, and Server 96.3%.
   Android coverage collection is not configured yet, so Android validation for
@@ -1398,7 +1419,7 @@ overall line coverage 92.0%.
 - Updated the Android UsageStats source value to `android_usage_stats` to match
   the shared contract decision.
 - Added a `SyncOutboxWriter` interface implemented by `SyncOutboxDao`.
-- Updated `scripts/test-coverage.ps1` to pass `-maxcpucount:1`, matching the
+- Updated `scripts\test-coverage.ps1` to pass `-maxcpucount:1`, matching the
   repository's stable .NET validation convention after coverage collection hit
   the known intermittent WPF XAML lazy-load failure once.
 - Verified `.\gradlew.bat testDebugUnitTest --no-daemon --stacktrace` from
@@ -1409,7 +1430,7 @@ overall line coverage 92.0%.
   minimal`.
 - Verified `dotnet test Woong.MonitorStack.sln --no-build -maxcpucount:1 -v
   minimal`.
-- Verified `.NET` coverage generation with `scripts/test-coverage.ps1`;
+- Verified `.NET` coverage generation with `scripts\test-coverage.ps1`;
   current overall line coverage is 92.4%, Domain 89.3%, Windows 92.5%,
   Windows.Presentation 97.6%, Windows.App 79.9%, and Server 96.3%.
 - Added `AndroidManifestPrivacyTest` to enforce
@@ -1734,7 +1755,7 @@ Verified:
 - Full `dotnet test` passed.
 - Full `dotnet build` passed.
 - WPF acceptance passed at `artifacts/wpf-ui-acceptance/20260429-105310`.
-- `scripts/test-coverage.ps1` generated the coverage report.
+- `scripts\test-coverage.ps1` generated the coverage report.
 
 ## 2026-04-29 WPF CurrentFocusPanel Extraction Slice
 
@@ -1756,7 +1777,7 @@ Verified:
 - Full `dotnet build` passed.
 - WPF acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-110649`.
-- `scripts/test-coverage.ps1` generated the coverage report with overall line
+- `scripts\test-coverage.ps1` generated the coverage report with overall line
   coverage 92.4%.
 
 The next completed componentization slice is `SummaryCardsPanel` plus reusable
@@ -1785,7 +1806,7 @@ Verified:
 - Full `dotnet build` passed.
 - WPF acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-112103`.
-- `scripts/test-coverage.ps1` generated the coverage report with overall line
+- `scripts\test-coverage.ps1` generated the coverage report with overall line
   coverage 92.3%.
 
 Next highest priority is `ChartsPanel` plus reusable `EmptyState` extraction
@@ -1815,7 +1836,7 @@ Verified:
 - Full `dotnet build` passed.
 - WPF acceptance passed at
   `artifacts/wpf-ui-acceptance/20260429-113407`.
-- `scripts/test-coverage.ps1` generated the coverage report with overall line
+- `scripts\test-coverage.ps1` generated the coverage report with overall line
   coverage 92.3%.
 
 `wpfelements.md` audit notes still to resolve:
@@ -3105,7 +3126,7 @@ Coverage after this slice: overall line coverage 91.2%.
 - Added `SnapshotCaptureTest` so the Android screenshot script can launch
   non-exported internal activities through instrumentation instead of weakening
   the production manifest with exported dashboard/settings/session activities.
-- Updated `scripts/run-android-ui-snapshots.ps1` to seed sample Room data,
+- Updated `scripts\run-android-ui-snapshots.ps1` to seed sample Room data,
   capture screens through instrumentation, pull screenshots from the app's
   external files directory, and keep the report/manifest flow unchanged.
 - Generated emulator-backed screenshots for dashboard, settings, sessions, and
@@ -3356,7 +3377,7 @@ made the rerun pass at `artifacts/wpf-ui-acceptance/20260430-001723`.
 ## 2026-04-29 Android UI Snapshot Connected-Branch Slice
 
 - Added a fake-adb architecture test proving that
-  `scripts/run-android-ui-snapshots.ps1` no longer stops at the old connected
+  `scripts\run-android-ui-snapshots.ps1` no longer stops at the old connected
   device "capture is not implemented" blocker.
 - The script now launches Dashboard, Settings, Sessions, and Daily Summary
   activities with adb, captures screenshots with `screencap`, pulls stable PNG
@@ -3389,7 +3410,7 @@ Coverage after this slice: overall line coverage 91.3%; Server line coverage
 - Added `SnapshotSeedTest` under androidTest. The test clears the app Room DB
   and seeds deterministic local focus sessions for Chrome, YouTube, Slack, plus
   a Chrome idle interval for screenshot review.
-- Updated `scripts/run-android-ui-snapshots.ps1` so connected-device runs
+- Updated `scripts\run-android-ui-snapshots.ps1` so connected-device runs
   install both debug and androidTest APKs, execute the seed instrumentation
   test, then capture Dashboard, Settings, Sessions, and Daily Summary screens.
 - The seed path is test-only and local. It does not add product telemetry,

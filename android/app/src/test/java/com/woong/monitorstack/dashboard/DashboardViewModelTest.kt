@@ -9,10 +9,11 @@ class DashboardViewModelTest {
         val repository = FakeDashboardRepository(
             snapshot = DashboardSnapshot(
                 totalActiveMs = 3_600_000,
-                topAppPackageName = "com.android.chrome",
+                topAppName = "Chrome",
                 idleMs = 300_000,
                 recentSessions = listOf(
                     DashboardSessionRow(
+                        appName = "Chrome",
                         packageName = "com.android.chrome",
                         startedAtLocalText = "09:00",
                         durationText = "1h 0m"
@@ -34,7 +35,9 @@ class DashboardViewModelTest {
         assertEquals(DashboardPeriod.Today, repository.requestedPeriod)
         assertEquals(DashboardPeriod.Today, viewModel.state.selectedPeriod)
         assertEquals(3_600_000, viewModel.state.totalActiveMs)
-        assertEquals("com.android.chrome", viewModel.state.topAppPackageName)
+        assertEquals("Chrome", viewModel.state.topAppName)
+        assertEquals("Chrome", viewModel.state.recentSessions.single().appName)
+        assertEquals("com.android.chrome", viewModel.state.recentSessions.single().packageName)
         assertEquals(300_000, viewModel.state.idleMs)
         assertEquals("1h 0m", viewModel.state.recentSessions.single().durationText)
         assertEquals("Location context enabled", viewModel.state.locationContext.statusText)

@@ -1,6 +1,7 @@
 package com.woong.monitorstack.dashboard
 
 data class DashboardSessionRow(
+    val appName: String,
     val packageName: String,
     val startedAtLocalText: String,
     val durationText: String
@@ -8,21 +9,23 @@ data class DashboardSessionRow(
 
 data class DashboardSnapshot(
     val totalActiveMs: Long,
-    val topAppPackageName: String?,
+    val topAppName: String? = null,
     val idleMs: Long,
     val recentSessions: List<DashboardSessionRow>,
     val chartData: DashboardChartData = DashboardChartData(),
-    val locationContext: DashboardLocationContext = DashboardLocationContext()
+    val locationContext: DashboardLocationContext = DashboardLocationContext(),
+    val topAppPackageName: String? = topAppName
 )
 
 data class DashboardUiState(
     val selectedPeriod: DashboardPeriod? = null,
     val totalActiveMs: Long = 0,
-    val topAppPackageName: String? = null,
+    val topAppName: String? = null,
     val idleMs: Long = 0,
     val recentSessions: List<DashboardSessionRow> = emptyList(),
     val chartData: DashboardChartData = DashboardChartData(),
-    val locationContext: DashboardLocationContext = DashboardLocationContext()
+    val locationContext: DashboardLocationContext = DashboardLocationContext(),
+    val topAppPackageName: String? = topAppName
 )
 
 data class DashboardLocationContext(

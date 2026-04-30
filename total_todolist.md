@@ -1436,8 +1436,12 @@ milestones below are finished.
 - [x] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
 - [x] Correct the launcher shell back to the compact 72dp Material bottom navigation from the user-provided Android XML skeleton and remove the oversized overlay label row.
 - [x] Capture emulator evidence for compact shell, period-filter ordering, and labeled latitude/longitude location context at `artifacts/android-ui-snapshots/20260430-130812`.
+- [x] Fix Android dashboard chart axes to use human-readable hour, minute, and app labels instead of decimal placeholder labels.
+- [x] Repair Android screenshot scrolling so `03-dashboard-charts.png` captures the chart section instead of the previous viewport.
+- [x] Increase shared Android focus-session row height so app name, package, time range, state, and duration are readable without clipping.
+- [x] Capture emulator evidence for chart labels, app labels, and readable session rows at `artifacts/android-ui-snapshots/20260430-133732`.
 - [x] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
-- [ ] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
+- [x] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
 - [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
 - [ ] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
 - [ ] Add feature screenshots for each newly runtime-backed shell tab.

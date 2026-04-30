@@ -105,7 +105,7 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-130812`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-133732`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -132,6 +132,13 @@ Latest emulator evidence:
   after the summary cards, then the optional Room-backed location context card.
 - `02-dashboard-summary-location.png` shows labeled latitude, longitude,
   accuracy, and captured-at values from seeded local test data.
+- `03-dashboard-charts.png` now captures the actual chart section after nested
+  scroll-coordinate repair. Its axes are human-readable: hour labels such as
+  `09`, `10`, `11`, minute labels such as `0m` to `60m`, and app labels such as
+  `Chrome`, `YouTube`, and `Slack`.
+- Dashboard and Sessions rows now show user-facing app names first while
+  preserving package names as secondary metadata. The row height was increased
+  so app name, package, time range, state, and duration remain readable.
 
 Future connected-device improvements:
 
@@ -147,8 +154,8 @@ Future connected-device improvements:
 - Sessions, Report, and Settings fragments still need to be wired to the same
   runtime behavior as the existing Activity screens.
 - The fragment shell still needs visual tightening against the user-provided
-  XML skeleton: compact toolbar/header, user-facing app labels, and polished
-  chart axes instead of decimal placeholder labels.
+  XML skeleton, especially compact toolbar/header polish and runtime wiring for
+  Report and Settings fragments.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

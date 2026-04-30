@@ -6,6 +6,7 @@ import com.woong.monitorstack.data.local.LocationCaptureMode
 import com.woong.monitorstack.data.local.LocationContextSnapshotDao
 import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
 import com.woong.monitorstack.data.local.LocationPermissionState
+import com.woong.monitorstack.display.AppDisplayNameFormatter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -32,7 +33,7 @@ class RoomDashboardRepository(
 
         return DashboardSnapshot(
             totalActiveMs = activeSessions.sumOf { it.durationMs },
-            topAppPackageName = activeSessions.topPackageName(),
+            topAppName = activeSessions.topAppName(),
             idleMs = sessions.filter { it.isIdle }.sumOf { it.durationMs },
             recentSessions = sessions.toRecentRows(),
             chartData = activeSessions.toChartData(),
@@ -48,8 +49,8 @@ class RoomDashboardRepository(
         }
     }
 
-    private fun List<FocusSessionEntity>.topPackageName(): String? {
-        return groupBy { it.packageName }
+    private fun List<FocusSessionEntity>.topAppName(): String? {
+        return groupBy { AppDisplayNameFormatter.format(it.packageName) }
             .mapValues { entry -> entry.value.sumOf { it.durationMs } }
             .entries
             .sortedWith(
@@ -65,6 +66,7 @@ class RoomDashboardRepository(
             .take(10)
             .map { session ->
                 DashboardSessionRow(
+                    appName = AppDisplayNameFormatter.format(session.packageName),
                     packageName = session.packageName,
                     startedAtLocalText = Instant.ofEpochMilli(session.startedAtUtcMillis)
                         .atZone(timezoneId)
@@ -88,7 +90,7 @@ class RoomDashboardRepository(
                     )
                 }
                 .sortedBy { it.hourOfDay },
-            appUsage = groupBy { it.packageName }
+            appUsage = groupBy { AppDisplayNameFormatter.format(it.packageName) }
                 .map { entry ->
                     DashboardUsageSlice(
                         label = entry.key,

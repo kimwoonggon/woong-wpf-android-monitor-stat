@@ -2,6 +2,7 @@ package com.woong.monitorstack.sessions
 
 import com.woong.monitorstack.data.local.FocusSessionDao
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.display.AppDisplayNameFormatter
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -16,6 +17,7 @@ class RoomSessionsRepository(
 
     private fun FocusSessionEntity.toSessionRow(): SessionRow {
         return SessionRow(
+            appName = AppDisplayNameFormatter.format(packageName),
             packageName = packageName,
             durationText = formatDuration(durationMs),
             timeRangeText = formatTimeRange(this),
@@ -51,6 +53,7 @@ class RoomSessionsRepository(
 }
 
 data class SessionRow(
+    val appName: String,
     val packageName: String,
     val durationText: String,
     val timeRangeText: String,
