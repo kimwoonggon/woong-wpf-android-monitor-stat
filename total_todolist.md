@@ -1578,3 +1578,10 @@ milestones below are finished.
 - [x] Daily integrated summary works across Windows + Android.
 - [x] Final documentation is complete for the current environment; physical-device resource measurement remains documented as an external blocker.
 - [x] Final commit is pushed to `origin`.
+
+## Android Check Package 2026-04-30
+
+- [x] Add explicit Android feature verification checklist as `android_check_todo.md`.
+- [x] Run connected-emulator Android architecture tests, Gradle unit/build/androidTest build, UI screenshot automation, and resource measurement for the Android check package.
+- [x] Generate before/after PNG evidence for Android features A01-A17 under `artifacts/android-check/latest/`.
+- [x] Document that emulator evidence does not close the remaining physical-device resource measurement TODO.
