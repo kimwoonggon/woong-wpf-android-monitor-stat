@@ -34,6 +34,12 @@ Latest location opt-in emulator evidence:
 artifacts/android-check/20260430-180504/
 ```
 
+Latest Usage Access settings handoff evidence:
+
+```text
+artifacts/android-check/20260430-181643/
+```
+
 Each checked feature should have:
 
 - a `before-*.png` image showing the pre-check state or the expected test gate;
@@ -139,6 +145,14 @@ device TODO.
 - [x] MainActivity reconciles UsageStats collection scheduling through `AndroidUsageCollectionScheduler`.
 - [x] Permission onboarding shows visible collection status text while permission is missing.
 - [x] Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260430-172700`.
+
+## Usage Access Settings Handoff Evidence 2026-04-30
+
+- [x] Onboarding explains Usage Access while collection remains disabled.
+- [x] Open Usage Access settings button launches Android App usage data settings.
+- [x] Android settings shows Woong Monitor as not allowed before user grant.
+- [x] Returning without grant keeps explicit onboarding visible.
+- [x] Before/action/after emulator evidence: `artifacts/android-check/20260430-181643`.
 
 ## Runtime Last-Known Location Reader 2026-04-30
 
