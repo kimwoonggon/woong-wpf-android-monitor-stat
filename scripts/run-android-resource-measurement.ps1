@@ -63,6 +63,32 @@ function Save-AdbOutput {
     })
 }
 
+function Test-PackageLauncherAvailable {
+    $resolveOutput = Invoke-AdbChecked -Arguments @(
+        "shell",
+        "cmd",
+        "package",
+        "resolve-activity",
+        "--brief",
+        $PackageName
+    ) -Description "Resolve app launcher activity"
+
+    $resolvedText = ($resolveOutput -join "`n").Trim()
+    if ([string]::IsNullOrWhiteSpace($resolvedText) -or
+        $resolvedText -match "No activity found" -or
+        $resolvedText -match "Unable to resolve") {
+        $status = "BLOCKED"
+        $blockedReason = "Package launcher unavailable for $PackageName. If -SkipBuild was used, rerun without -SkipBuild so the debug APK is installed first."
+        $notes.Add($blockedReason)
+        Write-MeasurementArtifacts -Status $status -BlockedReason $blockedReason
+        Write-Host $blockedReason
+        Write-Host "Android resource measurement artifacts: $runRoot"
+        exit 0
+    }
+
+    $notes.Add("Resolved launcher activity: $resolvedText")
+}
+
 function Write-MeasurementArtifacts {
     param(
         [string]$Status,
@@ -184,6 +210,8 @@ try {
     } else {
         $notes.Add("Install skipped by -SkipBuild; assuming the debug app is already installed.")
     }
+
+    Test-PackageLauncherAvailable
 
     $notes.Add("Launching $PackageName through the launcher entry point.")
     Invoke-AdbChecked -Arguments @(

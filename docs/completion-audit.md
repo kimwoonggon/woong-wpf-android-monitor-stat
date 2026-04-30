@@ -114,7 +114,7 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 358 total.
+- .NET tests passed: 360 total.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.
 - Overall line coverage: 91.7% (3663/3991).
@@ -141,6 +141,9 @@ Result:
 - A verification rerun with a temp output root also passed after installing the
   debug APK before launch; `-SkipBuild` requires the app to already be
   installed.
+- The resource script now checks launcher availability before `monkey` launch
+  and writes a clear `BLOCKED` report when `-SkipBuild` is used before the app
+  is installed.
 
 WPF semantic acceptance:
 

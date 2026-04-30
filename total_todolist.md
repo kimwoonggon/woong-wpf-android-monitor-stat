@@ -647,6 +647,8 @@ milestones below are finished.
 - [x] Verify resource measurement on the `Medium_Phone` emulator with artifact `artifacts/android-resource-measurements/20260430-093728`.
 - [x] Document the local-only resource measurement contract in `docs/android-resource-measurement.md` and update completion/resume docs.
 - [x] Verify Android launcher/resource slice with focused Gradle launcher test, Android unit/build/connected tests, focused architecture script tests, temp-output resource script run, full `.NET` tests/build, and coverage generation.
+- [x] Harden `scripts/run-android-resource-measurement.ps1 -SkipBuild` so a missing app launcher writes a clear `BLOCKED` report before invoking `monkey`.
+- [x] Verify resource measurement SkipBuild hardening with focused RED/GREEN script test, full AndroidResourceMeasurementScriptTests, full `.NET` tests/build, and coverage generation.
 - [ ] Repeat Android resource measurements on a physical device when connected.
 
 ## Milestone 28: Privacy And Retention Hardening

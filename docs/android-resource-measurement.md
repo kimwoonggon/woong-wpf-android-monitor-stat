@@ -39,6 +39,11 @@ The script builds and installs the debug APK unless `-SkipBuild` is provided.
 It exits successfully with `Status: BLOCKED` when no emulator or physical device
 is connected, so missing device evidence is explicit.
 
+When `-SkipBuild` is used, the debug app must already be installed. The script
+checks the package launcher before invoking `monkey`; if the app is missing, it
+writes a `BLOCKED` report that tells the user to rerun without `-SkipBuild`
+instead of surfacing a raw ADB launch error.
+
 ## Artifacts
 
 Each run writes:
