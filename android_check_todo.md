@@ -28,6 +28,12 @@ Latest Android UI screenshot evidence:
 artifacts/android-ui-snapshots/20260430-174439/
 ```
 
+Latest location opt-in emulator evidence:
+
+```text
+artifacts/android-check/20260430-180504/
+```
+
 Each checked feature should have:
 
 - a `before-*.png` image showing the pre-check state or the expected test gate;
@@ -142,3 +148,10 @@ device TODO.
 - [x] Preserve existing privacy gate: no snapshot unless location context opt-in and foreground permission are present.
 - [x] Production `LocationContextCollectionRunner.create` uses the Android reader instead of the no-op reader.
 - [x] Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260430-174439`.
+
+## Location Opt-In UI Evidence 2026-04-30
+
+- [x] Settings location section shows location context off by default.
+- [x] Precise latitude/longitude remains a separate unchecked opt-in until explicitly selected.
+- [x] Location permission action is disabled before location context opt-in and enabled after opt-in.
+- [x] Before/action/after emulator evidence: `artifacts/android-check/20260430-180504`.
