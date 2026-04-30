@@ -1937,3 +1937,29 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 88.6% (4277/4822), branch 69.7% (610/875).
 - [x] WPF exe launched against the default local DB and remained responsive: `Woong Monitor Stack` window was running.
+
+## 2026-05-01 Windows Taskbar, Release CI, And MSIX Packaging
+
+- [x] Explicitly set `MainWindow.ShowInTaskbar=True`.
+- [x] Changed the system close/X path so it minimizes the WPF app to the Windows taskbar instead of closing the process.
+- [x] Added Settings `Exit app` as the explicit shutdown path.
+- [x] Added presentation/app tests for explicit application lifetime, taskbar minimize-on-X behavior, and Settings Exit command binding.
+- [x] Documented Release build/run commands:
+  - `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal`
+  - `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj`
+- [x] Added Windows GitHub Actions workflow for restore, Release build, Release test, publish, unsigned MSIX package, and artifact upload.
+- [x] Added MSIX manifest template and local packaging/install scripts.
+- [x] MSIX install trust stays explicit and CurrentUser-scoped; no LocalMachine certificate store is used.
+- [x] Fixed MSIX packaging script to copy published app files into the package layout and fail when native tools fail.
+- [x] Generated local unsigned MSIX at `artifacts/windows-msix/WoongMonitorStack.Windows.msix`.
+- [ ] Future: add real release signing certificate/secrets strategy before distributing signed installer artifacts.
+
+### Validation Update
+
+- [x] `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config` passed.
+- [x] `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings and 0 errors.
+- [x] `dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1` passed and created an unsigned MSIX.
+- [x] Coverage generated: line 87.2% (4232/4851), branch 68.1% (607/891).
+- [x] Release WPF run smoke passed with temp DB and auto-start disabled: `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj` started `Woong.MonitorStack.Windows.App` and the process was responding.

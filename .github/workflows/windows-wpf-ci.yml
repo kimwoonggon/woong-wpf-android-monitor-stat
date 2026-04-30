@@ -1,0 +1,56 @@
+name: Windows WPF CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  windows-wpf:
+    name: Build, test, publish, and package Windows WPF app
+    runs-on: windows-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore Woong.MonitorStack.sln --configfile NuGet.config
+
+      - name: Build Release
+        run: dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+
+      - name: Test Release
+        run: dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal
+
+      - name: Publish Windows app
+        run: dotnet publish src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj -c Release --no-restore -o artifacts\windows-app
+
+      - name: Package unsigned MSIX
+        shell: pwsh
+        run: .\scripts\package-windows-msix.ps1 -Configuration Release -SkipPublish
+
+      - name: Upload Windows app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-windows-app
+          path: artifacts/windows-app/**
+
+      - name: Upload Windows MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-windows-msix
+          path: artifacts/windows-msix/*.msix
+

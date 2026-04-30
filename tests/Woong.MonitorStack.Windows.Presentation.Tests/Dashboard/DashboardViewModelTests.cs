@@ -118,6 +118,36 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void ExitApplicationCommand_RequestsExplicitApplicationExit()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var applicationLifetime = new RecordingApplicationLifetime();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            applicationLifetime: applicationLifetime);
+
+        viewModel.ExitApplicationCommand.Execute(null);
+
+        Assert.Equal(1, applicationLifetime.RequestExitCallCount);
+    }
+
+    [Fact]
+    public void DefaultApplicationLifetime_DoesNothingWhenExitCommandRuns()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.ExitApplicationCommand.Execute(null);
+
+        Assert.True(viewModel.ExitApplicationCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void DetailsTabs_DefaultRowsPerPageIsTen()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -702,6 +732,14 @@ public sealed class DashboardViewModelTests
     private sealed class FixedClock(DateTimeOffset utcNow) : IDashboardClock
     {
         public DateTimeOffset UtcNow => utcNow;
+    }
+
+    private sealed class RecordingApplicationLifetime : IDashboardApplicationLifetime
+    {
+        public int RequestExitCallCount { get; private set; }
+
+        public void RequestExit()
+            => RequestExitCallCount++;
     }
 
     private sealed class FakeDatabaseController(string currentDatabasePath) : IDashboardDatabaseController

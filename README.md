@@ -14,6 +14,13 @@ Run the Windows dashboard from the repository root:
 dotnet run --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj
 ```
 
+Release build and run:
+
+```powershell
+dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj
+```
+
 You do not need to start SQLite. The WPF app uses a local SQLite file and
 creates or updates it automatically:
 
@@ -42,6 +49,8 @@ Inside the app, open **Settings** to manage the SQLite file:
   one after confirmation.
 - **Runtime log** shows the local log path used for tracking start/stop, poll,
   persistence, sync-skip, and recoverable error events.
+- Clicking the window X minimizes the app to the Windows taskbar so tracking can
+  continue. Use **Settings -> Exit app** when you explicitly want to shut down.
 
 ## Privacy Boundaries
 
@@ -132,6 +141,13 @@ Run from the repository root:
 dotnet run --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj
 ```
 
+Release mode:
+
+```powershell
+dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj
+```
+
 By default the WPF app uses:
 
 ```text
@@ -147,6 +163,10 @@ The runtime log is:
 The log is for this app's own tracking pipeline events and exceptions. It does
 not record keystrokes, typed text, page contents, screenshots, passwords, form
 input, or clipboard contents.
+
+The main window is explicitly shown in the Windows taskbar. Clicking X minimizes
+the window to the taskbar instead of exiting. Use **Settings -> Exit app** for a
+real app shutdown.
 
 To run safely with a temporary SQLite DB:
 
@@ -209,6 +229,34 @@ WPF artifacts are written under ignored `artifacts/` folders such as:
 - `artifacts/wpf-ui-acceptance/`
 - `artifacts/ui-snapshots/`
 - `artifacts/wpf-check/`
+
+### Windows CI/CD And MSIX
+
+GitHub Actions workflow:
+
+```text
+.github/workflows/windows-wpf-ci.yml
+```
+
+It restores, builds, tests, publishes the Windows app, packages an unsigned
+MSIX, and uploads artifacts.
+
+Local MSIX packaging:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1
+```
+
+Signed install, using a certificate trusted only for the current user:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-windows-msix.ps1 `
+  -PackagePath artifacts\windows-msix\WoongMonitorStack.Windows.msix `
+  -CertificatePath D:\path\to\woong-monitor.cer `
+  -TrustCertificate
+```
+
+More details: `docs/windows-release-msix.md`.
 
 ## Android App
 

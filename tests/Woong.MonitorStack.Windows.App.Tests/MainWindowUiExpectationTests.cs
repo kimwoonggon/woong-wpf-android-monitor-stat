@@ -1205,22 +1205,27 @@ public sealed class MainWindowUiExpectationTests
                 Assert.Contains("Idle threshold: 5 minutes", text);
                 Assert.Contains("Runtime log", text);
                 Assert.Contains("Local SQLite DB", text);
+                Assert.Contains("App lifetime", text);
                 TextBlock runtimeLogPath = FindByAutomationId<TextBlock>(panel, "RuntimeLogPathText");
                 TextBlock currentDatabasePath = FindByAutomationId<TextBlock>(panel, "CurrentDatabasePathText");
                 TextBlock databaseStatus = FindByAutomationId<TextBlock>(panel, "DatabaseStatusLabel");
                 Button createDatabase = FindByAutomationId<Button>(panel, "CreateLocalDatabaseButton");
                 Button loadDatabase = FindByAutomationId<Button>(panel, "LoadExistingLocalDatabaseButton");
                 Button deleteDatabase = FindByAutomationId<Button>(panel, "DeleteLocalDatabaseButton");
+                Button exitApplication = FindByAutomationId<Button>(panel, "ExitApplicationButton");
                 Assert.Equal("runtime log disabled", runtimeLogPath.Text);
                 Assert.Equal("No local database configured", currentDatabasePath.Text);
                 Assert.Equal("Local database ready.", databaseStatus.Text);
                 Assert.Equal("Create / switch DB", createDatabase.Content);
                 Assert.Equal("Load existing DB", loadDatabase.Content);
                 Assert.Equal("Delete local DB", deleteDatabase.Content);
+                Assert.Equal("Exit app", exitApplication.Content);
                 Assert.False(deleteDatabase.IsEnabled);
                 AssertReadableButton(createDatabase);
                 AssertReadableButton(loadDatabase);
                 AssertReadableButton(deleteDatabase);
+                AssertReadableButton(exitApplication);
+                Assert.Same(((DashboardViewModel)window.DataContext).ExitApplicationCommand, exitApplication.Command);
             }
             finally
             {

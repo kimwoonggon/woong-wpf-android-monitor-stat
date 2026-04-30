@@ -4533,3 +4533,30 @@ Server checklist closure note:
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 88.6% (4277/4822), branch 69.7% (610/875).
 - [x] WPF exe launched against the default local DB and remained responsive: `Woong Monitor Stack` window was running.
+
+## 2026-05-01 Windows Taskbar, Release CI, And MSIX Packaging
+
+- MainWindow now explicitly sets `ShowInTaskbar=True`.
+- Clicking the WPF titlebar X no longer exits the app. The WM_SYSCOMMAND/SC_CLOSE path is intercepted and minimizes the window to the Windows taskbar so tracking can continue.
+- Settings now includes **Exit app**, bound through `DashboardViewModel.ExitApplicationCommand` and `IDashboardApplicationLifetime`, as the explicit shutdown path.
+- Added tests for taskbar/show-in-taskbar contract, system close button minimizing instead of closing, explicit application lifetime command, Settings Exit button binding, and Windows Release/CI/MSIX documentation and script contracts.
+- Added `.github/workflows/windows-wpf-ci.yml` for Windows Release restore/build/test/publish/MSIX artifact packaging.
+- Added `packaging/windows-msix/AppxManifest.xml`, `scripts/package-windows-msix.ps1`, and `scripts/install-windows-msix.ps1`.
+- Local MSIX package succeeded at `artifacts/windows-msix/WoongMonitorStack.Windows.msix`.
+- MSIX install certificate trust is explicit and CurrentUser-scoped; no LocalMachine trust modification is used.
+- README and `docs/windows-release-msix.md` document Release build/run and MSIX packaging/install commands.
+
+Validation:
+
+- `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config` passed.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 460 passed, 6 PostgreSQL tests skipped by default.
+- `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings/errors.
+- `dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal` passed: 460 passed, 6 PostgreSQL tests skipped by default.
+- `scripts\package-windows-msix.ps1` passed and generated unsigned MSIX.
+- Coverage: line 87.2% (4232/4851), branch 68.1% (607/891).
+
+Next Windows release work:
+
+- Add signing certificate/secrets guidance for real distribution.
+- Optionally add a release workflow triggered by tags after signing policy is decided.
+- Release WPF run smoke passed with temp DB and auto-start disabled: `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj` started `Woong.MonitorStack.Windows.App` and the process was responding.

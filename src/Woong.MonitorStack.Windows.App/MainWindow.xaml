@@ -8,6 +8,7 @@
         Height="780"
         MinWidth="1024"
         MinHeight="768"
+        ShowInTaskbar="True"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackgroundBrush}">
     <Grid Background="{DynamicResource AppBackgroundBrush}">

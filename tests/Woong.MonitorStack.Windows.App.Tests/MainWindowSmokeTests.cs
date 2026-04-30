@@ -1,3 +1,6 @@
+using System.Windows;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
@@ -21,6 +24,38 @@ public sealed class MainWindowSmokeTests
             {
                 Assert.Same(viewModel, window.DataContext);
                 Assert.Equal("Woong Monitor Stack", window.Title);
+                Assert.True(window.ShowInTaskbar);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void MainWindow_SystemCloseButton_MinimizesToTaskbarWithoutClosing()
+        => RunOnStaThread(() =>
+        {
+            var viewModel = new DashboardViewModel(
+                new EmptyDataSource(),
+                new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
+                new DashboardOptions("Asia/Seoul"));
+            var window = new MainWindow(viewModel);
+            var closed = false;
+            window.Closed += (_, _) => closed = true;
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                SendMessage(new WindowInteropHelper(window).Handle, 0x0112, 0xF060, 0);
+                window.UpdateLayout();
+
+                Assert.False(closed);
+                Assert.True(window.IsVisible);
+                Assert.True(window.ShowInTaskbar);
+                Assert.Equal(WindowState.Minimized, window.WindowState);
             }
             finally
             {
@@ -52,6 +87,9 @@ public sealed class MainWindowSmokeTests
             throw failure;
         }
     }
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 
     private sealed class EmptyDataSource : IDashboardDataSource
     {

@@ -1,13 +1,18 @@
 using System.Windows;
+using System.Windows.Interop;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 namespace Woong.MonitorStack.Windows.App;
 
 public partial class MainWindow : Window
 {
+    private const int WmSysCommand = 0x0112;
+    private const int ScClose = 0xF060;
+
     private readonly ITrackingTicker _trackingTicker;
     private readonly DashboardViewModel _viewModel;
     private readonly MainWindowStartupOptions _startupOptions;
+    private HwndSource? _windowMessageSource;
     private bool _hasAppliedStartupOptions;
 
     public MainWindow(DashboardViewModel viewModel)
@@ -44,6 +49,7 @@ public partial class MainWindow : Window
         _trackingTicker = trackingTicker ?? throw new ArgumentNullException(nameof(trackingTicker));
         DataContext = viewModel;
         _trackingTicker.Tick += OnTrackingTickerTick;
+        SourceInitialized += OnSourceInitialized;
         Closing += (_, _) => FlushTrackingBeforeClose();
         Loaded += (_, _) =>
         {
@@ -54,7 +60,27 @@ public partial class MainWindow : Window
         {
             _trackingTicker.Stop();
             _trackingTicker.Tick -= OnTrackingTickerTick;
+            _windowMessageSource?.RemoveHook(OnWindowMessage);
+            _windowMessageSource = null;
         };
+    }
+
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        _windowMessageSource = (HwndSource?)PresentationSource.FromVisual(this);
+        _windowMessageSource?.AddHook(OnWindowMessage);
+    }
+
+    private IntPtr OnWindowMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (message == WmSysCommand && ((wParam.ToInt64() & 0xFFF0) == ScClose))
+        {
+            WindowState = WindowState.Minimized;
+            ShowInTaskbar = true;
+            handled = true;
+        }
+
+        return IntPtr.Zero;
     }
 
     private void FlushTrackingBeforeClose()

@@ -135,6 +135,18 @@
                     Command="{Binding DeleteLocalDatabaseCommand}"
                     IsEnabled="{Binding Settings.CanClearLocalData}"
                     Style="{StaticResource DangerButtonStyle}" />
+            <TextBlock Text="App lifetime"
+                       Style="{StaticResource SettingsSectionTitleTextStyle}"
+                       Margin="0,12,0,4" />
+            <TextBlock Text="Clicking X minimizes Woong Monitor Stack to the taskbar. Use Exit app for an explicit shutdown."
+                       Style="{StaticResource SettingsMutedTextStyle}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8" />
+            <Button Content="Exit app"
+                    AutomationProperties.AutomationId="ExitApplicationButton"
+                    AutomationProperties.Name="Exit Woong Monitor Stack"
+                    Command="{Binding ExitApplicationCommand}"
+                    Style="{StaticResource DangerButtonStyle}" />
         </StackPanel>
     </Grid>
 </UserControl>

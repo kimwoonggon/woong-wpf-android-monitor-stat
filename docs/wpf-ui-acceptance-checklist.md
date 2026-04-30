@@ -547,3 +547,14 @@ Latest verification:
 - Focused WPF tests passed: `PollOnce_WhenSameChromeWindowVisitsYoutubeGithubChatGpt` and `PollTick_WhenSameChromeWindowDomainChangesTwice`.
 - Full `.NET` solution tests passed: 409 tests.
 - WPF UI acceptance passed: `artifacts/wpf-ui-acceptance/20260430-165524`.
+
+## 2026-05-01 Taskbar And Explicit Exit Contract
+
+- The WPF MainWindow must appear in the Windows taskbar.
+- Clicking the titlebar X must minimize Woong Monitor Stack to the taskbar and must not stop tracking or exit the process.
+- Settings must expose an explicit **Exit app** action for real shutdown.
+- Release validation commands:
+  - `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal`
+  - `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj`
+- Local MSIX package command:
+  - `powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1`

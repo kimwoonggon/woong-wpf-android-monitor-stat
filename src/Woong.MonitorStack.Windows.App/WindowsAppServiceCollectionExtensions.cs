@@ -26,6 +26,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(new WindowsLocalDatabaseState(options.LocalDatabasePath));
         services.AddSingleton(options.DashboardOptions);
         services.AddSingleton<IDashboardRuntimeLogSink>(new FileDashboardRuntimeLogSink(options.RuntimeLogPath));
+        services.AddSingleton<IDashboardApplicationLifetime, WpfDashboardApplicationLifetime>();
         services.AddDashboardPresentation();
         services.AddWindowsInfrastructure();
         if (options.AcceptanceMode == WindowsAppAcceptanceMode.TrackingPipeline)

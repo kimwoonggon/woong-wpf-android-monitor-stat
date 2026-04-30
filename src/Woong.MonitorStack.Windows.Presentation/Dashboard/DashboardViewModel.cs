@@ -13,6 +13,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardTrackingCoordinator _trackingCoordinator;
     private readonly IDashboardDatabaseController _databaseController;
     private readonly IDashboardRuntimeLogSink _runtimeLogSink;
+    private readonly IDashboardApplicationLifetime _applicationLifetime;
     private readonly TimeZoneInfo _timeZone;
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
@@ -155,13 +156,15 @@ public sealed partial class DashboardViewModel : ObservableObject
         DashboardOptions options,
         IDashboardTrackingCoordinator? trackingCoordinator = null,
         IDashboardDatabaseController? databaseController = null,
-        IDashboardRuntimeLogSink? runtimeLogSink = null)
+        IDashboardRuntimeLogSink? runtimeLogSink = null,
+        IDashboardApplicationLifetime? applicationLifetime = null)
     {
         _dataSource = dataSource;
         _clock = clock;
         _trackingCoordinator = trackingCoordinator ?? new NoopDashboardTrackingCoordinator();
         _databaseController = databaseController ?? new NullDashboardDatabaseController();
         _runtimeLogSink = runtimeLogSink ?? new NullDashboardRuntimeLogSink();
+        _applicationLifetime = applicationLifetime ?? new NullDashboardApplicationLifetime();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
         Settings.CurrentDatabasePathText = _databaseController.CurrentDatabasePath;
@@ -241,6 +244,10 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void DeleteLocalDatabase()
         => ApplyDatabaseActionResult(_databaseController.DeleteCurrentDatabase());
+
+    [RelayCommand]
+    private void ExitApplication()
+        => _applicationLifetime.RequestExit();
 
     [RelayCommand(CanExecute = nameof(CanStartTracking))]
     private void StartTracking()
