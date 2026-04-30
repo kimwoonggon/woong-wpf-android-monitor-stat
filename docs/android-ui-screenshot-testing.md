@@ -105,7 +105,7 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-121642`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-124333`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -125,6 +125,9 @@ Latest emulator evidence:
 - `10-main-shell-sessions.png` captures the real launcher shell after selecting
   Sessions; the list is loaded from seeded Room focus sessions through
   `SessionsFragment` and `RoomSessionsRepository`.
+- The launcher shell now keeps bottom navigation above the system navigation
+  area and shows visible Dashboard/Sessions/Report/Settings labels in the
+  screenshot artifact.
 
 Future connected-device improvements:
 
@@ -140,8 +143,8 @@ Future connected-device improvements:
 - Sessions, Report, and Settings fragments still need to be wired to the same
   runtime behavior as the existing Activity screens.
 - The fragment shell still needs visual tightening against the user-provided
-  XML skeleton: compact toolbar/header, comfortable bottom navigation labels,
-  and more polished card spacing.
+  XML skeleton: compact toolbar/header, cleaner Material bottom-navigation
+  label behavior, and more polished card spacing.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

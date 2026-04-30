@@ -22,17 +22,76 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="72dp" />
+        android:layout_marginBottom="144dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="96dp"
         android:layout_gravity="bottom"
+        android:layout_marginBottom="48dp"
         android:background="@color/wms_surface"
+        android:clipToPadding="false"
+        android:paddingTop="6dp"
+        android:paddingBottom="14dp"
+        app:itemIconSize="22dp"
         app:itemIconTint="@color/wms_bottom_nav_selector"
+        app:itemPaddingBottom="8dp"
+        app:itemPaddingTop="8dp"
         app:itemTextColor="@color/wms_bottom_nav_selector"
+        app:itemTextAppearanceActive="@style/WmsBottomNavLabel"
+        app:itemTextAppearanceInactive="@style/WmsBottomNavLabel"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_bottom_navigation" />
+
+    <LinearLayout
+        android:id="@+id/bottomNavigationLabelRow"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="94dp"
+        android:clickable="false"
+        android:elevation="8dp"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <TextView
+            android:id="@+id/mainNavDashboardLabel"
+            style="@style/WmsBottomNavLabel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/nav_dashboard" />
+
+        <TextView
+            android:id="@+id/mainNavSessionsLabel"
+            style="@style/WmsBottomNavLabel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/nav_sessions" />
+
+        <TextView
+            android:id="@+id/mainNavReportLabel"
+            style="@style/WmsBottomNavLabel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/nav_report" />
+
+        <TextView
+            android:id="@+id/mainNavSettingsLabel"
+            style="@style/WmsBottomNavLabel"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/nav_settings" />
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

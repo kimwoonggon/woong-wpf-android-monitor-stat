@@ -245,6 +245,9 @@ and feature screenshots for each tab.
   `RoomSessionsRepository`; screenshot automation captures
   `10-main-shell-sessions.png` after selecting the Sessions bottom-navigation
   item.
+- The launcher shell reserves a taller bottom-navigation area above the system
+  gesture/navigation region and includes explicit visible labels for Dashboard,
+  Sessions, Report, and Settings in local screenshot evidence.
 
 ## Current Fragment Shell Gaps
 
@@ -254,8 +257,10 @@ enough:
 
 - The launcher toolbar/header is too large and must be normalized to the
   compact MaterialToolbar shell from the XML skeleton.
-- Bottom navigation is present, but labels/icons are not comfortably readable
-  enough and must stay above gesture/system navigation.
+- Bottom navigation is now readable in the emulator screenshot, but the
+  explicit label row is a pragmatic shell fix. A future polish pass should
+  replace this with a cleaner Material navigation implementation if the
+  component labels become reliable across devices.
 - Dashboard fragments need the same polished card hierarchy as the existing
   Activity dashboard, including location context when enabled.
 - Sessions rows are Room-backed, but they still show package names as the

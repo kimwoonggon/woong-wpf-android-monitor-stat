@@ -1431,8 +1431,9 @@ milestones below are finished.
 - [x] Capture emulator evidence at `artifacts/android-ui-snapshots/20260430-121642`.
 - [x] Document that the user-provided XML wireframe skeleton is the target shape for the Android fragment shell.
 - [x] Verify Android Sessions fragment slice with Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests, full `.NET` build, and coverage generation.
+- [x] Verify bottom-navigation readability slice with focused architecture test, Gradle unit/build/androidTest build, emulator screenshot artifact `artifacts/android-ui-snapshots/20260430-124333`, full `.NET` tests, full `.NET` build, and coverage generation.
 - [ ] Normalize the launcher toolbar/header so it matches the compact MaterialToolbar skeleton.
-- [ ] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
+- [x] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
 - [ ] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
 - [ ] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
 - [ ] Wire `ReportFragment` to runtime summary repository/client behavior.

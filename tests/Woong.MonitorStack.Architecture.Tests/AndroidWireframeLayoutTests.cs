@@ -264,6 +264,34 @@ public sealed class AndroidWireframeLayoutTests
     }
 
     [Fact]
+    public void AndroidMainShell_KeepsBottomNavigationReadableAboveSystemNavigation()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
+        string styles = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "styles.xml"));
+
+        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
+        Assert.Contains("android:layout_height=\"96dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
+        Assert.Contains("android:paddingTop=\"6dp\"", main);
+        Assert.Contains("android:paddingBottom=\"14dp\"", main);
+        Assert.Contains("app:itemIconSize=\"22dp\"", main);
+        Assert.Contains("app:itemPaddingTop=\"8dp\"", main);
+        Assert.Contains("app:itemPaddingBottom=\"8dp\"", main);
+        Assert.Contains("app:itemTextAppearanceActive=\"@style/WmsBottomNavLabel\"", main);
+        Assert.Contains("app:itemTextAppearanceInactive=\"@style/WmsBottomNavLabel\"", main);
+        Assert.Contains("@+id/bottomNavigationLabelRow", main);
+        Assert.Contains("android:elevation=\"8dp\"", main);
+        Assert.Contains("@+id/mainNavDashboardLabel", main);
+        Assert.Contains("@+id/mainNavSessionsLabel", main);
+        Assert.Contains("@+id/mainNavReportLabel", main);
+        Assert.Contains("@+id/mainNavSettingsLabel", main);
+        Assert.Contains("name=\"WmsBottomNavLabel\"", styles);
+        Assert.Contains("<item name=\"android:textSize\">14sp</item>", styles);
+        Assert.Contains("<item name=\"android:textColor\">@color/wms_text_primary</item>", styles);
+    }
+
+    [Fact]
     public void AndroidFragmentDashboard_SummaryCardsUseDistinctMetrics()
     {
         string repoRoot = FindRepositoryRoot();

@@ -1,6 +1,18 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Main Shell Bottom Navigation Readability Slice
+
+- Added RED architecture coverage requiring the launcher shell to reserve a larger bottom-navigation area above system navigation and expose visible Dashboard/Sessions/Report/Settings labels.
+- Updated `activity_main.xml` bottom-navigation sizing, fragment bottom margin, item icon/text appearance settings, and an explicit label row so emulator screenshots no longer show icon-only navigation.
+- Added `WmsBottomNavLabel` styling with readable 14sp primary text.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-124333`; `10-main-shell-sessions.png` now shows visible Dashboard, Sessions, Report, and Settings labels.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_KeepsBottomNavigationReadableAboveSystemNavigation" -maxcpucount:1 -v minimal` failed RED first, then passed after shell layout/style updates.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-124333`.
 ## 2026-04-30 WPF RealStart Local DB Evidence Slice
 
 - Audited WPF runtime acceptance evidence after Milestone 44 and found the
