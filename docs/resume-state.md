@@ -1,7 +1,22 @@
 # Resume State
 
 Updated: 2026-04-30
-## 2026-04-30 Android Main Shell Bottom Navigation Readability Slice
+## 2026-04-30 Chrome Native Messaging Sandbox Evidence Slice
+
+- Audited Chrome/native messaging acceptance safety coverage and found the sandbox behavior was implemented but not exposed as grouped report/manifest evidence.
+- Added RED Windows browser script coverage requiring `nativeMessagingSafetyEvidence` rows in `scripts/run-chrome-native-message-acceptance.ps1`.
+- Updated the Chrome native messaging acceptance script so `report.md` includes `## Sandbox Safety Evidence` and `manifest.json` includes `nativeMessagingSafetyEvidence` rows.
+- Evidence rows cover the sandboxed Chrome profile, user Chrome preservation, scoped HKCU test host, temp acceptance DB, and cleanup restore/remove behavior.
+- This is a Windows browser/native messaging script/test/docs slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF UI XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore --filter "FullyQualifiedName~AcceptanceScript_ReportAndManifestIncludeGroupedSandboxSafetyEvidence" -maxcpucount:1 -v minimal` failed RED on missing `New-NativeMessagingSafetyEvidence`, then passed after grouped safety evidence was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore --filter "FullyQualifiedName~ChromeNativeMessagingAcceptanceScriptTests" -maxcpucount:1 -v minimal` passed 13 browser acceptance script tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -CleanupOnly -DryRun` passed and generated `artifacts/chrome-native-acceptance/20260430-125155` with `nativeMessagingSafetyEvidence` in report and manifest.
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 89 Windows tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 388 solution tests.## 2026-04-30 Android Main Shell Bottom Navigation Readability Slice
 
 - Added RED architecture coverage requiring the launcher shell to reserve a larger bottom-navigation area above system navigation and expose visible Dashboard/Sessions/Report/Settings labels.
 - Updated `activity_main.xml` bottom-navigation sizing, fragment bottom margin, item icon/text appearance settings, and an explicit label row so emulator screenshots no longer show icon-only navigation.

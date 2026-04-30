@@ -273,3 +273,10 @@ because current Google Chrome stable builds can block command-line unpacked
 extension loading. The latest acceptance run passed with `github.example` and
 `chatgpt.example` written as domain-only web sessions and outbox rows, while
 full URL and page title fields remained redacted by default.
+
+The Chrome native messaging acceptance report and manifest must include a
+grouped `nativeMessagingSafetyEvidence` section. The rows document the
+sandboxed Chrome profile path, the process-cleanup rule that preserves user
+Chrome windows, the scoped HKCU test host, the temp acceptance SQLite DB, and
+whether cleanup restored a previous scoped host value or removed only the test
+key.

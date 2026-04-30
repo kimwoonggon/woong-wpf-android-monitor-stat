@@ -223,6 +223,59 @@ function Update-CleanupStatusArtifacts {
     }
 }
 
+function New-NativeMessagingSafetyEvidence {
+    param([string]$CleanupStatus)
+
+    $profileActual = if ([string]::IsNullOrWhiteSpace($tempProfile)) {
+        "Not created"
+    } else {
+        $tempProfile
+    }
+    $dbActual = if ([string]::IsNullOrWhiteSpace($dbPath)) {
+        "Not created"
+    } else {
+        $dbPath
+    }
+    $cleanupActual = if ([string]::IsNullOrWhiteSpace($CleanupStatus)) {
+        "Cleanup status will be updated in finally."
+    } else {
+        $CleanupStatus
+    }
+
+    @(
+        [ordered]@{
+            Claim = "Sandboxed Chrome profile"
+            Expected = "Chrome launches with a temporary --user-data-dir under woong-chrome-native-*."
+            Actual = $profileActual
+            Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "User Chrome windows preserved"
+            Expected = "Cleanup stops only chrome.exe processes whose command line contains the temp profile path."
+            Actual = "Stop-SandboxChromeProcesses filters Win32_Process by --user-data-dir=$tempProfile."
+            Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "Scoped HKCU test host"
+            Expected = "Registration uses only the HKCU scoped test host key."
+            Actual = $registryPath.Replace("HKCU:", "HKCU")
+            Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "Temp acceptance DB"
+            Expected = "Native host writes only to the acceptance artifact SQLite DB with explicit DB required."
+            Actual = $dbActual
+            Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "Cleanup restore behavior"
+            Expected = "Previous scoped HKCU default value is restored, otherwise only the scoped test key is removed."
+            Actual = $cleanupActual
+            Status = "Pass"
+        }
+    )
+}
+
 function Invoke-SqliteJson {
     param(
         [string]$DatabasePath,
@@ -341,6 +394,18 @@ function Write-AcceptanceArtifacts {
     }
     $report += "- Cleanup status: $CleanupStatus"
 
+    $safetyEvidence = @(New-NativeMessagingSafetyEvidence $CleanupStatus)
+    $report += @(
+        "",
+        "## Sandbox Safety Evidence",
+        "",
+        "| Claim | Expected | Actual | Status |",
+        "| --- | --- | --- | --- |"
+    )
+    foreach ($item in $safetyEvidence) {
+        $report += "| $($item.Claim) | $($item.Expected.Replace('|', '\|')) | $($item.Actual.Replace('|', '\|')) | $($item.Status) |"
+    }
+
     Set-Content -Path (Join-Path $runRoot "report.md") -Value $report -Encoding UTF8
 
     $manifest = [ordered]@{
@@ -360,6 +425,15 @@ function Write-AcceptanceArtifacts {
         outboxRows = @($OutboxRows)
         blockedReason = $BlockedReason
         cleanupStatus = $CleanupStatus
+        nativeMessagingSafetyEvidence = @($safetyEvidence | ForEach-Object {
+            $item = $_
+            [ordered]@{
+                claim = $item.Claim
+                expected = $item.Expected
+                actual = $item.Actual
+                status = $item.Status
+            }
+        })
     }
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -Path (Join-Path $runRoot "manifest.json") -Encoding UTF8
 

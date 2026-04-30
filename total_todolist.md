@@ -1439,6 +1439,16 @@ milestones below are finished.
 - [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
 - [ ] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
 - [ ] Add feature screenshots for each newly runtime-backed shell tab.
+## Milestone 47: Chrome Native Messaging Sandbox Evidence
+
+- [x] Audit Chrome/native messaging acceptance docs, script, and Windows browser tests for sandbox safety coverage.
+- [x] Add a failing Windows browser script test requiring grouped sandbox safety evidence in report and manifest artifacts.
+- [x] Add `nativeMessagingSafetyEvidence` rows for sandboxed Chrome profile, user Chrome preservation, scoped HKCU test host, temp acceptance DB, and cleanup restore/remove behavior.
+- [x] Update browser tracking policy and WPF resume state for the native messaging safety evidence slice.
+- [x] Run focused Windows browser script test.
+- [x] Run Windows tests.
+- [x] Run solution build and solution tests.
+- [x] Run Chrome native messaging cleanup-only dry-run and confirm report/manifest safety evidence.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

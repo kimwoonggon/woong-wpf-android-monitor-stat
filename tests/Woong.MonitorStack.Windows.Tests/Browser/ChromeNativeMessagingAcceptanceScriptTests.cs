@@ -184,6 +184,28 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
     }
 
     [Fact]
+    public void AcceptanceScript_ReportAndManifestIncludeGroupedSandboxSafetyEvidence()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("New-NativeMessagingSafetyEvidence", script, StringComparison.Ordinal);
+        Assert.Contains("## Sandbox Safety Evidence", script, StringComparison.Ordinal);
+        Assert.Contains("| Claim | Expected | Actual | Status |", script, StringComparison.Ordinal);
+        Assert.Contains("nativeMessagingSafetyEvidence", script, StringComparison.Ordinal);
+        Assert.Contains("claim = $item.Claim", script, StringComparison.Ordinal);
+        Assert.Contains("expected = $item.Expected", script, StringComparison.Ordinal);
+        Assert.Contains("actual = $item.Actual", script, StringComparison.Ordinal);
+        Assert.Contains("status = $item.Status", script, StringComparison.Ordinal);
+        Assert.Contains("Sandboxed Chrome profile", script, StringComparison.Ordinal);
+        Assert.Contains("User Chrome windows preserved", script, StringComparison.Ordinal);
+        Assert.Contains("Scoped HKCU test host", script, StringComparison.Ordinal);
+        Assert.Contains("Temp acceptance DB", script, StringComparison.Ordinal);
+        Assert.Contains("Cleanup restore behavior", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AcceptanceScript_EnumeratesSqliteJsonRowsForWaitCondition()
     {
         string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
