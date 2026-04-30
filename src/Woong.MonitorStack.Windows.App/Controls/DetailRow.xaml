@@ -12,6 +12,7 @@
         <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                    Style="{StaticResource MutedTextStyle}" />
         <TextBlock AutomationProperties.AutomationId="{Binding ValueAutomationId, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                   AutomationProperties.Name="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                    Text="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                    Style="{StaticResource BodyTextStyle}"
                    FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"

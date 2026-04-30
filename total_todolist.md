@@ -1256,6 +1256,15 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Update WPF resume state after the accessibility polish.
 
+## Milestone 34: WPF Current Focus Runtime Accessibility
+
+- [x] Add a failing WPF App accessibility test requiring readable semantic names for Current Focus runtime state fields.
+- [x] Add minimal XAML/control metadata so Current Focus values remain selectable by stable AutomationIds and readable names.
+- [x] Run focused WPF Current Focus accessibility tests.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Update WPF resume state after the Current Focus accessibility slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

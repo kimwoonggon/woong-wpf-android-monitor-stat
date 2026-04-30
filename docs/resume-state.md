@@ -2,6 +2,29 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Current Focus Runtime Accessibility Slice
+
+- Added RED WPF App accessibility coverage for Current Focus runtime values so
+  tracking state, app/process/window, browser domain, duration, persistence,
+  poll, browser capture, DB write, and sync status fields have both stable
+  AutomationIds and readable semantic names.
+- Updated the reusable `DetailRow` value TextBlock to use its visible label as
+  `AutomationProperties.Name` and added explicit names for Last DB write and
+  Sync state text in `CurrentFocusPanel`.
+- Added a MainWindow semantic test that selects Start, Sync Now, and Stop by
+  stable AutomationIds/readable names and verifies Current Focus state remains
+  selectable through the runtime transitions.
+- This is a WPF App-only UI accessibility slice. It does not change tracking
+  persistence, SQLite schema, sync upload behavior, Android, scripts, or server
+  code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~CurrentFocusPanel_RuntimeStateValuesExposeReadableAutomationNames" -maxcpucount:1 -v minimal` failed RED on empty `TrackingStatusText` automation name, then passed after the XAML/control metadata update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~CurrentFocusPanelAccessibilityTests" -maxcpucount:1 -v minimal` passed 2 tests.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 117 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+
 ## 2026-04-30 WPF Control Bar Accessibility Polish Slice
 
 - Added RED WPF App accessibility coverage for Control Bar button semantic
