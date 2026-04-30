@@ -207,6 +207,33 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeCurrentFocusSemanticEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("VerifyCurrentFocusSemanticEvidence", tool);
+        Assert.Contains("Current Focus CurrentAppNameText readable name", tool);
+        Assert.Contains("Current Focus CurrentProcessNameText readable name", tool);
+        Assert.Contains("Current Focus CurrentWindowTitleText readable name", tool);
+        Assert.Contains("Current Focus CurrentBrowserDomainText readable name", tool);
+        Assert.Contains("Current Focus CurrentSessionDurationText readable name", tool);
+        Assert.Contains("Current Focus LastPollTimeText readable name", tool);
+        Assert.Contains("Current Focus LastDbWriteTimeText readable name", tool);
+        Assert.Contains("Current Focus LastPersistedSessionText readable name", tool);
+        Assert.Contains("Current Focus LastSyncStatusText readable name", tool);
+        Assert.Contains("Current Focus CurrentAppNameText runtime status", tool);
+        Assert.Contains("Current Focus LastSyncStatusText runtime status", tool);
+        Assert.Contains("GetElementName(window, automationId)", tool);
+        Assert.Contains("GetElementText(window, automationId)", tool);
+        Assert.Contains("checks = context.Results.Select", tool);
+        Assert.Contains("## PASS/FAIL/WARN Table", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

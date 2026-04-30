@@ -63,6 +63,7 @@ internal static class UiSnapshotRunner
             TryMoveWindow(mainWindow, context);
             Thread.Sleep(500);
             VerifyHeaderBadgeSemanticNames(mainWindow, context);
+            VerifyCurrentFocusSemanticEvidence(mainWindow, context);
 
             if (options.Mode == UiSnapshotMode.TrackingPipeline)
             {
@@ -127,6 +128,82 @@ internal static class UiSnapshotRunner
             "Header PrivacyStatusBadge readable name",
             "Privacy",
             GetElementName(window, "PrivacyStatusBadge"));
+    }
+
+    private static void VerifyCurrentFocusSemanticEvidence(Window window, UiSnapshotContext context)
+    {
+        CurrentFocusSemanticField[] fields =
+        [
+            new(
+                "CurrentAppNameText",
+                "Current app",
+                "Current Focus CurrentAppNameText readable name",
+                "Current Focus CurrentAppNameText runtime status"),
+            new(
+                "CurrentProcessNameText",
+                "Current process",
+                "Current Focus CurrentProcessNameText readable name",
+                "Current Focus CurrentProcessNameText runtime status"),
+            new(
+                "CurrentWindowTitleText",
+                "Current window title",
+                "Current Focus CurrentWindowTitleText readable name",
+                "Current Focus CurrentWindowTitleText runtime status"),
+            new(
+                "CurrentBrowserDomainText",
+                "Current browser domain",
+                "Current Focus CurrentBrowserDomainText readable name",
+                "Current Focus CurrentBrowserDomainText runtime status"),
+            new(
+                "CurrentSessionDurationText",
+                "Current session duration",
+                "Current Focus CurrentSessionDurationText readable name",
+                "Current Focus CurrentSessionDurationText runtime status"),
+            new(
+                "LastPollTimeText",
+                "Last poll time",
+                "Current Focus LastPollTimeText readable name",
+                "Current Focus LastPollTimeText runtime status"),
+            new(
+                "LastDbWriteTimeText",
+                "Last DB write time",
+                "Current Focus LastDbWriteTimeText readable name",
+                "Current Focus LastDbWriteTimeText runtime status"),
+            new(
+                "LastPersistedSessionText",
+                "Last persisted session",
+                "Current Focus LastPersistedSessionText readable name",
+                "Current Focus LastPersistedSessionText runtime status"),
+            new(
+                "LastSyncStatusText",
+                "Sync state",
+                "Current Focus LastSyncStatusText readable name",
+                "Current Focus LastSyncStatusText runtime status")
+        ];
+
+        foreach (CurrentFocusSemanticField field in fields)
+        {
+            VerifyCurrentFocusField(window, context, field);
+        }
+    }
+
+    private static void VerifyCurrentFocusField(
+        Window window,
+        UiSnapshotContext context,
+        CurrentFocusSemanticField field)
+    {
+        string automationId = field.AutomationId;
+        context.CheckContains(
+            field.ReadableNameCheck,
+            field.ReadableName,
+            GetElementName(window, automationId));
+
+        string runtimeStatus = GetElementText(window, automationId);
+        context.Add(
+            field.RuntimeStatusCheck,
+            "Non-empty runtime value from AutomationProperties.ItemStatus or text",
+            string.IsNullOrWhiteSpace(runtimeStatus) ? "<empty>" : runtimeStatus,
+            string.IsNullOrWhiteSpace(runtimeStatus) ? CheckStatus.Fail : CheckStatus.Pass);
     }
 
     private static ProcessStartInfo CreateStartInfo(UiSnapshotOptions options)
@@ -1043,6 +1120,12 @@ internal sealed class UiSnapshotContext
 }
 
 internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
+
+internal sealed record CurrentFocusSemanticField(
+    string AutomationId,
+    string ReadableName,
+    string ReadableNameCheck,
+    string RuntimeStatusCheck);
 
 internal sealed record DatabaseEvidence(
     string ScenarioName,

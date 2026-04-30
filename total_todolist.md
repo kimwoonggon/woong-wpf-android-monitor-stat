@@ -1296,6 +1296,17 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm Header badge semantic evidence appears in report/manifest.
 - [x] Update WPF resume state after the acceptance evidence slice.
 
+## Milestone 37: WPF Current Focus Acceptance Semantic Evidence
+
+- [x] Add a failing WPF App/tool test requiring Current Focus runtime field semantic evidence in snapshot report/manifest checks.
+- [x] Add Current app/process/window title/domain/session duration/last poll/last DB write/last persisted session/sync state readable-name checks to `Woong.MonitorStack.Windows.UiSnapshots`.
+- [x] Add Current Focus runtime status evidence through the existing `AutomationProperties.ItemStatus`/text reader path.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm Current Focus semantic evidence appears in report/manifest.
+- [x] Update WPF resume state after the Current Focus acceptance evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

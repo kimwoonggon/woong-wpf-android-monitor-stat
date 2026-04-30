@@ -1,6 +1,15 @@
 # Resume State
 
 Updated: 2026-04-30
+
+## 2026-04-30 WPF Current Focus Acceptance Semantic Evidence Slice
+
+- Added RED WPF App acceptance-tool coverage requiring `Woong.MonitorStack.Windows.UiSnapshots` to emit Current Focus semantic checks into the shared report/manifest check list.
+- Added readable-name and runtime-status evidence for Current app, Current process, Current window title, Current browser domain, Current session duration, Last poll time, Last DB write time, Last persisted session, and Sync state.
+- The snapshot tool reuses the existing `AutomationProperties.ItemStatus`/text reader path, so accessibility names stay readable while runtime values remain visible to acceptance artifacts.
+- Verified WPF App tests, solution build, and WPF UI acceptance at `artifacts/wpf-ui-acceptance/20260430-104509`.
+- This is a WPF App/tool acceptance evidence slice only. It does not change product telemetry collection, SQLite schema, Android, Android scripts, Android docs, or server code.
+
 ## 2026-04-30 WPF Acceptance Header Badge Evidence Slice
 
 - Added RED WPF App acceptance-tool coverage requiring the snapshot tool to emit Header Tracking, Sync, and Privacy badge semantic-name checks into the shared report/manifest check list.
