@@ -23,6 +23,9 @@ does not replace `total_todolist.md`.
 
 ## PRD-To-Checklist Gaps
 
+Environment-bound blocker evidence is tracked in
+`docs/qa-external-blockers.md`.
+
 1. Server mixed-batch upload behavior is covered for focus, web, raw-event, and
    location contexts. HTTP invalid input/date-range behavior and date-range
    local-midnight split allocation are now covered in the active main-agent
