@@ -1821,3 +1821,9 @@ milestones below are finished.
 
 - [x] Marked PostgreSQL-dependent concurrency idempotency work as `[blocked]` because it requires a real PostgreSQL/Testcontainers fixture.
 - [x] Current `server_check_todo.md` has no remaining non-blocked unchecked server validation items.
+
+## Milestone 74: Checklist Evidence Hygiene
+
+- [x] Update `wpf_check_todo.md` so `artifacts/wpf-check/latest/` is documented as the current consolidated WPF check package, not a future target.
+- [x] Update `android_check_todo.md` with latest Android resource measurement artifact `artifacts/android-resource-measurements/20260430-174552/`.
+- [x] Preserve external blocker wording for physical-device Android resource measurement.

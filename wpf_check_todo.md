@@ -18,7 +18,7 @@ artifacts/wpf-ui-acceptance/latest/
 artifacts/ui-snapshots/latest/
 ```
 
-Future consolidated WPF check package target:
+Current consolidated WPF check package target:
 
 ```text
 artifacts/wpf-check/latest/
@@ -169,9 +169,9 @@ Forbidden:
   address-bar UI Automation only as an explicit best-effort fallback.
 - WPF acceptance must use temp SQLite databases and must not touch the user's
   production/local DB.
-- If a future consolidated `artifacts/wpf-check/latest/` package is added, it
-  should aggregate the existing WPF acceptance, UI snapshot, Chrome native, and
-  RealStart reports without committing PNG artifacts to git.
+- The consolidated `artifacts/wpf-check/latest/` package aggregates WPF
+  acceptance, UI snapshot, Chrome native, and RealStart evidence without
+  committing PNG artifacts to git.
 
 ## WPF Same-Window Browser Navigation Evidence 2026-04-30
 

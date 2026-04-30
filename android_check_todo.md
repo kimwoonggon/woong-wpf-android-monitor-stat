@@ -46,6 +46,12 @@ Latest Room seeded dashboard/sessions evidence:
 artifacts/android-check/20260430-183032/
 ```
 
+Latest Android resource measurement evidence:
+
+```text
+artifacts/android-resource-measurements/20260430-174552/
+```
+
 Each checked feature should have:
 
 - a `before-*.png` image showing the pre-check state or the expected test gate;
@@ -83,6 +89,7 @@ Generated evidence:
 - `artifacts/android-check/latest/report.md`
 - `artifacts/android-check/latest/manifest.json`
 - `artifacts/android-check/latest/visual-review-prompt.md`
+- `artifacts/android-resource-measurements/20260430-174552/manifest.json`
 - before/after PNG evidence for A01-A17
 
 Commands completed for this run:

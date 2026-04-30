@@ -4450,3 +4450,9 @@ Server checklist closure note:
 
 - PostgreSQL-dependent concurrency idempotency work is marked `[blocked]` until a real PostgreSQL/Testcontainers fixture is available.
 - `server_check_todo.md` has no remaining non-blocked unchecked server validation items after the raw-event privacy guard slice.
+
+## 2026-04-30 Checklist Evidence Hygiene Slice
+
+- Updated WPF checklist wording so `artifacts/wpf-check/latest/` is documented as the current consolidated WPF check package.
+- Updated Android checklist evidence folder with the latest resource measurement artifact `artifacts/android-resource-measurements/20260430-174552/`.
+- Physical-device Android resource measurement remains an external hardware blocker; emulator evidence does not close it.
