@@ -2,6 +2,17 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Android Compact Toolbar Contract Slice
+
+- Closed the remaining launcher toolbar/header TODO against the user-provided Android XML skeleton direction.
+- Added RED architecture coverage requiring `activity_main.xml` and `styles.xml` to make the shell toolbar explicit and compact: 56dp `actionBarSize`, matching `topAppBar` minHeight, 16dp title insets, and a 16sp `WmsToolbarTitle`.
+- Updated the Android theme and `MaterialToolbar` XML to satisfy that compact toolbar contract without changing privacy, sync, UsageStats, Room, or screenshot telemetry scope.
+
+Verified:
+
+- RED first: `dotnet test tests/Woong.MonitorStack.Architecture.Tests/Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesCompactReadableToolbarTitle" -v minimal` failed on missing compact toolbar contract, then passed after XML/style updates.
+- `./gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-143723`.
 ## 2026-04-30 WPF Acceptance Run Configuration Evidence Slice
 
 - Audited WPF acceptance artifacts after Milestone 52 and found no remaining WPF implementation TODO, but the root acceptance report/manifest did not expose the run configuration as a grouped evidence object.

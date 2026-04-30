@@ -13,6 +13,9 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/wms_surface"
         android:elevation="0dp"
+        android:minHeight="?attr/actionBarSize"
+        app:contentInsetStart="16dp"
+        app:contentInsetStartWithNavigation="16dp"
         app:title="@string/app_name"
         app:titleTextAppearance="@style/WmsToolbarTitle"
         app:titleTextColor="@color/wms_text_primary" />

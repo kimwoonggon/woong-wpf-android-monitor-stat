@@ -271,7 +271,11 @@ public sealed class AndroidWireframeLayoutTests
 
         Assert.Contains("app:titleTextAppearance=\"@style/WmsToolbarTitle\"", main);
         Assert.Contains("name=\"WmsToolbarTitle\"", styles);
-        Assert.Contains("<item name=\"android:textSize\">18sp</item>", styles);
+        Assert.Contains("<item name=\"actionBarSize\">56dp</item>", styles);
+        Assert.Contains("android:minHeight=\"?attr/actionBarSize\"", main);
+        Assert.Contains("app:contentInsetStart=\"16dp\"", main);
+        Assert.Contains("app:contentInsetStartWithNavigation=\"16dp\"", main);
+        Assert.Contains("<item name=\"android:textSize\">16sp</item>", styles);
     }
 
     [Fact]

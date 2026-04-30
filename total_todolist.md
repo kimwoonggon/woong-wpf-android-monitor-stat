@@ -1432,7 +1432,7 @@ milestones below are finished.
 - [x] Document that the user-provided XML wireframe skeleton is the target shape for the Android fragment shell.
 - [x] Verify Android Sessions fragment slice with Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests, full `.NET` build, and coverage generation.
 - [x] Verify bottom-navigation readability slice with focused architecture test, Gradle unit/build/androidTest build, emulator screenshot artifact `artifacts/android-ui-snapshots/20260430-124333`, full `.NET` tests, full `.NET` build, and coverage generation.
-- [ ] Normalize the launcher toolbar/header so it matches the compact MaterialToolbar skeleton.
+- [x] Normalize the launcher toolbar/header so it matches the compact MaterialToolbar skeleton.
 - [x] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
 - [x] Correct the launcher shell back to the compact 72dp Material bottom navigation from the user-provided Android XML skeleton and remove the oversized overlay label row.
 - [x] Capture emulator evidence for compact shell, period-filter ordering, and labeled latitude/longitude location context at `artifacts/android-ui-snapshots/20260430-130812`.
@@ -1450,6 +1450,9 @@ milestones below are finished.
 - [x] Add `12-main-shell-report.png` to Android screenshot automation and connected-device artifact pulling.
 - [x] Capture emulator evidence for ReportFragment runtime wiring at `artifacts/android-ui-snapshots/20260430-142758`, including Room-backed Active Focus, Daily Avg, Top App, and top-app rows.
 - [x] Verify ReportFragment runtime wiring with Android Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests (397), full `.NET` build, and coverage generation at 91.7% line coverage.
+- [x] Add RED/GREEN architecture coverage requiring the launcher toolbar to use explicit 56dp actionBarSize, matching minHeight, 16dp title insets, and 16sp title text.
+- [x] Capture emulator evidence for the compact toolbar contract at `artifacts/android-ui-snapshots/20260430-143723`.
+- [x] Verify compact toolbar slice with Android Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests (398), full `.NET` build, and coverage generation at 91.7% line coverage.
 ## Milestone 47: Chrome Native Messaging Sandbox Evidence
 
 - [x] Audit Chrome/native messaging acceptance docs, script, and Windows browser tests for sandbox safety coverage.

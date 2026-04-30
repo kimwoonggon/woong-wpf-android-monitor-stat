@@ -281,6 +281,10 @@ and feature screenshots for each tab.
 - Android screenshot automation now captures `12-main-shell-report.png` after
   selecting the Report bottom-navigation item, so every launcher shell tab has
   a dedicated local screenshot artifact.
+- The launcher shell toolbar is now explicitly compact: the theme sets
+  `actionBarSize` to 56dp, `MaterialToolbar` has matching `minHeight`, the title
+  uses a 16sp `WmsToolbarTitle`, and start insets are fixed at 16dp to match the
+  XML skeleton's compact header intent.
 
 ## Current Fragment Shell Gaps
 
@@ -288,12 +292,11 @@ These are intentionally tracked as incomplete because the latest screenshot
 evidence still does not match the user-provided XML wireframe skeleton closely
 enough:
 
-- The launcher toolbar/header is too large and must be normalized to the
-  compact MaterialToolbar shell from the XML skeleton.
 - Screenshot automation should keep adding one feature screenshot for any new
   shell tab or major fragment surface introduced later.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Launcher toolbar/header visual normalization against the compact XML skeleton.
+- Future visual tightening from human/GPT review of the latest emulator
+  screenshots.

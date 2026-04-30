@@ -111,6 +111,8 @@ Latest emulator evidence:
   `artifacts/android-ui-snapshots/20260430-140141`.
 - Latest ReportFragment runtime-wiring evidence:
   `artifacts/android-ui-snapshots/20260430-142758`.
+- Latest compact toolbar evidence:
+  `artifacts/android-ui-snapshots/20260430-143723`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -154,6 +156,8 @@ Latest emulator evidence:
 - `12-main-shell-report.png` captures the real launcher shell after selecting
   Report; it shows Room-backed Recent 7 days Active Focus, Daily Avg, Top App,
   and top-app rows from seeded local focus-session data.
+- The launcher toolbar contract is now compact and test-guarded: 56dp app bar
+  height, 16sp title text, and fixed 16dp title insets.
 
 Future connected-device improvements:
 
@@ -166,8 +170,8 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
-- The fragment shell still needs visual tightening against the user-provided
-  XML skeleton, especially compact toolbar/header polish.
+- The fragment shell can still receive future visual tightening from human/GPT
+  review, but the compact toolbar/header contract is now covered by tests.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is
