@@ -2,6 +2,21 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Acceptance Snapshot Matrix Evidence Slice
+
+- Audited WPF acceptance artifacts after Milestone 53 and found no remaining WPF implementation TODO, but the root run-configuration evidence did not expose the snapshot mode or viewport-width matrix used by the UI snapshot tool.
+- Added RED WPF App script coverage requiring the root acceptance report and manifest run configuration to include `TrackingPipeline` snapshot mode and the `1920,1366,1024` viewport matrix.
+- Updated `scripts/run-wpf-ui-acceptance.ps1` so snapshot mode and viewport widths are named once, passed to `Woong.MonitorStack.Windows.UiSnapshots`, and written into both root report and root manifest run configuration evidence.
+- This is a WPF script/test/docs acceptance-evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, server code, or collected telemetry.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootRunConfigurationIncludesSnapshotModeAndViewportWidths" -maxcpucount:1 -v minimal` failed RED on missing root snapshot mode/viewport run-configuration evidence, then passed after the report/manifest fields were added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 135 WPF App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 399 solution tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-144509`; root `report.md` and `manifest.json` include snapshot mode `TrackingPipeline` and viewport widths `1920,1366,1024`.
+
 ## 2026-04-30 Android Compact Toolbar Contract Slice
 
 - Closed the remaining launcher toolbar/header TODO against the user-provided Android XML skeleton direction.

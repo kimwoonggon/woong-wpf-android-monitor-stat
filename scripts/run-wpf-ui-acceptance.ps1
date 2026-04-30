@@ -19,6 +19,8 @@ $rootManifest = Join-Path $runRoot "manifest.json"
 $appProject = Join-Path $repoRoot "src/Woong.MonitorStack.Windows.App/Woong.MonitorStack.Windows.App.csproj"
 $realStartProject = Join-Path $repoRoot "tools/Woong.MonitorStack.Windows.RealStartAcceptance/Woong.MonitorStack.Windows.RealStartAcceptance.csproj"
 $snapshotProject = Join-Path $repoRoot "tools/Woong.MonitorStack.Windows.UiSnapshots/Woong.MonitorStack.Windows.UiSnapshots.csproj"
+$snapshotMode = "TrackingPipeline"
+$viewportWidths = "1920,1366,1024"
 
 Write-Host "This will observe foreground window metadata for local WPF UI acceptance."
 Write-Host "It will not record keystrokes."
@@ -57,8 +59,8 @@ try {
 
     $previousAcceptanceMode = $env:WOONG_MONITOR_ACCEPTANCE_MODE
     try {
-        $env:WOONG_MONITOR_ACCEPTANCE_MODE = "TrackingPipeline"
-        dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot --db $trackingPipelineDbPath --mode TrackingPipeline --viewport-widths "1920,1366,1024"
+        $env:WOONG_MONITOR_ACCEPTANCE_MODE = $snapshotMode
+        dotnet run --project $snapshotProject --no-build -- --app $AppPath --output-root $snapshotRoot --db $trackingPipelineDbPath --mode $snapshotMode --viewport-widths $viewportWidths
         if ($LASTEXITCODE -ne 0) { throw "TrackingPipeline UI snapshot acceptance failed." }
     }
     finally {
@@ -84,6 +86,8 @@ try {
         "- Acceptance seconds: ``$Seconds``",
         "- Server sync allowed: ``$([bool]$AllowServerSync)``",
         "- App path: ``$AppPath``",
+        "- Snapshot mode: ``$snapshotMode``",
+        "- Viewport widths: ``$viewportWidths``",
         "",
         "## Semantic Checks",
         "",
@@ -125,6 +129,8 @@ try {
             seconds = $Seconds
             allowServerSync = [bool]$AllowServerSync
             appPath = $AppPath
+            snapshotMode = $snapshotMode
+            viewportWidths = $viewportWidths
         }
         privacyBoundary = @(
             "No keystrokes recorded",

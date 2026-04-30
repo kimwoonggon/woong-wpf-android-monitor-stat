@@ -122,6 +122,25 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootRunConfigurationIncludesSnapshotModeAndViewportWidths()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$snapshotMode = \"TrackingPipeline\"", script);
+        Assert.Contains("$viewportWidths = \"1920,1366,1024\"", script);
+        Assert.Contains("- Snapshot mode: ``$snapshotMode``", script);
+        Assert.Contains("- Viewport widths: ``$viewportWidths``", script);
+        Assert.Contains("--mode $snapshotMode", script);
+        Assert.Contains("--viewport-widths $viewportWidths", script);
+        Assert.Contains("snapshotMode = $snapshotMode", script);
+        Assert.Contains("viewportWidths = $viewportWidths", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

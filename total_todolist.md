@@ -1527,6 +1527,17 @@ milestones below are finished.
 - [x] Run solution tests and solution build.
 - [x] Run WPF UI acceptance script and confirm root run-configuration evidence at `artifacts/wpf-ui-acceptance/20260430-143517`.
 
+## Milestone 54: WPF Acceptance Snapshot Matrix Evidence
+
+- [x] Audit WPF/browser/runtime acceptance TODOs after Milestone 53 and identify the missing root snapshot mode/viewport matrix run-configuration evidence.
+- [x] Add a failing WPF App script test requiring root acceptance report/manifest run configuration to include snapshot mode and viewport widths.
+- [x] Name snapshot mode and viewport widths once in `scripts/run-wpf-ui-acceptance.ps1`, pass them to the snapshot tool, and write them into root report/manifest evidence.
+- [x] Update WPF resume state for the snapshot matrix evidence slice.
+- [x] Run focused WPF App script test.
+- [x] Run WPF App tests.
+- [x] Run solution tests and solution build.
+- [x] Run WPF UI acceptance script and confirm root snapshot mode/viewport matrix evidence at `artifacts/wpf-ui-acceptance/20260430-144509`.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
