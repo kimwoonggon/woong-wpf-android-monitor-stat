@@ -672,7 +672,9 @@ milestones below are finished.
 - [x] Add fragment XML skeletons for Splash, Permission onboarding, Dashboard, Sessions, App detail, Report, and Settings based on the provided Android wireframe skeleton.
 - [x] Add RED/GREEN tests proving the Android shell, fragment layout resources, compact toolbar title style, distinct fragment summary labels, and shell screenshot contract.
 - [x] Capture connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-115054`, including `09-main-shell.png`.
-- [ ] Follow-up: wire the new fragment shell screens to the same Room-backed ViewModels/repositories as the existing Activity screens.
+- [x] Wire `DashboardFragment` to `DashboardViewModel`/`RoomDashboardRepository` and remove hardcoded fake runtime data from `fragment_dashboard.xml`.
+- [x] Verify `09-main-shell.png` shows seeded Room-backed values (`com.android.chrome`, non-zero Active/Screen/Idle totals) at `artifacts/android-ui-snapshots/20260430-120317`.
+- [ ] Follow-up: wire the new Sessions, Report, and Settings fragments to the same runtime behavior as the existing Activity screens.
 
 ## Milestone 28: Privacy And Retention Hardening
 

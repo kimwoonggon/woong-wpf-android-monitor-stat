@@ -64,35 +64,35 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Current app   Chrome" />
+                    android:text="@string/no_top_app" />
 
                 <TextView
                     android:id="@+id/currentPackageText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Package       com.android.chrome" />
+                    android:text="@string/no_package" />
 
                 <TextView
                     android:id="@+id/currentSessionDurationText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Session duration   00:12:31" />
+                    android:text="@string/zero_clock_duration" />
 
                 <TextView
                     android:id="@+id/lastCollectedText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Last collected   09:25" />
+                    android:text="@string/no_poll_yet" />
 
                 <TextView
                     android:id="@+id/lastDbWriteText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Last DB write   09:25" />
+                    android:text="@string/no_db_write_yet" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -126,6 +126,7 @@
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/activeFocusValueText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -166,6 +167,7 @@
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/screenOnValueText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -206,6 +208,7 @@
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/idleValueText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -246,6 +249,7 @@
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/syncStateValueText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"

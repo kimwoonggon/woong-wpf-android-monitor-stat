@@ -104,7 +104,7 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-115054`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-120317`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -117,6 +117,10 @@ Latest emulator evidence:
   fragment dashboard content, and Material bottom navigation.
 - The fragment dashboard summary tiles use distinct metric labels instead of
   repeating the same placeholder title.
+- The fragment dashboard now reads seeded local Room data through
+  `DashboardViewModel`/`RoomDashboardRepository`, so `09-main-shell.png` shows
+  the seeded `com.android.chrome` current focus and non-zero Active/Screen/Idle
+  totals.
 
 Future connected-device improvements:
 
@@ -129,9 +133,8 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
-- The new fragment shell is visually aligned, but its Dashboard/Sessions/Report
-  fragments still need to be wired to the same Room-backed ViewModels as the
-  existing Activity screens.
+- Sessions, Report, and Settings fragments still need to be wired to the same
+  runtime behavior as the existing Activity screens.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

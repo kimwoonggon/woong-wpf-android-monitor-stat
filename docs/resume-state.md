@@ -1,6 +1,24 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Dashboard Fragment Room Wiring Slice
+
+- Added RED architecture tests proving `fragment_dashboard.xml` does not hardcode fake runtime data such as `com.android.chrome`, `00:12:31`, or `09:25`.
+- Added RED architecture tests requiring bindable fragment Dashboard value IDs plus `DashboardFragment` use of `MonitorDatabase`, `RoomDashboardRepository`, and `DashboardViewModel`.
+- Updated `DashboardFragment` to load local Room data through the existing Dashboard repository/ViewModel and render current app/package, session duration, last collected/DB-write text, Active/Screen/Idle totals, and recent sessions.
+- Latest connected-emulator screenshot artifact: `artifacts/android-ui-snapshots/20260430-120317`; `09-main-shell.png` now shows seeded Room-backed values including `com.android.chrome`, `2h 0m`, `2h 10m`, and `10m`.
+- Remaining Android shell gap: Sessions, Report, and Settings fragments still need runtime wiring equivalent to the existing Activity screens.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFragmentDashboard_DoesNotHardcodeFakeRuntimeData|FullyQualifiedName~AndroidFragmentDashboard_ExposesRoomBackedValueIds" -maxcpucount:1 -v minimal` failed RED then passed.
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.MainActivityTest" --no-daemon --stacktrace` passed.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator and generated `09-main-shell.png` with Room-backed data.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 381 `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
+
 ## 2026-04-30 WPF SQLite Runtime Evidence Slice
 
 - Audited WPF acceptance runtime proof after control action evidence and found SQLite persistence/outbox counts were available only as generic DB evidence.

@@ -279,6 +279,54 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("@string/sync_local_only_status", dashboard);
     }
 
+    [Fact]
+    public void AndroidFragmentDashboard_DoesNotHardcodeFakeRuntimeData()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+
+        Assert.DoesNotContain("com.android.chrome", dashboard, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Session duration   00:12:31", dashboard, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Last collected   09:25", dashboard, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Last DB write   09:25", dashboard, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AndroidFragmentDashboard_ExposesRoomBackedValueIds()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+        string fragment = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "dashboard",
+            "DashboardFragment.kt"));
+
+        string[] expectedIds =
+        [
+            "@+id/activeFocusValueText",
+            "@+id/screenOnValueText",
+            "@+id/idleValueText",
+            "@+id/syncStateValueText"
+        ];
+
+        foreach (string expectedId in expectedIds)
+        {
+            Assert.Contains(expectedId, dashboard);
+        }
+
+        Assert.Contains("RoomDashboardRepository", fragment);
+        Assert.Contains("DashboardViewModel", fragment);
+        Assert.Contains("MonitorDatabase.getInstance", fragment);
+    }
+
     private static string ReadAndroidLayout(string repoRoot, string fileName)
     {
         return File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", fileName));

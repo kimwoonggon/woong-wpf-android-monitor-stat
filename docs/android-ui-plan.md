@@ -231,9 +231,12 @@ screen by screen.
 - Fragment Dashboard summary cards now use distinct labels for Active Focus,
   Screen On, Idle time, and local-only sync state instead of repeating one
   placeholder title.
+- `DashboardFragment` now loads `RoomDashboardRepository` through
+  `DashboardViewModel`, removes hardcoded demo runtime data, and renders seeded
+  local Room totals/current-focus copy in the launcher shell screenshot.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Wiring the new fragments to the same Room-backed ViewModels used by the
-  existing Activity screens.
+- Wiring the new Sessions, Report, and Settings fragments to the same runtime
+  behavior as the existing Activity screens.
