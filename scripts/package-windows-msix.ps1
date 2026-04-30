@@ -155,17 +155,14 @@ This artifact contains a signed MSIX package for local Windows testing:
 - `certificates\$CertificateFileName`
 - `install-windows-msix.ps1`
 
-Install from an elevated or normal PowerShell prompt:
+Install from an elevated PowerShell prompt:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
-  -PackagePath .\WoongMonitorStack.Windows.msix `
-  -CertificatePath .\certificates\$CertificateFileName `
-  -TrustCertificate
-```
+~~~powershell
+powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 -PackagePath .\WoongMonitorStack.Windows.msix -CertificatePath .\certificates\$CertificateFileName -TrustCertificate -TrustScope LocalMachine
+~~~
 
-The installer script trusts the public certificate only in `Cert:\CurrentUser\TrustedPeople`.
-It does not use the machine-wide certificate store.
+The installer script trusts the public certificate in `Cert:\LocalMachine\TrustedPeople`.
+That machine-wide store is required for reliable MSIX/App Installer validation of this self-signed test certificate.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8

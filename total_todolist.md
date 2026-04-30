@@ -1990,3 +1990,23 @@ milestones below are finished.
 
 - [ ] Replace per-run test certificate with a stable release signing certificate/secrets strategy before public distribution.
 - [ ] Add a tag-based release workflow after signing policy is finalized.
+
+## 2026-05-01 Windows MSIX 0x800B010A Certificate Trust Fix
+
+- [x] Reproduced the documentation/script gap with RED architecture tests for `0x800B010A`, `TrustScope`, `Cert:\LocalMachine\TrustedPeople`, and Administrator guidance.
+- [x] Updated `scripts\install-windows-msix.ps1` with explicit `-TrustScope LocalMachine|CurrentUser`.
+- [x] Default MSIX install trust now targets `Cert:\LocalMachine\TrustedPeople`, which is the reliable store for Windows App Installer validation of the self-signed test certificate.
+- [x] Added an Administrator guard before importing into `LocalMachine` unless `-WhatIf` is used.
+- [x] Regenerated local signed MSIX artifact and artifact README with the LocalMachine install command.
+- [x] Updated README and `docs/windows-release-msix.md` with the `0x800B010A` fix path.
+
+### Validation Update
+
+- [x] Focused Windows release packaging architecture tests passed: 6 passed.
+- [x] `scripts\package-windows-msix.ps1 -CreateTestCertificate` passed and signed the MSIX.
+- [x] `artifacts\windows-msix\install-windows-msix.ps1 ... -TrustScope LocalMachine -WhatIf` passed and showed LocalMachine TrustedPeople trust action.
+- [x] `artifacts\windows-msix\install-windows-msix.ps1 ... -TrustScope CurrentUser -WhatIf` passed and remains available for development experiments.
+- [x] `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings and 0 errors.
+- [x] `dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] Coverage generated: line 88.6% (4299/4851), branch 69.4% (619/891).

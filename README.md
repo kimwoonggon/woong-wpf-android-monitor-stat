@@ -260,14 +260,21 @@ GitHub Actions uploads `woong-monitor-windows-msix` with:
 - `install-windows-msix.ps1`
 - `README.md`
 
-Signed install, using a certificate trusted only for the current user:
+Signed install for the CI/local test certificate. Open PowerShell as
+Administrator first:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File artifacts\windows-msix\install-windows-msix.ps1 `
   -PackagePath artifacts\windows-msix\WoongMonitorStack.Windows.msix `
   -CertificatePath artifacts\windows-msix\certificates\WoongMonitorStack.Windows.TestSigning.cer `
-  -TrustCertificate
+  -TrustCertificate `
+  -TrustScope LocalMachine
 ```
+
+If Windows reports `0x800B010A` or says the publisher certificate cannot be
+verified, the public test certificate is not trusted in
+`Cert:\LocalMachine\TrustedPeople` yet. Re-run the command above from an
+elevated PowerShell prompt.
 
 More details: `docs/windows-release-msix.md`.
 

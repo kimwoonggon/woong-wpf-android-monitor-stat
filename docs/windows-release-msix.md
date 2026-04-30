@@ -60,19 +60,26 @@ After the `Windows WPF CI` workflow finishes:
 1. Open the workflow run in GitHub Actions.
 2. Download the artifact named `woong-monitor-windows-msix`.
 3. Extract the zip to a local folder.
-4. Open PowerShell in the extracted folder.
+4. Open PowerShell as Administrator in the extracted folder.
 5. Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
   -PackagePath .\WoongMonitorStack.Windows.msix `
   -CertificatePath .\certificates\WoongMonitorStack.Windows.TestSigning.cer `
-  -TrustCertificate
+  -TrustCertificate `
+  -TrustScope LocalMachine
 ```
 
-The first install trusts the public test certificate for the current Windows
-user only. Before the certificate is trusted, `Get-AuthenticodeSignature` can
-report an untrusted-root status even though the MSIX has a signer certificate.
+The first install trusts the public test certificate in
+`Cert:\LocalMachine\TrustedPeople`. This requires Administrator because Windows
+App Installer validates MSIX signing certificates against the machine trust
+store. Before the certificate is trusted, `Get-AuthenticodeSignature` can report
+an untrusted-root status even though the MSIX has a signer certificate.
+
+If you see `0x800B010A` or "publisher certificate could not be verified", the
+certificate has not been trusted in the machine `TrustedPeople` store yet. Re-run
+the install command above from an elevated PowerShell prompt.
 
 ## Local MSIX Package
 
@@ -111,16 +118,20 @@ artifacts\windows-msix\README.md
 
 Use a trusted development certificate, a release certificate, or the CI/local
 test certificate. The install script imports a certificate only when
-`-TrustCertificate` is explicitly passed, and only into the current user store:
+`-TrustCertificate` is explicitly passed. For test certificates, use the
+machine `TrustedPeople` store:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\install-windows-msix.ps1 `
   -PackagePath artifacts\windows-msix\WoongMonitorStack.Windows.msix `
   -CertificatePath artifacts\windows-msix\certificates\WoongMonitorStack.Windows.TestSigning.cer `
-  -TrustCertificate
+  -TrustCertificate `
+  -TrustScope LocalMachine
 ```
 
-The script uses `Cert:\CurrentUser\TrustedPeople`, not `LocalMachine`.
+`-TrustScope LocalMachine` uses `Cert:\LocalMachine\TrustedPeople` and requires
+Administrator. `-TrustScope CurrentUser` is still available for development
+experiments, but it may not satisfy App Installer certificate validation.
 
 To package and sign in one command:
 

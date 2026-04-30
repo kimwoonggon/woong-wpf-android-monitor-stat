@@ -4584,3 +4584,29 @@ Next:
 
 - For real public release, replace the per-run test certificate with a stable release signing certificate/secrets policy.
 - Then add a tag-based release workflow.
+
+## 2026-05-01 Windows MSIX 0x800B010A Certificate Trust Fix
+
+- User hit Windows install error `0x800B010A`: publisher certificate could not be verified.
+- Root cause: the previous install docs/script trusted the test certificate only in `Cert:\CurrentUser\TrustedPeople`, which is not reliable for Windows App Installer validation of self-signed MSIX test certificates.
+- Added `-TrustScope LocalMachine|CurrentUser` to `scripts\install-windows-msix.ps1`; the default is now `LocalMachine`.
+- `LocalMachine` trust imports the public `.cer` into `Cert:\LocalMachine\TrustedPeople` only when `-TrustCertificate` is explicitly passed and PowerShell is running as Administrator.
+- `CurrentUser` trust remains available for development experiments, but docs warn it may not satisfy App Installer.
+- Regenerated the local signed MSIX artifact and artifact README with the corrected elevated PowerShell command.
+- Updated README and `docs/windows-release-msix.md` with the exact 0x800B010A remediation path.
+
+Immediate install command for downloaded `woong-monitor-windows-msix` artifact:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 -PackagePath .\WoongMonitorStack.Windows.msix -CertificatePath .\certificates\WoongMonitorStack.Windows.TestSigning.cer -TrustCertificate -TrustScope LocalMachine
+```
+
+Validation:
+
+- Focused Windows release packaging architecture tests passed: 6 passed.
+- Local signed MSIX packaging passed with `scripts\package-windows-msix.ps1 -CreateTestCertificate`.
+- Install script `-WhatIf` passed for both `LocalMachine` and `CurrentUser` trust scopes.
+- Full Debug solution test passed: 460 passed, 6 PostgreSQL/Testcontainers tests skipped by default.
+- Release build passed with 0 warnings/errors.
+- Release test passed: 460 passed, 6 PostgreSQL/Testcontainers tests skipped by default.
+- Coverage generated: line 88.6%, branch 69.4%.

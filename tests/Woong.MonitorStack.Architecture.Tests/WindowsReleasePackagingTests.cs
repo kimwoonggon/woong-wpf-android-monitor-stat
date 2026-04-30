@@ -106,10 +106,12 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("README.md", packageScript, StringComparison.Ordinal);
         Assert.Contains("Add-AppxPackage", installScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Cert:\\CurrentUser\\TrustedPeople", installScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("TrustScope", installScript, StringComparison.Ordinal);
+        Assert.Contains("Cert:\\LocalMachine\\TrustedPeople", installScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WindowsPrincipal", installScript, StringComparison.Ordinal);
+        Assert.Contains("Administrator", installScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("TrustCertificate", installScript, StringComparison.Ordinal);
         Assert.DoesNotContain("MSIX_SIGNING_CERTIFICATE", packageScript, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Cert:\\LocalMachine", installScript, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Cert:\\LocalMachine", packageScript, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Remove-Item Cert:", installScript, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -128,6 +130,9 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("-CreateTestCertificate", doc, StringComparison.Ordinal);
         Assert.Contains("WoongMonitorStack.Windows.TestSigning.cer", doc, StringComparison.Ordinal);
         Assert.Contains("woong-monitor-windows-msix", doc, StringComparison.Ordinal);
+        Assert.Contains("0x800B010A", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("LocalMachine", doc, StringComparison.Ordinal);
+        Assert.Contains("Administrator", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("unsigned MSIX", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("signed MSIX", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Download the artifact named `woong-monitor-windows-msix`", doc, StringComparison.Ordinal);

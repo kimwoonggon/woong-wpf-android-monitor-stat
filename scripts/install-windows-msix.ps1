@@ -3,10 +3,18 @@ param(
     [string]$PackagePath,
     [string]$CertificatePath = "",
     [switch]$TrustCertificate,
+    [ValidateSet("LocalMachine", "CurrentUser")]
+    [string]$TrustScope = "LocalMachine",
     [switch]$WhatIf
 )
 
 $ErrorActionPreference = "Stop"
+
+function Test-IsAdministrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
 $resolvedPackagePath = [System.IO.Path]::GetFullPath($PackagePath)
 if (-not (Test-Path -LiteralPath $resolvedPackagePath)) {
@@ -23,9 +31,20 @@ if ($TrustCertificate) {
         throw "Certificate file not found: $resolvedCertificatePath"
     }
 
-    Write-Host "Importing package certificate into Cert:\CurrentUser\TrustedPeople"
+    $certificateStoreLocation = if ($TrustScope -eq "LocalMachine") {
+        "Cert:\LocalMachine\TrustedPeople"
+    }
+    else {
+        "Cert:\CurrentUser\TrustedPeople"
+    }
+
+    if ($TrustScope -eq "LocalMachine" -and -not $WhatIf -and -not (Test-IsAdministrator)) {
+        throw "TrustScope LocalMachine requires PowerShell as Administrator. Re-run from an elevated PowerShell prompt, or pass -TrustScope CurrentUser for a less reliable per-user trust attempt."
+    }
+
+    Write-Host "Importing package certificate into $certificateStoreLocation"
     if (-not $WhatIf) {
-        Import-Certificate -FilePath $resolvedCertificatePath -CertStoreLocation "Cert:\CurrentUser\TrustedPeople" | Out-Null
+        Import-Certificate -FilePath $resolvedCertificatePath -CertStoreLocation $certificateStoreLocation | Out-Null
     }
 }
 elseif (-not [string]::IsNullOrWhiteSpace($CertificatePath)) {
@@ -36,4 +55,3 @@ Write-Host "Installing MSIX package with Add-AppxPackage: $resolvedPackagePath"
 if (-not $WhatIf) {
     Add-AppxPackage -Path $resolvedPackagePath
 }
-
