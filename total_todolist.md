@@ -2063,3 +2063,18 @@ milestones below are finished.
 - [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 472 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
 - [x] Coverage collection passed: line 89.3% (4737/5300), branch 73.4% (870/1185). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF App Focus Chart Long Label Visibility Fix
+
+- [x] Reproduced the user-reported App Focus card issue as a chart-label behavior regression: long executable labels can consume the compact card category axis and make the top 3 bars look absent.
+- [x] Added RED tests proving compact dashboard horizontal charts shorten long executable labels while preserving short labels.
+- [x] Added detail-window behavior so chart detail views can disable label compaction and preserve full app/process labels for inspection.
+- [x] Updated `docs/wpf-ui-plan.md` to document the dashboard-card compaction versus detail-window full-label behavior.
+
+### Validation Update
+
+- [x] Focused Windows Presentation tests passed: 74 passed.
+- [x] Focused Windows App tests passed: 158 passed.
+- [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 474 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing the stale local Release WPF process that was locking binaries.
+- [x] Coverage collection passed: line 88.3% (4480/5073), branch 69.6% (667/957). Report: artifacts/coverage/SummaryGithub.md.

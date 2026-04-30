@@ -80,4 +80,36 @@ public sealed class DashboardLiveChartsMapperTests
         Assert.Equal("Apps", rowSeries.Name);
         Assert.Equal([1_200_000, 600_000], rowSeries.Values);
     }
+
+    [Fact]
+    public void BuildHorizontalBarChart_CompactsLongExecutableLabelsForDashboardCards()
+    {
+        var points = new[]
+        {
+            new DashboardChartPoint("Woong.MonitorStack.Windows.App.exe", 1_200_000),
+            new DashboardChartPoint("Code.exe", 600_000)
+        };
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", points);
+
+        Assert.Equal(["Woong.MonitorStack...", "Code.exe"], chart.Labels);
+        Assert.Equal(["Woong.MonitorStack...", "Code.exe"], Assert.Single(chart.YAxes).Labels);
+    }
+
+    [Fact]
+    public void BuildHorizontalBarChart_WhenLabelLimitIsDisabled_PreservesLongLabelsForDetails()
+    {
+        var points = new[]
+        {
+            new DashboardChartPoint("Woong.MonitorStack.Windows.App.exe", 1_200_000)
+        };
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart(
+            "Apps",
+            points,
+            maxCategoryLabelLength: null);
+
+        Assert.Equal(["Woong.MonitorStack.Windows.App.exe"], chart.Labels);
+        Assert.Equal(["Woong.MonitorStack.Windows.App.exe"], Assert.Single(chart.YAxes).Labels);
+    }
 }

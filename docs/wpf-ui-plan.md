@@ -455,6 +455,8 @@ Required charts:
 - Top Apps by Focus Time: compact horizontal bar chart with the top 3
   app/process labels on the left side and duration on the horizontal axis.
   The `상세보기` action opens a dedicated details window with up to 10 rows.
+  Long executable labels are compacted on the dashboard card so the bar plot
+  remains visible; the details window preserves full labels for inspection.
 - Top Domains by Web Focus Time: compact horizontal bar chart with the top 3
   site/domain labels on the left side and duration on the horizontal axis. The
   `상세보기` action opens a dedicated details window with up to 10 rows.

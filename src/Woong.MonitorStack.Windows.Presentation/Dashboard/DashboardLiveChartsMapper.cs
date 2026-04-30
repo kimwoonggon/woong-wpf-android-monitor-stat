@@ -4,6 +4,8 @@ namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 public static class DashboardLiveChartsMapper
 {
+    private const int DefaultHorizontalCategoryLabelLength = 22;
+
     public static DashboardLiveChartsData BuildColumnChart(
         string seriesName,
         IEnumerable<DashboardChartPoint> points)
@@ -28,7 +30,8 @@ public static class DashboardLiveChartsMapper
 
     public static DashboardLiveChartsData BuildHorizontalBarChart(
         string seriesName,
-        IEnumerable<DashboardChartPoint> points)
+        IEnumerable<DashboardChartPoint> points,
+        int? maxCategoryLabelLength = DefaultHorizontalCategoryLabelLength)
     {
         ArgumentNullException.ThrowIfNull(points);
 
@@ -38,7 +41,9 @@ public static class DashboardLiveChartsMapper
             Name = seriesName,
             Values = pointList.Select(point => point.ValueMs).ToArray()
         };
-        string[] labels = pointList.Select(point => point.Label).ToArray();
+        string[] labels = pointList
+            .Select(point => CompactCategoryLabel(point.Label, maxCategoryLabelLength))
+            .ToArray();
 
         return new DashboardLiveChartsData(
             [series],
@@ -54,5 +59,29 @@ public static class DashboardLiveChartsMapper
         long minutes = Convert.ToInt64(Math.Round(safeValue / 60_000, MidpointRounding.AwayFromZero));
 
         return $"{minutes}m";
+    }
+
+    private static string CompactCategoryLabel(string label, int? maxLength)
+    {
+        string normalized = string.IsNullOrWhiteSpace(label) ? "(unknown)" : label.Trim();
+        if (maxLength is null || normalized.Length <= maxLength.Value)
+        {
+            return normalized;
+        }
+
+        if (normalized.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            string withoutExecutableSuffix = normalized[..^4];
+            if (withoutExecutableSuffix.Length <= maxLength.Value)
+            {
+                return withoutExecutableSuffix;
+            }
+
+            normalized = withoutExecutableSuffix;
+        }
+
+        int safeMaxLength = Math.Max(4, maxLength.Value);
+        string prefix = normalized[..(safeMaxLength - 3)].TrimEnd(' ', '.');
+        return prefix + "...";
     }
 }
