@@ -611,6 +611,30 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void RealStartAcceptanceTool_ReportAndManifestIncludeSafetyEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.RealStartAcceptance", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF real-start acceptance tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("BuildRealStartSafetyEvidence", tool);
+        Assert.Contains("## RealStart Safety Evidence", tool);
+        Assert.Contains("| Claim | Expected | Actual | Status |", tool);
+        Assert.Contains("realStartSafetyEvidence", tool);
+        Assert.Contains("safety.Select", tool);
+        Assert.Contains("claim = item.Claim", tool);
+        Assert.Contains("expected = item.Expected", tool);
+        Assert.Contains("actual = item.Actual", tool);
+        Assert.Contains("status = item.Status.ToString()", tool);
+        Assert.Contains("Explicit local SQLite DB", tool);
+        Assert.Contains("Test device id only", tool);
+        Assert.Contains("Server sync opt-in", tool);
+        Assert.Contains("Process cleanup scoped to launched WPF app", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows()
     {
         string repoRoot = FindRepositoryRoot();

@@ -1449,6 +1449,16 @@ milestones below are finished.
 - [x] Run Windows tests.
 - [x] Run solution build and solution tests.
 - [x] Run Chrome native messaging cleanup-only dry-run and confirm report/manifest safety evidence.
+## Milestone 48: WPF RealStart Safety Evidence
+
+- [x] Audit WPF/browser/runtime acceptance gaps after Chrome native messaging sandbox evidence.
+- [x] Add a failing WPF App/tool test requiring grouped RealStart safety evidence in report and manifest artifacts.
+- [x] Add `realStartSafetyEvidence` rows for explicit local SQLite DB, test-only device id, server sync opt-in state, and launched-process-scoped cleanup.
+- [x] Update WPF resume state for the RealStart safety evidence slice.
+- [x] Run focused WPF App/tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build and solution tests.
+- [x] Run WPF UI acceptance script and confirm RealStart safety evidence appears in latest artifacts.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

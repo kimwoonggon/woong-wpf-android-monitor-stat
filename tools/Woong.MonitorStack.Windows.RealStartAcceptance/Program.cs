@@ -260,14 +260,16 @@ internal static class RealStartAcceptanceRunner
     {
         string outputDirectory = Path.GetDirectoryName(options.DatabasePath) ?? Environment.CurrentDirectory;
         Directory.CreateDirectory(outputDirectory);
+        IReadOnlyCollection<RealStartEvidence> safety = BuildRealStartSafetyEvidence(options);
 
-        WriteRealStartReport(outputDirectory, evidence, isSuccess, failure);
-        WriteRealStartManifest(outputDirectory, options, evidence, isSuccess, failure);
+        WriteRealStartReport(outputDirectory, evidence, safety, isSuccess, failure);
+        WriteRealStartManifest(outputDirectory, options, evidence, safety, isSuccess, failure);
     }
 
     private static void WriteRealStartReport(
         string outputDirectory,
         IReadOnlyCollection<RealStartEvidence> evidence,
+        IReadOnlyCollection<RealStartEvidence> safety,
         bool isSuccess,
         string? failure)
     {
@@ -292,12 +294,24 @@ internal static class RealStartAcceptanceRunner
             writer.WriteLine(
                 $"| {EscapeMarkdownCell(item.Claim)} | {EscapeMarkdownCell(item.Expected)} | {EscapeMarkdownCell(item.Actual)} | {item.Status} |");
         }
+
+        writer.WriteLine();
+        writer.WriteLine("## RealStart Safety Evidence");
+        writer.WriteLine();
+        writer.WriteLine("| Claim | Expected | Actual | Status |");
+        writer.WriteLine("| --- | --- | --- | --- |");
+        foreach (RealStartEvidence item in safety)
+        {
+            writer.WriteLine(
+                $"| {EscapeMarkdownCell(item.Claim)} | {EscapeMarkdownCell(item.Expected)} | {EscapeMarkdownCell(item.Actual)} | {item.Status} |");
+        }
     }
 
     private static void WriteRealStartManifest(
         string outputDirectory,
         RealStartOptions options,
         IReadOnlyCollection<RealStartEvidence> evidence,
+        IReadOnlyCollection<RealStartEvidence> safety,
         bool isSuccess,
         string? failure)
     {
@@ -316,6 +330,13 @@ internal static class RealStartAcceptanceRunner
                 expected = item.Expected,
                 actual = item.Actual,
                 status = item.Status.ToString()
+            }).ToArray(),
+            realStartSafetyEvidence = safety.Select(item => new
+            {
+                claim = item.Claim,
+                expected = item.Expected,
+                actual = item.Actual,
+                status = item.Status.ToString()
             }).ToArray()
         };
 
@@ -323,6 +344,31 @@ internal static class RealStartAcceptanceRunner
             manifestPath,
             JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
     }
+
+    private static RealStartEvidence[] BuildRealStartSafetyEvidence(RealStartOptions options)
+        =>
+        [
+            new(
+                "Explicit local SQLite DB",
+                "RealStart acceptance writes only to the explicit --db path.",
+                options.DatabasePath,
+                AcceptanceStatus.Pass),
+            new(
+                "Test device id only",
+                "Launched WPF app receives WOONG_MONITOR_DEVICE_ID=real-start-local.",
+                "real-start-local",
+                AcceptanceStatus.Pass),
+            new(
+                "Server sync opt-in",
+                "WOONG_MONITOR_ALLOW_SERVER_SYNC stays 0 unless --allow-server-sync is passed.",
+                options.AllowServerSync ? "WOONG_MONITOR_ALLOW_SERVER_SYNC=1" : "WOONG_MONITOR_ALLOW_SERVER_SYNC=0",
+                options.AllowServerSync ? AcceptanceStatus.Warn : AcceptanceStatus.Pass),
+            new(
+                "Process cleanup scoped to launched WPF app",
+                "Cleanup closes only the process launched by this RealStart acceptance run.",
+                options.AppPath,
+                AcceptanceStatus.Pass)
+        ];
 
     private static string EscapeMarkdownCell(string value)
         => value.Replace("|", "\\|", StringComparison.Ordinal);

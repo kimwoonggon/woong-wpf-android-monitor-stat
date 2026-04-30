@@ -1,6 +1,20 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF RealStart Safety Evidence Slice
+
+- Audited WPF/browser/runtime acceptance gaps after the Chrome sandbox evidence slice and found RealStart artifacts proved persistence but not the safety boundary as a grouped report/manifest section.
+- Added RED WPF App/tool coverage requiring RealStart `real-start-report.md` and `real-start-manifest.json` to include dedicated safety evidence.
+- Updated `Woong.MonitorStack.Windows.RealStartAcceptance` with `realStartSafetyEvidence` rows for the explicit local SQLite DB, test-only device id, server sync opt-in state, and launched-process-scoped cleanup.
+- This is a WPF tool/test/docs acceptance evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~RealStartAcceptanceTool_ReportAndManifestIncludeSafetyEvidence" -maxcpucount:1 -v minimal` failed RED on missing `BuildRealStartSafetyEvidence`, then passed after grouped RealStart safety evidence was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 129 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 389 solution tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-130120`; `real-start-report.md` and `real-start-manifest.json` include `realStartSafetyEvidence` rows as Pass.
 ## 2026-04-30 Chrome Native Messaging Sandbox Evidence Slice
 
 - Audited Chrome/native messaging acceptance safety coverage and found the sandbox behavior was implemented but not exposed as grouped report/manifest evidence.
@@ -16,7 +30,8 @@ Verified:
 - `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -CleanupOnly -DryRun` passed and generated `artifacts/chrome-native-acceptance/20260430-125155` with `nativeMessagingSafetyEvidence` in report and manifest.
 - `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 89 Windows tests.
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
-- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 388 solution tests.## 2026-04-30 Android Main Shell Bottom Navigation Readability Slice
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 388 solution tests.
+## 2026-04-30 Android Main Shell Bottom Navigation Readability Slice
 
 - Added RED architecture coverage requiring the launcher shell to reserve a larger bottom-navigation area above system navigation and expose visible Dashboard/Sessions/Report/Settings labels.
 - Updated `activity_main.xml` bottom-navigation sizing, fragment bottom margin, item icon/text appearance settings, and an explicit label row so emulator screenshots no longer show icon-only navigation.
