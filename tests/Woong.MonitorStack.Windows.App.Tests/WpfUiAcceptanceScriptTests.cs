@@ -141,6 +141,21 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootReportIncludesNextRecommendedWpfChecks()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("## Next Recommended WPF Checks", script);
+        Assert.Contains("No WPF runtime TODO remains open in total_todolist.md.", script);
+        Assert.Contains("Continue final gates with WPF acceptance plus full solution test/build.", script);
+        Assert.Contains("Leave Android physical-device resource measurement to Android-owned work.", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

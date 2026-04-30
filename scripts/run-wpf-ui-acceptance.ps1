@@ -116,7 +116,13 @@ try {
         "- No screen contents are captured as product telemetry.",
         "- Screenshots are local developer artifacts for this app UI only.",
         "- Server sync is disabled unless explicitly allowed.",
-        "- Acceptance uses temp SQLite databases only."
+        "- Acceptance uses temp SQLite databases only.",
+        "",
+        "## Next Recommended WPF Checks",
+        "",
+        "- No WPF runtime TODO remains open in total_todolist.md.",
+        "- Continue final gates with WPF acceptance plus full solution test/build.",
+        "- Leave Android physical-device resource measurement to Android-owned work."
     )
     Set-Content -Path $reportPath -Value $lines
 

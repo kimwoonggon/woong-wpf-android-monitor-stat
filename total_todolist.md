@@ -1543,6 +1543,18 @@ milestones below are finished.
 - [x] Run solution tests and solution build.
 - [x] Run WPF UI acceptance script and confirm root snapshot mode/viewport matrix evidence at `artifacts/wpf-ui-acceptance/20260430-144509`.
 
+## Milestone 55: WPF Acceptance Final-Audit Recommendation Evidence
+
+- [x] Audit WPF acceptance/runtime evidence against `total_todolist.md`, `docs/wpf-ui-acceptance-checklist.md`, `docs/runtime-pipeline.md`, and current WPF scripts after Milestone 54.
+- [x] Confirm no remaining WPF implementation TODO is open.
+- [x] Add a failing WPF App script test requiring root report next-recommended WPF checks/fixes evidence.
+- [x] Add root report `## Next Recommended WPF Checks` with no-open-WPF-runtime-TODO, final WPF gate, and Android-owned physical-device measurement guidance.
+- [x] Update WPF resume state for the final-audit recommendation evidence slice.
+- [x] Run focused WPF App script test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm root next-recommended WPF checks at `artifacts/wpf-ui-acceptance/20260430-152612`.
+- [x] Attempt solution tests; WPF-owned projects passed before the run failed in Android-owned architecture coverage.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

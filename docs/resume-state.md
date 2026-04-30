@@ -2,6 +2,22 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Acceptance Final-Audit Recommendation Evidence Slice
+
+- Audited WPF acceptance/runtime evidence against `total_todolist.md`, `docs/wpf-ui-acceptance-checklist.md`, `docs/runtime-pipeline.md`, and current WPF scripts after Milestone 54.
+- Found no remaining WPF implementation TODO, but the root WPF acceptance report did not directly satisfy the checklist requirement to include next recommended fixes/checks.
+- Added RED WPF App script coverage requiring the root report to include `## Next Recommended WPF Checks` with a no-open-WPF-runtime-TODO statement, final WPF acceptance/test/build gate guidance, and Android physical-device resource measurement ownership guidance.
+- Updated `scripts/run-wpf-ui-acceptance.ps1` so the root acceptance report carries that final-audit recommendation evidence.
+- This is a WPF script/test/docs acceptance-evidence slice only. It does not change Android, Android docs/scripts, parked design refs, WPF XAML, SQLite schema, server code, or collected telemetry.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootReportIncludesNextRecommendedWpfChecks" -maxcpucount:1 -v minimal` failed RED on missing root report next-recommended WPF checks, then passed after the report section was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 136 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-152612`; root `report.md` includes `## Next Recommended WPF Checks`.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` was attempted; Domain, Windows, Windows Presentation, WPF App, and Server tests passed, then an Android-owned architecture test failed outside this WPF slice: `AndroidWireframeLayoutTests.AndroidFragmentDashboard_CurrentFocusUsesCompactHorizontalRuntimeCard`.
+
 ## 2026-04-30 Android Bottom Navigation Label Visibility Slice
 
 - Installed `mobile-android-design` into `C:\Users\gerard\.agents\skills\mobile-android-design` and read its guidance. The PRD still wins: Android MVP remains Kotlin + XML/View, so only Material/accessibility guidance was applied.
