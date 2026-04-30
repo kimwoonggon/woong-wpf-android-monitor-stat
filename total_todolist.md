@@ -1283,6 +1283,17 @@ milestones below are finished.
 - [x] Run WPF App tests.
 - [x] Run solution build.
 - [x] Update WPF resume state after the Header StatusBadge accessibility slice.
+## Milestone 36: WPF Acceptance Header Badge Evidence
+
+- [x] Add a failing WPF App/tool test requiring Header badge semantic evidence in snapshot report/manifest checks.
+- [x] Add Header Tracking/Sync/Privacy badge readable-name checks to `Woong.MonitorStack.Windows.UiSnapshots`.
+- [x] Preserve Current Focus readable names while exposing runtime values through `AutomationProperties.ItemStatus` for acceptance tools.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm Header badge semantic evidence appears in report/manifest.
+- [x] Update WPF resume state after the acceptance evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

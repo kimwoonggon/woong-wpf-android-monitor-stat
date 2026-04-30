@@ -93,10 +93,12 @@
                                Style="{StaticResource MutedTextStyle}" />
                     <TextBlock AutomationProperties.AutomationId="LastDbWriteTimeText"
                                AutomationProperties.Name="Last DB write time"
+                               AutomationProperties.ItemStatus="{Binding LastDbWriteTimeText}"
                                Text="{Binding LastDbWriteTimeText}"
                                Style="{StaticResource CurrentFocusValueTextStyle}" />
                     <TextBlock AutomationProperties.AutomationId="LastSyncStatusText"
                                AutomationProperties.Name="Sync state"
+                               AutomationProperties.ItemStatus="{Binding LastSyncStatusText}"
                                Text="{Binding LastSyncStatusText}"
                                Style="{StaticResource CurrentFocusSecondaryTextStyle}"
                                TextWrapping="Wrap"

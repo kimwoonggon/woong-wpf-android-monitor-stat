@@ -62,6 +62,7 @@ internal static class UiSnapshotRunner
             mainWindow.Focus();
             TryMoveWindow(mainWindow, context);
             Thread.Sleep(500);
+            VerifyHeaderBadgeSemanticNames(mainWindow, context);
 
             if (options.Mode == UiSnapshotMode.TrackingPipeline)
             {
@@ -110,6 +111,22 @@ internal static class UiSnapshotRunner
                 Console.Error.WriteLine($"[WARN] Failed to close WPF app cleanly: {exception.Message}");
             }
         }
+    }
+
+    private static void VerifyHeaderBadgeSemanticNames(Window window, UiSnapshotContext context)
+    {
+        context.CheckContains(
+            "Header TrackingStatusBadge readable name",
+            "Tracking",
+            GetElementName(window, "TrackingStatusBadge"));
+        context.CheckContains(
+            "Header SyncStatusBadge readable name",
+            "Sync",
+            GetElementName(window, "SyncStatusBadge"));
+        context.CheckContains(
+            "Header PrivacyStatusBadge readable name",
+            "Privacy",
+            GetElementName(window, "PrivacyStatusBadge"));
     }
 
     private static ProcessStartInfo CreateStartInfo(UiSnapshotOptions options)
@@ -216,20 +233,20 @@ internal static class UiSnapshotRunner
 
         EnsureTrackingRunning(mainWindow, context);
         Thread.Sleep(300);
-        context.CheckContains("TrackingStatusText", "Running", GetElementName(mainWindow, "TrackingStatusText"));
-        context.CheckContainsAny("CurrentAppNameText start", GetElementName(mainWindow, "CurrentAppNameText"), "Code.exe", "chrome.exe");
+        context.CheckContains("TrackingStatusText", "Running", GetElementText(mainWindow, "TrackingStatusText"));
+        context.CheckContainsAny("CurrentAppNameText start", GetElementText(mainWindow, "CurrentAppNameText"), "Code.exe", "chrome.exe");
         CaptureWindow(mainWindow, "02-after-start.png", context);
         CaptureElementOrWindowFallback(mainWindow, "CurrentActivityPanel", "current-activity.png", context);
 
         Thread.Sleep(1500);
-        context.CheckContains("CurrentAppNameText after generated activity", "chrome.exe", GetElementName(mainWindow, "CurrentAppNameText"));
-        context.CheckContains("LastPersistedSessionText", "Code.exe", GetElementName(mainWindow, "LastPersistedSessionText"));
+        context.CheckContains("CurrentAppNameText after generated activity", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("LastPersistedSessionText", "Code.exe", GetElementText(mainWindow, "LastPersistedSessionText"));
         CaptureWindow(mainWindow, "03-after-generated-activity.png", context);
 
         InvokeRequired(mainWindow, "StopTrackingButton");
         Thread.Sleep(700);
         context.Pass("StopTrackingButton", "Invoked", "Invoked");
-        context.CheckContains("TrackingStatusText stopped", "Stopped", GetElementName(mainWindow, "TrackingStatusText"));
+        context.CheckContains("TrackingStatusText stopped", "Stopped", GetElementText(mainWindow, "TrackingStatusText"));
         CaptureWindow(mainWindow, "04-after-stop.png", context);
         CaptureViewportMatrix(mainWindow, context);
 
@@ -252,7 +269,7 @@ internal static class UiSnapshotRunner
 
         InvokeRequired(mainWindow, "SyncNowButton");
         Thread.Sleep(500);
-        context.CheckContains("SyncNow local-only skipped status", "Sync skipped", GetElementName(mainWindow, "LastSyncStatusText"));
+        context.CheckContains("SyncNow local-only skipped status", "Sync skipped", GetElementText(mainWindow, "LastSyncStatusText"));
 
         SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
         Thread.Sleep(300);
@@ -279,7 +296,7 @@ internal static class UiSnapshotRunner
         EnableCheckBox(mainWindow, "SyncEnabledCheckBox", context);
         InvokeRequired(mainWindow, "SyncNowButton");
         Thread.Sleep(500);
-        context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementName(mainWindow, "LastSyncStatusText"));
+        context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementText(mainWindow, "LastSyncStatusText"));
         CaptureWindow(mainWindow, "05-after-sync.png", context);
         CaptureWindow(mainWindow, "06-settings.png", context);
         VerifyTrackingPipelineDatabase(context);
@@ -287,7 +304,7 @@ internal static class UiSnapshotRunner
 
     private static void EnsureTrackingRunning(Window window, UiSnapshotContext context)
     {
-        string trackingStatus = GetElementName(window, "TrackingStatusText");
+        string trackingStatus = GetElementText(window, "TrackingStatusText");
         if (trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
         {
             context.Pass(
@@ -567,6 +584,41 @@ internal static class UiSnapshotRunner
     {
         AutomationElement? element = window.FindFirstDescendant(automationId);
         return element?.Name ?? "";
+    }
+
+    private static string GetElementText(Window window, string automationId)
+    {
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        if (element is null)
+        {
+            return "";
+        }
+
+        string itemStatus = element.ItemStatus;
+        if (!string.IsNullOrWhiteSpace(itemStatus))
+        {
+            return itemStatus;
+        }
+
+        if (element.Patterns.Text.IsSupported)
+        {
+            string text = element.Patterns.Text.Pattern.DocumentRange.GetText(-1).TrimEnd('\r', '\n');
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return text;
+            }
+        }
+
+        if (element.Patterns.Value.IsSupported)
+        {
+            string value = element.Patterns.Value.Pattern.Value;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return element.Name ?? "";
     }
 
     private static string ReadLiveEventLogTextAcrossPages(Window window, UiSnapshotContext context)

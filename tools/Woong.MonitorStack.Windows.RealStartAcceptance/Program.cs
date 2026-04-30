@@ -106,7 +106,7 @@ internal static class RealStartAcceptanceRunner
 
     private static void EnsureTrackingRunning(Window mainWindow)
     {
-        string trackingStatus = GetElementName(mainWindow, "TrackingStatusText");
+        string trackingStatus = GetElementText(mainWindow, "TrackingStatusText");
         if (trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
         {
             Console.WriteLine("PASS: Tracking already running; StartTrackingButton is disabled because auto-start already ran.");
@@ -123,7 +123,7 @@ internal static class RealStartAcceptanceRunner
 
         startButton.AsButton().Invoke();
         Thread.Sleep(TimeSpan.FromMilliseconds(200));
-        trackingStatus = GetElementName(mainWindow, "TrackingStatusText");
+        trackingStatus = GetElementText(mainWindow, "TrackingStatusText");
         if (!trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException($"Tracking did not start. TrackingStatusText was `{trackingStatus}`.");
@@ -141,10 +141,39 @@ internal static class RealStartAcceptanceRunner
         element.AsButton().Invoke();
     }
 
-    private static string GetElementName(Window mainWindow, string automationId)
+    private static string GetElementText(Window mainWindow, string automationId)
     {
         AutomationElement? element = mainWindow.FindFirstDescendant(automationId);
-        return element?.Name ?? "";
+        if (element is null)
+        {
+            return "";
+        }
+
+        string itemStatus = element.ItemStatus;
+        if (!string.IsNullOrWhiteSpace(itemStatus))
+        {
+            return itemStatus;
+        }
+
+        if (element.Patterns.Text.IsSupported)
+        {
+            string text = element.Patterns.Text.Pattern.DocumentRange.GetText(-1).TrimEnd('\r', '\n');
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return text;
+            }
+        }
+
+        if (element.Patterns.Value.IsSupported)
+        {
+            string value = element.Patterns.Value.Pattern.Value;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return element.Name ?? "";
     }
 
     private static int CountRows(string databasePath, string tableName)

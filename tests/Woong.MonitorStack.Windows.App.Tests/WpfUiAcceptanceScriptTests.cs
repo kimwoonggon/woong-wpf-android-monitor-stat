@@ -187,6 +187,26 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeHeaderBadgeSemanticEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("VerifyHeaderBadgeSemanticNames", tool);
+        Assert.Contains("Header TrackingStatusBadge readable name", tool);
+        Assert.Contains("Header SyncStatusBadge readable name", tool);
+        Assert.Contains("Header PrivacyStatusBadge readable name", tool);
+        Assert.Contains("TrackingStatusBadge", tool);
+        Assert.Contains("SyncStatusBadge", tool);
+        Assert.Contains("PrivacyStatusBadge", tool);
+        Assert.Contains("checks = context.Results.Select", tool);
+        Assert.Contains("## PASS/FAIL/WARN Table", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

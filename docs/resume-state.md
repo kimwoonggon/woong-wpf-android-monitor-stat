@@ -1,6 +1,21 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF Acceptance Header Badge Evidence Slice
+
+- Added RED WPF App acceptance-tool coverage requiring the snapshot tool to emit Header Tracking, Sync, and Privacy badge semantic-name checks into the shared report/manifest check list.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` to verify Header badge readable names before each mode-specific scenario. The checks now appear in both `report.md` and `manifest.json` through the existing `context.Results` artifact pipeline.
+- Repaired RealStart and UiSnapshots runtime value reads after semantic names were added to Current Focus fields: status value checks now read `AutomationProperties.ItemStatus` first, while readable names remain available for accessibility selectors.
+- Added `AutomationProperties.ItemStatus` bindings to Current Focus value TextBlocks so acceptance tools can read runtime values without weakening the semantic `AutomationProperties.Name` labels.
+- This is a WPF App/tool accessibility slice. It does not change product telemetry collection, SQLite schema, Android, Android scripts, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_ReportAndManifestIncludeHeaderBadgeSemanticEvidence" -maxcpucount:1 -v minimal` failed RED on missing `VerifyHeaderBadgeSemanticNames`, then passed after the snapshot tool update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 119 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-100126`. The latest UI snapshot `report.md` and `manifest.json` include Header Tracking/Sync/Privacy badge readable-name checks.
+
 ## 2026-04-30 WPF Header StatusBadge Accessibility Slice
 
 - Added RED WPF App accessibility coverage for Header Tracking, Sync, and
