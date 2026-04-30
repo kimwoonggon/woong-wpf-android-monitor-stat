@@ -1,6 +1,6 @@
 # Android UI Plan
 
-Updated: 2026-04-29
+Updated: 2026-04-30
 
 This document is the Android XML/View UI plan for Woong Monitor Stack. The
 Android app measures usage metadata: which apps were foreground for how long,
@@ -143,6 +143,27 @@ Android screenshot automation should capture the Settings location section and
 Dashboard location card when the feature exists. Screenshots remain local test
 artifacts only. They must not capture other apps as telemetry.
 
+## Current XML Implementation Direction
+
+The current Android app remains Activity-based (`DashboardActivity`,
+`SessionsActivity`, `SettingsActivity`, and `DailySummaryActivity`) because that
+is the existing stable ViewBinding/runtime contract. The UI is being aligned to
+the wireframe skeleton by applying the same visual structure to these activity
+layouts first:
+
+- Shared `wms_*` color tokens.
+- Shared `WmsCard`, status chip, section title, key/value, and period button
+  styles.
+- Dashboard card/chip/period/current-focus/summary/chart/recent-session
+  hierarchy.
+- Settings grouped cards for permissions, sync, privacy, location, and storage.
+- Sessions and Daily Summary card-based screens.
+
+A future navigation refactor may introduce a `MainActivity` shell with
+`FragmentContainerView` and `BottomNavigationView`, but it should be a separate
+TDD slice because it changes navigation architecture rather than only visual
+alignment.
+
 ## Implemented So Far
 
 - Settings copy states that location context is off by default.
@@ -193,8 +214,14 @@ artifacts only. They must not capture other apps as telemetry.
   table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
   nullable, uses `deviceId + clientContextId` idempotency, and is separate from
   app usage sessions so location remains optional metadata.
+- Activity XML layouts now follow the Android wireframe skeleton's card/chip
+  visual hierarchy while preserving existing ViewBinding IDs.
+- Android screenshot automation now captures numbered feature screenshots for
+  dashboard overview, summary/location, charts, recent sessions, settings
+  privacy/sync, settings location permission, sessions list, and daily summary.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Connected-device screenshot evidence for location UI.
+- FragmentContainerView/BottomNavigationView shell refactor.
+- Reusable Material row/card layouts for summary cards and session rows.

@@ -2,6 +2,25 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Android Wireframe XML Alignment Slice
+
+- Added RED architecture tests proving Android Dashboard, Settings, Sessions, and Daily Summary layouts follow the wireframe card/chip/scroll structure and that period buttons use readable mixed-case content-width styling.
+- Preserved the existing Activity/ViewBinding runtime contract instead of switching navigation to fragments in this slice.
+- Added shared `wms_*` color tokens, `WmsCard`, status chip, section title, key/value, and period button styles plus status-chip/icon placeholder drawables.
+- Reworked Dashboard and Settings XML into product-card layouts, then followed up with Sessions and Daily Summary card screens after screenshots showed the old debug-like list.
+- Extended Android screenshot automation to capture numbered feature screenshots for dashboard overview, summary/location, charts, recent sessions, settings privacy/sync, settings location permission, sessions list, and daily summary.
+- Latest connected-emulator screenshot artifact: `artifacts/android-ui-snapshots/20260430-110459`.
+- Remaining Android UI polish: summary tiles should become reusable rounded card items, and session rows should move from plain text to structured app/package/time/duration rows.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidWireframeLayoutTests|FullyQualifiedName~AndroidUiSnapshotScriptTests" -maxcpucount:1 -v minimal` passed.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on `emulator-5554` and generated the numbered feature screenshots.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 368 `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
+
 ## 2026-04-30 WPF Current Focus Report Table Slice
 
 - Added RED WPF App acceptance-tool coverage requiring the snapshot report to include a human-readable Current Focus runtime semantic evidence table.

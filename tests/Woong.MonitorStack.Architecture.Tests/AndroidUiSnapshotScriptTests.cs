@@ -43,6 +43,37 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotScript_DocumentsFeatureByFeatureScreenshots()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        string[] expectedFeatureScreens =
+        [
+            "01-dashboard-overview.png",
+            "02-dashboard-summary-location.png",
+            "03-dashboard-charts.png",
+            "04-dashboard-recent-sessions.png",
+            "05-settings-privacy-sync.png",
+            "06-settings-location-permission.png",
+            "07-sessions-list.png",
+            "08-daily-summary.png"
+        ];
+
+        foreach (string screen in expectedFeatureScreens)
+        {
+            Assert.Contains(screen, script);
+        }
+
+        Assert.Contains("featureScreens", script);
+        Assert.Contains("dashboard overview", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("settings location permission", script, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_WhenNoDeviceConnected_WritesBlockedArtifacts()
     {
         string repoRoot = FindRepositoryRoot();
@@ -143,7 +174,15 @@ exit /b 0
                 "dashboard.png",
                 "settings.png",
                 "sessions.png",
-                "daily-summary.png"
+                "daily-summary.png",
+                "01-dashboard-overview.png",
+                "02-dashboard-summary-location.png",
+                "03-dashboard-charts.png",
+                "04-dashboard-recent-sessions.png",
+                "05-settings-privacy-sync.png",
+                "06-settings-location-permission.png",
+                "07-sessions-list.png",
+                "08-daily-summary.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -157,6 +196,9 @@ exit /b 0
             Assert.Contains("settings.png", manifestText);
             Assert.Contains("sessions.png", manifestText);
             Assert.Contains("daily-summary.png", manifestText);
+            Assert.Contains("featureScreens", manifestText);
+            Assert.Contains("01-dashboard-overview.png", manifestText);
+            Assert.Contains("08-daily-summary.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
@@ -165,6 +207,8 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/settings.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/sessions.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/daily-summary.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/01-dashboard-overview.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/08-daily-summary.png", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }

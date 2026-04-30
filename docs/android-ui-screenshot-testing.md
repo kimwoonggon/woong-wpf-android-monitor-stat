@@ -85,17 +85,27 @@ Current behavior:
   instrumentation. This keeps Dashboard, Settings, Sessions, and Daily Summary
   activities `exported=false` in the production manifest while still allowing
   local test screenshots.
+- The instrumentation flow also captures feature-by-feature review shots:
+  `01-dashboard-overview.png`, `02-dashboard-summary-location.png`,
+  `03-dashboard-charts.png`, `04-dashboard-recent-sessions.png`,
+  `05-settings-privacy-sync.png`, `06-settings-location-permission.png`,
+  `07-sessions-list.png`, and `08-daily-summary.png`.
 - The instrumentation test captures local PNG screenshots into the app's
   external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
   model configuration and device steps.
+- The current Activity-based XML layouts intentionally keep the existing
+  ViewBinding IDs while adopting the wireframe card/chip/scroll hierarchy from
+  the Android UI flow reference. A full FragmentContainerView shell remains a
+  future navigation refactor rather than part of this visual-alignment slice.
 
 Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-091721`.
-- Captured dashboard, settings, sessions, and daily summary screenshots.
+- Artifact: `artifacts/android-ui-snapshots/20260430-110459`.
+- Captured dashboard, settings, sessions, daily summary, and the numbered
+  feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
   captured screenshots.
 
@@ -110,6 +120,12 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
+- Dashboard summary tiles still use simple local card blocks and should be
+  upgraded to reusable MaterialCard-style item rows in a follow-up polish
+  slice.
+- Session list rows are still plain text rows even though the screen itself is
+  now card-based; a follow-up slice should adopt `item_focus_session` style
+  rows with app/package/time/duration hierarchy.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

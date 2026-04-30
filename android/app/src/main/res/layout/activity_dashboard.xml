@@ -4,12 +4,13 @@
     android:id="@+id/dashboardRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F8FB">
+    android:background="@color/wms_background">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/dashboardScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="false"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationRow"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,15 +22,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/dashboardTitle"
+                style="@style/WmsScreenTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/dashboard_title"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textStyle="bold" />
+                android:text="@string/dashboard_title" />
 
             <LinearLayout
                 android:id="@+id/statusChipRow"
@@ -40,221 +40,197 @@
 
                 <TextView
                     android:id="@+id/usageAccessStatusChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:background="#ECFDF5"
-                    android:gravity="center"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:text="@string/status_usage_ok"
-                    android:textColor="#087A34"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    style="@style/WmsStatusChip.Success"
+                    android:text="@string/status_usage_ok" />
 
                 <TextView
                     android:id="@+id/syncStatusChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    style="@style/WmsStatusChip.Warning"
                     android:layout_marginStart="8dp"
-                    android:background="#FFF6E8"
-                    android:gravity="center"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:text="@string/status_sync_off"
-                    android:textColor="#A45B00"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:text="@string/status_sync_off" />
 
                 <TextView
                     android:id="@+id/privacyStatusChip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    style="@style/WmsStatusChip.Info"
                     android:layout_marginStart="8dp"
-                    android:background="#EEF5FF"
-                    android:gravity="center"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:text="@string/status_privacy_safe"
-                    android:textColor="#0B63CE"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+                    android:text="@string/status_privacy_safe" />
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/selectedPeriodText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/filter_today"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                android:textStyle="bold" />
 
             <HorizontalScrollView
                 android:id="@+id/periodFilterScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:scrollbars="none">
 
                 <LinearLayout
-                    android:id="@+id/periodFilters"
+                    android:id="@+id/periodFilterRow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/todayFilterButton"
-                        android:layout_width="72dp"
-                        android:layout_height="40dp"
+                        style="@style/WmsPeriodButton.Selected"
                         android:text="@string/filter_today" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/oneHourFilterButton"
-                        android:layout_width="72dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
+                        style="@style/WmsPeriodButton"
                         android:enabled="false"
                         android:text="@string/filter_1h" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/sixHourFilterButton"
-                        android:layout_width="72dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
+                        style="@style/WmsPeriodButton"
                         android:enabled="false"
                         android:text="@string/filter_6h" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/twentyFourHourFilterButton"
-                        android:layout_width="72dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
+                        style="@style/WmsPeriodButton"
                         android:enabled="false"
                         android:text="@string/filter_24h" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/yesterdayFilterButton"
-                        android:layout_width="92dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
+                        style="@style/WmsPeriodButton"
                         android:text="@string/filter_yesterday" />
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/recent7DaysFilterButton"
-                        android:layout_width="72dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="8dp"
+                        style="@style/WmsPeriodButton"
                         android:text="@string/filter_7d" />
                 </LinearLayout>
             </HorizontalScrollView>
 
-            <LinearLayout
-                android:id="@+id/currentFocusCard"
+            <TextView
+                android:id="@+id/selectedPeriodText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:background="#FFFFFF"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginTop="10dp"
+                android:text="@string/filter_today"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:textColor="@color/wms_text_secondary"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/currentFocusTitle"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/currentFocusCard"
+                style="@style/WmsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/current_focus"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                    android:textStyle="bold" />
-
-                <GridLayout
-                    android:id="@+id/currentFocusGrid"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:columnCount="2">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/currentAppLabel"
-                        android:layout_width="0dp"
+                        android:id="@+id/currentFocusTitle"
+                        style="@style/WmsSectionTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/current_app_label"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        android:text="@string/current_focus" />
 
-                    <TextView
-                        android:id="@+id/currentAppText"
-                        android:layout_width="0dp"
+                    <GridLayout
+                        android:id="@+id/currentFocusGrid"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/no_top_app"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                        android:textStyle="bold" />
+                        android:layout_marginTop="10dp"
+                        android:columnCount="2"
+                        android:useDefaultMargins="true">
 
-                    <TextView
-                        android:id="@+id/currentPackageLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/current_package_label"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        <TextView
+                            android:id="@+id/currentAppLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/current_app_label"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="@color/wms_text_muted" />
 
-                    <TextView
-                        android:id="@+id/currentPackageText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/no_package"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                        <TextView
+                            android:id="@+id/currentAppText"
+                            style="@style/WmsKeyValueText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/no_top_app"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/currentSessionDurationLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/current_session_duration_label"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        <TextView
+                            android:id="@+id/currentPackageLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/current_package_label"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="@color/wms_text_muted" />
 
-                    <TextView
-                        android:id="@+id/currentSessionDurationText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/zero_clock_duration"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                        android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/currentPackageText"
+                            style="@style/WmsKeyValueText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/no_package" />
 
-                    <TextView
-                        android:id="@+id/lastCollectedLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/last_collected_label"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        <TextView
+                            android:id="@+id/currentSessionDurationLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/current_session_duration_label"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="@color/wms_text_muted" />
 
-                    <TextView
-                        android:id="@+id/lastCollectedText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/no_poll_yet"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                        <TextView
+                            android:id="@+id/currentSessionDurationText"
+                            style="@style/WmsKeyValueText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/zero_clock_duration"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/lastDbWriteLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/last_db_write_label"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        <TextView
+                            android:id="@+id/lastCollectedLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/last_collected_label"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="@color/wms_text_muted" />
 
-                    <TextView
-                        android:id="@+id/lastDbWriteText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_columnWeight="1"
-                        android:text="@string/no_db_write_yet"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-                </GridLayout>
-            </LinearLayout>
+                        <TextView
+                            android:id="@+id/lastCollectedText"
+                            style="@style/WmsKeyValueText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/no_poll_yet" />
+
+                        <TextView
+                            android:id="@+id/lastDbWriteLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/last_db_write_label"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                            android:textColor="@color/wms_text_muted" />
+
+                        <TextView
+                            android:id="@+id/lastDbWriteText"
+                            style="@style/WmsKeyValueText"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:text="@string/no_db_write_yet" />
+                    </GridLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <GridLayout
                 android:id="@+id/summaryCardsGrid"
@@ -267,173 +243,193 @@
                 <LinearLayout
                     android:id="@+id/totalActiveCard"
                     android:layout_width="0dp"
-                    android:layout_height="86dp"
+                    android:layout_height="96dp"
                     android:layout_columnWeight="1"
-                    android:background="#EAF3FF"
+                    android:background="@color/wms_surface"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
                     android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/totalActiveLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_menu_recent_history"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#0F6BDE"
-                    android:text="@string/active_focus"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    <TextView
+                        android:id="@+id/totalActiveLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@android:drawable/ic_menu_recent_history"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/wms_primary"
+                        android:text="@string/active_focus"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
 
                     <TextView
                         android:id="@+id/totalActiveText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="@string/zero_duration"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/screenOnCard"
                     android:layout_width="0dp"
-                    android:layout_height="86dp"
+                    android:layout_height="96dp"
                     android:layout_columnWeight="1"
-                    android:background="#ECFDF5"
+                    android:background="@color/wms_surface"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
                     android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/screenOnLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_menu_myplaces"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#16A34A"
-                    android:text="@string/screen_on"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    <TextView
+                        android:id="@+id/screenOnLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@android:drawable/ic_menu_myplaces"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/wms_success"
+                        android:text="@string/screen_on"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
 
                     <TextView
                         android:id="@+id/screenOnText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="@string/zero_duration"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/idleCard"
                     android:layout_width="0dp"
-                    android:layout_height="86dp"
+                    android:layout_height="96dp"
                     android:layout_columnWeight="1"
-                    android:background="#FFF7ED"
+                    android:background="@color/wms_surface"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
                     android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/idleLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_menu_upload"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#F59E0B"
-                    android:text="@string/idle_time"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    <TextView
+                        android:id="@+id/idleLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@android:drawable/ic_menu_upload"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/wms_warning"
+                        android:text="@string/idle_time"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
 
                     <TextView
                         android:id="@+id/idleText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="@string/zero_duration"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/webFocusCard"
                     android:layout_width="0dp"
-                    android:layout_height="86dp"
+                    android:layout_height="96dp"
                     android:layout_columnWeight="1"
-                    android:background="#F5F3FF"
+                    android:background="@color/wms_surface"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
                     android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/webFocusLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_menu_compass"
-                    android:drawablePadding="6dp"
-                    android:drawableTint="#7C3AED"
-                    android:text="@string/web_focus"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    <TextView
+                        android:id="@+id/webFocusLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@android:drawable/ic_menu_compass"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/wms_info"
+                        android:text="@string/web_focus"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
 
                     <TextView
                         android:id="@+id/webFocusText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="@string/zero_duration"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
                 </LinearLayout>
             </GridLayout>
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/locationContextCard"
+                style="@style/WmsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="#EEF6FF"
-                android:gravity="center_vertical"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginTop="10dp">
 
-                <TextView
-                    android:id="@+id/locationContextLabel"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/location_context_label"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/locationStatusText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/location_capture_off"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/locationContextLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/location_context_label"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
 
-                <TextView
-                    android:id="@+id/locationLatitudeText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/latitude_not_stored"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                    <TextView
+                        android:id="@+id/locationStatusText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/location_capture_off"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/locationLongitudeText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/longitude_not_stored"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                    <TextView
+                        android:id="@+id/locationLatitudeText"
+                        style="@style/WmsKeyValueText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/latitude_not_stored" />
 
-                <TextView
-                    android:id="@+id/locationAccuracyText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/accuracy_unavailable"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                    <TextView
+                        android:id="@+id/locationLongitudeText"
+                        style="@style/WmsKeyValueText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/longitude_not_stored" />
 
-                <TextView
-                    android:id="@+id/locationCapturedAtText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_location_captured"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/locationAccuracyText"
+                        style="@style/WmsKeyValueText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accuracy_unavailable" />
+
+                    <TextView
+                        android:id="@+id/locationCapturedAtText"
+                        style="@style/WmsKeyValueText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_location_captured" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:id="@+id/usageAccessGuidanceText"
@@ -441,110 +437,141 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:text="@string/usage_access_guidance"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                android:textColor="@color/wms_text_secondary" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/usageAccessSettingsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:text="@string/usage_access_settings" />
+                android:text="@string/usage_access_settings"
+                app:cornerRadius="12dp" />
 
-            <LinearLayout
-                android:id="@+id/chartsPanel"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/hourlyFocusChartCard"
+                style="@style/WmsCard"
                 android:layout_width="match_parent"
-                android:layout_height="240dp"
-                android:layout_marginTop="14dp"
-                android:orientation="vertical">
+                android:layout_height="320dp"
+                android:layout_marginTop="14dp">
 
-                <TextView
-                    android:id="@+id/hourlyFocusChartTitle"
+                <LinearLayout
+                    android:id="@+id/chartsPanel"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/hourly_focus_chart_title"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
-                    android:textStyle="bold" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
 
-                <com.github.mikephil.charting.charts.LineChart
-                    android:id="@+id/activityLineChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_weight="1" />
+                    <TextView
+                        android:id="@+id/hourlyFocusChartTitle"
+                        style="@style/WmsSectionTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/hourly_focus_chart_title" />
 
-                <TextView
-                    android:id="@+id/appUsageChartTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/app_usage_chart_title"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
-                    android:textStyle="bold" />
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/activityLineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="1" />
 
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/appUsageBarChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_weight="1" />
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/appUsageChartTitle"
+                        style="@style/WmsSectionTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/app_usage_chart_title" />
 
-            <LinearLayout
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/appUsageBarChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/topAppsCard"
+                style="@style/WmsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/topAppLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/top_app"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/wms_text_muted" />
+
+                    <TextView
+                        android:id="@+id/topAppText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/no_top_app"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:textColor="@color/wms_text_primary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/recentSessionsCard"
+                style="@style/WmsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:background="#FFFFFF"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginBottom="24dp">
 
-                <TextView
-                    android:id="@+id/topAppLabel"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/top_app"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    android:orientation="vertical"
+                    android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/topAppText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_top_app"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/recentSessionsTitle"
+                        style="@style/WmsSectionTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/recent_sessions" />
 
-            <TextView
-                android:id="@+id/recentSessionsTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/recent_sessions"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                android:textStyle="bold" />
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recentSessionsList"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:layout_marginTop="8dp" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recentSessionsList"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:layout_marginTop="8dp" />
-
-            <TextView
-                android:id="@+id/emptySessionsText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:minHeight="64dp"
-                android:text="@string/empty_sessions"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                    <TextView
+                        android:id="@+id/emptySessionsText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:minHeight="64dp"
+                        android:text="@string/empty_sessions"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                        android:textColor="@color/wms_text_secondary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
         android:id="@+id/bottomNavigationRow"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:background="#FFFFFF"
+        android:layout_height="68dp"
+        android:background="@color/wms_surface"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingStart="8dp"
@@ -560,10 +587,10 @@
             android:layout_weight="1"
             android:drawableTop="@android:drawable/ic_menu_view"
             android:drawablePadding="2dp"
-            android:drawableTint="#0F6BDE"
+            android:drawableTint="@color/wms_primary"
             android:gravity="center"
             android:text="@string/nav_dashboard"
-            android:textColor="#0F6BDE"
+            android:textColor="@color/wms_primary"
             android:textStyle="bold" />
 
         <TextView
@@ -574,7 +601,8 @@
             android:drawableTop="@android:drawable/ic_menu_agenda"
             android:drawablePadding="2dp"
             android:gravity="center"
-            android:text="@string/nav_sessions" />
+            android:text="@string/nav_sessions"
+            android:textColor="@color/wms_text_secondary" />
 
         <TextView
             android:id="@+id/navReportText"
@@ -584,7 +612,8 @@
             android:drawableTop="@android:drawable/ic_menu_sort_by_size"
             android:drawablePadding="2dp"
             android:gravity="center"
-            android:text="@string/nav_report" />
+            android:text="@string/nav_report"
+            android:textColor="@color/wms_text_secondary" />
 
         <TextView
             android:id="@+id/navSettingsText"
@@ -594,7 +623,8 @@
             android:drawableTop="@android:drawable/ic_menu_manage"
             android:drawablePadding="2dp"
             android:gravity="center"
-            android:text="@string/nav_settings" />
+            android:text="@string/nav_settings"
+            android:textColor="@color/wms_text_secondary" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

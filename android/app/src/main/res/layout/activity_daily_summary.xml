@@ -1,120 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/dailySummaryRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
-
-    <TextView
-        android:id="@+id/dailySummaryTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/daily_summary_title"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/dailySummaryDateText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dailySummaryTitle" />
+    android:background="@color/wms_background"
+    android:fillViewport="true">
 
     <LinearLayout
-        android:id="@+id/dailySummaryMetrics"
-        android:layout_width="0dp"
+        android:id="@+id/dailySummaryContent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dailySummaryDateText">
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/dailySummaryActiveLabel"
+            android:id="@+id/dailySummaryTitle"
+            style="@style/WmsScreenTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/total_active"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+            android:text="@string/daily_summary_title" />
 
         <TextView
-            android:id="@+id/dailySummaryActiveText"
+            android:id="@+id/dailySummaryDateText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/zero_duration"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:layout_marginTop="8dp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            android:textColor="@color/wms_text_secondary"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/dailySummaryIdleLabel"
+        <GridLayout
+            android:id="@+id/dailySummaryMetricGrid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/idle_time"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+            android:layout_marginTop="14dp"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
 
-        <TextView
-            android:id="@+id/dailySummaryIdleText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/zero_duration"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-            android:textStyle="bold" />
+            <LinearLayout
+                android:id="@+id/dailySummaryActiveCard"
+                android:layout_width="0dp"
+                android:layout_height="96dp"
+                android:layout_columnWeight="1"
+                android:background="@color/wms_surface"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="14dp">
 
-        <TextView
-            android:id="@+id/dailySummaryWebLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/web_time"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                <TextView
+                    android:id="@+id/dailySummaryActiveLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/total_active"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
 
-        <TextView
-            android:id="@+id/dailySummaryWebText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/zero_duration"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/dailySummaryActiveText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/zero_duration"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/dailySummaryTopAppLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/top_app"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+            <LinearLayout
+                android:id="@+id/dailySummaryIdleCard"
+                android:layout_width="0dp"
+                android:layout_height="96dp"
+                android:layout_columnWeight="1"
+                android:background="@color/wms_surface"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="14dp">
 
-        <TextView
-            android:id="@+id/dailySummaryTopAppText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/no_top_app"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/dailySummaryIdleLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/idle_time"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
 
-        <TextView
-            android:id="@+id/dailySummaryTopDomainLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/top_domain"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                <TextView
+                    android:id="@+id/dailySummaryIdleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/zero_duration"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/dailySummaryTopDomainText"
+            <LinearLayout
+                android:id="@+id/dailySummaryWebCard"
+                android:layout_width="0dp"
+                android:layout_height="96dp"
+                android:layout_columnWeight="1"
+                android:background="@color/wms_surface"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/dailySummaryWebLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/web_time"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
+
+                <TextView
+                    android:id="@+id/dailySummaryWebText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/zero_duration"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </GridLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/dailySummaryTopCard"
+            style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/no_top_domain"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-            android:textStyle="bold" />
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:id="@+id/dailySummaryMetrics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Top usage" />
+
+                <TextView
+                    android:id="@+id/dailySummaryTopAppLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/top_app"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
+
+                <TextView
+                    android:id="@+id/dailySummaryTopAppText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/no_top_app"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/dailySummaryTopDomainLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/top_domain"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
+
+                <TextView
+                    android:id="@+id/dailySummaryTopDomainText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/no_top_domain"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

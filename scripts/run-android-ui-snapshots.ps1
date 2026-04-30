@@ -26,6 +26,16 @@ $latestRoot = Join-Path $OutputRoot "latest"
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
 $expectedScreens = @("dashboard", "settings", "sessions", "daily summary")
+$featureScreens = @(
+    "dashboard overview",
+    "dashboard summary and location",
+    "dashboard charts",
+    "dashboard recent sessions",
+    "settings privacy and sync",
+    "settings location permission",
+    "sessions list",
+    "daily summary"
+)
 $expectedLocationChecks = @(
     "Dashboard location card: locationContextCard, locationStatusText, locationLatitudeText, locationLongitudeText, locationAccuracyText, locationCapturedAtText",
     "Settings location section: locationContextDefaultText, locationCoordinateBoundaryText, preciseLocationOptInText, locationContextCheckBox, preciseLatitudeLongitudeCheckBox, requestLocationPermissionButton"
@@ -53,6 +63,46 @@ $screenTargets = @(
     [ordered]@{
         Name = "daily summary"
         FileName = "daily-summary.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "dashboard overview"
+        FileName = "01-dashboard-overview.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "dashboard summary and location"
+        FileName = "02-dashboard-summary-location.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "dashboard charts"
+        FileName = "03-dashboard-charts.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "dashboard recent sessions"
+        FileName = "04-dashboard-recent-sessions.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "settings privacy and sync"
+        FileName = "05-settings-privacy-sync.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "settings location permission"
+        FileName = "06-settings-location-permission.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "sessions list"
+        FileName = "07-sessions-list.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "daily summary feature"
+        FileName = "08-daily-summary.png"
         Capture = "SnapshotCaptureTest"
     }
 )
@@ -88,6 +138,14 @@ function Write-AndroidSnapshotArtifacts {
         "- settings",
         "- sessions",
         "- daily summary",
+        "",
+        "## Feature Screens",
+        ""
+    )
+    foreach ($screen in $featureScreens) {
+        $reportLines += "- $screen"
+    }
+    $reportLines += @(
         "",
         "## Expected Location Context Checks",
         ""
@@ -136,6 +194,7 @@ function Write-AndroidSnapshotArtifacts {
         adbPath = $AdbPath
         gradleWrapperPath = $GradleWrapperPath
         expectedScreens = $expectedScreens
+        featureScreens = $featureScreens
         expectedLocationChecks = $expectedLocationChecks
         screenshots = $screenshots
         blockedReason = $BlockedReason
@@ -146,6 +205,7 @@ function Write-AndroidSnapshotArtifacts {
         "# Android UI Visual Review Prompt",
         "",
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
+        "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",
         "Check the Dashboard location card shows seeded opt-in location context when screenshots exist.",
         "Check the Settings location section shows location off by default, precise latitude/longitude explicit opt-in, and the permission action.",

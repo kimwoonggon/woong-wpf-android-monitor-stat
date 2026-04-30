@@ -1,6 +1,6 @@
 # Total TODO List: Woong Monitor Stack
 
-Updated: 2026-04-29
+Updated: 2026-04-30
 
 This file is the durable source of truth for the full PRD. Every agent must keep
 it current before and after work. A TODO is complete only when relevant tests
@@ -650,6 +650,23 @@ milestones below are finished.
 - [x] Harden `scripts/run-android-resource-measurement.ps1 -SkipBuild` so a missing app launcher writes a clear `BLOCKED` report before invoking `monkey`.
 - [x] Verify resource measurement SkipBuild hardening with focused RED/GREEN script test, full AndroidResourceMeasurementScriptTests, full `.NET` tests/build, and coverage generation.
 - [ ] Repeat Android resource measurements on a physical device when connected.
+
+## Milestone 27.7: Android Wireframe XML Alignment
+
+- [x] Add RED architecture tests for Android Dashboard/Settings wireframe card, chip, scroll, and navigation structure.
+- [x] Add RED architecture tests for readable period button styling and card-based Sessions/Daily Summary layouts.
+- [x] Preserve Activity/ViewBinding runtime contracts while aligning XML to the provided Android wireframe skeleton.
+- [x] Add shared Android `wms_*` color tokens, `WmsCard`, status chip, section title, key/value, and period button styles.
+- [x] Rework Dashboard XML into card/chip/period/current-focus/summary/chart/recent-session sections.
+- [x] Rework Settings XML into grouped Permissions, Sync, Privacy, Location, and Storage cards.
+- [x] Rework Sessions and Daily Summary XML into product card screens instead of debug-like plain layouts.
+- [x] Extend Android screenshot automation and androidTest capture flow to produce numbered feature screenshots `01` through `08`.
+- [x] Capture connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-110459`.
+- [x] Verify Android wireframe XML alignment with focused architecture tests, full `.NET` tests (368), full `.NET` build, Android `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, connected-emulator screenshot capture, and coverage generation at 91.7% line coverage.
+- [x] Document remaining UI polish gaps: reusable rounded summary cards and structured session row items.
+- [ ] Follow-up: convert Android summary tiles to reusable rounded Material card/item components.
+- [ ] Follow-up: convert Android sessions RecyclerView rows to structured app/package/time/duration rows.
+- [ ] Follow-up: decide separately whether to migrate Activity navigation to a FragmentContainerView + BottomNavigationView shell.
 
 ## Milestone 28: Privacy And Retention Hardening
 
