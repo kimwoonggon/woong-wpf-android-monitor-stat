@@ -2,6 +2,14 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Current Focus Report Table Slice
+
+- Added RED WPF App acceptance-tool coverage requiring the snapshot report to include a human-readable Current Focus runtime semantic evidence table.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so `report.md` now has `## Current Focus Runtime Semantic Evidence` with Field, AutomationId, Readable Name, Runtime Value, and Status columns.
+- The table is populated from the same Current Focus semantic checks that feed the manifest/report check list, keeping automation IDs, readable names, and runtime values together for manual review.
+- Verified WPF App tests, solution build, and WPF UI acceptance at `artifacts/wpf-ui-acceptance/20260430-105239`.
+- This is a WPF App/tool report evidence slice only. It does not change Android, Android scripts, Android docs, product telemetry collection, SQLite schema, or server code.
+
 ## 2026-04-30 WPF Current Focus Acceptance Semantic Evidence Slice
 
 - Added RED WPF App acceptance-tool coverage requiring `Woong.MonitorStack.Windows.UiSnapshots` to emit Current Focus semantic checks into the shared report/manifest check list.

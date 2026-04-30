@@ -1307,6 +1307,17 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm Current Focus semantic evidence appears in report/manifest.
 - [x] Update WPF resume state after the Current Focus acceptance evidence slice.
 
+## Milestone 38: WPF Current Focus Report Table Evidence
+
+- [x] Add a failing WPF App/tool test requiring a human-readable Current Focus semantic evidence table in `report.md`.
+- [x] Add `## Current Focus Runtime Semantic Evidence` to the snapshot report with Field, AutomationId, Readable Name, Runtime Value, and Status columns.
+- [x] Populate the table from Current Focus semantic evidence without changing Android, Android scripts, Android docs, telemetry collection, or server code.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm the table appears in the latest report.
+- [x] Update WPF resume state after the report-table evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

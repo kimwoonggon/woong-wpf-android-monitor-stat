@@ -234,6 +234,38 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportIncludesHumanReadableCurrentFocusSemanticTable()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## Current Focus Runtime Semantic Evidence", tool);
+        Assert.Contains("| Field | AutomationId | Readable Name | Runtime Value | Status |", tool);
+        Assert.Contains("CurrentFocusSemanticEvidence", tool);
+        Assert.Contains("Current app", tool);
+        Assert.Contains("CurrentAppNameText", tool);
+        Assert.Contains("Current process", tool);
+        Assert.Contains("CurrentProcessNameText", tool);
+        Assert.Contains("Current window title", tool);
+        Assert.Contains("CurrentWindowTitleText", tool);
+        Assert.Contains("Current browser domain", tool);
+        Assert.Contains("CurrentBrowserDomainText", tool);
+        Assert.Contains("Current session duration", tool);
+        Assert.Contains("CurrentSessionDurationText", tool);
+        Assert.Contains("Last poll time", tool);
+        Assert.Contains("LastPollTimeText", tool);
+        Assert.Contains("Last DB write time", tool);
+        Assert.Contains("LastDbWriteTimeText", tool);
+        Assert.Contains("Last persisted session", tool);
+        Assert.Contains("LastPersistedSessionText", tool);
+        Assert.Contains("Sync state", tool);
+        Assert.Contains("LastSyncStatusText", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

@@ -193,18 +193,37 @@ internal static class UiSnapshotRunner
         CurrentFocusSemanticField field)
     {
         string automationId = field.AutomationId;
+        string readableName = GetElementName(window, automationId);
         context.CheckContains(
             field.ReadableNameCheck,
             field.ReadableName,
-            GetElementName(window, automationId));
+            readableName);
 
         string runtimeStatus = GetElementText(window, automationId);
+        CheckStatus readableNameStatus = readableName.Contains(
+            field.ReadableName,
+            StringComparison.OrdinalIgnoreCase)
+                ? CheckStatus.Pass
+                : CheckStatus.Warn;
+        CheckStatus runtimeStatusStatus = string.IsNullOrWhiteSpace(runtimeStatus) ? CheckStatus.Warn : CheckStatus.Pass;
+
         context.Add(
             field.RuntimeStatusCheck,
             "Non-empty runtime value from AutomationProperties.ItemStatus or text",
             string.IsNullOrWhiteSpace(runtimeStatus) ? "<empty>" : runtimeStatus,
             string.IsNullOrWhiteSpace(runtimeStatus) ? CheckStatus.Fail : CheckStatus.Pass);
+        context.CurrentFocusSemanticEvidence.Add(new CurrentFocusSemanticEvidence(
+            field.ReadableName,
+            automationId,
+            readableName,
+            string.IsNullOrWhiteSpace(runtimeStatus) ? "<empty>" : runtimeStatus,
+            CombineStatus(readableNameStatus, runtimeStatusStatus)));
     }
+
+    private static CheckStatus CombineStatus(CheckStatus readableNameStatus, CheckStatus runtimeStatusStatus)
+        => readableNameStatus == CheckStatus.Pass && runtimeStatusStatus == CheckStatus.Pass
+            ? CheckStatus.Pass
+            : CheckStatus.Warn;
 
     private static ProcessStartInfo CreateStartInfo(UiSnapshotOptions options)
     {
@@ -910,6 +929,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## Current Focus Runtime Semantic Evidence");
+        lines.Add("");
+        lines.Add("| Field | AutomationId | Readable Name | Runtime Value | Status |");
+        lines.Add("|:---|:---|:---|:---|:---|");
+        if (context.CurrentFocusSemanticEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  |  | Warn |");
+        }
+        else
+        {
+            foreach (CurrentFocusSemanticEvidence evidence in context.CurrentFocusSemanticEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Field)} | {Escape(evidence.AutomationId)} | {Escape(evidence.ReadableName)} | {Escape(evidence.RuntimeValue)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Screenshots");
         lines.Add("");
         foreach (string screenshot in context.Screenshots.Distinct(StringComparer.Ordinal))
@@ -1073,6 +1110,8 @@ internal sealed class UiSnapshotContext
 
     public List<CheckResult> Results { get; } = [];
 
+    public List<CurrentFocusSemanticEvidence> CurrentFocusSemanticEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1120,6 +1159,13 @@ internal sealed class UiSnapshotContext
 }
 
 internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
+
+internal sealed record CurrentFocusSemanticEvidence(
+    string Field,
+    string AutomationId,
+    string ReadableName,
+    string RuntimeValue,
+    CheckStatus Status);
 
 internal sealed record CurrentFocusSemanticField(
     string AutomationId,
