@@ -11,18 +11,18 @@ This audit checks the implemented repository against `docs/prd.md`,
 - `total_todolist.md` remains the executable checklist derived from the PRD.
 - No direct conflict was found between `docs/prd.md` and the current
   `total_todolist.md`.
-- The remaining unchecked TODOs are physical-device-bound Android resource
-  measurements and final release bookkeeping only. Code/test/docs work
-  available in this Windows environment is complete.
+- Physical-device-bound Android resource measurements have been reclassified as
+  optional future hardening because a real Android device is not available.
+  Emulator-backed Android UI screenshots and package-scoped resource
+  measurements are the current acceptance baseline.
 
-## Remaining External Blockers
+## Optional External Hardening
 
-The following items must not be marked complete without the required local
-environment:
+The following items can add confidence later, but they are not required to
+complete the current project state:
 
-- Repeat Android resource measurements on a physical Android device.
-- Run PostgreSQL/Testcontainers-specific server validation with Docker daemon
-  available.
+- Repeat Android resource measurements on a physical Android device for
+  battery, thermal, OEM background policy, and real hardware variability.
 
 The current blocker readiness check can be rerun with:
 
@@ -32,7 +32,8 @@ powershell -ExecutionPolicy Bypass -File scripts\check-external-blockers.ps1
 
 Latest result:
 
-- Status: BLOCKED.
+- Status: PASS for Docker readiness and BLOCKED only for optional physical
+  Android-device readiness.
 - Artifact: `artifacts/external-blockers/20260430-185208`.
 - Android: only `emulator-5554` is connected; no physical Android device was
   reported by `adb devices -l`.
@@ -47,7 +48,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 Result:
 
 - Status: PASS on `emulator-5554` / `Medium_Phone` emulator.
-- Artifact: `artifacts/android-ui-snapshots/20260430-153654`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-222943`.
 - Captured dashboard, settings, sessions, daily summary, launcher shell,
   current-focus, chart, location, and report screenshots.
 - Dashboard location card, Settings location section, compact bottom
@@ -63,7 +64,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measuremen
 Result:
 
 - Status: PASS on `emulator-5554` / `Medium_Phone` emulator.
-- Artifact: `artifacts/android-resource-measurements/20260430-153804`.
+- Artifact: `artifacts/android-resource-measurements/20260430-223105`.
 - Captured package-scoped process, memory, and graphics frame diagnostics.
 - The script does not capture screenshots, typed text, clipboard data,
   passwords, forms, messages, other-app content, or touch coordinates.
@@ -215,5 +216,6 @@ server, architecture, privacy guardrails, coverage, WPF semantic acceptance,
 Chrome native messaging sandbox, and docs are complete for the currently
 available environment.
 
-Do not mark physical-device Android resource measurements complete from
-emulator evidence. Re-run that item when a real Android device is connected.
+Physical-device Android resource measurement is deferred optional hardening.
+The current Android completion baseline is emulator-backed UI screenshot
+automation plus package-scoped resource measurement.

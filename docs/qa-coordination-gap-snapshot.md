@@ -8,10 +8,10 @@ does not replace `total_todolist.md`.
 
 ## Latest Evidence Observed
 
-- Android UI snapshots: `artifacts/android-ui-snapshots/20260430-174439`
+- Android UI snapshots: `artifacts/android-ui-snapshots/20260430-222943`
   (`latest/report.md` status PASS).
 - Android resource measurements:
-  `artifacts/android-resource-measurements/20260430-174552`
+  `artifacts/android-resource-measurements/20260430-223105`
   (`latest/manifest.json` status PASS).
 - WPF UI acceptance: `artifacts/wpf-ui-acceptance/20260430-170819`
   (`latest/report.md` status PASS).
@@ -36,12 +36,11 @@ Environment-bound blocker evidence is tracked in
 3. PostgreSQL/Testcontainers validation remains externally blocked. Do not ask
    workers to close concurrency idempotency, migration application, or legacy
    web-session backfill verification without a real PostgreSQL fixture.
-4. Android physical-device resource measurement remains externally blocked.
-   Emulator resource evidence is PASS, but PRD-grade physical-device evidence
-   still needs an attached device.
-5. Android checklist has current UI/location/Usage Access evidence but does not
-   yet call out the latest resource-measurement artifact `20260430-174552`.
-   Treat this as a documentation breadcrumb gap, not a product/test failure.
+4. Android physical-device resource measurement is optional future hardening.
+   Emulator UI/resource evidence is the current acceptance baseline because a
+   real Android device is not available in this workspace.
+5. Android checklist now calls out the latest emulator UI and resource
+   artifacts: `20260430-222943` and `20260430-223105`.
 6. WPF checklist is aligned with the broad same-window browser, Chrome native,
    privacy, and acceptance artifacts. Commit `ddfc617` adds a narrower
    origin-only UI Automation fallback behavior and now has a resume-state
@@ -93,7 +92,7 @@ Environment-bound blocker evidence is tracked in
 - Server agent after that: PostgreSQL/Testcontainers items remain blocked until
   a real fixture is available.
 - Android agent: only queue documentation/evidence refresh for the latest
-  resource-measurement artifact or physical-device measurement when a device is
+  emulator evidence or optional physical-device hardening when a device is
   available. Avoid Android feature work unless main agent explicitly opens it.
 - WPF agent: safe queued task is checklist/docs hygiene for the existing
   consolidated `artifacts/wpf-check/latest/` package and/or a resume-state

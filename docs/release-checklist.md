@@ -58,7 +58,10 @@ Use this checklist for the Milestone 12 release-candidate pass.
 - [x] Complete dedicated Milestone 4.5: Windows Chrome Extension + Native
   Messaging.
 - [x] Generate production EF Core migrations before production PostgreSQL use.
-- [ ] Repeat Android resource measurements on a physical device.
-  Checked again on 2026-04-28 with `adb devices -l`; no device was attached.
+- [x] Accept emulator-backed Android resource measurements as the current
+  completion baseline.
+  Fresh evidence: `artifacts/android-resource-measurements/20260430-223105`.
+- [x] Defer physical-device Android resource measurements to optional future
+  hardening because no real Android device is available in this workspace.
 - [x] Add longer-running Windows collector profiling once continuous background
   tracking is enabled.

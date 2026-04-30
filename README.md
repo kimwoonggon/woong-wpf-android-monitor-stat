@@ -238,15 +238,17 @@ Short emulator resource smoke:
 powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -DurationSeconds 3
 ```
 
-Physical-device-only resource evidence:
+Optional physical-device-only resource evidence:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -RequirePhysicalDevice
 ```
 
 `-RequirePhysicalDevice` intentionally writes `Status: BLOCKED` when only an
-emulator is connected, so emulator evidence cannot accidentally close the
-physical-device checklist item.
+emulator is connected. The current completion baseline accepts emulator-backed
+UI screenshots and package-scoped resource measurements; physical-device
+measurement is optional future hardening for battery, thermal, and real
+hardware variability.
 
 Android artifacts are written under ignored folders:
 

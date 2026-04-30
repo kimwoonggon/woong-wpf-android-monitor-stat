@@ -177,8 +177,8 @@ Future connected-device improvements:
 - Add optional Midscene visual review when model environment variables are
   configured.
 - Resource measurement is tracked separately in
-  `docs/android-resource-measurement.md`; repeat that run on a physical device
-  when hardware is connected.
+  `docs/android-resource-measurement.md`; physical-device resource measurement
+  is optional future hardening when hardware is connected.
 
 ## Current Gaps
 
@@ -187,5 +187,5 @@ Future connected-device improvements:
   review, but the compact toolbar/header contract is now covered by tests.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
-- Physical-device resource measurement remains blocked until a device is
-  connected.
+- Physical-device resource measurement is deferred optional hardening; it is
+  not a blocker for the emulator-backed acceptance baseline.

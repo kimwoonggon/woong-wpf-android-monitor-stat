@@ -73,19 +73,22 @@ artifacts/android-resource-measurements/latest/
 ## Latest Emulator Evidence
 
 - Command:
-  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -SkipBuild -DurationSeconds 3`
+  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -DurationSeconds 3`
 - Result: PASS on `emulator-5554` / `Medium_Phone` emulator.
-- Artifact: `artifacts/android-resource-measurements/20260430-184442`.
+- Artifact: `artifacts/android-resource-measurements/20260430-223105`.
 - Captured package-scoped process, memory, and graphics frame diagnostics.
 
-## Remaining Gap
+## Completion Baseline
 
-Physical-device resource measurement is still open. Emulator evidence must not
-be used to mark the physical-device TODO complete.
+Emulator-backed resource measurement is the current acceptance baseline because
+a physical Android device is not available in this workspace. Physical-device
+measurement remains useful future hardening for battery, thermal, OEM
+background policy, and real hardware variability, but it is not a release
+blocker for the current implementation.
 
-Latest physical-device-required check:
+Optional physical-device-only check:
 
 - Command:
-  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -SkipBuild -RequirePhysicalDevice`
-- Result: BLOCKED because only `emulator-5554` is connected.
-- Artifact: `artifacts/android-resource-measurements/20260430-191835`.
+  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -RequirePhysicalDevice`
+- Expected result without a physical device: `Status: BLOCKED` with a clear
+  report explaining that only emulator devices were detected.

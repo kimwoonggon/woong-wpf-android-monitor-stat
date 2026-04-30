@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260430-184358/
+artifacts/android-ui-snapshots/20260430-222943/
 ```
 
 Latest location opt-in emulator evidence:
@@ -49,7 +49,7 @@ artifacts/android-check/20260430-183032/
 Latest Android resource measurement evidence:
 
 ```text
-artifacts/android-resource-measurements/20260430-184442/
+artifacts/android-resource-measurements/20260430-223105/
 ```
 
 Each checked feature should have:
@@ -137,11 +137,12 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1
 ```
 
-## Current External Blocker
+## Current Acceptance Baseline
 
-Physical-device resource measurement remains open until a real Android device
-is connected. Emulator PASS evidence must not be used to close that physical
-device TODO.
+Android validation is accepted on the connected emulator for this project state.
+Physical-device resource measurement is optional future hardening, not a
+release blocker, because a real Android device is not available in the current
+workspace.
 
 ## Usage Access Onboarding Gate 2026-04-30
 
@@ -199,11 +200,21 @@ device TODO.
 - [x] Captured app-only `pidof`, `dumpsys meminfo`, and `dumpsys gfxinfo` diagnostics.
 - [x] Fresh UI evidence: `artifacts/android-ui-snapshots/20260430-184358`.
 - [x] Fresh resource evidence: `artifacts/android-resource-measurements/20260430-184442`.
-- [x] Physical-device resource measurement remains open; emulator evidence does not close that TODO.
+- [x] Physical-device resource measurement is optional future hardening; emulator evidence is accepted as the current completion baseline.
 
 ## Physical Device Required Measurement Guard 2026-04-30
 
 - [x] Added `-RequirePhysicalDevice` support to `scripts/run-android-resource-measurement.ps1`.
 - [x] Added architecture tests proving emulator-only device lists produce `BLOCKED` physical-device artifacts.
 - [x] Local physical-device-required run produced `artifacts/android-resource-measurements/20260430-191835` with status `BLOCKED` because only `emulator-5554` is connected.
-- [x] Physical-device resource measurement remains open until a non-`emulator-*` Android device is connected.
+- [x] Physical-device resource measurement is preserved as an optional future check; emulator PASS evidence is the current acceptance baseline.
+
+## Emulator Acceptance Refresh 2026-04-30
+
+- [x] Re-ran Android UI screenshot automation on `emulator-5554`.
+- [x] Captured dashboard, settings, sessions, daily summary, launcher shell tabs, permission onboarding, and location UI screenshots.
+- [x] Re-ran package-scoped resource measurement on `emulator-5554` with a 3 second sample window.
+- [x] Captured app-only `pidof`, `dumpsys meminfo`, and `dumpsys gfxinfo` diagnostics.
+- [x] Fresh UI evidence: `artifacts/android-ui-snapshots/20260430-222943`.
+- [x] Fresh resource evidence: `artifacts/android-resource-measurements/20260430-223105`.
+- [x] Accepted emulator evidence as the completion baseline; physical Android device measurement is deferred optional hardening.

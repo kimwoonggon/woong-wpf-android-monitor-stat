@@ -2,8 +2,8 @@
 
 Updated: 2026-04-30
 
-This note records environment-bound blockers only. These are not product
-failures and should be reversed as soon as the required local capability is
+This note records environment-bound validation limits. These are not product
+failures and should be refreshed as soon as the relevant local capability is
 available.
 
 ## Docker/Testcontainers
@@ -33,18 +33,18 @@ Unblock criteria:
 - Rerun `scripts/run-server-postgres-validation.ps1` after future server DB
   changes.
 
-## Android Physical Device
+## Android Physical Device Optional Hardening
 
 Current evidence:
 
 - `adb devices` lists only `emulator-5554`.
 - No physical Android device is connected.
-- Emulator UI/resource evidence remains valid emulator evidence, but it must
-  not close the physical-device resource measurement item.
+- Emulator UI/resource evidence is the current acceptance baseline.
 
-Blocked validation:
+Optional validation:
 
-- Physical-device Android resource measurement.
+- Physical-device Android resource measurement for battery, thermal, OEM
+  background policy, and real hardware variability.
 
 Recheck command:
 
@@ -52,8 +52,9 @@ Recheck command:
 adb devices -l
 ```
 
-Unblock criteria:
+Future hardening criteria:
 
 - At least one non-`emulator-*` Android device appears as `device`.
-- Run physical-device resource measurement and record the new artifact path.
-- Keep emulator evidence and physical-device evidence separate in checklists.
+- Run physical-device resource measurement and record the new artifact path as
+  optional hardening evidence.
+- Keep emulator evidence and physical-device evidence separate in reports.

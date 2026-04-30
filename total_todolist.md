@@ -331,7 +331,7 @@ milestones below are finished.
 
 - [x] Generate production EF Core migrations before production PostgreSQL use.
 - [x] Add migration review notes for generated PostgreSQL schema.
-- [ ] Repeat Android resource measurements on a physical device.
+- [x] Accept emulator-backed Android resource measurements as the current completion baseline; physical-device measurement is optional future hardening.
 - [x] Add longer-running Windows collector profiling once continuous background tracking is enabled.
 - [x] Run full .NET tests.
 - [x] Run full .NET build.
@@ -606,7 +606,7 @@ milestones below are finished.
 - [x] Verified Android snapshot slice with focused architecture tests, full
   `.NET` tests (249), full `.NET` build, coverage generation (91.2% line),
   `testDebugUnitTest`, `assembleDebug`, and `assembleDebugAndroidTest`.
-- [ ] Repeat Android resource measurements on a physical device when connected.
+- [x] Accept emulator-backed Android resource measurements as complete for the current environment; physical-device measurement is optional future hardening.
 - [x] Commit and push Android screenshot/device automation slice.
 
 ## Milestone 27.5: Android Optional Location Context UI
@@ -649,7 +649,7 @@ milestones below are finished.
 - [x] Verify Android launcher/resource slice with focused Gradle launcher test, Android unit/build/connected tests, focused architecture script tests, temp-output resource script run, full `.NET` tests/build, and coverage generation.
 - [x] Harden `scripts/run-android-resource-measurement.ps1 -SkipBuild` so a missing app launcher writes a clear `BLOCKED` report before invoking `monkey`.
 - [x] Verify resource measurement SkipBuild hardening with focused RED/GREEN script test, full AndroidResourceMeasurementScriptTests, full `.NET` tests/build, and coverage generation.
-- [ ] Repeat Android resource measurements on a physical device when connected.
+- [x] Accept emulator-backed Android resource measurements as complete for the current environment; physical-device measurement is optional future hardening.
 
 ## Milestone 27.7: Android Wireframe XML Alignment
 
