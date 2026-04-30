@@ -90,8 +90,8 @@ Current behavior:
   `01-dashboard-overview.png`, `02-dashboard-summary-location.png`,
   `03-dashboard-charts.png`, `04-dashboard-recent-sessions.png`,
   `05-settings-privacy-sync.png`, `06-settings-location-permission.png`,
-  `07-sessions-list.png`, `08-daily-summary.png`, `09-main-shell.png`, and
-  `10-main-shell-sessions.png`.
+  `07-sessions-list.png`, `08-daily-summary.png`, `09-main-shell.png`,
+  `10-main-shell-sessions.png`, and `11-main-shell-settings.png`.
 - The instrumentation test captures local PNG screenshots into the app's
   external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
@@ -106,6 +106,8 @@ Latest emulator evidence:
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
 - Artifact: `artifacts/android-ui-snapshots/20260430-133732`.
+- Latest SettingsFragment runtime-wiring evidence:
+  `artifacts/android-ui-snapshots/20260430-140141`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -139,6 +141,13 @@ Latest emulator evidence:
 - Dashboard and Sessions rows now show user-facing app names first while
   preserving package names as secondary metadata. The row height was increased
   so app name, package, time range, state, and duration remain readable.
+- `11-main-shell-settings.png` captures the real launcher shell after selecting
+  Settings; it shows runtime privacy boundaries, Usage Access action, local-only
+  sync status, notification permission action, and optional location context
+  controls.
+- `06-settings-location-permission.png` now scrolls to the actual Location
+  context card and shows location off by default, precise latitude/longitude
+  opt-in disabled, and the location permission action disabled until opt-in.
 
 Future connected-device improvements:
 
@@ -151,8 +160,8 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
-- Sessions, Report, and Settings fragments still need to be wired to the same
-  runtime behavior as the existing Activity screens.
+- Report fragment still needs to be wired to the same runtime behavior as the
+  existing Activity screen.
 - The fragment shell still needs visual tightening against the user-provided
   XML skeleton, especially compact toolbar/header polish and runtime wiring for
   Report and Settings fragments.

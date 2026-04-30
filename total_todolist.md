@@ -1443,8 +1443,9 @@ milestones below are finished.
 - [x] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
 - [x] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
 - [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
-- [ ] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
-- [ ] Add feature screenshots for each newly runtime-backed shell tab.
+- [x] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
+- [x] Add feature screenshots for each newly runtime-backed shell tab.
+- [x] Capture emulator evidence for SettingsFragment runtime wiring at `artifacts/android-ui-snapshots/20260430-140141`, including `11-main-shell-settings.png` and the scrolled location-context screenshot.
 ## Milestone 47: Chrome Native Messaging Sandbox Evidence
 
 - [x] Audit Chrome/native messaging acceptance docs, script, and Windows browser tests for sandbox safety coverage.
@@ -1485,7 +1486,6 @@ milestones below are finished.
 - [x] Run WPF App tests.
 - [x] Run solution build and solution tests.
 - [x] Run WPF UI acceptance script and confirm root manifest summarizes child evidence artifacts.
-
 ## Milestone 51: WPF Acceptance Root Manifest Privacy Boundary
 
 - [x] Audit WPF/browser/runtime acceptance TODOs after Milestone 50 and identify missing machine-readable privacy boundary evidence in the root WPF acceptance manifest.

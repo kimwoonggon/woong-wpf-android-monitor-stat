@@ -62,7 +62,8 @@ public sealed class AndroidUiSnapshotScriptTests
             "07-sessions-list.png",
             "08-daily-summary.png",
             "09-main-shell.png",
-            "10-main-shell-sessions.png"
+            "10-main-shell-sessions.png",
+            "11-main-shell-settings.png"
         ];
 
         foreach (string screen in expectedFeatureScreens)
@@ -98,6 +99,30 @@ public sealed class AndroidUiSnapshotScriptTests
         Assert.Contains("offsetDescendantRectToMyCoords", captureTest);
         Assert.Contains("getDrawingRect", captureTest);
         Assert.DoesNotContain("scrollView.scrollTo(0, target.top)", captureTest);
+    }
+
+    [Fact]
+    public void AndroidSnapshotCapture_ScrollsSettingsLocationSectionForLocationScreenshot()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string captureTestPath = Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "androidTest",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "snapshots",
+            "SnapshotCaptureTest.kt");
+
+        string captureTest = File.ReadAllText(captureTestPath);
+
+        Assert.Contains("06-settings-location-permission.png", captureTest);
+        Assert.Contains("scrollSettingsTo", captureTest);
+        Assert.Contains("R.id.locationSettingsCard", captureTest);
     }
 
     [Fact]
@@ -211,7 +236,8 @@ exit /b 0
                 "07-sessions-list.png",
                 "08-daily-summary.png",
                 "09-main-shell.png",
-                "10-main-shell-sessions.png"
+                "10-main-shell-sessions.png",
+                "11-main-shell-settings.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -230,6 +256,7 @@ exit /b 0
             Assert.Contains("08-daily-summary.png", manifestText);
             Assert.Contains("09-main-shell.png", manifestText);
             Assert.Contains("10-main-shell-sessions.png", manifestText);
+            Assert.Contains("11-main-shell-settings.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
@@ -242,6 +269,7 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/08-daily-summary.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/09-main-shell.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/10-main-shell-sessions.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/11-main-shell-settings.png", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }

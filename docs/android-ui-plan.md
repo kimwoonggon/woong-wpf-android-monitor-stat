@@ -266,6 +266,14 @@ and feature screenshots for each tab.
   `03-dashboard-charts.png` artifact captures the actual chart section.
 - The shared focus-session row layout now uses enough height for app name,
   package name, time range, active/idle state, and duration without clipping.
+- `SettingsFragment` is now wired to the same runtime-safe privacy, sync,
+  Usage Access, notification permission, and optional location context controls
+  as the Settings Activity. The launcher shell Settings tab is no longer a
+  generic placeholder include stack.
+- Android screenshot automation now captures `11-main-shell-settings.png` after
+  selecting the Settings bottom-navigation item, and
+  `06-settings-location-permission.png` scrolls to the actual Location context
+  card so the optional latitude/longitude controls are visible.
 
 ## Current Fragment Shell Gaps
 
@@ -275,13 +283,13 @@ enough:
 
 - The launcher toolbar/header is too large and must be normalized to the
   compact MaterialToolbar shell from the XML skeleton.
-- Report and Settings fragments still need to be wired to runtime repositories
-  instead of remaining skeleton-only views.
+- Report fragment still needs to be wired to runtime summary repository/client
+  behavior instead of remaining a skeleton-only view.
 - Screenshot automation should keep adding one feature screenshot per shell tab
   as each fragment becomes runtime-backed.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Wiring the new Report and Settings fragments to the same runtime
-  behavior as the existing Activity screens.
+- Wiring the new Report fragment to the same runtime behavior as the existing
+  Activity screen.

@@ -1,6 +1,7 @@
 # Resume State
 
 Updated: 2026-04-30
+
 ## 2026-04-30 WPF Acceptance Root Manifest Privacy Boundary Slice
 
 - Audited WPF acceptance evidence after Milestone 50 and found the root manifest summarized child artifacts but did not carry the privacy boundary that the root report states.
@@ -14,8 +15,23 @@ Verified:
 - `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 132 WPF App tests.
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 396 solution tests.
-- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-140613`; root `manifest.json` includes the `privacyBoundary` rows.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-141235`; root `manifest.json` includes the `privacyBoundary` rows.
 
+## 2026-04-30 Android Settings Fragment Runtime Wiring Slice
+
+- Treated the user-provided Android XML wireframe skeleton as the target shape for the launcher Settings tab, not a placeholder include stack.
+- Added RED Robolectric coverage requiring `MainActivity` Settings navigation to expose runtime Usage Access, privacy boundary, local-only sync, notification, and optional location controls.
+- Replaced `fragment_settings.xml` placeholder includes with runtime cards and wired `SettingsFragment` to `UsageAccessSettingsIntentFactory`, `NotificationPermissionController`, `SharedPreferencesAndroidLocationSettings`, and `LocationPermissionController`.
+- Added RED architecture/snapshot coverage requiring a dedicated `11-main-shell-settings.png` shell screenshot and requiring `06-settings-location-permission.png` to scroll to the actual Location context card.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-140141`; `11-main-shell-settings.png` shows the launcher Settings tab, and `06-settings-location-permission.png` shows location context off by default plus disabled precise latitude/longitude and permission controls.
+
+Verified:
+
+- RED first: `./gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.MainActivityTest.settingsTabShowsRuntimePrivacySyncAndLocationControls" --no-daemon --stacktrace` failed on missing SettingsFragment runtime controls, then passed.
+- RED first: `dotnet test tests/Woong.MonitorStack.Architecture.Tests/Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidUiSnapshotScript_DocumentsFeatureByFeatureScreenshots|FullyQualifiedName~AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens" -v minimal` failed on missing `11-main-shell-settings.png`, then passed.
+- RED first: `dotnet test tests/Woong.MonitorStack.Architecture.Tests/Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidSnapshotCapture_ScrollsSettingsLocationSectionForLocationScreenshot" -v minimal` failed on missing settings location scroll evidence, then passed.
+- `./gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-140141`.
 ## 2026-04-30 WPF Acceptance Root Manifest Slice
 
 - Audited WPF acceptance evidence after Milestone 49 and found no incomplete WPF runtime TODO, but the composed WPF acceptance run still lacked a machine-readable root manifest tying RealStart and TrackingPipeline child artifacts together.

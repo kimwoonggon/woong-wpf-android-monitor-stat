@@ -47,6 +47,10 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "10-main-shell-sessions.png")
         )
+        captureMainShellSettings(
+            device = device,
+            output = File(outputDir, "11-main-shell-settings.png")
+        )
         captureDashboardFeatureScreens(
             device = device,
             outputDir = outputDir
@@ -121,9 +125,11 @@ class SnapshotCaptureTest {
         device: UiDevice,
         outputDir: File
     ) {
-        ActivityScenario.launch(SettingsActivity::class.java).use {
+        ActivityScenario.launch(SettingsActivity::class.java).use { scenario ->
             waitForScreen(device)
             captureScreen(device, File(outputDir, "05-settings-privacy-sync.png"))
+            scrollSettingsTo(scenario, R.id.locationSettingsCard)
+            waitForScreen(device)
             captureScreen(device, File(outputDir, "06-settings-location-permission.png"))
         }
     }
@@ -143,12 +149,41 @@ class SnapshotCaptureTest {
         }
     }
 
+    private fun captureMainShellSettings(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                ).selectedItemId = R.id.navSettings
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
     private fun scrollDashboardTo(
         scenario: ActivityScenario<DashboardActivity>,
         targetViewId: Int
     ) {
         scenario.onActivity { activity ->
             val scrollView = activity.findViewById<NestedScrollView>(R.id.dashboardScroll)
+            val target = activity.findViewById<View>(targetViewId)
+            val targetRect = Rect()
+            target.getDrawingRect(targetRect)
+            scrollView.offsetDescendantRectToMyCoords(target, targetRect)
+            scrollView.scrollTo(0, targetRect.top.coerceAtLeast(0))
+        }
+    }
+
+    private fun scrollSettingsTo(
+        scenario: ActivityScenario<SettingsActivity>,
+        targetViewId: Int
+    ) {
+        scenario.onActivity { activity ->
+            val scrollView = activity.findViewById<NestedScrollView>(R.id.settingsRoot)
             val target = activity.findViewById<View>(targetViewId)
             val targetRect = Rect()
             target.getDrawingRect(targetRect)
