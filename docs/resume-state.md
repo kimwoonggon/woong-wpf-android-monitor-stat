@@ -1,6 +1,21 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF SQLite Runtime Evidence Slice
+
+- Audited WPF acceptance runtime proof after control action evidence and found SQLite persistence/outbox counts were available only as generic DB evidence.
+- Added RED WPF App acceptance-tool coverage requiring grouped SQLite runtime evidence in both `report.md` and `manifest.json`.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so `report.md` includes `## SQLite Runtime Evidence` and `manifest.json` includes `sqliteRuntimeEvidence` rows for `focus_session`, `web_session`, and `sync_outbox` with expected row count, actual row count, and status.
+- Preserved existing `databaseEvidence` and generic PASS/FAIL checks for backward compatibility.
+- This is a WPF App/tool acceptance evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, product telemetry collection, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_ReportAndManifestIncludeGroupedSqliteRuntimeEvidence" -maxcpucount:1 -v minimal` failed RED on missing `## SQLite Runtime Evidence`, then passed after the snapshot tool update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 125 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-120341`; the latest snapshot report/manifest include grouped SQLite runtime evidence.
+
 ## 2026-04-30 Android Main Shell Wireframe Correction Slice
 
 - Added RED architecture and Robolectric tests proving `MainActivity` is a real XML/View shell instead of redirecting immediately to `DashboardActivity`.

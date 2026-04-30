@@ -805,15 +805,30 @@ internal static class UiSnapshotRunner
             "> 0",
             evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.FocusSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "focus_session",
+            "> 0",
+            evidence.FocusSessionRows,
+            evidence.FocusSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "TrackingPipeline web_session rows",
             "> 0",
             evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.WebSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "web_session",
+            "> 0",
+            evidence.WebSessionRows,
+            evidence.WebSessionRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "TrackingPipeline sync_outbox rows",
             "> 0",
             evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "sync_outbox",
+            "> 0",
+            evidence.SyncOutboxRows,
             evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
     }
 
@@ -834,15 +849,30 @@ internal static class UiSnapshotRunner
             "= 0",
             evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "focus_session",
+            "= 0",
+            evidence.FocusSessionRows,
+            evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "EmptyData web_session rows",
             "= 0",
             evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "web_session",
+            "= 0",
+            evidence.WebSessionRows,
+            evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "EmptyData sync_outbox rows",
             "= 0",
             evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "sync_outbox",
+            "= 0",
+            evidence.SyncOutboxRows,
             evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
     }
 
@@ -863,15 +893,30 @@ internal static class UiSnapshotRunner
             "= 0",
             evidence.FocusSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "focus_session",
+            "= 0",
+            evidence.FocusSessionRows,
+            evidence.FocusSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "SampleDashboard web_session rows",
             "= 0",
             evidence.WebSessionRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "web_session",
+            "= 0",
+            evidence.WebSessionRows,
+            evidence.WebSessionRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.Add(
             "SampleDashboard sync_outbox rows",
             "= 0",
             evidence.SyncOutboxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordSqliteRuntimeEvidence(
+            "sync_outbox",
+            "= 0",
+            evidence.SyncOutboxRows,
             evidence.SyncOutboxRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
     }
 
@@ -1038,6 +1083,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## SQLite Runtime Evidence");
+        lines.Add("");
+        lines.Add("| Store | Expected | Actual Rows | Status |");
+        lines.Add("|:---|:---|---:|:---|");
+        if (context.SqliteRuntimeEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  | Warn |");
+        }
+        else
+        {
+            foreach (SqliteRuntimeEvidence evidence in context.SqliteRuntimeEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Store)} | {Escape(evidence.Expected)} | {evidence.ActualRows.ToString(System.Globalization.CultureInfo.InvariantCulture)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Notes");
         lines.Add("");
         foreach (string note in context.Notes)
@@ -1079,6 +1142,13 @@ internal static class UiSnapshotRunner
                     context.DatabaseEvidence.WebSessionRows,
                     context.DatabaseEvidence.SyncOutboxRows
                 },
+            sqliteRuntimeEvidence = context.SqliteRuntimeEvidence.Select(evidence => new
+            {
+                store = evidence.Store,
+                expected = evidence.Expected,
+                actualRows = evidence.ActualRows,
+                status = evidence.Status.ToString()
+            }).ToArray(),
             viewportWidths = context.Options.ViewportWidths.ToArray(),
             screenshots = context.Screenshots.Distinct(StringComparer.Ordinal).ToArray(),
             skippedScreenshots = context.SkippedScreenshots.ToArray(),
@@ -1191,6 +1261,8 @@ internal sealed class UiSnapshotContext
 
     public List<ControlActionEvidence> ControlActionEvidence { get; } = [];
 
+    public List<SqliteRuntimeEvidence> SqliteRuntimeEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1251,6 +1323,9 @@ internal sealed class UiSnapshotContext
     public void RecordControlAction(string action, string automationId, string result, CheckStatus status)
         => ControlActionEvidence.Add(new ControlActionEvidence(action, automationId, result, status));
 
+    public void RecordSqliteRuntimeEvidence(string store, string expected, int actualRows, CheckStatus status)
+        => SqliteRuntimeEvidence.Add(new SqliteRuntimeEvidence(store, expected, actualRows, status));
+
     private void AddSectionScreenshotEvidence(
         string fileName,
         string skippedReason,
@@ -1292,6 +1367,12 @@ internal sealed record ControlActionEvidence(
     string Action,
     string AutomationId,
     string Result,
+    CheckStatus Status);
+
+internal sealed record SqliteRuntimeEvidence(
+    string Store,
+    string Expected,
+    int ActualRows,
     CheckStatus Status);
 
 internal sealed record SectionScreenshotDefinition(string Section, string AutomationId)

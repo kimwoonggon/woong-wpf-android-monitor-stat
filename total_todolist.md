@@ -1377,6 +1377,18 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm grouped control action evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the control action evidence slice.
 
+## Milestone 42: WPF SQLite Runtime Evidence
+
+- [x] Audit remaining WPF acceptance runtime proof after grouped control action evidence.
+- [x] Add a failing WPF App/tool test requiring grouped SQLite runtime evidence in report and manifest.
+- [x] Add SQLite runtime evidence rows for `focus_session`, `web_session`, and `sync_outbox` with expected row count, actual row count, and status.
+- [x] Preserve existing `databaseEvidence` and generic checks for backward compatibility.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm grouped SQLite runtime evidence appears in latest report/manifest.
+- [x] Update WPF resume state after the SQLite runtime evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

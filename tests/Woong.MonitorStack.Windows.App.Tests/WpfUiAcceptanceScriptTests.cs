@@ -488,6 +488,32 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeGroupedSqliteRuntimeEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## SQLite Runtime Evidence", tool);
+        Assert.Contains("| Store | Expected | Actual Rows | Status |", tool);
+        Assert.Contains("sqliteRuntimeEvidence", tool);
+        Assert.Contains("context.SqliteRuntimeEvidence.Select", tool);
+        Assert.Contains("store = evidence.Store", tool);
+        Assert.Contains("expected = evidence.Expected", tool);
+        Assert.Contains("actualRows = evidence.ActualRows", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+        Assert.Contains("RecordSqliteRuntimeEvidence", tool);
+        Assert.Contains("focus_session", tool);
+        Assert.Contains("web_session", tool);
+        Assert.Contains("sync_outbox", tool);
+        Assert.Contains("TrackingPipeline focus_session rows", tool);
+        Assert.Contains("TrackingPipeline web_session rows", tool);
+        Assert.Contains("TrackingPipeline sync_outbox rows", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows()
     {
         string repoRoot = FindRepositoryRoot();
