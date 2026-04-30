@@ -1,6 +1,21 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF Acceptance Root Manifest Slice
+
+- Audited WPF acceptance evidence after Milestone 49 and found no incomplete WPF runtime TODO, but the composed WPF acceptance run still lacked a machine-readable root manifest tying RealStart and TrackingPipeline child artifacts together.
+- Added RED WPF App script coverage requiring `scripts/run-wpf-ui-acceptance.ps1` to write a root `manifest.json` with RealStart report/manifest paths, `realStartEvidence`/`realStartSafetyEvidence` names, and TrackingPipeline snapshot report/manifest/prompt paths.
+- Updated the WPF UI acceptance script to write that root `manifest.json` beside the root `report.md` before copying the run to `artifacts/wpf-ui-acceptance/latest`.
+- This is a WPF script/test/docs audit-evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootManifestSummarizesChildEvidenceArtifacts" -maxcpucount:1 -v minimal` failed RED on missing root `manifest.json`, then passed after the composed manifest writer was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 131 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 394 solution tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-134900`; root `manifest.json` summarizes RealStart and TrackingPipeline child evidence artifacts.
+
 ## 2026-04-30 Android Chart Axis And App Label Slice
 
 - Treated the user-provided Android XML wireframe skeleton as the visual target and fixed the latest mismatch where charts and session rows looked like debug/package-name output.

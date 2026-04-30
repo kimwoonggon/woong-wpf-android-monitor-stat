@@ -1475,6 +1475,16 @@ milestones below are finished.
 - [x] Run WPF App tests.
 - [x] Run solution build and solution tests.
 - [x] Run WPF UI acceptance script and confirm root report links RealStart evidence artifacts.
+## Milestone 50: WPF Acceptance Root Manifest
+
+- [x] Audit WPF/browser/runtime acceptance TODOs after Milestone 49 and identify the missing composed root manifest as the next WPF-only evidence gap.
+- [x] Add a failing WPF App script test requiring the root acceptance run to emit `manifest.json` summarizing RealStart and TrackingPipeline artifacts.
+- [x] Add root manifest fields for RealStart report/manifest, `realStartEvidence`, `realStartSafetyEvidence`, TrackingPipeline snapshot report/manifest, and visual review prompt.
+- [x] Update WPF resume state for the root-manifest evidence slice.
+- [x] Run focused WPF App script test.
+- [x] Run WPF App tests.
+- [x] Run solution build and solution tests.
+- [x] Run WPF UI acceptance script and confirm root manifest summarizes child evidence artifacts.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

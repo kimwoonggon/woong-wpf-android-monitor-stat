@@ -15,6 +15,7 @@ $dbPath = Join-Path $runRoot "acceptance.db"
 $trackingPipelineDbPath = Join-Path $runRoot "tracking-pipeline.db"
 $snapshotRoot = Join-Path $runRoot "ui-snapshots"
 $reportPath = Join-Path $runRoot "report.md"
+$rootManifest = Join-Path $runRoot "manifest.json"
 $appProject = Join-Path $repoRoot "src/Woong.MonitorStack.Windows.App/Woong.MonitorStack.Windows.App.csproj"
 $realStartProject = Join-Path $repoRoot "tools/Woong.MonitorStack.Windows.RealStartAcceptance/Woong.MonitorStack.Windows.RealStartAcceptance.csproj"
 $snapshotProject = Join-Path $repoRoot "tools/Woong.MonitorStack.Windows.UiSnapshots/Woong.MonitorStack.Windows.UiSnapshots.csproj"
@@ -106,6 +107,27 @@ try {
         "- Screenshots are local developer artifacts for this app UI only."
     )
     Set-Content -Path $reportPath -Value $lines
+
+    $manifest = [ordered]@{
+        status = "PASS"
+        generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
+        appPath = $AppPath
+        report = $reportPath
+        realStart = [ordered]@{
+            databasePath = $dbPath
+            realStartReport = $realStartReport
+            realStartManifest = $realStartManifest
+            realStartEvidence = @("realStartEvidence", "realStartSafetyEvidence")
+        }
+        trackingPipeline = [ordered]@{
+            databasePath = $trackingPipelineDbPath
+            snapshotRoot = $snapshotRoot
+            snapshotReport = $snapshotReport
+            snapshotManifest = $snapshotManifest
+            visualReviewPrompt = $visualReviewPrompt
+        }
+    }
+    $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path $rootManifest
 
     if (Test-Path $latestRoot) {
         Remove-Item -Recurse -Force $latestRoot
