@@ -4445,3 +4445,8 @@ Verified:
 - Full `.NET` solution tests passed 431 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
+
+Server checklist closure note:
+
+- PostgreSQL-dependent concurrency idempotency work is marked `[blocked]` until a real PostgreSQL/Testcontainers fixture is available.
+- `server_check_todo.md` has no remaining non-blocked unchecked server validation items after the raw-event privacy guard slice.

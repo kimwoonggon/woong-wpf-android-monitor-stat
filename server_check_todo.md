@@ -104,8 +104,8 @@ Status legend:
 - [x] Web idempotency: `deviceId + clientSessionId`.
 - [x] Raw event idempotency: `deviceId + clientEventId`.
 - [x] Location context idempotency: `deviceId + clientContextId`.
-- [ ] Add concurrency-oriented idempotency tests once the PostgreSQL fixture is
-  available.
+- [blocked] Add concurrency-oriented idempotency tests once the PostgreSQL
+  fixture is available.
 
 ## Daily Summary And Date Range
 

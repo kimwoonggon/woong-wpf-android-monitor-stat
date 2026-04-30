@@ -1816,3 +1816,8 @@ milestones below are finished.
 - [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
 - [x] Concurrent WPF commit `f6916e9` updates DB write time when a web session persists without a focus close.
 - [x] Concurrent Android commit `e127a52` records Room seeded-dashboard evidence.
+
+### Milestone 73 Server Checklist Closure Note
+
+- [x] Marked PostgreSQL-dependent concurrency idempotency work as `[blocked]` because it requires a real PostgreSQL/Testcontainers fixture.
+- [x] Current `server_check_todo.md` has no remaining non-blocked unchecked server validation items.
