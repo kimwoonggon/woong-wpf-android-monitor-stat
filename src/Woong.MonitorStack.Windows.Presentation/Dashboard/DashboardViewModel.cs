@@ -553,7 +553,7 @@ public sealed partial class DashboardViewModel : ObservableObject
                 Settings.IsWindowTitleVisible
                     ? TextOrDefault(session.PageTitle, "No page title")
                     : "Page title hidden by privacy settings",
-                session.Url is null ? "Domain only" : "Full URL disabled",
+                FormatUrlMode(session),
                 TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
                 FormatDuration(session.DurationMs),
@@ -620,6 +620,19 @@ public sealed partial class DashboardViewModel : ObservableObject
         }
 
         return DomainNormalizer.ExtractRegistrableDomain(value);
+    }
+
+    private static string FormatUrlMode(WebSession session)
+    {
+        if (string.IsNullOrWhiteSpace(session.Url))
+        {
+            return "Domain only";
+        }
+
+        return Uri.TryCreate(session.Url, UriKind.Absolute, out Uri? uri) &&
+               string.Equals($"{uri.GetLeftPart(UriPartial.Authority)}/", session.Url, StringComparison.OrdinalIgnoreCase)
+            ? "Domain only"
+            : "Full URL disabled";
     }
 
     private static string FormatClockDuration(TimeSpan duration)

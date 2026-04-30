@@ -556,6 +556,33 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void SelectPeriod_WhenWebSessionStoresOriginOnlyUrl_ShowsDomainOnlyUrlMode()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [],
+            [
+                new Domain.Common.WebSession(
+                    "focus-1",
+                    "Chrome",
+                    "https://github.com/",
+                    "github.com",
+                    pageTitle: null,
+                    Domain.Common.TimeRange.FromUtc(now.AddMinutes(-10), now),
+                    captureMethod: "UIAutomationAddressBar",
+                    captureConfidence: "Medium",
+                    isPrivateOrUnknown: false)
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        var row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("github.com", row.Domain);
+        Assert.Equal("Domain only", row.UrlMode);
+    }
+
+    [Fact]
     public void SelectPeriod_WhenWindowTitlesAreVisible_ShowsWebPageTitles()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
