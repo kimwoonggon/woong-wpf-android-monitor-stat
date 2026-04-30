@@ -17,10 +17,27 @@ This audit checks the implemented repository against `docs/prd.md`,
 
 ## Remaining External Blockers
 
-The following item must not be marked complete without a physical Android
-device:
+The following items must not be marked complete without the required local
+environment:
 
-- Repeat Android resource measurements on a physical device.
+- Repeat Android resource measurements on a physical Android device.
+- Run PostgreSQL/Testcontainers-specific server validation with Docker daemon
+  available.
+
+The current blocker readiness check can be rerun with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\check-external-blockers.ps1
+```
+
+Latest result:
+
+- Status: BLOCKED.
+- Artifact: `artifacts/external-blockers/20260430-184601`.
+- Android: only `emulator-5554` is connected; no physical Android device was
+  reported by `adb devices -l`.
+- Docker: CLI is installed, but `docker ps` cannot reach the Docker Desktop
+  Linux engine.
 
 Latest emulator-backed Android UI evidence:
 
@@ -116,11 +133,11 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 402 total.
+- .NET tests passed: 436 total.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.
-- Overall line coverage: 91.7% (3663/3991).
-- Overall branch coverage: 70.7% (506/715).
+- Overall line coverage: 91.5% (3957/4320).
+- Overall branch coverage: 71.5% (570/797).
 
 Android:
 

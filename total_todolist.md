@@ -1827,3 +1827,18 @@ milestones below are finished.
 - [x] Update `wpf_check_todo.md` so `artifacts/wpf-check/latest/` is documented as the current consolidated WPF check package, not a future target.
 - [x] Update `android_check_todo.md` with latest Android resource measurement artifact `artifacts/android-resource-measurements/20260430-174552/`.
 - [x] Preserve external blocker wording for physical-device Android resource measurement.
+
+## Milestone 75: External Blocker Readiness Check
+
+- [x] Add RED architecture tests for a read-only external blocker checker.
+- [x] Add `scripts/check-external-blockers.ps1` to report physical Android device and Docker daemon readiness.
+- [x] Verify the script writes `report.md` and `manifest.json` without registry, screenshot, or input-capture behavior.
+- [x] Run the checker locally and record that only the emulator is connected and Docker daemon is unavailable.
+- [x] Ignore `artifacts/external-blockers/` outputs.
+
+### Milestone 75 Verification Update
+
+- [x] Full `.NET` solution tests passed: 436 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
+- [x] External blocker check artifact generated at `artifacts/external-blockers/20260430-184601/` with status `BLOCKED` for physical-device and Docker-daemon readiness.

@@ -22,6 +22,7 @@ artifacts/android-ui-snapshots/
 artifacts/android-resource-measurements/
 artifacts/android-check/
 artifacts/chrome-native-acceptance/
+artifacts/external-blockers/
 .cache/chrome-for-testing/
 coverage/
 

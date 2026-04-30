@@ -4456,3 +4456,11 @@ Server checklist closure note:
 - Updated WPF checklist wording so `artifacts/wpf-check/latest/` is documented as the current consolidated WPF check package.
 - Updated Android checklist evidence folder with the latest resource measurement artifact `artifacts/android-resource-measurements/20260430-174552/`.
 - Physical-device Android resource measurement remains an external hardware blocker; emulator evidence does not close it.
+
+## 2026-04-30 - External Blocker Readiness Check
+
+- Added `scripts/check-external-blockers.ps1` plus architecture tests so the remaining external blockers can be checked without touching registry, user DBs, screenshots, or input capture.
+- Local run wrote `artifacts/external-blockers/20260430-184601` with status `BLOCKED`: only emulator `emulator-5554` is connected, and Docker CLI cannot reach the Docker Desktop Linux engine.
+- Added `artifacts/external-blockers/` to `.gitignore` and recorded Milestone 75 in `total_todolist.md`.
+- Focused validation: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter ExternalBlockerScript -v minimal` passed.
+- Full validation after this slice: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 436 tests; `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings/errors; `scripts\test-coverage.ps1` generated line 91.5% and branch 71.5% coverage.
