@@ -44,8 +44,9 @@ powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.
 
 The validation applies EF Core migrations through Npgsql, verifies the legacy
 `web_sessions.ClientSessionId` backfill path before the unique index becomes
-required, and checks PostgreSQL relational constraints.
+required, checks PostgreSQL relational constraints, and verifies concurrent
+duplicate focus/web/raw/location uploads return idempotent statuses.
 
 Latest local artifact:
 
-- `artifacts/server-postgres-validation/20260430-185823`
+- `artifacts/server-postgres-validation/20260430-190958`

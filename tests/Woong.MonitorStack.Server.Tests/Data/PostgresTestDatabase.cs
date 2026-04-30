@@ -16,6 +16,11 @@ public sealed class PostgresTestDatabase : IAsyncDisposable
 
     public MonitorDbContext Context { get; }
 
+    public MonitorDbContext CreateContext()
+        => new(new DbContextOptionsBuilder<MonitorDbContext>()
+            .UseNpgsql(_container.GetConnectionString())
+            .Options);
+
     public static async Task<PostgresTestDatabase> CreateAsync()
     {
         PostgresTestDatabase database = await CreateUnmigratedAsync();

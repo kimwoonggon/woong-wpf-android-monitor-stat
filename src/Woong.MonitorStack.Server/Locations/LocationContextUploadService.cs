@@ -68,7 +68,29 @@ public sealed class LocationContextUploadService
             results.Add(new UploadItemResult(item.ClientContextId, UploadItemStatus.Accepted, ErrorMessage: null));
         }
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            HashSet<string> persistedContextIds = (await _dbContext.LocationContexts
+                    .Where(context => context.DeviceId == deviceId &&
+                        requestedContextIds.Contains(context.ClientContextId))
+                    .Select(context => context.ClientContextId)
+                    .ToListAsync())
+                .ToHashSet(StringComparer.Ordinal);
+
+            return new UploadBatchResult(request.Contexts
+                .Select(item => persistedContextIds.Contains(item.ClientContextId)
+                    ? new UploadItemResult(item.ClientContextId, UploadItemStatus.Duplicate, ErrorMessage: null)
+                    : new UploadItemResult(
+                        item.ClientContextId,
+                        UploadItemStatus.Error,
+                        ErrorMessage: $"Location context '{item.ClientContextId}' could not be persisted."))
+                .ToList());
+        }
 
         return new UploadBatchResult(results);
     }

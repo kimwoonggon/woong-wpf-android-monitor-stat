@@ -1859,3 +1859,18 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
 - [x] Explicit PostgreSQL/Testcontainers validation passed via `scripts/run-server-postgres-validation.ps1`.
+
+## Milestone 77: Server PostgreSQL Concurrent Idempotency
+
+- [x] Add RED PostgreSQL concurrency tests for duplicate focus, web, raw event, and location uploads.
+- [x] Fix focus/web/raw/location upload services so save-time unique index races return idempotent `Duplicate` statuses instead of surfacing `DbUpdateException`.
+- [x] Verify each concurrent upload leaves one persisted row in PostgreSQL.
+- [x] Run explicit PostgreSQL/Testcontainers validation successfully with artifact `artifacts/server-postgres-validation/20260430-190958/`.
+- [x] Close the server PostgreSQL concurrency checklist item.
+
+### Milestone 77 Verification Update
+
+- [x] Standard `.NET` solution tests passed: 436 passed, 6 explicit PostgreSQL tests skipped unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 90.1% (3965/4398), branch 70.6% (570/807).
+- [x] Explicit PostgreSQL/Testcontainers validation passed with 6 PostgreSQL tests run and 0 skipped.

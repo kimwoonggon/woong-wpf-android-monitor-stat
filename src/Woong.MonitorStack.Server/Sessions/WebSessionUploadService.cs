@@ -82,7 +82,29 @@ public sealed class WebSessionUploadService
             results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Accepted, ErrorMessage: null));
         }
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            HashSet<string> persistedSessionIds = (await _dbContext.WebSessions
+                    .Where(session => session.DeviceId == deviceId &&
+                        requestedSessionIds.Contains(session.ClientSessionId))
+                    .Select(session => session.ClientSessionId)
+                    .ToListAsync())
+                .ToHashSet(StringComparer.Ordinal);
+
+            return new UploadBatchResult(request.Sessions
+                .Select(item => persistedSessionIds.Contains(item.ClientSessionId)
+                    ? new UploadItemResult(item.ClientSessionId, UploadItemStatus.Duplicate, ErrorMessage: null)
+                    : new UploadItemResult(
+                        item.ClientSessionId,
+                        UploadItemStatus.Error,
+                        ErrorMessage: $"Web session '{item.ClientSessionId}' could not be persisted."))
+                .ToList());
+        }
 
         return new UploadBatchResult(results);
     }

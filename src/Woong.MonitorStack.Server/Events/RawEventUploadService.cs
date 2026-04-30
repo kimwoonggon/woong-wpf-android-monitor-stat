@@ -71,7 +71,31 @@ public sealed class RawEventUploadService
             results.Add(new UploadItemResult(item.ClientEventId, UploadItemStatus.Accepted, ErrorMessage: null));
         }
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            _dbContext.ChangeTracker.Clear();
+            HashSet<string> persistedEventIds = (await _dbContext.RawEvents
+                    .Where(rawEvent => rawEvent.DeviceId == deviceId &&
+                        requestedEventIds.Contains(rawEvent.ClientEventId))
+                    .Select(rawEvent => rawEvent.ClientEventId)
+                    .ToListAsync())
+                .ToHashSet(StringComparer.Ordinal);
+
+            return new UploadBatchResult(request.Events
+                .Select(item => persistedEventIds.Contains(item.ClientEventId)
+                    ? new UploadItemResult(item.ClientEventId, UploadItemStatus.Duplicate, ErrorMessage: null)
+                    : new UploadItemResult(
+                        item.ClientEventId,
+                        UploadItemStatus.Error,
+                        ErrorMessage: ContainsForbiddenPayloadMetadata(item.PayloadJson)
+                            ? "Raw event payload contains forbidden user input or content metadata."
+                            : $"Raw event '{item.ClientEventId}' could not be persisted."))
+                .ToList());
+        }
 
         return new UploadBatchResult(results);
     }

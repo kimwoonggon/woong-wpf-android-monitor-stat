@@ -4473,3 +4473,11 @@ Server checklist closure note:
 - PostgreSQL validation applies EF Core migrations through Npgsql, verifies provider constraints, and verifies legacy `web_sessions.ClientSessionId` backfill before the required unique index is applied.
 - Remaining server PostgreSQL item: concurrency/race idempotency against PostgreSQL.
 - Validation after PostgreSQL slice: restore passed; standard solution test passed with 436 passed and 2 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage remained line 91.5% and branch 71.5%; explicit PostgreSQL/Testcontainers script passed.
+
+## 2026-04-30 - Server PostgreSQL Concurrent Idempotency
+
+- Extended PostgreSQL/Testcontainers validation to concurrent duplicate focus, web, raw event, and location uploads.
+- Fixed save-time unique-index race handling in focus/web/raw/location upload services so losing concurrent requests return idempotent `Duplicate` statuses when the row already exists.
+- Latest PostgreSQL validation artifact: `artifacts/server-postgres-validation/20260430-190958`, status PASS.
+- Server checklist now has no PostgreSQL/Testcontainers blocker remaining in this local environment.
+- Validation after PostgreSQL concurrency slice: standard solution test passed with 436 passed and 6 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage generated line 90.1% and branch 70.6%; explicit PostgreSQL/Testcontainers validation passed all 6 PostgreSQL tests.

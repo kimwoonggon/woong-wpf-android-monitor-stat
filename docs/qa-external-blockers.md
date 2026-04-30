@@ -13,12 +13,12 @@ Current evidence:
 - `docker --version` succeeds: Docker CLI version `29.2.1`.
 - Docker Desktop was started locally and `docker ps` succeeds.
 - PostgreSQL/Testcontainers validation passed with artifact
-  `artifacts/server-postgres-validation/20260430-185823`.
+  `artifacts/server-postgres-validation/20260430-190958`.
 
 Remaining validation:
 
-- PostgreSQL-backed concurrency/race idempotency validation remains to be
-  implemented as a separate TDD slice.
+- No Docker/Testcontainers validation blocker remains in the current local
+  environment.
 
 Recheck command:
 
@@ -30,8 +30,8 @@ Unblock criteria:
 
 - `docker info` returns a running Server section.
 - A PostgreSQL/Testcontainers fixture can start and reset reliably.
-- Rerun `scripts/run-server-postgres-validation.ps1` before continuing
-  PostgreSQL-specific work.
+- Rerun `scripts/run-server-postgres-validation.ps1` after future server DB
+  changes.
 
 ## Android Physical Device
 

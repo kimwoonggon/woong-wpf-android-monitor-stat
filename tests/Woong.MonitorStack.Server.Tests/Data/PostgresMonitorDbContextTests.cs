@@ -2,7 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Woong.MonitorStack.Domain.Common;
+using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
+using Woong.MonitorStack.Server.Events;
+using Woong.MonitorStack.Server.Locations;
+using Woong.MonitorStack.Server.Sessions;
 
 namespace Woong.MonitorStack.Server.Tests.Data;
 
@@ -71,6 +75,158 @@ public sealed class PostgresMonitorDbContextTests
         Assert.StartsWith("legacy-web-session-", clientSessionId, StringComparison.Ordinal);
     }
 
+    [PostgresFact]
+    public async Task PostgresFocusUpload_WhenConcurrentDuplicateRequests_StoresOneSessionAndReturnsIdempotentStatuses()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        var request = new UploadFocusSessionsRequest(
+            deviceId.ToString("N"),
+            [
+                new FocusSessionUploadItem(
+                    "focus-session-concurrent",
+                    "chrome.exe",
+                    new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+                    600_000,
+                    new DateOnly(2026, 4, 28),
+                    "Asia/Seoul",
+                    isIdle: false,
+                    source: "foreground_window",
+                    processId: 10,
+                    processName: "chrome.exe",
+                    processPath: null,
+                    windowHandle: 100,
+                    windowTitle: null)
+            ]);
+        using var startGate = new ManualResetEventSlim(initialState: false);
+        Task<UploadBatchResult>[] tasks = Enumerable
+            .Range(0, 8)
+            .Select(_ => Task.Run(async () =>
+            {
+                startGate.Wait(TimeSpan.FromSeconds(5));
+                await using MonitorDbContext context = database.CreateContext();
+                var service = new FocusSessionUploadService(context);
+
+                return await service.UploadAsync(request);
+            }))
+            .ToArray();
+
+        startGate.Set();
+        UploadBatchResult[] results = await Task.WhenAll(tasks);
+
+        await using MonitorDbContext verificationContext = database.CreateContext();
+        Assert.Equal(1, await verificationContext.FocusSessions.CountAsync(session =>
+            session.DeviceId == deviceId &&
+            session.ClientSessionId == "focus-session-concurrent"));
+        List<UploadItemStatus> statuses = results
+            .SelectMany(result => result.Items)
+            .Select(item => item.Status)
+            .ToList();
+        Assert.Contains(UploadItemStatus.Accepted, statuses);
+        Assert.All(statuses, status => Assert.Contains(
+            status,
+            new[] { UploadItemStatus.Accepted, UploadItemStatus.Duplicate }));
+    }
+
+    [PostgresFact]
+    public async Task PostgresWebUpload_WhenConcurrentDuplicateRequests_StoresOneSessionAndReturnsIdempotentStatuses()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        database.Context.FocusSessions.Add(CreateFocusSession(deviceId, "focus-session-1"));
+        await database.Context.SaveChangesAsync();
+        var request = new UploadWebSessionsRequest(
+            deviceId.ToString("N"),
+            [
+                new WebSessionUploadItem(
+                    "web-session-concurrent",
+                    "focus-session-1",
+                    "Chrome",
+                    url: null,
+                    "github.com",
+                    pageTitle: null,
+                    new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+                    600_000,
+                    "BrowserExtensionFuture",
+                    "High",
+                    false)
+            ]);
+
+        UploadBatchResult[] results = await RunConcurrentUploadsAsync(database, async context =>
+            await new WebSessionUploadService(context).UploadAsync(request));
+
+        await using MonitorDbContext verificationContext = database.CreateContext();
+        Assert.Equal(1, await verificationContext.WebSessions.CountAsync(session =>
+            session.DeviceId == deviceId &&
+            session.ClientSessionId == "web-session-concurrent"));
+        AssertIdempotentStatuses(results);
+    }
+
+    [PostgresFact]
+    public async Task PostgresRawEventUpload_WhenConcurrentDuplicateRequests_StoresOneEventAndReturnsIdempotentStatuses()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        var request = new UploadRawEventsRequest(
+            deviceId.ToString("N"),
+            [
+                new RawEventUploadItem(
+                    "raw-event-concurrent",
+                    "foreground_window",
+                    new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                    """{"processName":"Code.exe"}""")
+            ]);
+
+        UploadBatchResult[] results = await RunConcurrentUploadsAsync(database, async context =>
+            await new RawEventUploadService(context).UploadAsync(request));
+
+        await using MonitorDbContext verificationContext = database.CreateContext();
+        Assert.Equal(1, await verificationContext.RawEvents.CountAsync(rawEvent =>
+            rawEvent.DeviceId == deviceId &&
+            rawEvent.ClientEventId == "raw-event-concurrent"));
+        AssertIdempotentStatuses(results);
+    }
+
+    [PostgresFact]
+    public async Task PostgresLocationUpload_WhenConcurrentDuplicateRequests_StoresOneContextAndReturnsIdempotentStatuses()
+    {
+        await using var database = await PostgresTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        var request = new UploadLocationContextsRequest(
+            deviceId.ToString("N"),
+            [
+                new LocationContextUploadItem(
+                    "location-context-concurrent",
+                    new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                    new DateOnly(2026, 4, 28),
+                    "Asia/Seoul",
+                    latitude: null,
+                    longitude: null,
+                    accuracyMeters: null,
+                    "location_unavailable",
+                    "denied",
+                    "android_location_context")
+            ]);
+
+        UploadBatchResult[] results = await RunConcurrentUploadsAsync(database, async context =>
+            await new LocationContextUploadService(context).UploadAsync(request));
+
+        await using MonitorDbContext verificationContext = database.CreateContext();
+        Assert.Equal(1, await verificationContext.LocationContexts.CountAsync(context =>
+            context.DeviceId == deviceId &&
+            context.ClientContextId == "location-context-concurrent"));
+        AssertIdempotentStatuses(results);
+    }
+
     private static DeviceEntity CreateDevice(Guid deviceId)
         => new()
         {
@@ -116,4 +272,37 @@ public sealed class PostgresMonitorDbContextTests
             CaptureConfidence = "High",
             IsPrivateOrUnknown = false
         };
+
+    private static async Task<UploadBatchResult[]> RunConcurrentUploadsAsync(
+        PostgresTestDatabase database,
+        Func<MonitorDbContext, Task<UploadBatchResult>> upload)
+    {
+        using var startGate = new ManualResetEventSlim(initialState: false);
+        Task<UploadBatchResult>[] tasks = Enumerable
+            .Range(0, 8)
+            .Select(_ => Task.Run(async () =>
+            {
+                startGate.Wait(TimeSpan.FromSeconds(5));
+                await using MonitorDbContext context = database.CreateContext();
+
+                return await upload(context);
+            }))
+            .ToArray();
+
+        startGate.Set();
+
+        return await Task.WhenAll(tasks);
+    }
+
+    private static void AssertIdempotentStatuses(IEnumerable<UploadBatchResult> results)
+    {
+        List<UploadItemStatus> statuses = results
+            .SelectMany(result => result.Items)
+            .Select(item => item.Status)
+            .ToList();
+        Assert.Contains(UploadItemStatus.Accepted, statuses);
+        Assert.All(statuses, status => Assert.Contains(
+            status,
+            new[] { UploadItemStatus.Accepted, UploadItemStatus.Duplicate }));
+    }
 }

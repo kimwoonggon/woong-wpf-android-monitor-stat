@@ -132,11 +132,12 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 436 total.
+- .NET tests passed: 436 total, with 6 explicit PostgreSQL/Testcontainers
+  tests skipped by default unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.
-- Overall line coverage: 91.5% (3957/4320).
-- Overall branch coverage: 71.5% (570/797).
+- Overall line coverage: 90.1% (3965/4398).
+- Overall branch coverage: 70.6% (570/807).
 
 Android:
 
@@ -199,11 +200,13 @@ powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.
 Result:
 
 - Passed.
-- Artifact: `artifacts/server-postgres-validation/20260430-185823`.
+- Artifact: `artifacts/server-postgres-validation/20260430-190958`.
 - EF Core migrations applied through Npgsql against a Testcontainers PostgreSQL
   instance.
 - The legacy `web_sessions.ClientSessionId` backfill was verified before the
   required unique index was applied.
+- Concurrent duplicate focus/web/raw/location uploads were verified as
+  race-safe idempotent operations.
 
 ## Completion Status
 

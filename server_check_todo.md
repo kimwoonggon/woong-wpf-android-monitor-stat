@@ -108,8 +108,13 @@ Status legend:
 - [x] Web idempotency: `deviceId + clientSessionId`.
 - [x] Raw event idempotency: `deviceId + clientEventId`.
 - [x] Location context idempotency: `deviceId + clientContextId`.
-- [blocked] Add concurrency-oriented idempotency tests once the PostgreSQL
-  fixture is available.
+- [x] PostgreSQL concurrent duplicate focus/web/raw/location uploads return
+  idempotent statuses and persist one row.
+  Evidence:
+  `PostgresMonitorDbContextTests.PostgresFocusUpload_WhenConcurrentDuplicateRequests_StoresOneSessionAndReturnsIdempotentStatuses`,
+  `PostgresMonitorDbContextTests.PostgresWebUpload_WhenConcurrentDuplicateRequests_StoresOneSessionAndReturnsIdempotentStatuses`,
+  `PostgresMonitorDbContextTests.PostgresRawEventUpload_WhenConcurrentDuplicateRequests_StoresOneEventAndReturnsIdempotentStatuses`,
+  `PostgresMonitorDbContextTests.PostgresLocationUpload_WhenConcurrentDuplicateRequests_StoresOneContextAndReturnsIdempotentStatuses`.
 
 ## Daily Summary And Date Range
 
@@ -161,8 +166,10 @@ Status legend:
 - [x] Verify PostgreSQL legacy web-session `ClientSessionId` backfill before
   the required unique index is applied.
   Evidence: `PostgresMonitorDbContextTests.PostgresMigration_BackfillsLegacyWebSessionClientSessionIdsBeforeUniqueIndex`.
-- [blocked] Add concurrent duplicate upload tests against PostgreSQL to prove
+- [x] Add concurrent duplicate upload tests against PostgreSQL to prove
   race-safe idempotency.
+  Evidence: `scripts/run-server-postgres-validation.ps1`,
+  artifact `artifacts/server-postgres-validation/20260430-190958`.
 
 ## Focused Server Commands
 
