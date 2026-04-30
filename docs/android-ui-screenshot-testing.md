@@ -103,7 +103,9 @@ Future connected-device improvements:
 
 - Add optional Midscene visual review when model environment variables are
   configured.
-- Add physical-device resource measurement evidence when hardware is connected.
+- Resource measurement is tracked separately in
+  `docs/android-resource-measurement.md`; repeat that run on a physical device
+  when hardware is connected.
 
 ## Current Gaps
 

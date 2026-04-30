@@ -18,6 +18,7 @@ artifacts/ui-snapshots/
 artifacts/ui-diffs/
 artifacts/wpf-ui-acceptance/
 artifacts/android-ui-snapshots/
+artifacts/android-resource-measurements/
 artifacts/chrome-native-acceptance/
 .cache/chrome-for-testing/
 coverage/

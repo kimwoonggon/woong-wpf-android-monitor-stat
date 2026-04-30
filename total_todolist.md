@@ -638,6 +638,17 @@ milestones below are finished.
   - [x] Capture real connected-device screenshots for Dashboard location card and Settings location section on the `Medium_Phone` emulator.
 - [x] Commit and push Android optional location context slices.
 
+## Milestone 27.6: Android Launcher And Resource Measurement Evidence
+
+- [x] Add RED Robolectric launcher test proving `MainActivity` immediately opens `DashboardActivity` and finishes, so a normal app launch starts at the dashboard.
+- [x] Keep `DashboardActivity` non-exported and expose an internal `createIntent(...)` factory for launcher routing.
+- [x] Add `scripts/run-android-resource-measurement.ps1` for local package-scoped process, memory, and graphics diagnostics.
+- [x] Add architecture tests for the Android resource measurement script, including no-device `BLOCKED` artifacts and connected-device fake ADB behavior.
+- [x] Verify resource measurement on the `Medium_Phone` emulator with artifact `artifacts/android-resource-measurements/20260430-093728`.
+- [x] Document the local-only resource measurement contract in `docs/android-resource-measurement.md` and update completion/resume docs.
+- [x] Verify Android launcher/resource slice with focused Gradle launcher test, Android unit/build/connected tests, focused architecture script tests, temp-output resource script run, full `.NET` tests/build, and coverage generation.
+- [ ] Repeat Android resource measurements on a physical device when connected.
+
 ## Milestone 28: Privacy And Retention Hardening
 
 - [x] Add tests proving forbidden scopes are not represented by permissions, services, or product code.
@@ -1264,7 +1275,6 @@ milestones below are finished.
 - [x] Run WPF App tests.
 - [x] Run solution build.
 - [x] Update WPF resume state after the Current Focus accessibility slice.
-
 ## Milestone 35: WPF Header StatusBadge Accessibility
 
 - [x] Add a failing WPF App accessibility test requiring Header Tracking/Sync/Privacy badges to expose readable names matching their status text.

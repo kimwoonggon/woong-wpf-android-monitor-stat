@@ -1,7 +1,6 @@
 # Resume State
 
 Updated: 2026-04-30
-
 ## 2026-04-30 WPF Header StatusBadge Accessibility Slice
 
 - Added RED WPF App accessibility coverage for Header Tracking, Sync, and
@@ -39,7 +38,24 @@ Verified:
 - `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~CurrentFocusPanelAccessibilityTests" -maxcpucount:1 -v minimal` passed 2 tests.
 - `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 117 WPF App tests.
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+## 2026-04-30 Android Launcher And Resource Measurement Slice
 
+- Added RED Robolectric coverage proving the Android launcher `MainActivity` immediately opens `DashboardActivity` and finishes, so a normal app launch lands on the real dashboard instead of the old permission placeholder.
+- Simplified `MainActivity` into a launcher router and added `DashboardActivity.createIntent(...)` while keeping `DashboardActivity` `exported=false`.
+- Added `scripts/run-android-resource-measurement.ps1` for local package-scoped process, memory, and graphics diagnostics. The script writes `report.md`, `manifest.json`, `process.txt`, `meminfo.txt`, and `gfxinfo.txt` under `artifacts/android-resource-measurements/`.
+- Added architecture tests for the script contract, no-device blocked artifacts, fake connected-device behavior, and the privacy boundary that it does not capture screenshots or typed/user content.
+- Ran the script on the `Medium_Phone` emulator: `artifacts/android-resource-measurements/20260430-093728`.
+- Physical-device resource measurement remains open and must not be checked off from emulator evidence.
+
+Verified:
+
+- `./gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.MainActivityTest" --no-daemon --stacktrace` passed focused launcher RED/GREEN coverage.
+- `./gradlew.bat testDebugUnitTest assembleDebug connectedDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidResourceMeasurementScriptTests" -maxcpucount:1 -v minimal` passed 3 script contract tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -OutputRoot <temp> -DurationSeconds 1` passed on the `Medium_Phone` emulator after installing the debug APK before launch.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 358 total `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors after rerunning sequentially; an earlier parallel test/build attempt hit a transient file lock.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed with line coverage 91.7% and branch coverage 70.7%.
 ## 2026-04-30 WPF Control Bar Accessibility Polish Slice
 
 - Added RED WPF App accessibility coverage for Control Bar button semantic

@@ -36,6 +36,20 @@ Result:
 - Dashboard location card and Settings location section are visible in the
   captured screenshots.
 
+Latest emulator-backed Android resource evidence:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -DurationSeconds 3
+```
+
+Result:
+
+- Status: PASS on `Medium_Phone` emulator.
+- Artifact: `artifacts/android-resource-measurements/20260430-093728`.
+- Captured package-scoped process, memory, and graphics frame diagnostics.
+- The script does not capture screenshots, typed text, clipboard data,
+  passwords, forms, messages, other-app content, or touch coordinates.
+
 ## Safety Boundary Search
 
 The product remains a metadata measurement app. It measures app/window/site
@@ -100,7 +114,7 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 351 total.
+- .NET tests passed: 358 total.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.
 - Overall line coverage: 91.7% (3663/3991).
@@ -112,6 +126,7 @@ Android:
 .\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace
 .\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace
 powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
+powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -DurationSeconds 3
 ```
 
 Result:
@@ -120,6 +135,12 @@ Result:
 - Android connected tests passed on `Medium_Phone`: 11 tests, 0 failures.
 - Android UI snapshot script passed on `Medium_Phone` and generated
   `artifacts/android-ui-snapshots/20260430-091721`.
+- Android launcher now routes directly to `DashboardActivity`.
+- Android resource measurement passed on `Medium_Phone` and generated
+  `artifacts/android-resource-measurements/20260430-093728`.
+- A verification rerun with a temp output root also passed after installing the
+  debug APK before launch; `-SkipBuild` requires the app to already be
+  installed.
 
 WPF semantic acceptance:
 

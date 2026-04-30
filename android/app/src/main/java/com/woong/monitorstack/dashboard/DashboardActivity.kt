@@ -1,5 +1,7 @@
 package com.woong.monitorstack.dashboard
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +20,12 @@ import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 
 class DashboardActivity : AppCompatActivity() {
+    companion object {
+        fun createIntent(context: Context): Intent {
+            return Intent(context, DashboardActivity::class.java)
+        }
+    }
+
     private lateinit var viewModel: DashboardViewModel
     private val sessionAdapter = SessionsAdapter()
     private val chartMapper = DashboardChartMapper()
