@@ -11,16 +11,14 @@ available.
 Current evidence:
 
 - `docker --version` succeeds: Docker CLI version `29.2.1`.
-- `docker info` fails because the Docker Desktop Linux engine pipe is not
-  available:
-  `npipe:////./pipe/dockerDesktopLinuxEngine`.
+- Docker Desktop was started locally and `docker ps` succeeds.
+- PostgreSQL/Testcontainers validation passed with artifact
+  `artifacts/server-postgres-validation/20260430-185823`.
 
-Blocked validation:
+Remaining validation:
 
-- PostgreSQL/Testcontainers migration application.
-- PostgreSQL-backed FK, unique-index, idempotency, and concurrency validation.
-- Legacy web-session `ClientSessionId` backfill verification against real
-  PostgreSQL.
+- PostgreSQL-backed concurrency/race idempotency validation remains to be
+  implemented as a separate TDD slice.
 
 Recheck command:
 
@@ -32,8 +30,8 @@ Unblock criteria:
 
 - `docker info` returns a running Server section.
 - A PostgreSQL/Testcontainers fixture can start and reset reliably.
-- After that, rerun the PostgreSQL-backed server validation slices before
-  marking the related `[blocked]` items complete.
+- Rerun `scripts/run-server-postgres-validation.ps1` before continuing
+  PostgreSQL-specific work.
 
 ## Android Physical Device
 

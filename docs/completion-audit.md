@@ -33,11 +33,10 @@ powershell -ExecutionPolicy Bypass -File scripts\check-external-blockers.ps1
 Latest result:
 
 - Status: BLOCKED.
-- Artifact: `artifacts/external-blockers/20260430-184601`.
+- Artifact: `artifacts/external-blockers/20260430-185208`.
 - Android: only `emulator-5554` is connected; no physical Android device was
   reported by `adb devices -l`.
-- Docker: CLI is installed, but `docker ps` cannot reach the Docker Desktop
-  Linux engine.
+- Docker: Docker daemon is reachable by `docker ps`.
 
 Latest emulator-backed Android UI evidence:
 
@@ -190,6 +189,21 @@ Result:
   `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.woong.monitorstack.chrome_test`.
 - Cleanup remained sandboxed to a temp Chrome profile and did not touch user
   Chrome windows/profiles.
+
+Server PostgreSQL/Testcontainers:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.ps1
+```
+
+Result:
+
+- Passed.
+- Artifact: `artifacts/server-postgres-validation/20260430-185823`.
+- EF Core migrations applied through Npgsql against a Testcontainers PostgreSQL
+  instance.
+- The legacy `web_sessions.ClientSessionId` backfill was verified before the
+  required unique index was applied.
 
 ## Completion Status
 

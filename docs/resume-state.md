@@ -4464,3 +4464,12 @@ Server checklist closure note:
 - Added `artifacts/external-blockers/` to `.gitignore` and recorded Milestone 75 in `total_todolist.md`.
 - Focused validation: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter ExternalBlockerScript -v minimal` passed.
 - Full validation after this slice: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 436 tests; `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings/errors; `scripts\test-coverage.ps1` generated line 91.5% and branch 71.5% coverage.
+
+## 2026-04-30 - Server PostgreSQL Testcontainers Validation
+
+- Docker Desktop was started successfully; `scripts/check-external-blockers.ps1` now reports Docker daemon readiness as PASS while physical Android device readiness remains BLOCKED.
+- Added `Testcontainers.PostgreSql` to server tests, `PostgresTestDatabase`, and explicit `PostgresFact` gating so routine `dotnet test` skips Docker-required tests unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1` is set.
+- Added and ran `scripts/run-server-postgres-validation.ps1`; artifact `artifacts/server-postgres-validation/20260430-185823` passed.
+- PostgreSQL validation applies EF Core migrations through Npgsql, verifies provider constraints, and verifies legacy `web_sessions.ClientSessionId` backfill before the required unique index is applied.
+- Remaining server PostgreSQL item: concurrency/race idempotency against PostgreSQL.
+- Validation after PostgreSQL slice: restore passed; standard solution test passed with 436 passed and 2 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage remained line 91.5% and branch 71.5%; explicit PostgreSQL/Testcontainers script passed.

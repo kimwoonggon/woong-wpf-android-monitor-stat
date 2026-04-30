@@ -23,6 +23,7 @@ artifacts/android-resource-measurements/
 artifacts/android-check/
 artifacts/chrome-native-acceptance/
 artifacts/external-blockers/
+artifacts/server-postgres-validation/
 .cache/chrome-for-testing/
 coverage/
 

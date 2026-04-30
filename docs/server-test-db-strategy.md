@@ -1,6 +1,6 @@
 # Server Integration Test Database Strategy
 
-Updated: 2026-04-28
+Updated: 2026-04-30
 
 Server tests must not rely on EF InMemory when the behavior under test depends
 on relational constraints, unique indexes, idempotency, or provider-specific SQL
@@ -9,10 +9,14 @@ behavior.
 ## Strategy
 
 - Preferred production-like path: PostgreSQL with Testcontainers.
-- Current environment note: Docker is not available in this workspace, so
-  Testcontainers cannot run here yet.
+- Current production-like validation: `scripts/run-server-postgres-validation.ps1`
+  enables `WOONG_MONITOR_RUN_POSTGRES_TESTS=1` for that process and runs the
+  PostgreSQL-specific test class against a Testcontainers PostgreSQL instance.
+- Standard `dotnet test` keeps PostgreSQL tests skipped unless the explicit
+  environment flag is set, so routine unit/integration runs do not fail when
+  Docker Desktop is stopped.
 - Current automated fallback: EF Core SQLite in-memory relational database for
-  relational constraint and unique-index verification.
+  fast relational constraint and unique-index verification.
 - EF InMemory remains acceptable only for HTTP route smoke tests where
   relational constraints are not the behavior under test.
 
@@ -30,7 +34,18 @@ real EF relational schema with `EnsureCreatedAsync`, and resets with
 - `ResetAsync_RecreatesEmptyRelationalSchema` proves the reset hook clears rows
   and recreates an empty relational schema.
 
-## Future PostgreSQL/Testcontainers Work
+## PostgreSQL/Testcontainers Work
 
-When Docker is available, add a PostgreSQL Testcontainers fixture and run the
-same relational/idempotency tests against Npgsql before production database use.
+When Docker is available, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.ps1
+```
+
+The validation applies EF Core migrations through Npgsql, verifies the legacy
+`web_sessions.ClientSessionId` backfill path before the unique index becomes
+required, and checks PostgreSQL relational constraints.
+
+Latest local artifact:
+
+- `artifacts/server-postgres-validation/20260430-185823`

@@ -11,7 +11,8 @@ Status legend:
 
 - `[x]` Covered by existing code/tests/docs.
 - `[ ]` Still needs a TDD slice.
-- `[blocked]` Waiting for PostgreSQL/Testcontainers or production-like DB access.
+- `[blocked]` Waiting for an external environment capability such as a running
+  Docker daemon or physical Android device.
 
 ## Device Registration
 
@@ -153,11 +154,13 @@ Status legend:
   Evidence: `RelationalServerFactory`, `RelationalTestDatabase`.
 - [x] Npgsql/PostgreSQL model metadata and production migration files exist.
   Evidence: `ServerDbContextModelTests`, `ProductionMigrationFilesTests`.
-- [blocked] Apply migrations to a real PostgreSQL database with
-  Testcontainers and rerun device/focus/web/raw/location idempotency and FK
-  tests against Npgsql.
-- [blocked] Verify PostgreSQL migration SQL for legacy web-session
-  `ClientSessionId` backfill.
+- [x] Apply migrations to a real PostgreSQL database with Testcontainers and
+  verify provider constraints against Npgsql.
+  Evidence: `PostgresMonitorDbContextTests.PostgresMigrations_ApplyLatestSchemaAndEnforceProviderConstraints`,
+  `scripts/run-server-postgres-validation.ps1`.
+- [x] Verify PostgreSQL legacy web-session `ClientSessionId` backfill before
+  the required unique index is applied.
+  Evidence: `PostgresMonitorDbContextTests.PostgresMigration_BackfillsLegacyWebSessionClientSessionIdsBeforeUniqueIndex`.
 - [blocked] Add concurrent duplicate upload tests against PostgreSQL to prove
   race-safe idempotency.
 
@@ -167,4 +170,5 @@ Status legend:
 dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal
 dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
 dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
+powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.ps1
 ```

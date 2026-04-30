@@ -1842,3 +1842,20 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
 - [x] External blocker check artifact generated at `artifacts/external-blockers/20260430-184601/` with status `BLOCKED` for physical-device and Docker-daemon readiness.
+
+## Milestone 76: Server PostgreSQL Testcontainers Validation
+
+- [x] Add RED PostgreSQL/Testcontainers tests for Npgsql migration application and provider constraint enforcement.
+- [x] Add PostgreSQL-specific legacy `web_sessions.ClientSessionId` backfill test before the required unique index is applied.
+- [x] Add `PostgresTestDatabase` Testcontainers fixture and explicit `PostgresFact` gating for routine `dotnet test` runs.
+- [x] Add `scripts/run-server-postgres-validation.ps1` for explicit Docker-backed validation.
+- [x] Run PostgreSQL validation successfully with artifact `artifacts/server-postgres-validation/20260430-185823/`.
+- [x] Update server DB strategy, server checklist, completion audit, and QA blocker docs.
+
+### Milestone 76 Verification Update
+
+- [x] `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config` passed.
+- [x] Standard `.NET` solution tests passed: 436 passed, 2 PostgreSQL-explicit tests skipped unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
+- [x] Explicit PostgreSQL/Testcontainers validation passed via `scripts/run-server-postgres-validation.ps1`.
