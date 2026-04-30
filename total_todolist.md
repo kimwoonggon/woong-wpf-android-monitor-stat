@@ -1888,3 +1888,17 @@ milestones below are finished.
 - [x] Standard `.NET` solution tests passed: 437 passed, 6 explicit PostgreSQL tests skipped unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 90.1% (3965/4398), branch 70.6% (570/807).
+
+## Milestone 79: README Runbook Refresh
+
+- [x] Rewrite README with WPF app execution, temp SQLite DB usage, WPF smoke/acceptance/screenshot commands.
+- [x] Add Android emulator startup, Gradle build/test/install/launch, UI snapshot, resource measurement, and physical-device-only measurement commands.
+- [x] Add ASP.NET Core server, PostgreSQL connection string, EF migration, server run, and PostgreSQL/Testcontainers validation instructions.
+- [x] Add standard .NET, Android, coverage, and focused QA test commands.
+- [x] Preserve privacy boundaries and local DB/server DB separation in README.
+
+### Milestone 79 Verification Update
+
+- [x] `git diff --check` passed.
+- [x] Standard `.NET` solution tests passed: 437 passed, 6 explicit PostgreSQL tests skipped unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.

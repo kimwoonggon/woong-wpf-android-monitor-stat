@@ -4488,3 +4488,9 @@ Server checklist closure note:
 - Local run `scripts\run-android-resource-measurement.ps1 -SkipBuild -RequirePhysicalDevice` generated `artifacts/android-resource-measurements/20260430-191835` with status `BLOCKED` because only `emulator-5554` is connected.
 - This preserves the rule that emulator evidence must not close physical-device Android resource measurement TODOs.
 - Validation after physical-device guard slice: standard solution test passed with 437 passed and 6 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage generated line 90.1% and branch 70.6%.
+
+## 2026-04-30 - README Runbook Refresh
+
+- Rewrote `README.md` as an operator/developer runbook covering WPF execution, Android emulator flow, PostgreSQL/EF/Testcontainers integration, Chrome native messaging acceptance, and test/coverage commands.
+- The README keeps the PRD privacy boundary explicit: metadata-only measurement, local Windows/Android databases, and server-only integrated PostgreSQL storage.
+- README runbook validation: `git diff --check` passed; standard solution test passed with 437 passed and 6 explicit PostgreSQL tests skipped by default; solution build passed with 0 warnings/errors.
