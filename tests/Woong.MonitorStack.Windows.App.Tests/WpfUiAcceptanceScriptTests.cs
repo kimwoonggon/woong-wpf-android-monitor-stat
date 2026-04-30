@@ -312,6 +312,56 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeGroupedSectionScreenshotEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## Section Screenshot Evidence", tool);
+        Assert.Contains("| Section | AutomationId | Screenshot | Skipped Reason | Status |", tool);
+        Assert.Contains("sectionScreenshotEvidence", tool);
+        Assert.Contains("context.SectionScreenshotEvidence.Select", tool);
+        Assert.Contains("section = evidence.Section", tool);
+        Assert.Contains("automationId = evidence.AutomationId", tool);
+        Assert.Contains("screenshot = evidence.Screenshot", tool);
+        Assert.Contains("skippedReason = evidence.SkippedReason", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+
+        string[] requiredSectionEvidence =
+        [
+            "Current activity",
+            "CurrentActivityPanel",
+            "current-activity.png",
+            "Summary cards",
+            "SummaryCardsContainer",
+            "summary-cards.png",
+            "Sessions",
+            "RecentAppSessionsList",
+            "recent-sessions.png",
+            "Web sessions",
+            "RecentWebSessionsList",
+            "recent-web-sessions.png",
+            "Live events",
+            "LiveEventsList",
+            "live-events.png",
+            "Chart area",
+            "ChartArea",
+            "chart-area.png",
+            "Settings",
+            "SettingsTab",
+            "06-settings.png"
+        ];
+
+        foreach (string requiredSection in requiredSectionEvidence)
+        {
+            Assert.Contains(requiredSection, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

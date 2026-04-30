@@ -473,7 +473,7 @@ internal static class UiSnapshotRunner
     {
         string path = Path.Combine(context.Options.RunDirectory, fileName);
         window.CaptureToFile(path);
-        context.Screenshots.Add(fileName);
+        context.RecordScreenshot(fileName);
         context.Notes.Add($"Captured `{fileName}`.");
     }
 
@@ -499,14 +499,14 @@ internal static class UiSnapshotRunner
         AutomationElement? element = window.FindFirstDescendant(automationId);
         if (element is null)
         {
-            context.SkippedScreenshots.Add($"{fileName}: `{automationId}` was not visible.");
+            context.RecordSkippedScreenshot(fileName, automationId, $"`{automationId}` was not visible.");
             context.Warn(fileName, "Element screenshot", $"Skipped because `{automationId}` was not visible.", "");
             return;
         }
 
         TryBringElementIntoViewBeforeCapture(element, context);
         element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
-        context.Screenshots.Add(fileName);
+        context.RecordScreenshot(fileName);
         context.Notes.Add($"Captured optional crop `{fileName}` from `{automationId}`.");
     }
 
@@ -521,13 +521,13 @@ internal static class UiSnapshotRunner
         {
             TryBringElementIntoViewBeforeCapture(element, context);
             element.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
-            context.Screenshots.Add(fileName);
+            context.RecordScreenshot(fileName);
             context.Notes.Add($"Captured `{fileName}` from `{automationId}`.");
             return;
         }
 
         window.CaptureToFile(Path.Combine(context.Options.RunDirectory, fileName));
-        context.Screenshots.Add(fileName);
+        context.RecordScreenshot(fileName);
         context.Warn(
             fileName,
             $"Crop `{automationId}`",
@@ -947,6 +947,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## Section Screenshot Evidence");
+        lines.Add("");
+        lines.Add("| Section | AutomationId | Screenshot | Skipped Reason | Status |");
+        lines.Add("|:---|:---|:---|:---|:---|");
+        if (context.SectionScreenshotEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  |  | Warn |");
+        }
+        else
+        {
+            foreach (SectionScreenshotEvidence evidence in context.SectionScreenshotEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Section)} | {Escape(evidence.AutomationId)} | {Escape(evidence.Screenshot)} | {Escape(evidence.SkippedReason)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Screenshots");
         lines.Add("");
         foreach (string screenshot in context.Screenshots.Distinct(StringComparer.Ordinal))
@@ -1043,6 +1061,14 @@ internal static class UiSnapshotRunner
                 runtimeValue = evidence.RuntimeValue,
                 status = evidence.Status.ToString()
             }).ToArray(),
+            sectionScreenshotEvidence = context.SectionScreenshotEvidence.Select(evidence => new
+            {
+                section = evidence.Section,
+                automationId = evidence.AutomationId,
+                screenshot = evidence.Screenshot,
+                skippedReason = evidence.SkippedReason,
+                status = evidence.Status.ToString()
+            }).ToArray(),
             checks = context.Results.Select(result => new
             {
                 result.Name,
@@ -1120,6 +1146,8 @@ internal sealed class UiSnapshotContext
 
     public List<CurrentFocusSemanticEvidence> CurrentFocusSemanticEvidence { get; } = [];
 
+    public List<SectionScreenshotEvidence> SectionScreenshotEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1164,6 +1192,38 @@ internal sealed class UiSnapshotContext
 
     public void Add(string name, string expected, string actual, CheckStatus status)
         => Results.Add(new CheckResult(name, expected, actual, status));
+
+    public void RecordScreenshot(string fileName)
+    {
+        Screenshots.Add(fileName);
+        AddSectionScreenshotEvidence(fileName, skippedReason: "", CheckStatus.Pass);
+    }
+
+    public void RecordSkippedScreenshot(string fileName, string automationId, string skippedReason)
+    {
+        SkippedScreenshots.Add($"{fileName}: {skippedReason}");
+        AddSectionScreenshotEvidence(fileName, skippedReason, CheckStatus.Warn, automationId);
+    }
+
+    private void AddSectionScreenshotEvidence(
+        string fileName,
+        string skippedReason,
+        CheckStatus status,
+        string? fallbackAutomationId = null)
+    {
+        SectionScreenshotDefinition? definition = SectionScreenshotDefinition.FromFileName(fileName);
+        if (definition is null)
+        {
+            return;
+        }
+
+        SectionScreenshotEvidence.Add(new SectionScreenshotEvidence(
+            definition.Section,
+            fallbackAutomationId ?? definition.AutomationId,
+            status == CheckStatus.Pass ? fileName : "",
+            skippedReason,
+            status));
+    }
 }
 
 internal sealed record CheckResult(string Name, string Expected, string Actual, CheckStatus Status);
@@ -1174,6 +1234,29 @@ internal sealed record CurrentFocusSemanticEvidence(
     string ReadableName,
     string RuntimeValue,
     CheckStatus Status);
+
+internal sealed record SectionScreenshotEvidence(
+    string Section,
+    string AutomationId,
+    string Screenshot,
+    string SkippedReason,
+    CheckStatus Status);
+
+internal sealed record SectionScreenshotDefinition(string Section, string AutomationId)
+{
+    public static SectionScreenshotDefinition? FromFileName(string fileName)
+        => fileName switch
+        {
+            "current-activity.png" => new("Current activity", "CurrentActivityPanel"),
+            "summary-cards.png" => new("Summary cards", "SummaryCardsContainer"),
+            "recent-sessions.png" => new("Sessions", "RecentAppSessionsList"),
+            "recent-web-sessions.png" => new("Web sessions", "RecentWebSessionsList"),
+            "live-events.png" => new("Live events", "LiveEventsList"),
+            "chart-area.png" => new("Chart area", "ChartArea"),
+            "04-settings.png" or "06-settings.png" => new("Settings", "SettingsTab"),
+            _ => null
+        };
+}
 
 internal sealed record CurrentFocusSemanticField(
     string AutomationId,

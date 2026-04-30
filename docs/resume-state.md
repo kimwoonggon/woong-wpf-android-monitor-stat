@@ -39,6 +39,15 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
 
+## 2026-04-30 WPF Section Screenshot Evidence Slice
+
+- Audited the remaining WPF acceptance screenshot artifact shape and found section crops were only represented as generic screenshot filenames/skipped strings.
+- Added RED WPF App acceptance-tool coverage requiring report and manifest grouped section screenshot evidence for Current activity, Summary cards, Sessions, Web sessions, Live events, Chart area, and Settings.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so `report.md` includes `## Section Screenshot Evidence`, and `manifest.json` includes `sectionScreenshotEvidence` rows with section, automationId, screenshot, skippedReason, and status.
+- Kept the existing generic `screenshots`, `skippedScreenshots`, and `skippedScreenshotReasons` manifest arrays for backward compatibility.
+- Verified focused test, WPF App tests, solution build, and WPF UI acceptance at `artifacts/wpf-ui-acceptance/20260430-113257`; latest report/manifest include grouped section screenshot evidence.
+- This is a WPF App/tool acceptance evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, product telemetry collection, SQLite schema, or server code.
+
 ## 2026-04-30 WPF Current Focus Manifest Evidence Slice
 
 - Added RED WPF App acceptance-tool coverage requiring `manifest.json` to include a dedicated machine-readable `currentFocusRuntimeEvidence` array separate from generic `checks`.

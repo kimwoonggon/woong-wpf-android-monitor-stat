@@ -1349,6 +1349,18 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm the latest manifest includes both `currentFocusRuntimeEvidence` and `checks`.
 - [x] Update WPF resume state after the manifest evidence slice.
 
+## Milestone 40: WPF Section Screenshot Evidence
+
+- [x] Audit remaining WPF acceptance screenshot artifact shape after Current Focus manifest evidence.
+- [x] Add a failing WPF App/tool test requiring grouped section screenshot evidence in report and manifest.
+- [x] Add section evidence rows for Current activity, Summary cards, Sessions, Web sessions, Live events, Chart area, and Settings.
+- [x] Include section, automationId, screenshot, skippedReason, and status while preserving generic screenshot/skipped arrays for backward compatibility.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm grouped section screenshot evidence appears in latest report/manifest.
+- [x] Update WPF resume state after the section screenshot evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
