@@ -40,6 +40,12 @@ Latest Usage Access settings handoff evidence:
 artifacts/android-check/20260430-181643/
 ```
 
+Latest Room seeded dashboard/sessions evidence:
+
+```text
+artifacts/android-check/20260430-183032/
+```
+
 Each checked feature should have:
 
 - a `before-*.png` image showing the pre-check state or the expected test gate;
@@ -169,3 +175,11 @@ device TODO.
 - [x] Precise latitude/longitude remains a separate unchecked opt-in until explicitly selected.
 - [x] Location permission action is disabled before location context opt-in and enabled after opt-in.
 - [x] Before/action/after emulator evidence: `artifacts/android-check/20260430-180504`.
+
+## Room Seeded Dashboard And Sessions Evidence 2026-04-30
+
+- [x] Clean Room state shows an empty Dashboard with no app/session data.
+- [x] Android instrumentation seed writes deterministic focus sessions and location context into Room.
+- [x] Dashboard renders seeded active, idle, sync, and location context values from Room.
+- [x] Sessions tab renders seeded active and idle session rows from Room.
+- [x] Before/action/after emulator evidence: `artifacts/android-check/20260430-183032`.
