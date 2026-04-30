@@ -1434,7 +1434,9 @@ milestones below are finished.
 - [x] Verify bottom-navigation readability slice with focused architecture test, Gradle unit/build/androidTest build, emulator screenshot artifact `artifacts/android-ui-snapshots/20260430-124333`, full `.NET` tests, full `.NET` build, and coverage generation.
 - [ ] Normalize the launcher toolbar/header so it matches the compact MaterialToolbar skeleton.
 - [x] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
-- [ ] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
+- [x] Correct the launcher shell back to the compact 72dp Material bottom navigation from the user-provided Android XML skeleton and remove the oversized overlay label row.
+- [x] Capture emulator evidence for compact shell, period-filter ordering, and labeled latitude/longitude location context at `artifacts/android-ui-snapshots/20260430-130812`.
+- [x] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
 - [ ] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
 - [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
 - [ ] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.

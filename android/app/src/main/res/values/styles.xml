@@ -29,8 +29,7 @@
     </style>
 
     <style name="WmsBottomNavLabel" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textColor">@color/wms_text_primary</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 

@@ -1,6 +1,27 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Compact Shell And Location Context Slice
+
+- Treated the user-provided Android XML wireframe skeleton as the immediate launcher-shell target after screenshot review showed the prior shell fix had made bottom navigation too large.
+- Added RED architecture coverage requiring `activity_main.xml` to use compact 72dp `BottomNavigationView` structure and to remove the temporary oversized overlay label row.
+- Corrected `activity_main.xml` and `WmsBottomNavLabel` back toward the skeleton: `FragmentContainerView` reserves 72dp, the Material bottom navigation is 72dp, and labels come from the navigation component instead of a custom overlay row.
+- Added RED architecture coverage requiring `DashboardFragment` to expose local Room-backed optional location context with latitude/longitude, labeled coordinate strings, and explicit ordering so period filters remain directly after summary cards.
+- Updated `DashboardFragment` and `DashboardActivity` to render location context as labeled `Latitude`, `Longitude`, `Accuracy`, and `Captured` rows while preserving the safe off-by-default text in XML defaults.
+- Moved the optional fragment `Location context` card after the period filter so the dashboard follows the user-provided skeleton flow: status/current focus, summary cards, period filters, optional location context, charts, lists.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-130812`; `09-main-shell.png` shows compact shell plus period filters before location context, and `02-dashboard-summary-location.png` shows labeled latitude/longitude values from seeded local test data.
+- Remaining Android UI gaps: chart axes still show decimal placeholder-style labels in MPAndroidChart screenshots, Sessions rows still prioritize package names, and Report/Settings fragments still need runtime wiring.
+
+Verified:
+
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesCompactWireframeBottomNavigation" -maxcpucount:1 -v minimal` failed on the old oversized shell, then passed.
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFragmentDashboard_ShowsOptionalLocationContextFromRoomState" -maxcpucount:1 -v minimal` failed on missing labeled coordinate resources, then passed.
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFragmentDashboard_KeepsPeriodFiltersBeforeOptionalLocationContext" -maxcpucount:1 -v minimal` failed on old location-before-period ordering, then passed.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-130812`.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 390 solution tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; coverage summary reports 91.7% line coverage and 70.7% branch coverage.
 ## 2026-04-30 WPF RealStart Safety Evidence Slice
 
 - Audited WPF/browser/runtime acceptance gaps after the Chrome sandbox evidence slice and found RealStart artifacts proved persistence but not the safety boundary as a grouped report/manifest section.

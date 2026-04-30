@@ -264,31 +264,26 @@ public sealed class AndroidWireframeLayoutTests
     }
 
     [Fact]
-    public void AndroidMainShell_KeepsBottomNavigationReadableAboveSystemNavigation()
+    public void AndroidMainShell_UsesCompactWireframeBottomNavigation()
     {
         string repoRoot = FindRepositoryRoot();
         string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
         string styles = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "styles.xml"));
 
-        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
-        Assert.Contains("android:layout_height=\"96dp\"", main);
-        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
-        Assert.Contains("android:paddingTop=\"6dp\"", main);
-        Assert.Contains("android:paddingBottom=\"14dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"72dp\"", main);
+        Assert.Contains("android:layout_height=\"72dp\"", main);
         Assert.Contains("app:itemIconSize=\"22dp\"", main);
         Assert.Contains("app:itemPaddingTop=\"8dp\"", main);
         Assert.Contains("app:itemPaddingBottom=\"8dp\"", main);
         Assert.Contains("app:itemTextAppearanceActive=\"@style/WmsBottomNavLabel\"", main);
         Assert.Contains("app:itemTextAppearanceInactive=\"@style/WmsBottomNavLabel\"", main);
-        Assert.Contains("@+id/bottomNavigationLabelRow", main);
-        Assert.Contains("android:elevation=\"8dp\"", main);
-        Assert.Contains("@+id/mainNavDashboardLabel", main);
-        Assert.Contains("@+id/mainNavSessionsLabel", main);
-        Assert.Contains("@+id/mainNavReportLabel", main);
-        Assert.Contains("@+id/mainNavSettingsLabel", main);
+        Assert.DoesNotContain("@+id/bottomNavigationLabelRow", main);
+        Assert.DoesNotContain("@+id/mainNavDashboardLabel", main);
+        Assert.DoesNotContain("@+id/mainNavSessionsLabel", main);
+        Assert.DoesNotContain("@+id/mainNavReportLabel", main);
+        Assert.DoesNotContain("@+id/mainNavSettingsLabel", main);
         Assert.Contains("name=\"WmsBottomNavLabel\"", styles);
-        Assert.Contains("<item name=\"android:textSize\">14sp</item>", styles);
-        Assert.Contains("<item name=\"android:textColor\">@color/wms_text_primary</item>", styles);
+        Assert.Contains("<item name=\"android:textSize\">12sp</item>", styles);
     }
 
     [Fact]
@@ -353,6 +348,59 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("RoomDashboardRepository", fragment);
         Assert.Contains("DashboardViewModel", fragment);
         Assert.Contains("MonitorDatabase.getInstance", fragment);
+    }
+
+    [Fact]
+    public void AndroidFragmentDashboard_ShowsOptionalLocationContextFromRoomState()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+        string strings = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "strings.xml"));
+        string fragment = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "dashboard",
+            "DashboardFragment.kt"));
+
+        Assert.Contains("@+id/locationContextCard", dashboard);
+        Assert.Contains("@+id/locationStatusText", dashboard);
+        Assert.Contains("@+id/locationLatitudeText", dashboard);
+        Assert.Contains("@+id/locationLongitudeText", dashboard);
+        Assert.Contains("@+id/locationAccuracyText", dashboard);
+        Assert.Contains("@+id/locationCapturedAtText", dashboard);
+        Assert.Contains("location_latitude_value", strings);
+        Assert.Contains("location_longitude_value", strings);
+        Assert.Contains("location_accuracy_value", strings);
+        Assert.Contains("location_captured_at_value", strings);
+        Assert.Contains("state.locationContext", fragment);
+        Assert.Contains("R.string.location_latitude_value", fragment);
+        Assert.Contains("R.string.location_longitude_value", fragment);
+        Assert.Contains("binding.locationLatitudeText.text", fragment);
+        Assert.Contains("binding.locationLongitudeText.text", fragment);
+    }
+
+    [Fact]
+    public void AndroidFragmentDashboard_KeepsPeriodFiltersBeforeOptionalLocationContext()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+
+        int summaryIndex = dashboard.IndexOf("@+id/summaryCardsGrid", StringComparison.Ordinal);
+        int periodIndex = dashboard.IndexOf("@+id/periodFilterScroll", StringComparison.Ordinal);
+        int locationIndex = dashboard.IndexOf("@+id/locationContextCard", StringComparison.Ordinal);
+        int chartIndex = dashboard.IndexOf("@+id/hourlyFocusChartCard", StringComparison.Ordinal);
+
+        Assert.True(summaryIndex >= 0, "Expected summary cards in the dashboard.");
+        Assert.True(periodIndex > summaryIndex, "Expected period filters after summary cards.");
+        Assert.True(locationIndex > periodIndex, "Optional location context must not push period filters below the first dashboard flow.");
+        Assert.True(chartIndex > locationIndex, "Expected charts after period filters and optional location context.");
     }
 
     [Fact]

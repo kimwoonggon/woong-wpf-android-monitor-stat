@@ -310,6 +310,67 @@
         </HorizontalScrollView>
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/locationContextCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/locationContextLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location_context_label"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="@color/wms_text_muted" />
+
+                <TextView
+                    android:id="@+id/locationStatusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/location_capture_off"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="@color/wms_text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/locationLatitudeText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/latitude_not_stored" />
+
+                <TextView
+                    android:id="@+id/locationLongitudeText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/longitude_not_stored" />
+
+                <TextView
+                    android:id="@+id/locationAccuracyText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/accuracy_unavailable" />
+
+                <TextView
+                    android:id="@+id/locationCapturedAtText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_location_captured" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/hourlyFocusChartCard"
             style="@style/WmsCard"
             android:layout_width="match_parent"

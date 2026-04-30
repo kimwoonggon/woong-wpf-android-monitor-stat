@@ -65,6 +65,23 @@ class DashboardFragment : Fragment() {
         binding.screenOnValueText.text = formatDuration(state.totalActiveMs + state.idleMs)
         binding.idleValueText.text = formatDuration(state.idleMs)
         binding.syncStateValueText.text = "Local"
+        binding.locationStatusText.text = state.locationContext.statusText
+        binding.locationLatitudeText.text = getString(
+            R.string.location_latitude_value,
+            state.locationContext.latitudeText
+        )
+        binding.locationLongitudeText.text = getString(
+            R.string.location_longitude_value,
+            state.locationContext.longitudeText
+        )
+        binding.locationAccuracyText.text = getString(
+            R.string.location_accuracy_value,
+            state.locationContext.accuracyText
+        )
+        binding.locationCapturedAtText.text = getString(
+            R.string.location_captured_at_value,
+            state.locationContext.capturedAtLocalText
+        )
         sessionAdapter.submit(state.recentSessions)
     }
 

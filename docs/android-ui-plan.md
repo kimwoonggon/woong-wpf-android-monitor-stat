@@ -245,9 +245,16 @@ and feature screenshots for each tab.
   `RoomSessionsRepository`; screenshot automation captures
   `10-main-shell-sessions.png` after selecting the Sessions bottom-navigation
   item.
-- The launcher shell reserves a taller bottom-navigation area above the system
-  gesture/navigation region and includes explicit visible labels for Dashboard,
-  Sessions, Report, and Settings in local screenshot evidence.
+- The launcher shell has been corrected back toward the user-provided XML
+  skeleton: `activity_main.xml` uses a compact 72dp `BottomNavigationView`
+  directly under the `FragmentContainerView`, and the temporary oversized
+  overlay label row has been removed.
+- `DashboardFragment` now shows the optional local Room-backed
+  `Location context` card with labeled `Latitude`, `Longitude`, `Accuracy`,
+  and `Captured` rows when location context is explicitly enabled in test data.
+- Dashboard fragment ordering now keeps the period filter directly after the
+  summary cards before optional location context, preserving the wireframe
+  dashboard flow while still including latitude/longitude evidence.
 
 ## Current Fragment Shell Gaps
 
@@ -257,12 +264,9 @@ enough:
 
 - The launcher toolbar/header is too large and must be normalized to the
   compact MaterialToolbar shell from the XML skeleton.
-- Bottom navigation is now readable in the emulator screenshot, but the
-  explicit label row is a pragmatic shell fix. A future polish pass should
-  replace this with a cleaner Material navigation implementation if the
-  component labels become reliable across devices.
-- Dashboard fragments need the same polished card hierarchy as the existing
-  Activity dashboard, including location context when enabled.
+- Dashboard fragment charts still need polished axis labels. Current
+  MPAndroidChart output can show decimal axis labels such as `9.0` and `-0.5`,
+  which should be replaced with human-readable hour/minute/app labels.
 - Sessions rows are Room-backed, but they still show package names as the
   primary label; a user-facing app label should be preferred when available.
 - Report and Settings fragments still need to be wired to runtime repositories

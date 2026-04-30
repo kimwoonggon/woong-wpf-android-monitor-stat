@@ -93,10 +93,22 @@ class DashboardActivity : AppCompatActivity() {
         binding.topAppText.text = state.topAppPackageName ?: getString(com.woong.monitorstack.R.string.no_top_app)
         binding.idleText.text = formatDuration(state.idleMs)
         binding.locationStatusText.text = state.locationContext.statusText
-        binding.locationLatitudeText.text = state.locationContext.latitudeText
-        binding.locationLongitudeText.text = state.locationContext.longitudeText
-        binding.locationAccuracyText.text = state.locationContext.accuracyText
-        binding.locationCapturedAtText.text = state.locationContext.capturedAtLocalText
+        binding.locationLatitudeText.text = getString(
+            com.woong.monitorstack.R.string.location_latitude_value,
+            state.locationContext.latitudeText
+        )
+        binding.locationLongitudeText.text = getString(
+            com.woong.monitorstack.R.string.location_longitude_value,
+            state.locationContext.longitudeText
+        )
+        binding.locationAccuracyText.text = getString(
+            com.woong.monitorstack.R.string.location_accuracy_value,
+            state.locationContext.accuracyText
+        )
+        binding.locationCapturedAtText.text = getString(
+            com.woong.monitorstack.R.string.location_captured_at_value,
+            state.locationContext.capturedAtLocalText
+        )
         binding.emptySessionsText.visibility = if (state.recentSessions.isEmpty()) {
             View.VISIBLE
         } else {
