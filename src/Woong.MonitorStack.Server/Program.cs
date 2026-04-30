@@ -90,6 +90,53 @@ app.MapGet("/api/daily-summaries/{summaryDate}", async (
     return Results.Ok(response);
 });
 
+static bool TryParseIsoDate(string value, out DateOnly date)
+    => DateOnly.TryParseExact(
+        value,
+        "yyyy-MM-dd",
+        CultureInfo.InvariantCulture,
+        DateTimeStyles.None,
+        out date);
+
+static bool IsSupportedTimeZoneId(string timezoneId)
+{
+    if (string.Equals(timezoneId, "UTC", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(timezoneId, "Etc/UTC", StringComparison.OrdinalIgnoreCase))
+    {
+        return true;
+    }
+
+    try
+    {
+        TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+
+        return true;
+    }
+    catch (TimeZoneNotFoundException) when (string.Equals(timezoneId, "Asia/Seoul", StringComparison.OrdinalIgnoreCase))
+    {
+        TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time");
+
+        return true;
+    }
+    catch (InvalidTimeZoneException) when (string.Equals(timezoneId, "Asia/Seoul", StringComparison.OrdinalIgnoreCase))
+    {
+        TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time");
+
+        return true;
+    }
+    catch (TimeZoneNotFoundException)
+    {
+        return false;
+    }
+    catch (InvalidTimeZoneException)
+    {
+        return false;
+    }
+}
+
+static IResult BadRequest(string message)
+    => Results.BadRequest(new { error = message });
+
 app.MapGet("/api/statistics/range", async (
     string userId,
     string from,
@@ -97,8 +144,36 @@ app.MapGet("/api/statistics/range", async (
     string timezoneId,
     DailySummaryQueryService summaries) =>
 {
-    var fromDate = DateOnly.Parse(from, CultureInfo.InvariantCulture);
-    var toDate = DateOnly.Parse(to, CultureInfo.InvariantCulture);
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        return BadRequest("Query parameter 'userId' is required.");
+    }
+
+    if (string.IsNullOrWhiteSpace(timezoneId))
+    {
+        return BadRequest("Query parameter 'timezoneId' is required.");
+    }
+
+    if (!TryParseIsoDate(from, out DateOnly fromDate))
+    {
+        return BadRequest("Query parameter 'from' must be an ISO date in yyyy-MM-dd format.");
+    }
+
+    if (!TryParseIsoDate(to, out DateOnly toDate))
+    {
+        return BadRequest("Query parameter 'to' must be an ISO date in yyyy-MM-dd format.");
+    }
+
+    if (toDate < fromDate)
+    {
+        return BadRequest("Query parameter 'to' must be on or after 'from'.");
+    }
+
+    if (!IsSupportedTimeZoneId(timezoneId))
+    {
+        return BadRequest("Query parameter 'timezoneId' is not supported.");
+    }
+
     var response = await summaries.GetRangeAsync(userId, fromDate, toDate, timezoneId);
 
     return Results.Ok(response);

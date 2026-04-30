@@ -4392,3 +4392,23 @@ Verified:
 - Full `.NET` solution tests passed 423 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 92.0% (3865/4201), branch 71.1% (547/769).
+
+## 2026-04-30 Server Date Range Invalid Input HTTP Slice
+
+- Added HTTP-level coverage for `/api/statistics/range` when `from` or `to` is malformed, `from > to`, `timezoneId` is invalid, or a required query value is missing.
+- Updated the endpoint to validate user id, timezone id, ISO `yyyy-MM-dd` dates, and date ordering before calling `DailySummaryQueryService`.
+- Invalid input now returns controlled `400 BadRequest` responses instead of leaking `FormatException`, `ArgumentException`, or timezone exceptions from the server pipeline.
+- Successful range aggregation remains unchanged.
+
+Concurrent agent breadcrumbs:
+
+- `04e9fd7` clarifies WPF Web Sessions `URL Mode` so origin-only URLs are shown as `Domain only` rather than implying full URL storage.
+- `50f8790` records Android Usage Access Settings handoff evidence with emulator before/action/after screenshots.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~GetDateRangeStatistics_WhenQueryIsInvalid_ReturnsBadRequest"` passed 5 tests.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DateRangeStatisticsApiTests"` passed 6 tests.
+- Full `.NET` solution tests passed 429 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3916/4268), branch 71.2% (555/779).

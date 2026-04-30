@@ -123,8 +123,9 @@ Status legend:
 - [x] Running daily summary generation twice updates a single summary row
   without inflating totals.
   Evidence: `DailySummaryAggregationServiceTests.GenerateAsync_WhenRunTwice_UpdatesSingleSummaryWithoutInflatingTotals`.
-- [ ] Add HTTP-level invalid input coverage for malformed dates, missing
+- [x] HTTP-level invalid input coverage for malformed dates, missing
   query-string values, invalid timezone ids, and `from > to`.
+  Evidence: `DateRangeStatisticsApiTests.GetDateRangeStatistics_WhenQueryIsInvalid_ReturnsBadRequest`.
 
 ## Cross-Midnight Split
 

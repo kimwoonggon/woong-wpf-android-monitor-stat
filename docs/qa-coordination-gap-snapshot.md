@@ -24,11 +24,13 @@ does not replace `total_todolist.md`.
 ## PRD-To-Checklist Gaps
 
 1. Server mixed-batch upload behavior is covered for focus, web, raw-event, and
-   location contexts. The highest-value remaining server queue is now HTTP
-   invalid input/date-range behavior and PostgreSQL-backed blocked checks.
-2. Server invalid input/date-range edges remain actionable. Open slices:
-   malformed dates, missing query values, invalid timezone ids, `from > to`,
-   and date-range local-midnight split allocation.
+   location contexts. HTTP invalid input/date-range behavior is now covered in
+   the active main-agent flow. The highest-value remaining server queue is
+   date-range local-midnight split allocation and PostgreSQL-backed blocked
+   checks.
+2. Server invalid input/date-range edges are now mostly covered. Remaining open
+   slice: date-range local-midnight split allocation if range views must include
+   only in-range session portions.
 3. PostgreSQL/Testcontainers validation remains externally blocked. Do not ask
    workers to close concurrency idempotency, migration application, or legacy
    web-session backfill verification without a real PostgreSQL fixture.
@@ -54,24 +56,27 @@ does not replace `total_todolist.md`.
 - `43d3d0b Handle web upload mixed-batch duplicates`: resume-state and
   `server_check_todo.md` are current. Web mixed-batch is closed with focused
   server test, full solution test/build, and coverage evidence.
-- raw-event mixed-batch local work: resume-state and `server_check_todo.md` are
-  current in the active main-agent flow. Raw-event mixed-batch closes with
-  focused server tests, full solution test/build, and coverage evidence before
-  commit.
-- location upload local work: `server_check_todo.md` is current in the active
-  main-agent flow. Location unknown-device and mixed-batch coverage close with
-  focused server tests, full solution test/build, and coverage evidence before
-  commit.
+- raw-event mixed-batch work: resume-state and `server_check_todo.md` are
+  current. Raw-event mixed-batch closed with focused server tests, full solution
+  test/build, and coverage evidence before the next server location slice.
+- `6f6239a Handle location upload mixed-batch duplicates`: resume-state and
+  `server_check_todo.md` are current. Location unknown-device and mixed-batch
+  coverage closed with focused server tests, full solution test/build, and
+  coverage evidence.
+- date-range invalid input work: resume-state and `server_check_todo.md` are
+  current in the active main-agent flow. Malformed dates, missing query values,
+  invalid timezone ids, and `from > to` now return controlled HTTP 400
+  responses before commit.
 - `eb3cfdf Add QA coordination gap snapshot`: superseded by this refresh for
   server delegation order after web mixed-batch completion.
 
 ## Recommended Delegation
 
-- Server agent: next independent slice should be HTTP-level invalid input
-  coverage for date-range statistics: malformed dates, missing query-string
-  values, invalid timezone ids, and `from > to`.
-- Server agent after that: date-range local-midnight allocation behavior if
-  range views must include only in-range session portions.
+- Server agent: next independent slice should be date-range local-midnight
+  allocation behavior if range views must include only in-range session
+  portions.
+- Server agent after that: PostgreSQL/Testcontainers items remain blocked until
+  a real fixture is available.
 - Android agent: only queue documentation/evidence refresh for the latest
   resource-measurement artifact or physical-device measurement when a device is
   available. Avoid Android feature work unless main agent explicitly opens it.
@@ -85,9 +90,11 @@ does not replace `total_todolist.md`.
 
 ## Conflict Watch
 
-- Active dirty files include server tests/code, `server_check_todo.md`,
-  `docs/resume-state.md`, and `total_todolist.md`. QA agents should not edit
-  those while the main/server agents are working unless explicitly asked.
+- Current worktree audit after `6f6239a` shows active tracked edits in
+  `tests/Woong.MonitorStack.Server.Tests/Summaries/DateRangeStatisticsApiTests.cs`
+  and `src/Woong.MonitorStack.Server/Program.cs`, plus untracked visual/export
+  artifacts. Do not assign another worker to date-range summary tests until
+  those edits land; QA agents should still avoid `total_todolist.md`.
 - Android and WPF checklist edits are low-conflict but should be batched
   sparingly; prefer this QA snapshot for coordination notes.
 - Untracked visual/export artifacts are present and should not be removed by QA.

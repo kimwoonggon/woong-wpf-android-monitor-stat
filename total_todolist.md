@@ -1773,3 +1773,18 @@ milestones below are finished.
 - [x] Full `.NET` solution tests passed: 423 tests.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 92.0% (3865/4201), branch 71.1% (547/769).
+
+## Milestone 71: Server Date Range Invalid Input HTTP Handling
+
+- [x] Add RED HTTP tests for malformed `from`, malformed `to`, `from > to`, invalid timezone id, and missing query value.
+- [x] Replace unhandled date parsing/range/timezone failures in `/api/statistics/range` with controlled `400 BadRequest` responses.
+- [x] Preserve successful date-range aggregation behavior.
+- [x] Update `server_check_todo.md` invalid input coverage.
+
+### Milestone 71 Verification Update
+
+- [x] Full `.NET` solution tests passed: 429 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3916/4268), branch 71.2% (555/779).
+- [x] Concurrent WPF commit `04e9fd7` clarifies origin-only web URL mode as domain-only.
+- [x] Concurrent Android commit `50f8790` records Usage Access Settings handoff screenshots/evidence.

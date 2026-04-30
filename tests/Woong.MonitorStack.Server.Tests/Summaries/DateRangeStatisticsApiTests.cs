@@ -40,6 +40,23 @@ public sealed class DateRangeStatisticsApiTests
         Assert.Equal(540_000, topDomains[0].GetProperty("durationMs").GetInt64());
     }
 
+    [Theory]
+    [InlineData("/api/statistics/range?userId=user-1&from=not-a-date&to=2026-04-29&timezoneId=Asia%2FSeoul")]
+    [InlineData("/api/statistics/range?userId=user-1&from=2026-04-28&to=not-a-date&timezoneId=Asia%2FSeoul")]
+    [InlineData("/api/statistics/range?userId=user-1&from=2026-04-30&to=2026-04-29&timezoneId=Asia%2FSeoul")]
+    [InlineData("/api/statistics/range?userId=user-1&from=2026-04-28&to=2026-04-29&timezoneId=Invalid%2FZone")]
+    [InlineData("/api/statistics/range?from=2026-04-28&to=2026-04-29&timezoneId=Asia%2FSeoul")]
+    public async Task GetDateRangeStatistics_WhenQueryIsInvalid_ReturnsBadRequest(string url)
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        await SeedSessionsAsync(factory);
+        using HttpClient client = factory.CreateClient();
+
+        HttpResponseMessage response = await client.GetAsync(url);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static async Task SeedSessionsAsync(WebApplicationFactory<Program> factory)
     {
         using IServiceScope scope = factory.Services.CreateScope();
