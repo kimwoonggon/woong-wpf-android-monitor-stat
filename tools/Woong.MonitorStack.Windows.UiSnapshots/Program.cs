@@ -830,6 +830,44 @@ internal static class UiSnapshotRunner
             "> 0",
             evidence.SyncOutboxRows,
             evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        VerifyBrowserDomainPrivacyEvidence(context, databasePath);
+    }
+
+    private static void VerifyBrowserDomainPrivacyEvidence(UiSnapshotContext context, string databasePath)
+    {
+        int githubDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'github.com'");
+        int chatGptDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'chatgpt.com'");
+        int fullUrlRows = CountRowsWhere(databasePath, "web_session", "url IS NOT NULL AND TRIM(url) <> ''");
+        int pageTitleRows = CountRowsWhere(databasePath, "web_session", "page_title IS NOT NULL AND TRIM(page_title) <> ''");
+        bool hasPageContentColumn = ColumnExists(databasePath, "web_session", "page_content")
+            || ColumnExists(databasePath, "web_session", "content")
+            || ColumnExists(databasePath, "web_session", "body");
+
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Domain github.com persisted",
+            "> 0 web_session rows",
+            githubDomainRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            githubDomainRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Domain chatgpt.com persisted",
+            "> 0 web_session rows",
+            chatGptDomainRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            chatGptDomainRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Full URL values absent",
+            "0 non-empty web_session.url rows",
+            fullUrlRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            fullUrlRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Page title values absent",
+            "0 non-empty web_session.page_title rows",
+            pageTitleRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            pageTitleRows == 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Page content storage absent",
+            "No page_content/content/body columns on web_session",
+            hasPageContentColumn ? "Content-like column exists" : "No content-like column",
+            hasPageContentColumn ? CheckStatus.Fail : CheckStatus.Pass);
     }
 
     private static void VerifyEmptyDataDatabase(UiSnapshotContext context)
@@ -958,6 +996,81 @@ internal static class UiSnapshotRunner
         {
             return 0;
         }
+    }
+
+    private static int CountRowsWhere(string databasePath, string tableName, string whereClause)
+    {
+        string safeTableName = tableName switch
+        {
+            "web_session" => tableName,
+            _ => throw new ArgumentException($"Unsupported table name: {tableName}.", nameof(tableName))
+        };
+        string safeWhereClause = whereClause switch
+        {
+            "domain = 'github.com'" => whereClause,
+            "domain = 'chatgpt.com'" => whereClause,
+            "url IS NOT NULL AND TRIM(url) <> ''" => whereClause,
+            "page_title IS NOT NULL AND TRIM(page_title) <> ''" => whereClause,
+            _ => throw new ArgumentException($"Unsupported where clause: {whereClause}.", nameof(whereClause))
+        };
+
+        if (!File.Exists(databasePath))
+        {
+            return 0;
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = $"SELECT COUNT(*) FROM {safeTableName} WHERE {safeWhereClause};";
+
+            return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (SqliteException exception) when (
+            exception.SqliteErrorCode == 1
+            && exception.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+    }
+
+    private static bool ColumnExists(string databasePath, string tableName, string columnName)
+    {
+        string safeTableName = tableName switch
+        {
+            "web_session" => tableName,
+            _ => throw new ArgumentException($"Unsupported table name: {tableName}.", nameof(tableName))
+        };
+        string safeColumnName = columnName switch
+        {
+            "page_content" => columnName,
+            "content" => columnName,
+            "body" => columnName,
+            _ => throw new ArgumentException($"Unsupported column name: {columnName}.", nameof(columnName))
+        };
+
+        if (!File.Exists(databasePath))
+        {
+            return false;
+        }
+
+        using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+        connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info({safeTableName});";
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            string name = reader.GetString(1);
+            if (string.Equals(name, safeColumnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void WriteArtifacts(UiSnapshotContext context, bool isSuccess)
@@ -1101,6 +1214,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## Browser Domain Privacy Evidence");
+        lines.Add("");
+        lines.Add("| Claim | Expected | Actual | Status |");
+        lines.Add("|:---|:---|:---|:---|");
+        if (context.BrowserDomainPrivacyEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  | Warn |");
+        }
+        else
+        {
+            foreach (BrowserDomainPrivacyEvidence evidence in context.BrowserDomainPrivacyEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Claim)} | {Escape(evidence.Expected)} | {Escape(evidence.Actual)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Notes");
         lines.Add("");
         foreach (string note in context.Notes)
@@ -1147,6 +1278,13 @@ internal static class UiSnapshotRunner
                 store = evidence.Store,
                 expected = evidence.Expected,
                 actualRows = evidence.ActualRows,
+                status = evidence.Status.ToString()
+            }).ToArray(),
+            browserDomainPrivacyEvidence = context.BrowserDomainPrivacyEvidence.Select(evidence => new
+            {
+                claim = evidence.Claim,
+                expected = evidence.Expected,
+                actual = evidence.Actual,
                 status = evidence.Status.ToString()
             }).ToArray(),
             viewportWidths = context.Options.ViewportWidths.ToArray(),
@@ -1263,6 +1401,8 @@ internal sealed class UiSnapshotContext
 
     public List<SqliteRuntimeEvidence> SqliteRuntimeEvidence { get; } = [];
 
+    public List<BrowserDomainPrivacyEvidence> BrowserDomainPrivacyEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1326,6 +1466,9 @@ internal sealed class UiSnapshotContext
     public void RecordSqliteRuntimeEvidence(string store, string expected, int actualRows, CheckStatus status)
         => SqliteRuntimeEvidence.Add(new SqliteRuntimeEvidence(store, expected, actualRows, status));
 
+    public void RecordBrowserDomainPrivacyEvidence(string claim, string expected, string actual, CheckStatus status)
+        => BrowserDomainPrivacyEvidence.Add(new BrowserDomainPrivacyEvidence(claim, expected, actual, status));
+
     private void AddSectionScreenshotEvidence(
         string fileName,
         string skippedReason,
@@ -1373,6 +1516,12 @@ internal sealed record SqliteRuntimeEvidence(
     string Store,
     string Expected,
     int ActualRows,
+    CheckStatus Status);
+
+internal sealed record BrowserDomainPrivacyEvidence(
+    string Claim,
+    string Expected,
+    string Actual,
     CheckStatus Status);
 
 internal sealed record SectionScreenshotDefinition(string Section, string AutomationId)

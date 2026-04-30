@@ -1391,6 +1391,16 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm grouped SQLite runtime evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the SQLite runtime evidence slice.
 
+## Milestone 43: WPF Browser Domain Privacy Evidence
+
+- [x] Add a failing WPF App/tool test requiring grouped browser-domain privacy evidence in report and manifest.
+- [x] Add browser-domain privacy evidence rows for `github.com`, `chatgpt.com`, absent full URL values, absent page title values, and absent content-like storage.
+- [x] Preserve existing generic checks, SQLite runtime evidence, and `databaseEvidence` for backward compatibility.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm grouped browser-domain privacy evidence appears in latest report/manifest.
+- [x] Update WPF resume state after the browser-domain privacy evidence slice.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

@@ -514,6 +514,34 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeGroupedBrowserDomainPrivacyEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## Browser Domain Privacy Evidence", tool);
+        Assert.Contains("| Claim | Expected | Actual | Status |", tool);
+        Assert.Contains("browserDomainPrivacyEvidence", tool);
+        Assert.Contains("context.BrowserDomainPrivacyEvidence.Select", tool);
+        Assert.Contains("claim = evidence.Claim", tool);
+        Assert.Contains("expected = evidence.Expected", tool);
+        Assert.Contains("actual = evidence.Actual", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+        Assert.Contains("RecordBrowserDomainPrivacyEvidence", tool);
+        Assert.Contains("VerifyBrowserDomainPrivacyEvidence", tool);
+        Assert.Contains("Domain github.com persisted", tool);
+        Assert.Contains("Domain chatgpt.com persisted", tool);
+        Assert.Contains("Full URL values absent", tool);
+        Assert.Contains("Page title values absent", tool);
+        Assert.Contains("Page content storage absent", tool);
+        Assert.Contains("CountRowsWhere", tool);
+        Assert.Contains("ColumnExists", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows()
     {
         string repoRoot = FindRepositoryRoot();

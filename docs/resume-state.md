@@ -1,6 +1,20 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF Browser Domain Privacy Evidence Slice
+
+- Added RED WPF App acceptance-tool coverage requiring grouped browser-domain privacy evidence in both `report.md` and `manifest.json`.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so TrackingPipeline acceptance records `browserDomainPrivacyEvidence` rows proving `github.com` and `chatgpt.com` domain-only web sessions persist while full URL values, page title values, and content-like storage columns remain absent.
+- Kept existing generic checks, SQLite evidence, and `databaseEvidence` manifest shape for backward compatibility.
+- This is a WPF App/tool acceptance evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, product telemetry collection policy, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_ReportAndManifestIncludeGroupedBrowserDomainPrivacyEvidence" -maxcpucount:1 -v minimal` failed RED on missing `## Browser Domain Privacy Evidence`, then passed after the snapshot tool update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~TrackingPipelineMode_StartPollStop_PersistsFocusWebSessionsAndFakeSyncsOutbox" -maxcpucount:1 -v minimal` failed RED on full URL/page title persistence in fake TrackingPipeline web sessions, then passed after domain-only fake WebSessions were used.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 126 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-121336`; the latest snapshot report/manifest include grouped browser-domain privacy evidence and all privacy rows are Pass.
 ## 2026-04-30 Android Dashboard Fragment Room Wiring Slice
 
 - Added RED architecture tests proving `fragment_dashboard.xml` does not hardcode fake runtime data such as `com.android.chrome`, `00:12:31`, or `09:25`.

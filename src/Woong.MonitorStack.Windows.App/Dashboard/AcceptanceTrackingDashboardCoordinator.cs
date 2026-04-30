@@ -214,9 +214,9 @@ public sealed class AcceptanceTrackingDashboardCoordinator : IDashboardTrackingC
             new WebSession(
                 ChromeSessionId,
                 "Chrome",
-                "https://github.com/kimwoonggon/woong-wpf-android-monitor-stat",
+                url: null,
                 "github.com",
-                "Repository",
+                pageTitle: null,
                 TimeRange.FromUtc(
                     _clock.ScenarioStartedAtUtc.AddMinutes(5),
                     _clock.ScenarioStartedAtUtc.AddMinutes(10)),
@@ -228,9 +228,9 @@ public sealed class AcceptanceTrackingDashboardCoordinator : IDashboardTrackingC
             new WebSession(
                 ChromeSessionId,
                 "Chrome",
-                "https://chatgpt.com/codex",
+                url: null,
                 "chatgpt.com",
-                "ChatGPT",
+                pageTitle: null,
                 TimeRange.FromUtc(
                     _clock.ScenarioStartedAtUtc.AddMinutes(10),
                     _clock.ScenarioStartedAtUtc.AddMinutes(15)),

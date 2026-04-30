@@ -44,6 +44,8 @@ public sealed class AcceptanceTrackingDashboardCoordinatorTests : IDisposable
             .ToList();
         Assert.Contains(webSessions, session => session.Domain == "github.com" && session.DurationMs == 300_000);
         Assert.Contains(webSessions, session => session.Domain == "chatgpt.com" && session.DurationMs == 300_000);
+        Assert.All(webSessions, session => Assert.Null(session.Url));
+        Assert.All(webSessions, session => Assert.Null(session.PageTitle));
 
         Assert.Equal("Sync skipped. Enable sync to upload.", coordinator.SyncNow(syncEnabled: false).StatusText);
 
