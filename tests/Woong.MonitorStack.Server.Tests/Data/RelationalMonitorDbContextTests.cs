@@ -77,6 +77,22 @@ public sealed class RelationalMonitorDbContextTests
     }
 
     [Fact]
+    public async Task FocusSessionClientSessionUniqueIndex_IsEnforcedByRelationalProvider()
+    {
+        await using var database = await RelationalTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        database.Context.FocusSessions.Add(CreateFocusSession(deviceId, "focus-session-1"));
+        await database.Context.SaveChangesAsync();
+        database.Context.ChangeTracker.Clear();
+
+        database.Context.FocusSessions.Add(CreateFocusSession(deviceId, "focus-session-1"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
+    }
+
+    [Fact]
     public async Task AppFamilyMappingUniqueIndex_IsEnforcedByRelationalProvider()
     {
         await using var database = await RelationalTestDatabase.CreateAsync();
@@ -108,6 +124,21 @@ public sealed class RelationalMonitorDbContextTests
         await database.Context.SaveChangesAsync();
 
         database.Context.WebSessions.Add(CreateWebSession(deviceId, "web-session-1"));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task RawEventClientEventUniqueIndex_IsEnforcedByRelationalProvider()
+    {
+        await using var database = await RelationalTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        database.Context.Devices.Add(CreateDevice(deviceId));
+        await database.Context.SaveChangesAsync();
+        database.Context.RawEvents.Add(CreateRawEvent(deviceId, "raw-event-1"));
+        await database.Context.SaveChangesAsync();
+
+        database.Context.RawEvents.Add(CreateRawEvent(deviceId, "raw-event-1"));
 
         await Assert.ThrowsAsync<DbUpdateException>(() => database.Context.SaveChangesAsync());
     }
@@ -213,6 +244,16 @@ public sealed class RelationalMonitorDbContextTests
             CaptureMethod = "BrowserExtensionFuture",
             CaptureConfidence = "High",
             IsPrivateOrUnknown = false
+        };
+
+    private static RawEventEntity CreateRawEvent(Guid deviceId, string clientEventId)
+        => new()
+        {
+            DeviceId = deviceId,
+            ClientEventId = clientEventId,
+            EventType = "foreground_window",
+            OccurredAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            PayloadJson = """{"processName":"Code.exe"}"""
         };
 
     private static LocationContextEntity CreateLocationContext(Guid deviceId, string clientContextId)

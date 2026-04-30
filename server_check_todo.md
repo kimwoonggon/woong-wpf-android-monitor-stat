@@ -36,7 +36,7 @@ Status legend:
   Evidence: `FocusSessionUploadApiRelationalTests.UploadFocusSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows`.
 - [x] Focus session `(DeviceId, ClientSessionId)` unique index is modeled and
   exercised through relational FK/idempotency coverage.
-  Evidence: `ServerDbContextModelTests`, `RelationalMonitorDbContextTests`.
+  Evidence: `RelationalMonitorDbContextTests.FocusSessionClientSessionUniqueIndex_IsEnforcedByRelationalProvider`.
 - [x] Mixed-batch focus upload returns independent statuses for existing
   duplicate, accepted new item, and intra-batch duplicate while persisting only
   accepted rows.
@@ -71,6 +71,9 @@ Status legend:
   Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows`.
 - [x] Relational FK requires raw events to belong to a registered device.
   Evidence: `ServerDbContextModelTests.ServerSessionEntities_HaveRequiredDeviceForeignKeys`.
+- [x] Raw event `(DeviceId, ClientEventId)` unique index is enforced under the
+  SQLite relational fallback provider.
+  Evidence: `RelationalMonitorDbContextTests.RawEventClientEventUniqueIndex_IsEnforcedByRelationalProvider`.
 - [x] Mixed-batch raw event upload returns independent statuses for existing
   duplicate, accepted new event, and intra-batch duplicate while persisting only
   accepted rows.
