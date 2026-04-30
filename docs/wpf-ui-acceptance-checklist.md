@@ -1,6 +1,6 @@
 # WPF UI Acceptance Checklist
 
-Updated: 2026-04-29
+Updated: 2026-04-30
 
 WPF UI acceptance must verify semantic behavior, not only capture screenshots.
 Screenshots are supporting evidence after FlaUI semantic checks.
@@ -61,10 +61,18 @@ Examples:
 - `TrackingStatusText` changes to `Running`.
 - Current app name is populated.
 - Current window title is populated or privacy-masked.
-- TrackingPipeline mode shows Visual Studio Code.
-- TrackingPipeline mode shows Chrome.
-- TrackingPipeline mode shows `github.com`.
-- TrackingPipeline mode shows `chatgpt.com`.
+- TrackingPipeline mode shows Visual Studio Code, Chrome, Notepad, and File
+  Explorer focus changes.
+- TrackingPipeline mode shows same-window Chrome navigation through
+  `youtube.com`, `github.com`, and `chatgpt.com`.
+- TrackingPipeline mode shows a second Chrome process/window on
+  `learn.microsoft.com`.
+- TrackingPipeline mode proves temp SQLite `focus_session`, `web_session`, and
+  `sync_outbox` rows are written after Start, Poll, Stop, and Sync.
+- TrackingPipeline mode proves Web Sessions and Web Focus dashboard surfaces
+  refresh from SQLite before Stop.
+- TrackingPipeline mode proves default browser privacy stores domains only and
+  does not store full URLs, page titles, or page content.
 - Recent app sessions list contains expected app sessions.
 - Recent web sessions list contains expected web sessions.
 - Summary cards show expected durations.
@@ -86,6 +94,12 @@ Examples:
 - `01-startup.png`
 - `02-after-start.png`
 - `03-after-generated-activity.png`
+- `03a-during-chrome-youtube-window.png`
+- `03b-during-chrome-github-same-window.png`
+- `03c-during-chrome-chatgpt-same-window.png`
+- `03d-during-chrome-second-process-docs.png`
+- `03e-during-notepad-switch.png`
+- `03f-during-explorer-switch.png`
 - `04-after-stop.png`
 - `05-after-sync.png`
 - `06-settings.png`
@@ -115,6 +129,11 @@ The report must include:
 - Actual values.
 - Screenshot list.
 - Skipped screenshots with reason.
+- TrackingPipeline grouped evidence for Start -> Poll -> SQLite
+  `focus_session`/`web_session` -> `sync_outbox` -> dashboard refresh.
+- TrackingPipeline grouped browser privacy evidence for same-window Chrome
+  domain changes, second Chrome window/process evidence, and arbitrary app
+  switches.
 - RealStart local DB evidence for `focus_session` persistence, `sync_outbox`
   queueing, readable app/process text, and server sync remaining disabled
   unless explicitly allowed.
@@ -201,10 +220,13 @@ launches the app through FlaUI, invokes Start/Stop, verifies temp SQLite
 `focus_session` and `sync_outbox` rows through the RealStart tool, then launches
 the app again in `WOONG_MONITOR_ACCEPTANCE_MODE=TrackingPipeline`.
 
-TrackingPipeline mode uses fake metadata-only activity: Code.exe, chrome.exe,
-`github.com`, and `chatgpt.com`. The tool verifies Running/Stopped status,
-persisted SQLite-backed app and web sessions, live event rows, summary duration,
-and fake opt-in Sync Now behavior. It writes
+TrackingPipeline mode uses fake metadata-only activity: Code.exe, one Chrome
+HWND/PID navigating through `youtube.com`, `github.com`, and `chatgpt.com`, a
+second Chrome process/window on `learn.microsoft.com`, Notepad, and File
+Explorer. The tool verifies Running/Stopped status, persisted SQLite-backed app
+and web sessions, `focus_session`/`web_session`/`sync_outbox` row counts,
+domain-only browser privacy evidence, live event rows, summary duration, and
+fake opt-in Sync Now behavior. It writes
 `artifacts/wpf-ui-acceptance/<timestamp>/report.md`, detailed snapshot
 `report.md`, `manifest.json`, and `visual-review-prompt.md`.
 

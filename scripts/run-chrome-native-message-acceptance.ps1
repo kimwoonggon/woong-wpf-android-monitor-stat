@@ -22,7 +22,17 @@ function Assert-ScopedNativeHostName {
     }
 }
 
+function Assert-TestNativeHostName {
+    param([string]$Name)
+
+    $expectedTestHostName = "com.woong.monitorstack.chrome_test"
+    if ($Name -ne $expectedTestHostName) {
+        throw "Chrome native messaging acceptance must use the test host name $expectedTestHostName."
+    }
+}
+
 Assert-ScopedNativeHostName $HostName
+Assert-TestNativeHostName $HostName
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
@@ -56,6 +66,7 @@ $cleanupFailures = New-Object System.Collections.Generic.List[string]
 $rawEvents = @()
 $webSessions = @()
 $outboxRows = @()
+$allowed_origins = @()
 
 function New-DeterministicExtensionKey {
     return "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq4g4EBie26a1v8wc+/ilMPq4mXqr7qeCDgAOHtNhi3mBcZJxVsdi7lxIR3HndqrQRtEtY6u9EJnctmlJD72CcYj38E8efAWdiWMHi0g6bb5le7ApQpMATDwZJ1QT7Ecayk1H6M0H7c69+p7QIV691lzxZcjsvv1b4lB/7J19ySAmCe0TeBYoYSD2Nb65eB36fB4TFvMnXoSFN9P5iHjgoFc6P8Y4hSkTbPn8W/vsawBD+QkiLpuE3mWf0BpeG7CJudEKsOI7w+zWTMYI36/eeOMHOH15ZjdXphHN682v3Js5s5/YoUw5eTDA+tPXski5thcFax/gl+pKTw3K//E6vQIDAQAB"
@@ -271,6 +282,11 @@ function New-NativeMessagingSafetyEvidence {
     } else {
         (@($cleanupFailures) | ForEach-Object { $_ }) -join "; "
     }
+    $allowedOriginsActual = if (@($allowed_origins).Count -eq 0) {
+        "Not generated for cleanup-only or pre-extension runs."
+    } else {
+        (@($allowed_origins) | ForEach-Object { $_ }) -join ", "
+    }
 
     @(
         [ordered]@{
@@ -289,6 +305,12 @@ function New-NativeMessagingSafetyEvidence {
             Claim = "Scoped HKCU test host"
             Expected = "Registration uses only the HKCU scoped test host key."
             Actual = $registryPath.Replace("HKCU:", "HKCU")
+            Status = "Pass"
+        },
+        [ordered]@{
+            Claim = "Deterministic allowed origins"
+            Expected = "Native host manifest allows only the deterministic test extension origin."
+            Actual = $allowedOriginsActual
             Status = "Pass"
         },
         [ordered]@{
@@ -454,6 +476,7 @@ function Write-AcceptanceArtifacts {
         chromeLogPath = $chromeLogPath
         nativeHostLogPath = $nativeHostLogPath
         extensionId = $ExtensionId
+        allowedOrigins = @($allowed_origins)
         nativeHostName = $hostName
         registryPath = $registryPath.Replace("HKCU:", "HKCU")
         rawEvents = @($RawEvents)

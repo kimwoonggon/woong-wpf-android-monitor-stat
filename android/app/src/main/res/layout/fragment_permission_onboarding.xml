@@ -36,6 +36,16 @@
             android:textColor="@color/wms_text_primary"
             android:textSize="16sp" />
 
+        <TextView
+            android:id="@+id/permissionCollectionStatusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:text="@string/usage_collection_paused_until_permission"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="14sp" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/collectsCard"
             style="@style/WmsCard"

@@ -280,3 +280,11 @@ sandboxed Chrome profile path, the process-cleanup rule that preserves user
 Chrome windows, the scoped HKCU test host, the temp acceptance SQLite DB, and
 whether cleanup restored a previous scoped host value or removed only the test
 key.
+
+Chrome native messaging acceptance must use the test-only host name
+`com.woong.monitorstack.chrome_test`. The acceptance script intentionally
+rejects `com.woong.monitorstack.chrome` so local tests cannot target the
+production/native host registry key by mistake. Acceptance artifacts also record
+the deterministic `allowedOrigins` list and a `Deterministic allowed origins`
+safety row, proving the generated native host manifest allows only the test
+extension origin.

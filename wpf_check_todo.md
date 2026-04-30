@@ -213,3 +213,10 @@ Key PNGs:
 - [x] Chrome native acceptance reports temp work root cleanup failures.
 - [x] `manifest.json` includes `cleanupFailures` and refreshed `nativeMessagingSafetyEvidence` after cleanup.
 - [x] Latest cleanup-only dry-run: `artifacts/chrome-native-acceptance/20260430-170711`.
+
+## Chrome Native Messaging Test Host Evidence 2026-04-30
+
+- [x] Acceptance rejects production host name `com.woong.monitorstack.chrome` before a production registry path can be targeted.
+- [x] Acceptance allows only test host name `com.woong.monitorstack.chrome_test`.
+- [x] Acceptance manifest includes `allowedOrigins` from the deterministic test extension id.
+- [x] Grouped sandbox safety evidence includes `Deterministic allowed origins`.

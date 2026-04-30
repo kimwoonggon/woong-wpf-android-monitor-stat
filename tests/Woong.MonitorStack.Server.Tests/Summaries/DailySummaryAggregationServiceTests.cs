@@ -134,6 +134,67 @@ public sealed class DailySummaryAggregationServiceTests
     }
 
     [Fact]
+    public async Task GenerateAsync_SplitsFocusIdleAndWebSessionsAcrossRequestedLocalMidnight()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid deviceId = Guid.NewGuid();
+        DateTimeOffset beforeMidnightUtc = new(2026, 4, 28, 14, 55, 0, TimeSpan.Zero);
+        database.Context.Devices.Add(Device(deviceId, "user-1", Platform.Windows, "windows-midnight-key"));
+        database.Context.FocusSessions.AddRange(
+            Focus(
+                deviceId,
+                "active-cross-midnight",
+                "chrome.exe",
+                localDate: new DateOnly(2026, 4, 28),
+                durationMs: 600_000,
+                isIdle: false,
+                startedAtUtc: beforeMidnightUtc),
+            Focus(
+                deviceId,
+                "idle-cross-midnight",
+                "chrome.exe",
+                localDate: new DateOnly(2026, 4, 28),
+                durationMs: 600_000,
+                isIdle: true,
+                startedAtUtc: beforeMidnightUtc));
+        database.Context.WebSessions.Add(Web(
+            deviceId,
+            "active-cross-midnight",
+            "example.com",
+            startedAtUtc: beforeMidnightUtc,
+            durationMs: 600_000));
+        await database.Context.SaveChangesAsync();
+        var service = new DailySummaryAggregationService(database.Context);
+
+        DailySummaryEntity firstDay = await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 29, 0, 0, 0, TimeSpan.Zero));
+        DailySummaryEntity secondDay = await service.GenerateAsync(
+            userId: "user-1",
+            summaryDate: new DateOnly(2026, 4, 29),
+            timezoneId: "Asia/Seoul",
+            generatedAtUtc: new DateTimeOffset(2026, 4, 29, 0, 1, 0, TimeSpan.Zero));
+
+        Assert.Equal(300_000, firstDay.TotalActiveMs);
+        Assert.Equal(300_000, firstDay.TotalIdleMs);
+        Assert.Equal(300_000, firstDay.TotalWebMs);
+        Assert.Equal(300_000, secondDay.TotalActiveMs);
+        Assert.Equal(300_000, secondDay.TotalIdleMs);
+        Assert.Equal(300_000, secondDay.TotalWebMs);
+
+        List<UsageTotal> firstDayTopApps = JsonSerializer.Deserialize<List<UsageTotal>>(firstDay.TopAppsJson)!;
+        List<UsageTotal> secondDayTopApps = JsonSerializer.Deserialize<List<UsageTotal>>(secondDay.TopAppsJson)!;
+        List<UsageTotal> firstDayTopDomains = JsonSerializer.Deserialize<List<UsageTotal>>(firstDay.TopDomainsJson)!;
+        List<UsageTotal> secondDayTopDomains = JsonSerializer.Deserialize<List<UsageTotal>>(secondDay.TopDomainsJson)!;
+        Assert.Equal(300_000, Assert.Single(firstDayTopApps).DurationMs);
+        Assert.Equal(300_000, Assert.Single(secondDayTopApps).DurationMs);
+        Assert.Equal(300_000, Assert.Single(firstDayTopDomains).DurationMs);
+        Assert.Equal(300_000, Assert.Single(secondDayTopDomains).DurationMs);
+    }
+
+    [Fact]
     public async Task GenerateAsync_WhenRunTwice_UpdatesSingleSummaryWithoutInflatingTotals()
     {
         var options = new DbContextOptionsBuilder<MonitorDbContext>()

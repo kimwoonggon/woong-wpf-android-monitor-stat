@@ -1571,7 +1571,7 @@ milestones below are finished.
 
 - [x] All PRD requirements reflected in code/tests/docs after Original Intent Restoration; physical-device resource measurement remains tracked as an external hardware blocker.
 - [x] All core logic built TDD-first.
-- [x] All relevant tests pass: latest full `.NET` run passed 402 tests, Android Gradle unit/build/androidTest build passed, WPF acceptance passed, and Android screenshots passed.
+- [x] All relevant tests pass: latest full `.NET` run passed 411 tests, Android Gradle unit/build/androidTest build passed, WPF acceptance passed, Chrome native cleanup-only acceptance passed, and Android screenshots passed.
 - [x] All builds pass: latest `.NET` solution build and Android debug/androidTest builds passed.
 - [x] Safety/privacy excluded scopes are not implemented.
 - [x] Local DB/server integrated DB separation is preserved.
@@ -1643,3 +1643,36 @@ milestones below are finished.
 - [x] WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260430-170819`.
 - [x] Chrome native cleanup-only dry-run passed at `artifacts/chrome-native-acceptance/20260430-170711`.
 - [x] Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-171242`.
+
+## Milestone 61: Chrome Native Messaging Test Host And Allowed Origins Evidence
+
+- [x] Add RED tests requiring Chrome native acceptance to reject the production host name before any production registry path can be targeted.
+- [x] Add RED tests requiring acceptance artifacts to expose deterministic `allowed_origins` evidence.
+- [x] Restrict `scripts/run-chrome-native-message-acceptance.ps1` to the test-only host `com.woong.monitorstack.chrome_test`.
+- [x] Add `allowedOrigins` to the Chrome native acceptance manifest and grouped sandbox safety evidence.
+- [x] Run focused Chrome native script tests.
+- [x] Run production-host rejection dry-run.
+- [x] Run test-host cleanup-only dry-run.
+
+### Milestone 61 Verification Update
+
+- [x] Non-launch Chrome native dry-run passed and wrote `allowedOrigins` evidence to `artifacts/chrome-native-acceptance/latest/manifest.json`.
+- [x] Full `.NET` solution tests passed: 414 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+
+## Milestone 62: Android Usage Access Return Recheck And Collection Status
+
+- [x] Add Android behavior tests for Usage Access missing, granted, and granted-after-settings-return flows.
+- [x] Re-check Usage Access in `MainActivity.onResume` when the Dashboard tab is active.
+- [x] Reconcile UsageStats collection scheduling with `AndroidUsageCollectionScheduler`.
+- [x] Show visible permission/collection status text on the onboarding screen.
+- [x] Run Android Gradle unit/build/androidTest build.
+- [x] Regenerate Android emulator screenshots at `artifacts/android-ui-snapshots/20260430-172700`.
+
+## Milestone 63: Server Daily Summary Local Midnight Split
+
+- [x] Add relational server test for active, idle, and web sessions crossing `Asia/Seoul` local midnight.
+- [x] Split focus and web durations into requested local-date segments during daily summary generation.
+- [x] Preserve idle exclusion from active totals and include web durations on the correct local date.
+- [x] Verify through full `.NET` test/build and coverage runs.

@@ -119,3 +119,11 @@ device TODO.
 - [x] Permission onboarding button opens Android Usage Access Settings.
 - [x] Android UI snapshot package now includes `13-permission-onboarding.png`.
 - [x] Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-171242`.
+
+## Usage Access Return Recheck And Collection Status 2026-04-30
+
+- [x] MainActivity re-checks Usage Access when returning from Settings while Dashboard is selected.
+- [x] Returning with newly granted Usage Access swaps permission onboarding to Dashboard.
+- [x] MainActivity reconciles UsageStats collection scheduling through `AndroidUsageCollectionScheduler`.
+- [x] Permission onboarding shows visible collection status text while permission is missing.
+- [x] Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260430-172700`.

@@ -162,6 +162,23 @@ public sealed class ChromeNativeHostInstallationScriptTests : IDisposable
     }
 
     [Fact]
+    public void ChromeAcceptance_RejectsProductionHostNameBeforeRegistryPathCanTargetProductionHost()
+    {
+        string acceptanceScript = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string acceptanceOutput = RunPowerShellExpectingFailure(
+            acceptanceScript,
+            "-HostName com.woong.monitorstack.chrome -CleanupOnly -DryRun");
+
+        Assert.Contains(
+            "Chrome native messaging acceptance must use the test host name com.woong.monitorstack.chrome_test",
+            acceptanceOutput);
+        Assert.DoesNotContain(
+            "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.woong.monitorstack.chrome",
+            acceptanceOutput);
+    }
+
+    [Fact]
     public void ChromeAcceptance_RequiresExplicitTempDatabaseForNativeHost()
     {
         string script = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1"));

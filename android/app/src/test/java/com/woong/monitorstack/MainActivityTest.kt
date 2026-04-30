@@ -13,12 +13,14 @@ import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.DashboardFragment
 import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
+import com.woong.monitorstack.usage.UsageCollectionScheduleResult
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -29,9 +31,18 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class MainActivityTest {
+    @Before
+    fun setUp() {
+        MainActivity.usageCollectionReconcilerFactory = {
+            FakeUsageCollectionReconciler(result = UsageCollectionScheduleResult.Scheduled)
+        }
+    }
+
     @After
     fun tearDown() {
         MainActivity.usageAccessGateFactory = MainActivity.defaultUsageAccessGateFactory()
+        MainActivity.usageCollectionReconcilerFactory =
+            MainActivity.defaultUsageCollectionReconcilerFactory()
     }
 
     @Test
@@ -56,6 +67,10 @@ class MainActivityTest {
     @Test
     fun whenUsageAccessMissingShowsPermissionOnboarding() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
+        val reconciler = FakeUsageCollectionReconciler(
+            result = UsageCollectionScheduleResult.UsageAccessMissing
+        )
+        MainActivity.usageCollectionReconcilerFactory = { reconciler }
 
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
@@ -68,11 +83,20 @@ class MainActivityTest {
             activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
         )
         assertNotNull(activity.findViewById(R.id.openUsageAccessSettingsButton))
+        assertEquals(
+            "Collection paused until Usage Access is granted.",
+            activity.findViewById<TextView>(R.id.permissionCollectionStatusText).text.toString()
+        )
+        assertEquals(listOf("com.woong.monitorstack"), reconciler.packageNames)
     }
 
     @Test
     fun whenUsageAccessGrantedShowsDashboard() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val reconciler = FakeUsageCollectionReconciler(
+            result = UsageCollectionScheduleResult.Scheduled
+        )
+        MainActivity.usageCollectionReconcilerFactory = { reconciler }
 
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
@@ -89,6 +113,40 @@ class MainActivityTest {
             activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                 R.id.bottomNavigation
             ).selectedItemId
+        )
+        assertEquals(listOf("com.woong.monitorstack"), reconciler.packageNames)
+    }
+
+    @Test
+    fun whenUsageAccessGrantedAfterSettingsReturnRechecksAndShowsDashboard() {
+        val gate = MutableUsageAccessGate(hasAccess = false)
+        val reconciler = FakeUsageCollectionReconciler(
+            result = UsageCollectionScheduleResult.UsageAccessMissing
+        )
+        MainActivity.usageAccessGateFactory = { gate }
+        MainActivity.usageCollectionReconcilerFactory = { reconciler }
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val activity = controller.get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            PermissionOnboardingFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+
+        gate.hasAccess = true
+        reconciler.result = UsageCollectionScheduleResult.Scheduled
+        controller.pause().resume()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            DashboardFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertEquals(
+            listOf("com.woong.monitorstack", "com.woong.monitorstack"),
+            reconciler.packageNames
         )
     }
 
@@ -201,5 +259,22 @@ class MainActivityTest {
         private val hasAccess: Boolean
     ) : MainActivity.UsageAccessGate {
         override fun hasUsageAccess(packageName: String): Boolean = hasAccess
+    }
+
+    private class MutableUsageAccessGate(
+        var hasAccess: Boolean
+    ) : MainActivity.UsageAccessGate {
+        override fun hasUsageAccess(packageName: String): Boolean = hasAccess
+    }
+
+    private class FakeUsageCollectionReconciler(
+        var result: UsageCollectionScheduleResult
+    ) : MainActivity.UsageCollectionReconciler {
+        val packageNames = mutableListOf<String>()
+
+        override fun reconcile(packageName: String): UsageCollectionScheduleResult {
+            packageNames += packageName
+            return result
+        }
     }
 }

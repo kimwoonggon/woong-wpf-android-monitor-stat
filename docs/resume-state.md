@@ -4,6 +4,7 @@ Updated: 2026-04-30
 
 ## 2026-04-30 Final Validation And Completion Audit Refresh
 
+- Historical note: this validation was superseded by the later 2026-04-30 Cross-Slice Verification below, which passed 411 .NET tests after the WPF repeated-browser, Chrome cleanup, Server raw-event, and Android onboarding slices.
 - Reran the final validation matrix after the WPF final-audit slice and Android current-focus wireframe slice were pushed.
 - Updated completion/resource documentation to point to the latest artifacts and to keep physical Android device resource measurement as the only external hardware blocker.
 - The connected Android target is currently `emulator-5554`; no physical Android device is connected.
@@ -4242,3 +4243,41 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3783/4113), branch 70.8% (538/759).
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-170819`. The known non-fatal already-closed process cleanup warning remains.
+
+## 2026-04-30 Chrome Native Messaging Test Host And Allowed Origins Slice
+
+- Added RED/green tests requiring the Chrome native messaging acceptance script to reject production host name `com.woong.monitorstack.chrome` before any production registry path can be targeted.
+- Restricted acceptance to the test-only host `com.woong.monitorstack.chrome_test`; install/uninstall scripts remain generic, but acceptance is test-host only.
+- Added `allowedOrigins` to `manifest.json` and a grouped `Deterministic allowed origins` sandbox safety row so reviewers can see the native manifest is scoped to the deterministic test extension origin.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~ChromeNativeMessagingAcceptanceScriptTests|FullyQualifiedName~ChromeNativeHostInstallationScriptTests"` passed 28 tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -HostName com.woong.monitorstack.chrome -CleanupOnly -DryRun` failed as expected before registry targeting.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -CleanupOnly -DryRun` passed and generated a cleanup-only artifact under `artifacts/chrome-native-acceptance/`.
+
+Milestone 61 final verification update:
+
+- `powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-acceptance.ps1 -DryRun` passed using cached Chrome for Testing and wrote deterministic allowed origin `chrome-extension://ilbldddbaocoepakcfpdibjdcfhdamon/` to `artifacts/chrome-native-acceptance/latest/manifest.json`.
+- Full `.NET` solution tests passed 414 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+
+## 2026-04-30 Android Usage Access Return Recheck Slice
+
+- Added Android tests for Usage Access missing/granted states and for returning from Settings after permission is granted.
+- `MainActivity` now re-checks Usage Access on resume when the Dashboard tab is selected and reconciles UsageStats collection scheduling through `AndroidUsageCollectionScheduler`.
+- `PermissionOnboardingFragment` now displays visible collection status text such as `Collection paused until Usage Access is granted.`
+
+Verified:
+
+- `android\gradlew.bat -p android testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-172700`.
+
+## 2026-04-30 Server Daily Summary Local Midnight Split Slice
+
+- Added relational coverage for active focus, idle focus, and web sessions that cross `Asia/Seoul` local midnight.
+- `DailySummaryQueryService` now splits focus/web durations into local-date segments before calculating active, idle, web, top app, and top domain totals.
+- Active totals continue to exclude idle segments; web totals preserve domain duration on the correct local date.
+
+Verified as part of the full `.NET` solution test/build/coverage runs above.

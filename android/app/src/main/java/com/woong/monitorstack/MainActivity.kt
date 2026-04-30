@@ -10,12 +10,16 @@ import com.woong.monitorstack.sessions.SessionsFragment
 import com.woong.monitorstack.settings.SettingsFragment
 import com.woong.monitorstack.summary.ReportFragment
 import com.woong.monitorstack.usage.AndroidUsageAccessPermissionReader
+import com.woong.monitorstack.usage.AndroidUsageCollectionScheduler
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
 import com.woong.monitorstack.usage.UsageAccessPermissionChecker
+import com.woong.monitorstack.usage.UsageCollectionScheduleResult
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var usageAccessGate: UsageAccessGate
+    private lateinit var usageCollectionReconciler: UsageCollectionReconciler
+    private var completedInitialResume = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.topAppBar)
         usageAccessGate = usageAccessGateFactory(applicationContext)
+        usageCollectionReconciler = usageCollectionReconcilerFactory(applicationContext)
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -52,11 +57,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        if (
+            completedInitialResume &&
+            ::binding.isInitialized &&
+            binding.bottomNavigation.selectedItemId == R.id.navDashboard
+        ) {
+            showDashboardOrPermissionOnboarding()
+        }
+        completedInitialResume = true
+    }
+
     private fun showDashboardOrPermissionOnboarding() {
+        val scheduleResult = usageCollectionReconciler.reconcile(packageName)
         if (usageAccessGate.hasUsageAccess(packageName)) {
             showScreen(DashboardFragment())
         } else {
-            showScreen(PermissionOnboardingFragment())
+            showScreen(
+                PermissionOnboardingFragment.newInstance(
+                    collectionStatusText(scheduleResult)
+                )
+            )
+        }
+    }
+
+    private fun collectionStatusText(result: UsageCollectionScheduleResult): String {
+        return when (result) {
+            UsageCollectionScheduleResult.CollectionDisabled ->
+                getString(R.string.usage_collection_disabled)
+            UsageCollectionScheduleResult.Scheduled ->
+                getString(R.string.usage_collection_scheduled)
+            UsageCollectionScheduleResult.UsageAccessMissing ->
+                getString(R.string.usage_collection_paused_until_permission)
         }
     }
 
@@ -69,6 +103,10 @@ class MainActivity : AppCompatActivity() {
 
     interface UsageAccessGate {
         fun hasUsageAccess(packageName: String): Boolean
+    }
+
+    interface UsageCollectionReconciler {
+        fun reconcile(packageName: String): UsageCollectionScheduleResult
     }
 
     companion object {
@@ -84,7 +122,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        fun defaultUsageCollectionReconcilerFactory(): (Context) -> UsageCollectionReconciler = {
+            context ->
+            val scheduler = AndroidUsageCollectionScheduler.create(context.applicationContext)
+
+            object : UsageCollectionReconciler {
+                override fun reconcile(packageName: String): UsageCollectionScheduleResult {
+                    return scheduler.reconcile(packageName)
+                }
+            }
+        }
+
         var usageAccessGateFactory: (Context) -> UsageAccessGate =
             defaultUsageAccessGateFactory()
+
+        var usageCollectionReconcilerFactory: (Context) -> UsageCollectionReconciler =
+            defaultUsageCollectionReconcilerFactory()
     }
 }

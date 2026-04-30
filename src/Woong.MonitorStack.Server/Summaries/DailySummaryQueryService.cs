@@ -31,32 +31,34 @@ public sealed class DailySummaryQueryService
             .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
 
-        List<FocusSessionEntity> focusSessionsForDate = focusSessions
-            .Where(session => LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId) == summaryDate)
+        List<FocusDailySegment> focusSegmentsForDate = focusSessions
+            .SelectMany(session => SplitFocusSessionByLocalDate(session, timezoneId))
+            .Where(segment => segment.LocalDate == summaryDate)
             .ToList();
-        List<WebSessionEntity> webSessionsForDate = webSessions
-            .Where(session => LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId) == summaryDate)
+        List<WebDailySegment> webSegmentsForDate = webSessions
+            .SelectMany(session => SplitWebSessionByLocalDate(session, timezoneId))
+            .Where(segment => segment.LocalDate == summaryDate)
             .ToList();
 
-        List<UsageTotal> topApps = focusSessionsForDate
-            .Where(session => !session.IsIdle)
-            .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+        List<UsageTotal> topApps = focusSegmentsForDate
+            .Where(segment => !segment.IsIdle)
+            .GroupBy(segment => AppFamilyMapper.GetFamilyLabel(segment.PlatformAppKey))
+            .Select(group => new UsageTotal(group.Key, group.Sum(segment => segment.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
             .ToList();
-        List<UsageTotal> topDomains = webSessionsForDate
-            .GroupBy(session => session.Domain)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+        List<UsageTotal> topDomains = webSegmentsForDate
+            .GroupBy(segment => segment.Domain)
+            .Select(group => new UsageTotal(group.Key, group.Sum(segment => segment.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
             .ToList();
 
         return new DailySummary(
             summaryDate,
-            focusSessionsForDate.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
-            focusSessionsForDate.Where(session => session.IsIdle).Sum(session => session.DurationMs),
-            webSessionsForDate.Sum(session => session.DurationMs),
+            focusSegmentsForDate.Where(segment => !segment.IsIdle).Sum(segment => segment.DurationMs),
+            focusSegmentsForDate.Where(segment => segment.IsIdle).Sum(segment => segment.DurationMs),
+            webSegmentsForDate.Sum(segment => segment.DurationMs),
             topApps,
             topDomains);
     }
@@ -127,4 +129,93 @@ public sealed class DailySummaryQueryService
             topApps,
             topDomains);
     }
+
+    private static IEnumerable<FocusDailySegment> SplitFocusSessionByLocalDate(
+        FocusSessionEntity session,
+        string timezoneId)
+        => SplitByLocalDate(session.StartedAtUtc, session.DurationMs, timezoneId)
+            .Select(segment => new FocusDailySegment(
+                segment.LocalDate,
+                session.PlatformAppKey,
+                session.IsIdle,
+                segment.DurationMs));
+
+    private static IEnumerable<WebDailySegment> SplitWebSessionByLocalDate(
+        WebSessionEntity session,
+        string timezoneId)
+        => SplitByLocalDate(session.StartedAtUtc, session.DurationMs, timezoneId)
+            .Select(segment => new WebDailySegment(
+                segment.LocalDate,
+                session.Domain,
+                segment.DurationMs));
+
+    private static IEnumerable<DailyDurationSegment> SplitByLocalDate(
+        DateTimeOffset startedAtUtc,
+        long durationMs,
+        string timezoneId)
+    {
+        TimeZoneInfo timeZone = ResolveTimeZone(timezoneId);
+        DateTimeOffset cursorUtc = startedAtUtc.ToUniversalTime();
+        DateTimeOffset endUtc = cursorUtc.AddMilliseconds(durationMs);
+
+        while (cursorUtc < endUtc)
+        {
+            DateTimeOffset localCursor = TimeZoneInfo.ConvertTime(cursorUtc, timeZone);
+            DateOnly localDate = DateOnly.FromDateTime(localCursor.DateTime);
+            DateTime nextLocalMidnight = localCursor.Date.AddDays(1);
+            DateTimeOffset nextLocalMidnightUtc = new(
+                TimeZoneInfo.ConvertTimeToUtc(nextLocalMidnight, timeZone),
+                TimeSpan.Zero);
+            DateTimeOffset segmentEndUtc = nextLocalMidnightUtc < endUtc
+                ? nextLocalMidnightUtc
+                : endUtc;
+
+            yield return new DailyDurationSegment(
+                localDate,
+                (long)(segmentEndUtc - cursorUtc).TotalMilliseconds);
+
+            cursorUtc = segmentEndUtc;
+        }
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timezoneId)
+    {
+        if (string.Equals(timezoneId, "UTC", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(timezoneId, "Etc/UTC", StringComparison.OrdinalIgnoreCase))
+        {
+            return TimeZoneInfo.Utc;
+        }
+
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+        }
+        catch (TimeZoneNotFoundException) when (WindowsFallbacks.TryGetValue(timezoneId, out string? windowsId))
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(windowsId);
+        }
+        catch (InvalidTimeZoneException) when (WindowsFallbacks.TryGetValue(timezoneId, out string? windowsId))
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(windowsId);
+        }
+    }
+
+    private sealed record DailyDurationSegment(DateOnly LocalDate, long DurationMs);
+
+    private sealed record FocusDailySegment(
+        DateOnly LocalDate,
+        string PlatformAppKey,
+        bool IsIdle,
+        long DurationMs);
+
+    private sealed record WebDailySegment(
+        DateOnly LocalDate,
+        string Domain,
+        long DurationMs);
+
+    private static readonly IReadOnlyDictionary<string, string> WindowsFallbacks =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Asia/Seoul"] = "Korea Standard Time"
+        };
 }

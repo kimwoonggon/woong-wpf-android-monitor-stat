@@ -206,6 +206,20 @@ public sealed class ChromeNativeMessagingAcceptanceScriptTests
     }
 
     [Fact]
+    public void AcceptanceScript_ReportAndManifestIncludeAllowedOriginsEvidence()
+    {
+        string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
+
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("allowedOrigins = @($allowed_origins)", script, StringComparison.Ordinal);
+        Assert.Contains("Claim = \"Deterministic allowed origins\"", script, StringComparison.Ordinal);
+        Assert.Contains("Expected = \"Native host manifest allows only the deterministic test extension origin.\"", script, StringComparison.Ordinal);
+        Assert.Contains("Actual = $allowedOriginsActual", script, StringComparison.Ordinal);
+        Assert.Contains("chrome-extension://$extensionId/", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AcceptanceScript_ReportsSandboxChromeAndTempProfileCleanupFailuresInArtifacts()
     {
         string scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "run-chrome-native-message-acceptance.ps1");
