@@ -2,6 +2,20 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Android Report Fragment Runtime Wiring Slice
+
+- Treated the user-provided Android XML wireframe skeleton as the launcher shell target and closed the remaining Report tab skeleton gap.
+- Added RED Robolectric coverage requiring `MainActivity` Report navigation to load Recent 7 days summary cards and top-app rows from Room-backed focus sessions.
+- Wired `ReportFragment` to `DashboardViewModel` and `RoomDashboardRepository` so it renders Active Focus, Daily Avg, Top App, and top-app rows from local Room data.
+- Added RED architecture/snapshot coverage requiring `12-main-shell-report.png` in the connected-device screenshot contract.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-142758`; `12-main-shell-report.png` shows the launcher Report tab with Room-backed summary cards and top-app rows.
+
+Verified:
+
+- RED first: `./gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.MainActivityTest.reportTabLoadsRoomBackedSevenDaySummary" --no-daemon --stacktrace` failed on a zero Report total, then passed after `ReportFragment` loaded Room-backed summary data.
+- RED first: `dotnet test tests/Woong.MonitorStack.Architecture.Tests/Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidUiSnapshotScript_DocumentsFeatureByFeatureScreenshots|FullyQualifiedName~AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens" -v minimal` failed on missing `12-main-shell-report.png`, then passed.
+- `./gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-142758`.
 ## 2026-04-30 WPF Root Report Privacy Boundary Evidence Slice
 
 - Audited WPF/browser/runtime acceptance after Milestone 51 and found no remaining WPF implementation TODO, but the human-readable root WPF acceptance report omitted two privacy/safety rows already present in the machine-readable root manifest.

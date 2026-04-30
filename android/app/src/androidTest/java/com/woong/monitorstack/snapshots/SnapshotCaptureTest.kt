@@ -47,6 +47,10 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "10-main-shell-sessions.png")
         )
+        captureMainShellReport(
+            device = device,
+            output = File(outputDir, "12-main-shell-report.png")
+        )
         captureMainShellSettings(
             device = device,
             output = File(outputDir, "11-main-shell-settings.png")
@@ -158,6 +162,21 @@ class SnapshotCaptureTest {
                 activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                     R.id.bottomNavigation
                 ).selectedItemId = R.id.navSettings
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
+    private fun captureMainShellReport(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                ).selectedItemId = R.id.navReport
             }
             waitForScreen(device)
             captureScreen(device, output)

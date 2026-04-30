@@ -674,7 +674,7 @@ milestones below are finished.
 - [x] Capture connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-115054`, including `09-main-shell.png`.
 - [x] Wire `DashboardFragment` to `DashboardViewModel`/`RoomDashboardRepository` and remove hardcoded fake runtime data from `fragment_dashboard.xml`.
 - [x] Verify `09-main-shell.png` shows seeded Room-backed values (`com.android.chrome`, non-zero Active/Screen/Idle totals) at `artifacts/android-ui-snapshots/20260430-120317`.
-- [ ] Follow-up: wire the new Sessions, Report, and Settings fragments to the same runtime behavior as the existing Activity screens.
+- [x] Follow-up: wire the new Sessions, Report, and Settings fragments to the same runtime behavior as the existing Activity screens.
 
 ## Milestone 28: Privacy And Retention Hardening
 
@@ -1442,10 +1442,14 @@ milestones below are finished.
 - [x] Capture emulator evidence for chart labels, app labels, and readable session rows at `artifacts/android-ui-snapshots/20260430-133732`.
 - [x] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
 - [x] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
-- [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
+- [x] Wire `ReportFragment` to runtime summary repository/client behavior.
 - [x] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
 - [x] Add feature screenshots for each newly runtime-backed shell tab.
 - [x] Capture emulator evidence for SettingsFragment runtime wiring at `artifacts/android-ui-snapshots/20260430-140141`, including `11-main-shell-settings.png` and the scrolled location-context screenshot.
+- [x] Add RED/GREEN Robolectric coverage proving the launcher Report tab loads Recent 7 days summary cards and top-app rows from Room-backed focus sessions.
+- [x] Add `12-main-shell-report.png` to Android screenshot automation and connected-device artifact pulling.
+- [x] Capture emulator evidence for ReportFragment runtime wiring at `artifacts/android-ui-snapshots/20260430-142758`, including Room-backed Active Focus, Daily Avg, Top App, and top-app rows.
+- [x] Verify ReportFragment runtime wiring with Android Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests (397), full `.NET` build, and coverage generation at 91.7% line coverage.
 ## Milestone 47: Chrome Native Messaging Sandbox Evidence
 
 - [x] Audit Chrome/native messaging acceptance docs, script, and Windows browser tests for sandbox safety coverage.

@@ -274,6 +274,13 @@ and feature screenshots for each tab.
   selecting the Settings bottom-navigation item, and
   `06-settings-location-permission.png` scrolls to the actual Location context
   card so the optional latitude/longitude controls are visible.
+- `ReportFragment` now reads the same local Room-backed dashboard summary path
+  as the runtime dashboard. The launcher Report tab shows Recent 7 days Active
+  Focus, Daily Avg, Top App, and the top-app list instead of a skeleton-only
+  placeholder.
+- Android screenshot automation now captures `12-main-shell-report.png` after
+  selecting the Report bottom-navigation item, so every launcher shell tab has
+  a dedicated local screenshot artifact.
 
 ## Current Fragment Shell Gaps
 
@@ -283,13 +290,10 @@ enough:
 
 - The launcher toolbar/header is too large and must be normalized to the
   compact MaterialToolbar shell from the XML skeleton.
-- Report fragment still needs to be wired to runtime summary repository/client
-  behavior instead of remaining a skeleton-only view.
-- Screenshot automation should keep adding one feature screenshot per shell tab
-  as each fragment becomes runtime-backed.
+- Screenshot automation should keep adding one feature screenshot for any new
+  shell tab or major fragment surface introduced later.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Wiring the new Report fragment to the same runtime behavior as the existing
-  Activity screen.
+- Launcher toolbar/header visual normalization against the compact XML skeleton.

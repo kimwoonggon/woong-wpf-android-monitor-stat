@@ -91,7 +91,8 @@ Current behavior:
   `03-dashboard-charts.png`, `04-dashboard-recent-sessions.png`,
   `05-settings-privacy-sync.png`, `06-settings-location-permission.png`,
   `07-sessions-list.png`, `08-daily-summary.png`, `09-main-shell.png`,
-  `10-main-shell-sessions.png`, and `11-main-shell-settings.png`.
+  `10-main-shell-sessions.png`, `11-main-shell-settings.png`, and
+  `12-main-shell-report.png`.
 - The instrumentation test captures local PNG screenshots into the app's
   external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
@@ -108,6 +109,8 @@ Latest emulator evidence:
 - Artifact: `artifacts/android-ui-snapshots/20260430-133732`.
 - Latest SettingsFragment runtime-wiring evidence:
   `artifacts/android-ui-snapshots/20260430-140141`.
+- Latest ReportFragment runtime-wiring evidence:
+  `artifacts/android-ui-snapshots/20260430-142758`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -148,6 +151,9 @@ Latest emulator evidence:
 - `06-settings-location-permission.png` now scrolls to the actual Location
   context card and shows location off by default, precise latitude/longitude
   opt-in disabled, and the location permission action disabled until opt-in.
+- `12-main-shell-report.png` captures the real launcher shell after selecting
+  Report; it shows Room-backed Recent 7 days Active Focus, Daily Avg, Top App,
+  and top-app rows from seeded local focus-session data.
 
 Future connected-device improvements:
 
@@ -160,11 +166,8 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
-- Report fragment still needs to be wired to the same runtime behavior as the
-  existing Activity screen.
 - The fragment shell still needs visual tightening against the user-provided
-  XML skeleton, especially compact toolbar/header polish and runtime wiring for
-  Report and Settings fragments.
+  XML skeleton, especially compact toolbar/header polish.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is
