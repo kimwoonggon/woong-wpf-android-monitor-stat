@@ -22,7 +22,7 @@ device:
 
 - Repeat Android resource measurements on a physical device.
 
-Latest emulator-backed Android evidence:
+Latest emulator-backed Android UI evidence:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
@@ -30,22 +30,24 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 
 Result:
 
-- Status: PASS on `Medium_Phone` emulator.
-- Artifact: `artifacts/android-ui-snapshots/20260430-091721`.
-- Captured dashboard, settings, sessions, and daily summary screenshots.
-- Dashboard location card and Settings location section are visible in the
+- Status: PASS on `emulator-5554` / `Medium_Phone` emulator.
+- Artifact: `artifacts/android-ui-snapshots/20260430-153654`.
+- Captured dashboard, settings, sessions, daily summary, launcher shell,
+  current-focus, chart, location, and report screenshots.
+- Dashboard location card, Settings location section, compact bottom
+  navigation labels, and current-focus wireframe parity are visible in the
   captured screenshots.
 
 Latest emulator-backed Android resource evidence:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -DurationSeconds 3
+powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1
 ```
 
 Result:
 
-- Status: PASS on `Medium_Phone` emulator.
-- Artifact: `artifacts/android-resource-measurements/20260430-093728`.
+- Status: PASS on `emulator-5554` / `Medium_Phone` emulator.
+- Artifact: `artifacts/android-resource-measurements/20260430-153804`.
 - Captured package-scoped process, memory, and graphics frame diagnostics.
 - The script does not capture screenshots, typed text, clipboard data,
   passwords, forms, messages, other-app content, or touch coordinates.
@@ -114,7 +116,7 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 360 total.
+- .NET tests passed: 402 total.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.
 - Overall line coverage: 91.7% (3663/3991).
@@ -123,21 +125,20 @@ Results:
 Android:
 
 ```powershell
-.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace
-.\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace
+.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace
 powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
-powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1 -DurationSeconds 3
+powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1
 ```
 
 Result:
 
-- Android unit tests and debug build passed.
-- Android connected tests passed on `Medium_Phone`: 11 tests, 0 failures.
+- Android unit tests, debug build, and debug androidTest build passed.
 - Android UI snapshot script passed on `Medium_Phone` and generated
-  `artifacts/android-ui-snapshots/20260430-091721`.
-- Android launcher now routes directly to `DashboardActivity`.
+  `artifacts/android-ui-snapshots/20260430-153654`.
+- Android launcher now uses `MainActivity` as the fragment shell and exposes
+  Dashboard, Sessions, Report, and Settings through bottom navigation.
 - Android resource measurement passed on `Medium_Phone` and generated
-  `artifacts/android-resource-measurements/20260430-093728`.
+  `artifacts/android-resource-measurements/20260430-153804`.
 - A verification rerun with a temp output root also passed after installing the
   debug APK before launch; `-SkipBuild` requires the app to already be
   installed.
@@ -154,7 +155,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1
 Result:
 
 - Passed.
-- Artifact: `artifacts/wpf-ui-acceptance/20260430-033512`.
+- Artifact: `artifacts/wpf-ui-acceptance/20260430-153850`.
 - RealStart used a temp SQLite DB, server sync stayed disabled, focus sessions
   persisted, and sync outbox rows were queued.
 

@@ -2,6 +2,22 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Final Validation And Completion Audit Refresh
+
+- Reran the final validation matrix after the WPF final-audit slice and Android current-focus wireframe slice were pushed.
+- Updated completion/resource documentation to point to the latest artifacts and to keep physical Android device resource measurement as the only external hardware blocker.
+- The connected Android target is currently `emulator-5554`; no physical Android device is connected.
+
+Verified:
+
+- `dotnet restore tests\Woong.MonitorStack.Domain.Tests\Woong.MonitorStack.Domain.Tests.csproj --configfile NuGet.config` passed.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 402 tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest report shows 91.7% line coverage and 70.7% branch coverage.
+- `./gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-153654`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1` passed on emulator with artifact `artifacts/android-resource-measurements/20260430-153804`; this does not close the physical-device TODO.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-153850`.
 
 ## 2026-04-30 Android Current Focus Wireframe Parity Slice
 

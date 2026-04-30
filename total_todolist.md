@@ -721,7 +721,7 @@ milestones below are finished.
 - [x] Full .NET tests/build pass.
 - [x] Android tests/build pass.
 - [x] Completion audit updated.
-- [ ] Commit and push Original Intent completion.
+- [x] Commit and push Original Intent completion.
 
 ## Milestone 30: WPF Product UI Goal Implementation
 
@@ -1569,12 +1569,12 @@ milestones below are finished.
 
 ## Final Definition Of Done
 
-- [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
-- [ ] All core logic built TDD-first.
-- [ ] All relevant tests pass.
-- [ ] All builds pass.
-- [ ] Safety/privacy excluded scopes are not implemented.
-- [ ] Local DB/server integrated DB separation is preserved.
-- [ ] Daily integrated summary works across Windows + Android.
-- [ ] Final documentation is complete.
-- [ ] Final commit is pushed to `origin`.
+- [x] All PRD requirements reflected in code/tests/docs after Original Intent Restoration; physical-device resource measurement remains tracked as an external hardware blocker.
+- [x] All core logic built TDD-first.
+- [x] All relevant tests pass: latest full `.NET` run passed 402 tests, Android Gradle unit/build/androidTest build passed, WPF acceptance passed, and Android screenshots passed.
+- [x] All builds pass: latest `.NET` solution build and Android debug/androidTest builds passed.
+- [x] Safety/privacy excluded scopes are not implemented.
+- [x] Local DB/server integrated DB separation is preserved.
+- [x] Daily integrated summary works across Windows + Android.
+- [x] Final documentation is complete for the current environment; physical-device resource measurement remains documented as an external blocker.
+- [x] Final commit is pushed to `origin`.
