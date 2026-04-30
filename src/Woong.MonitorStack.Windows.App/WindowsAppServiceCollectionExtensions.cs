@@ -25,6 +25,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddSingleton(new WindowsLocalDatabaseState(options.LocalDatabasePath));
         services.AddSingleton(options.DashboardOptions);
+        services.AddSingleton<IDashboardRuntimeLogSink>(new FileDashboardRuntimeLogSink(options.RuntimeLogPath));
         services.AddDashboardPresentation();
         services.AddWindowsInfrastructure();
         if (options.AcceptanceMode == WindowsAppAcceptanceMode.TrackingPipeline)

@@ -38,7 +38,8 @@ public sealed class WindowsAppOptions
         string localDatabaseConnectionString,
         TimeSpan idleThreshold,
         WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
-        bool autoStartTracking = true)
+        bool autoStartTracking = true,
+        string? runtimeLogPath = null)
     {
         DashboardOptions = dashboardOptions ?? throw new ArgumentNullException(nameof(dashboardOptions));
         DeviceId = string.IsNullOrWhiteSpace(deviceId)
@@ -55,6 +56,9 @@ public sealed class WindowsAppOptions
             : throw new ArgumentOutOfRangeException(nameof(idleThreshold));
         AcceptanceMode = acceptanceMode;
         AutoStartTracking = autoStartTracking;
+        RuntimeLogPath = string.IsNullOrWhiteSpace(runtimeLogPath)
+            ? BuildDefaultRuntimeLogPath(LocalDatabasePath)
+            : runtimeLogPath;
     }
 
     public DashboardOptions DashboardOptions { get; }
@@ -70,6 +74,8 @@ public sealed class WindowsAppOptions
     public WindowsAppAcceptanceMode AcceptanceMode { get; }
 
     public bool AutoStartTracking { get; }
+
+    public string RuntimeLogPath { get; }
 
     public static WindowsAppOptions CreateDefault(DashboardOptions dashboardOptions)
     {
@@ -118,6 +124,18 @@ public sealed class WindowsAppOptions
 
     public static string BuildConnectionString(string databasePath)
         => $"Data Source={databasePath};Pooling=False";
+
+    public static string BuildDefaultRuntimeLogPath(string localDatabasePath)
+    {
+        string? databaseDirectory = Path.GetDirectoryName(localDatabasePath);
+        string logDirectory = string.IsNullOrWhiteSpace(databaseDirectory)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "WoongMonitorStack")
+            : databaseDirectory;
+
+        return Path.Combine(logDirectory, "logs", "windows-runtime.log");
+    }
 
     private static string ExtractDataSource(string connectionString)
     {

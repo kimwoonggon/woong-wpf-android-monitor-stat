@@ -1920,3 +1920,20 @@ milestones below are finished.
 - [x] Added controller, ViewModel, XAML AutomationId, and legacy schema migration regression tests.
 - [x] Verified exact default local DB startup by launching the WPF exe; window title `Woong Monitor Stack` appeared and process was responding.
 - [x] Validation: full `.NET` tests passed, full `.NET` build passed, coverage generated at 88.4% line and 69.7% branch coverage.
+
+## 2026-05-01 WPF Chrome Switch Crash Fix And Runtime Logging
+
+- [x] Diagnose Chrome/browser switch crash from Windows Application Event Log.
+- [x] Add regression test for legacy `web_session.url TEXT NOT NULL` SQLite schema.
+- [x] Rebuild legacy `web_session` tables to allow nullable URL for domain-only privacy storage without losing existing rows.
+- [x] Add WPF runtime log sink and Settings runtime log path display.
+- [x] Catch dashboard Start/Stop/Poll/Sync command exceptions and surface `Runtime error` live-event rows instead of terminating the app.
+- [x] Add WPF tick regression coverage proving poll errors keep the window open.
+- [ ] Next: add a Settings command to open the runtime log folder and include the latest log excerpt in WPF acceptance artifacts.
+
+### Validation Update
+
+- [x] Full `.NET` solution tests passed: 450 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 88.6% (4277/4822), branch 69.7% (610/875).
+- [x] WPF exe launched against the default local DB and remained responsive: `Woong Monitor Stack` window was running.

@@ -17,6 +17,7 @@ User clicks Start
      process/window metadata
   -> Outbox rows are enqueued for sync with the same metadata
   -> Browser reader/sessionizer creates web sessions when URL/domain is known
+  -> Runtime events and recoverable errors are appended to the local runtime log
   -> Dashboard reads current state plus SQLite-backed period statistics
   -> User clicks Stop
   -> Current sessions are flushed to SQLite/outbox
@@ -40,6 +41,23 @@ Required current activity UI:
 
 The WPF app must make collection visible. No Windows tracking should run as a
 hidden background behavior in MVP.
+
+The runtime log lives next to the local SQLite database by default:
+
+```text
+%LOCALAPPDATA%\WoongMonitorStack\logs\windows-runtime.log
+```
+
+This log records this app's own tracking lifecycle, poll, persistence,
+sync-skip, and recoverable exception events. It is for debugging the pipeline
+when foreground/browser transitions fail. It must not contain keystrokes, typed
+text, page contents, screenshots, passwords, form input, clipboard contents, or
+private message contents.
+
+Recoverable polling failures must not terminate the WPF app. Start/Stop/Poll
+and Sync command failures are logged to the runtime log and surfaced in the
+Live Event Log as `Runtime error` rows so the user can keep the app open and
+inspect what failed.
 
 Focus sessions now carry nullable process/window metadata through the local and
 server sync path: process id, process name, executable path, window handle, and
@@ -74,6 +92,12 @@ soon as foreground capture starts. Browser domain should appear when the
 extension/native messaging path, or the WPF app's metadata-only UI Automation
 address-bar fallback, reports domain metadata. Full URL storage remains a
 separate opt-in privacy setting.
+
+Domain-only storage intentionally persists `web_session.url = NULL`. Legacy
+SQLite databases created before domain-only storage must be migrated so `url`
+is nullable; otherwise Chrome domain switches can fail when a closed web
+session is saved. `SqliteWebSessionRepository.Initialize()` owns this local
+schema repair.
 
 Running the WPF app as Administrator is not enough to make domain capture work.
 Elevation does not grant Chrome, Edge, Firefox, Brave, or other browsers

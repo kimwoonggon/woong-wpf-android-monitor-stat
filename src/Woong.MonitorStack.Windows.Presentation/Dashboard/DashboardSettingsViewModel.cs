@@ -36,6 +36,9 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     private string _databaseStatusLabel = "Local database ready.";
 
     [ObservableProperty]
+    private string _runtimeLogPathText = "No runtime log configured";
+
+    [ObservableProperty]
     private bool _hasSyncFailure;
 
     [ObservableProperty]

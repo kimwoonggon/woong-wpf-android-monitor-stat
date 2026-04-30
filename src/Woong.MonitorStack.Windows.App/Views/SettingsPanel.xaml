@@ -95,6 +95,15 @@
             <TextBlock Text="Idle threshold: 5 minutes"
                        Style="{StaticResource SettingsMutedTextStyle}"
                        Margin="0,0,0,8" />
+            <TextBlock Text="Runtime log"
+                       Style="{StaticResource SettingsSectionTitleTextStyle}"
+                       Margin="0,12,0,4" />
+            <TextBlock AutomationProperties.AutomationId="RuntimeLogPathText"
+                       AutomationProperties.Name="Runtime log path"
+                       Text="{Binding Settings.RuntimeLogPathText}"
+                       Style="{StaticResource SettingsMutedTextStyle}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8" />
             <TextBlock Text="Local SQLite DB"
                        Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,12,0,4" />

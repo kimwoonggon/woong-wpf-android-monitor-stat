@@ -613,6 +613,31 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void PollTrackingCommand_WhenCoordinatorThrows_KeepsTrackingRunningAndWritesRuntimeLogEvent()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var runtimeLogSink = new FakeRuntimeLogSink();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            trackingCoordinator: new ThrowingPollTrackingCoordinator(),
+            runtimeLogSink: runtimeLogSink);
+
+        viewModel.StartTrackingCommand.Execute(null);
+
+        viewModel.PollTrackingCommand.Execute(null);
+
+        Assert.Equal("Running", viewModel.TrackingStatusText);
+        Assert.True(viewModel.StopTrackingCommand.CanExecute(null));
+        DashboardEventLogRow errorRow = Assert.Single(viewModel.LiveEvents, row => row.EventType == "Runtime error");
+        Assert.Contains("PollTracking failed", errorRow.Message, StringComparison.Ordinal);
+        Assert.Contains("tracking poll failed", errorRow.Message, StringComparison.Ordinal);
+        Assert.Contains("tracking poll failed", Assert.Single(runtimeLogSink.Exceptions).Exception.Message, StringComparison.Ordinal);
+        Assert.Contains(runtimeLogSink.LogPath, errorRow.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SelectPeriod_WithEmptyDataPublishesSafeZeroState()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -720,5 +745,43 @@ public sealed class DashboardViewModelTests
             CurrentDatabasePath = DeleteResult.DatabasePath;
             return DeleteResult;
         }
+    }
+
+    private sealed class FakeRuntimeLogSink : IDashboardRuntimeLogSink
+    {
+        public string LogPath { get; } = "D:\\logs\\windows-runtime.log";
+
+        public List<DashboardRuntimeLogEvent> Events { get; } = [];
+
+        public List<(string Operation, Exception Exception)> Exceptions { get; } = [];
+
+        public void WriteEvent(DashboardRuntimeLogEvent logEvent)
+            => Events.Add(logEvent);
+
+        public void WriteException(string operation, Exception exception)
+            => Exceptions.Add((operation, exception));
+    }
+
+    private sealed class ThrowingPollTrackingCoordinator : IDashboardTrackingCoordinator
+    {
+        public DashboardTrackingSnapshot StartTracking()
+            => new(
+                AppName: "chrome.exe",
+                ProcessName: "chrome.exe",
+                WindowTitle: "GitHub - Chrome",
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "github.com",
+                BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive,
+                LastPollAtUtc: new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero));
+
+        public DashboardTrackingSnapshot StopTracking()
+            => DashboardTrackingSnapshot.Empty;
+
+        public DashboardTrackingSnapshot PollOnce()
+            => throw new InvalidOperationException("tracking poll failed while reading Chrome.");
+
+        public DashboardSyncResult SyncNow(bool syncEnabled)
+            => new("Sync skipped. Enable sync to upload.");
     }
 }

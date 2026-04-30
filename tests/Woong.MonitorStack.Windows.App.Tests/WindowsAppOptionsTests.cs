@@ -22,6 +22,7 @@ public sealed class WindowsAppOptionsTests
 
             Assert.Equal("real-start-device", options.DeviceId);
             Assert.Equal($"Data Source={dbPath};Pooling=False", options.LocalDatabaseConnectionString);
+            Assert.Equal(Path.Combine(Path.GetDirectoryName(dbPath)!, "logs", "windows-runtime.log"), options.RuntimeLogPath);
             Assert.Equal(WindowsAppAcceptanceMode.None, options.AcceptanceMode);
         }
         finally

@@ -21,6 +21,13 @@ creates or updates it automatically:
 %LOCALAPPDATA%\WoongMonitorStack\windows-local.db
 ```
 
+Runtime tracking/log events are also written locally so foreground/browser
+polling failures can be diagnosed after the fact:
+
+```text
+%LOCALAPPDATA%\WoongMonitorStack\logs\windows-runtime.log
+```
+
 PostgreSQL and the ASP.NET Core server are only needed for server/integrated
 sync scenarios. The WPF app can track locally and show the local dashboard
 without them.
@@ -33,6 +40,8 @@ Inside the app, open **Settings** to manage the SQLite file:
   from it.
 - **Delete local DB** deletes the current local database and recreates an empty
   one after confirmation.
+- **Runtime log** shows the local log path used for tracking start/stop, poll,
+  persistence, sync-skip, and recoverable error events.
 
 ## Privacy Boundaries
 
@@ -128,6 +137,16 @@ By default the WPF app uses:
 ```text
 %LOCALAPPDATA%\WoongMonitorStack\windows-local.db
 ```
+
+The runtime log is:
+
+```text
+%LOCALAPPDATA%\WoongMonitorStack\logs\windows-runtime.log
+```
+
+The log is for this app's own tracking pipeline events and exceptions. It does
+not record keystrokes, typed text, page contents, screenshots, passwords, form
+input, or clipboard contents.
 
 To run safely with a temporary SQLite DB:
 

@@ -112,6 +112,92 @@ public sealed class SqliteWebSessionRepositoryTests : IDisposable
         Assert.Null(saved.IsPrivateOrUnknown);
     }
 
+    [Fact]
+    public void Initialize_WhenLegacyWebSessionUrlColumnIsNotNull_AllowsDomainOnlyRowsWithoutLosingRows()
+    {
+        using (var connection = new SqliteConnection($"Data Source={_dbPath};Pooling=False"))
+        {
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = """
+                CREATE TABLE web_session (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    focus_session_id TEXT NOT NULL,
+                    browser_family TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    domain TEXT NOT NULL,
+                    page_title TEXT NULL,
+                    started_at_utc TEXT NOT NULL,
+                    ended_at_utc TEXT NOT NULL,
+                    duration_ms INTEGER NOT NULL,
+                    capture_method TEXT NULL,
+                    capture_confidence TEXT NULL,
+                    is_private_or_unknown INTEGER NULL
+                );
+
+                INSERT INTO web_session (
+                    focus_session_id,
+                    browser_family,
+                    url,
+                    domain,
+                    page_title,
+                    started_at_utc,
+                    ended_at_utc,
+                    duration_ms,
+                    capture_method,
+                    capture_confidence,
+                    is_private_or_unknown
+                ) VALUES (
+                    'focus-existing',
+                    'Chrome',
+                    'https://github.com/',
+                    'github.com',
+                    NULL,
+                    '2026-04-28T00:00:00.0000000+00:00',
+                    '2026-04-28T00:05:00.0000000+00:00',
+                    300000,
+                    'UIAutomationAddressBar',
+                    'High',
+                    0
+                );
+                """;
+            _ = command.ExecuteNonQuery();
+        }
+
+        var repository = new SqliteWebSessionRepository($"Data Source={_dbPath};Pooling=False");
+        repository.Initialize();
+        repository.Save(new WebSession(
+            focusSessionId: "focus-domain-only",
+            browserFamily: "Chrome",
+            url: null,
+            domain: "chatgpt.com",
+            pageTitle: null,
+            range: TimeRange.FromUtc(
+                new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 4, 28, 0, 15, 0, TimeSpan.Zero)),
+            captureMethod: "UIAutomationAddressBar",
+            captureConfidence: "Medium",
+            isPrivateOrUnknown: false));
+
+        IReadOnlyList<WebSession> saved = repository.QueryByRange(
+            new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero));
+        Assert.Collection(
+            saved,
+            existing =>
+            {
+                Assert.Equal("focus-existing", existing.FocusSessionId);
+                Assert.Equal("https://github.com/", existing.Url);
+                Assert.Equal("github.com", existing.Domain);
+            },
+            domainOnly =>
+            {
+                Assert.Equal("focus-domain-only", domainOnly.FocusSessionId);
+                Assert.Null(domainOnly.Url);
+                Assert.Equal("chatgpt.com", domainOnly.Domain);
+            });
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))

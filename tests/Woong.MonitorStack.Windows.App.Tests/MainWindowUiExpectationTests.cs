@@ -1203,12 +1203,15 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Contains("Poll interval: 1 second", text);
                 Assert.Contains("Idle threshold: 5 minutes", text);
+                Assert.Contains("Runtime log", text);
                 Assert.Contains("Local SQLite DB", text);
+                TextBlock runtimeLogPath = FindByAutomationId<TextBlock>(panel, "RuntimeLogPathText");
                 TextBlock currentDatabasePath = FindByAutomationId<TextBlock>(panel, "CurrentDatabasePathText");
                 TextBlock databaseStatus = FindByAutomationId<TextBlock>(panel, "DatabaseStatusLabel");
                 Button createDatabase = FindByAutomationId<Button>(panel, "CreateLocalDatabaseButton");
                 Button loadDatabase = FindByAutomationId<Button>(panel, "LoadExistingLocalDatabaseButton");
                 Button deleteDatabase = FindByAutomationId<Button>(panel, "DeleteLocalDatabaseButton");
+                Assert.Equal("runtime log disabled", runtimeLogPath.Text);
                 Assert.Equal("No local database configured", currentDatabasePath.Text);
                 Assert.Equal("Local database ready.", databaseStatus.Text);
                 Assert.Equal("Create / switch DB", createDatabase.Content);

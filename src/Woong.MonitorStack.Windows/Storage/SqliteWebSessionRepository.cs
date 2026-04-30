@@ -45,6 +45,7 @@ public sealed class SqliteWebSessionRepository
         EnsureNullableColumn(connection, "capture_method", "TEXT NULL");
         EnsureNullableColumn(connection, "capture_confidence", "TEXT NULL");
         EnsureNullableColumn(connection, "is_private_or_unknown", "INTEGER NULL");
+        EnsureUrlAllowsNull(connection);
     }
 
     public void Save(WebSession session)
@@ -193,6 +194,95 @@ public sealed class SqliteWebSessionRepository
         }
 
         return false;
+    }
+
+    private static void EnsureUrlAllowsNull(SqliteConnection connection)
+    {
+        if (!IsColumnNotNull(connection, "url"))
+        {
+            return;
+        }
+
+        RebuildTableWithNullableUrl(connection);
+    }
+
+    private static bool IsColumnNotNull(SqliteConnection connection, string columnName)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "PRAGMA table_info(web_session);";
+
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return reader.GetInt64(3) == 1;
+            }
+        }
+
+        return false;
+    }
+
+    private static void RebuildTableWithNullableUrl(SqliteConnection connection)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            PRAGMA foreign_keys=OFF;
+
+            ALTER TABLE web_session RENAME TO web_session_legacy_rebuild;
+
+            CREATE TABLE web_session (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                focus_session_id TEXT NOT NULL,
+                browser_family TEXT NOT NULL,
+                url TEXT NULL,
+                domain TEXT NOT NULL,
+                page_title TEXT NULL,
+                started_at_utc TEXT NOT NULL,
+                ended_at_utc TEXT NOT NULL,
+                duration_ms INTEGER NOT NULL,
+                capture_method TEXT NULL,
+                capture_confidence TEXT NULL,
+                is_private_or_unknown INTEGER NULL
+            );
+
+            INSERT INTO web_session (
+                id,
+                focus_session_id,
+                browser_family,
+                url,
+                domain,
+                page_title,
+                started_at_utc,
+                ended_at_utc,
+                duration_ms,
+                capture_method,
+                capture_confidence,
+                is_private_or_unknown
+            )
+            SELECT
+                id,
+                focus_session_id,
+                browser_family,
+                url,
+                domain,
+                page_title,
+                started_at_utc,
+                ended_at_utc,
+                duration_ms,
+                capture_method,
+                capture_confidence,
+                is_private_or_unknown
+            FROM web_session_legacy_rebuild;
+
+            DROP TABLE web_session_legacy_rebuild;
+
+            CREATE INDEX IF NOT EXISTS ix_web_session_focus_session_id
+                ON web_session(focus_session_id);
+
+            PRAGMA foreign_keys=ON;
+            """;
+        _ = command.ExecuteNonQuery();
     }
 
     private static void AddParameters(SqliteCommand command, WebSession session)

@@ -21,6 +21,7 @@ public sealed class DashboardAutomationIdContractTests
             "StopTrackingButton",
             "RefreshButton",
             "SyncNowButton",
+            "RuntimeLogPathText",
             "CurrentDatabasePathText",
             "DatabaseStatusLabel",
             "CreateLocalDatabaseButton",

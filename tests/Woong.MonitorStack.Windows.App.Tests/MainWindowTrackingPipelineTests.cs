@@ -357,6 +357,40 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void ManualTickerTick_WhenTrackingPollThrows_KeepsWindowOpenAndPublishesRuntimeError()
+        => RunOnStaThread(() =>
+        {
+            var runtimeLogSink = new FakeRuntimeLogSink();
+            var viewModel = new DashboardViewModel(
+                new EmptyDashboardDataSource(),
+                new MutableClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero)),
+                new DashboardOptions("Asia/Seoul"),
+                new ThrowingPollTrackingCoordinator(),
+                runtimeLogSink: runtimeLogSink);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                window.Show();
+                DrainDispatcher();
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+
+                ticker.RaiseTick();
+                window.UpdateLayout();
+
+                Assert.True(window.IsVisible);
+                Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Contains(viewModel.LiveEvents, row => row.EventType == "Runtime error");
+                Assert.Single(runtimeLogSink.Exceptions);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void MainWindow_WhenLoadedStartsTickerAndClosedStopsTicker()
         => RunOnStaThread(() =>
         {
@@ -1134,6 +1168,43 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
 
         public BrowserActivitySnapshot? TryRead(ForegroundWindowSnapshot foregroundWindow)
             => Snapshot;
+    }
+
+    private sealed class FakeRuntimeLogSink : IDashboardRuntimeLogSink
+    {
+        public string LogPath { get; } = "D:\\logs\\windows-runtime.log";
+
+        public List<(string Operation, Exception Exception)> Exceptions { get; } = [];
+
+        public void WriteEvent(DashboardRuntimeLogEvent logEvent)
+        {
+        }
+
+        public void WriteException(string operation, Exception exception)
+            => Exceptions.Add((operation, exception));
+    }
+
+    private sealed class ThrowingPollTrackingCoordinator : IDashboardTrackingCoordinator
+    {
+        public DashboardTrackingSnapshot StartTracking()
+            => new(
+                AppName: "chrome.exe",
+                ProcessName: "chrome.exe",
+                WindowTitle: "GitHub - Chrome",
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "github.com",
+                BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive,
+                LastPollAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+
+        public DashboardTrackingSnapshot StopTracking()
+            => DashboardTrackingSnapshot.Empty;
+
+        public DashboardTrackingSnapshot PollOnce()
+            => throw new InvalidOperationException("SQLite write failed during browser domain switch.");
+
+        public DashboardSyncResult SyncNow(bool syncEnabled)
+            => new("Sync skipped. Enable sync to upload.");
     }
 
     private sealed class ManualTrackingTicker : ITrackingTicker

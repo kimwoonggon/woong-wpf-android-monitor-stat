@@ -12,6 +12,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardClock _clock;
     private readonly IDashboardTrackingCoordinator _trackingCoordinator;
     private readonly IDashboardDatabaseController _databaseController;
+    private readonly IDashboardRuntimeLogSink _runtimeLogSink;
     private readonly TimeZoneInfo _timeZone;
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
@@ -153,15 +154,18 @@ public sealed partial class DashboardViewModel : ObservableObject
         IDashboardClock clock,
         DashboardOptions options,
         IDashboardTrackingCoordinator? trackingCoordinator = null,
-        IDashboardDatabaseController? databaseController = null)
+        IDashboardDatabaseController? databaseController = null,
+        IDashboardRuntimeLogSink? runtimeLogSink = null)
     {
         _dataSource = dataSource;
         _clock = clock;
         _trackingCoordinator = trackingCoordinator ?? new NoopDashboardTrackingCoordinator();
         _databaseController = databaseController ?? new NullDashboardDatabaseController();
+        _runtimeLogSink = runtimeLogSink ?? new NullDashboardRuntimeLogSink();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
         Settings.CurrentDatabasePathText = _databaseController.CurrentDatabasePath;
+        Settings.RuntimeLogPathText = _runtimeLogSink.LogPath;
         Settings.CanClearLocalData = _databaseController.CanDeleteCurrentDatabase;
         Settings.PropertyChanged += OnSettingsPropertyChanged;
     }
@@ -240,6 +244,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanStartTracking))]
     private void StartTracking()
+        => RunDashboardOperation(nameof(StartTracking), StartTrackingCore);
+
+    private void StartTrackingCore()
     {
         _isTrackingRunning = true;
         TrackingStatusText = "Running";
@@ -256,6 +263,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanStopTracking))]
     private void StopTracking()
+        => RunDashboardOperation(nameof(StopTracking), StopTrackingCore);
+
+    private void StopTrackingCore()
     {
         _isTrackingRunning = false;
         TrackingStatusText = "Stopped";
@@ -272,6 +282,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanStopTracking))]
     private void PollTracking()
+        => RunDashboardOperation(nameof(PollTracking), PollTrackingCore);
+
+    private void PollTrackingCore()
     {
         DashboardTrackingSnapshot snapshot = _trackingCoordinator.PollOnce();
         UpdateCurrentActivity(snapshot);
@@ -285,6 +298,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     [RelayCommand]
     private void SyncNow()
+        => RunDashboardOperation(nameof(SyncNow), SyncNowCore);
+
+    private void SyncNowCore()
     {
         DashboardSyncResult syncResult = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled);
         LastSyncStatusText = syncResult.StatusText;
@@ -294,6 +310,36 @@ public sealed partial class DashboardViewModel : ObservableObject
         {
             AddRuntimeEvent("Sync skipped", CurrentAppNameText, CurrentBrowserDomainText, syncResult.StatusText);
         }
+    }
+
+    private void RunDashboardOperation(string operation, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception exception)
+        {
+            ReportRuntimeError(operation, exception);
+        }
+    }
+
+    private void ReportRuntimeError(string operation, Exception exception)
+    {
+        try
+        {
+            _runtimeLogSink.WriteException(operation, exception);
+        }
+        catch (Exception)
+        {
+        }
+
+        BrowserCaptureStatusText = "Runtime error logged";
+        AddRuntimeEvent(
+            "Runtime error",
+            CurrentAppNameText,
+            CurrentBrowserDomainText,
+            $"{operation} failed: {exception.Message}. See log: {_runtimeLogSink.LogPath}");
     }
 
     [RelayCommand(CanExecute = nameof(CanGoToPreviousDetailsPage))]
@@ -442,13 +488,29 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private void AddRuntimeEvent(string eventType, string? appName, string? domain, string message)
     {
+        DateTimeOffset occurredAtUtc = _clock.UtcNow;
+        string resolvedAppName = TextOrDefault(appName, "");
+        string resolvedDomain = TextOrDefault(domain, "");
+        try
+        {
+            _runtimeLogSink.WriteEvent(new DashboardRuntimeLogEvent(
+                occurredAtUtc,
+                eventType,
+                resolvedAppName,
+                resolvedDomain,
+                message));
+        }
+        catch (Exception)
+        {
+        }
+
         _runtimeLiveEvents.Insert(
             0,
             new DashboardEventLogRow(
                 eventType,
-                FormatLocalTime(_clock.UtcNow, _timeZone),
-                TextOrDefault(appName, ""),
-                TextOrDefault(domain, ""),
+                FormatLocalTime(occurredAtUtc, _timeZone),
+                resolvedAppName,
+                resolvedDomain,
                 message));
         PublishLiveEvents();
         UpdateVisibleDetailsRows();
