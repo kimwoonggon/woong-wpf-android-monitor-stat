@@ -113,6 +113,13 @@ try {
         generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
         appPath = $AppPath
         report = $reportPath
+        privacyBoundary = @(
+            "No keystrokes recorded",
+            "No screen contents captured as product telemetry",
+            "Screenshots are local developer artifacts for this app UI only",
+            "Server sync disabled unless explicitly allowed",
+            "Temp SQLite databases only"
+        )
         realStart = [ordered]@{
             databasePath = $dbPath
             realStartReport = $realStartReport
