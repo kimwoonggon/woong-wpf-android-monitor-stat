@@ -23,9 +23,9 @@ does not replace `total_todolist.md`.
 
 ## PRD-To-Checklist Gaps
 
-1. Server mixed-batch upload behavior remains a high-value independent queue,
-   but focus, web, and raw-event uploads are now covered. `server_check_todo.md`
-   still lists open location unknown-device and location mixed-batch slices.
+1. Server mixed-batch upload behavior is covered for focus, web, raw-event, and
+   location contexts. The highest-value remaining server queue is now HTTP
+   invalid input/date-range behavior and PostgreSQL-backed blocked checks.
 2. Server invalid input/date-range edges remain actionable. Open slices:
    malformed dates, missing query values, invalid timezone ids, `from > to`,
    and date-range local-midnight split allocation.
@@ -58,15 +58,20 @@ does not replace `total_todolist.md`.
   current in the active main-agent flow. Raw-event mixed-batch closes with
   focused server tests, full solution test/build, and coverage evidence before
   commit.
+- location upload local work: `server_check_todo.md` is current in the active
+  main-agent flow. Location unknown-device and mixed-batch coverage close with
+  focused server tests, full solution test/build, and coverage evidence before
+  commit.
 - `eb3cfdf Add QA coordination gap snapshot`: superseded by this refresh for
   server delegation order after web mixed-batch completion.
 
 ## Recommended Delegation
 
-- Server agent: next independent slice should be unregistered location upload
-  coverage under a relational provider.
-- Server agent after that: mixed-batch location upload with existing duplicate,
-  accepted new context, and intra-batch duplicate in one request.
+- Server agent: next independent slice should be HTTP-level invalid input
+  coverage for date-range statistics: malformed dates, missing query-string
+  values, invalid timezone ids, and `from > to`.
+- Server agent after that: date-range local-midnight allocation behavior if
+  range views must include only in-range session portions.
 - Android agent: only queue documentation/evidence refresh for the latest
   resource-measurement artifact or physical-device measurement when a device is
   available. Avoid Android feature work unless main agent explicitly opens it.

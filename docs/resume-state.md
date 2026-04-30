@@ -4377,3 +4377,18 @@ Verified:
 - Full `.NET` solution tests passed 421 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.8% (3851/4194), branch 71.0% (546/769).
+
+## 2026-04-30 Server Location Context Relational Upload Slice
+
+- Added relational coverage for a location-context upload batch containing an existing duplicate, a new accepted context, and an intra-batch duplicate of that new context.
+- Added relational API coverage for an unregistered location device returning per-item `Error` and zero persisted rows.
+- Fixed `LocationContextUploadService` to seed a request-local idempotency set with existing DB context ids and add newly accepted ids as it processes the batch.
+- This prevents relational unique-index failures and preserves the privacy-safe location contract: nullable coordinates are allowed, precise latitude/longitude remain opt-in metadata, and no background tracking behavior was added.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~UploadLocationContexts_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses|FullyQualifiedName~UploadLocationContexts_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows"` passed 2 tests.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~LocationContextUpload"` passed 4 tests.
+- Full `.NET` solution tests passed 423 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 92.0% (3865/4201), branch 71.1% (547/769).

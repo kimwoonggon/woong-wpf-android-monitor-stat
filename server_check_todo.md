@@ -88,10 +88,13 @@ Status legend:
 - [x] Relational unique index and device FK are enforced.
   Evidence: `RelationalMonitorDbContextTests.LocationContextClientContextUniqueIndex_IsEnforcedByRelationalProvider`,
   `RelationalMonitorDbContextTests.LocationContextForeignKey_IsEnforcedByRelationalProvider`.
-- [ ] Add relational API coverage for unregistered location device returning
-  per-item `Error` and zero persisted rows.
-- [ ] Add mixed-batch location upload coverage: duplicate, accepted, and
-  unknown-device/invalid item status behavior.
+- [x] Unregistered location device returns per-item `Error` and persists zero
+  rows under a relational provider.
+  Evidence: `LocationContextUploadApiTests.UploadLocationContexts_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows`.
+- [x] Mixed-batch location upload returns independent statuses for existing
+  duplicate, accepted new context, and intra-batch duplicate while persisting
+  only accepted rows.
+  Evidence: `LocationContextUploadApiTests.UploadLocationContexts_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses`.
 
 ## Idempotency
 

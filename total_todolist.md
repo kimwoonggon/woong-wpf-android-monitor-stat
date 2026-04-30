@@ -1759,3 +1759,17 @@ milestones below are finished.
 - [x] Coverage generated: line 91.8% (3851/4194), branch 71.0% (546/769).
 - [x] Concurrent WPF commits `ddfc617` and `024dec1` preserve domain-only browser metadata in fallback and current-focus UI.
 - [x] Concurrent Android commit `4fd5416` records location opt-in UI evidence.
+
+## Milestone 70: Server Location Context Relational Upload Coverage
+
+- [x] Add RED relational test for location upload batch containing an existing duplicate, one new context, and an intra-batch duplicate.
+- [x] Fix `LocationContextUploadService` to track existing and newly accepted `clientContextId` values within the request batch.
+- [x] Add relational API coverage for unregistered location device returning per-item `Error` and zero persisted rows.
+- [x] Verify focused location context upload tests.
+- [x] Update `server_check_todo.md` location context coverage.
+
+### Milestone 70 Verification Update
+
+- [x] Full `.NET` solution tests passed: 423 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 92.0% (3865/4201), branch 71.1% (547/769).

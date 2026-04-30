@@ -31,13 +31,20 @@ public sealed class LocationContextUploadService
                 .ToList());
         }
 
+        List<string> requestedContextIds = request.Contexts
+            .Select(item => item.ClientContextId)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        HashSet<string> seenContextIds = (await _dbContext.LocationContexts
+                .Where(context => context.DeviceId == deviceId &&
+                    requestedContextIds.Contains(context.ClientContextId))
+                .Select(context => context.ClientContextId)
+                .ToListAsync())
+            .ToHashSet(StringComparer.Ordinal);
+
         foreach (LocationContextUploadItem item in request.Contexts)
         {
-            bool exists = await _dbContext.LocationContexts.AnyAsync(context =>
-                context.DeviceId == deviceId &&
-                context.ClientContextId == item.ClientContextId);
-
-            if (exists)
+            if (!seenContextIds.Add(item.ClientContextId))
             {
                 results.Add(new UploadItemResult(item.ClientContextId, UploadItemStatus.Duplicate, ErrorMessage: null));
                 continue;
