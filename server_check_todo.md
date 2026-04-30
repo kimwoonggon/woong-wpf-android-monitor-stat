@@ -23,8 +23,9 @@ Status legend:
   Evidence: `DeviceRegistrationApiTests.RegisterDevice_PersistsDeviceRow`.
 - [x] Relational unique index rejects duplicate device identity rows.
   Evidence: `RelationalMonitorDbContextTests.DeviceUniqueIndex_IsEnforcedByRelationalProvider`.
-- [ ] Add relational API coverage for updating device name/timezone and
-  `LastSeenAtUtc` on duplicate registration.
+- [x] Duplicate registration updates device name/timezone and `LastSeenAtUtc`
+  without creating a second device row.
+  Evidence: `DeviceRegistrationApiTests.RegisterDevice_WhenDeviceKeyAlreadyExists_UpdatesNameTimezoneAndLastSeen`.
 
 ## Focus Session Upload
 

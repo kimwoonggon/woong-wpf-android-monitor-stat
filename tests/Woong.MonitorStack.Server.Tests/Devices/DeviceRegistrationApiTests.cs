@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
+using Woong.MonitorStack.Server.Devices;
 
 namespace Woong.MonitorStack.Server.Tests.Devices;
 
@@ -68,6 +69,49 @@ public sealed class DeviceRegistrationApiTests
         Assert.Equal("android-device-key", device.DeviceKey);
         Assert.Equal("Phone", device.DeviceName);
         Assert.Equal("Asia/Seoul", device.TimezoneId);
+    }
+
+    [Fact]
+    public async Task RegisterDevice_WhenDeviceKeyAlreadyExists_UpdatesNameTimezoneAndLastSeen()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        var firstRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Android,
+            deviceKey: "android-device-key",
+            deviceName: "Old Phone",
+            timezoneId: "UTC");
+        var secondRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Android,
+            deviceKey: "android-device-key",
+            deviceName: "New Phone",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/devices/register", firstRequest);
+        await Task.Delay(5);
+        HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/devices/register", secondRequest);
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+        DeviceRegistrationResponse firstBody = (await firstResponse.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+        DeviceRegistrationResponse secondBody = (await secondResponse.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+
+        Assert.Equal(firstBody.DeviceId, secondBody.DeviceId);
+        Assert.True(firstBody.IsNew);
+        Assert.False(secondBody.IsNew);
+        Assert.Equal("New Phone", secondBody.DeviceName);
+        Assert.Equal("Asia/Seoul", secondBody.TimezoneId);
+        Assert.True(secondBody.LastSeenAtUtc >= firstBody.LastSeenAtUtc);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        DeviceEntity device = Assert.Single(await dbContext.Devices.ToListAsync());
+        Assert.Equal(Guid.ParseExact(firstBody.DeviceId, "N"), device.Id);
+        Assert.Equal("New Phone", device.DeviceName);
+        Assert.Equal("Asia/Seoul", device.TimezoneId);
+        Assert.Equal(secondBody.LastSeenAtUtc, device.LastSeenAtUtc);
     }
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()

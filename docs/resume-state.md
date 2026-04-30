@@ -4295,7 +4295,7 @@ Verified:
 - `android\gradlew.bat -p android testDebugUnitTest --tests "com.woong.monitorstack.location.AndroidLastKnownLocationReaderTest" --no-daemon` passed.
 - `android\gradlew.bat -p android testDebugUnitTest --tests "com.woong.monitorstack.location.*" --no-daemon` passed.
 - `android\gradlew.bat -p android testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon` passed.
-- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-173746`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-174439`.
 
 ## 2026-04-30 QA Checklist/Triage Slice
 
@@ -4309,4 +4309,20 @@ Milestone 64-65 final verification update:
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
 - Android Gradle unit/build/androidTest build passed.
-- Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-173746`.
+- Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-174439`.
+
+## 2026-04-30 Server Device Duplicate Registration Coverage Slice
+
+- Added API regression coverage proving duplicate device registration updates `DeviceName`, `TimezoneId`, and `LastSeenAtUtc` while keeping a single device row and returning `isNew = false`.
+- Product code already had the update behavior; this slice closes the server checklist coverage gap.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~RegisterDevice_WhenDeviceKeyAlreadyExists_UpdatesNameTimezoneAndLastSeen"` passed.
+
+Milestone 66 final verification update:
+
+- Full `.NET` solution tests passed 417 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+- Android emulator UI snapshots refreshed at `artifacts/android-ui-snapshots/20260430-174439` and resource measurements at `artifacts/android-resource-measurements/20260430-174552`.

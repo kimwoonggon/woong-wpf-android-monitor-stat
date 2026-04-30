@@ -22,6 +22,12 @@ Latest completed emulator run:
 artifacts/android-check/20260430-155023/
 ```
 
+Latest Android UI screenshot evidence:
+
+```text
+artifacts/android-ui-snapshots/20260430-174439/
+```
+
 Each checked feature should have:
 
 - a `before-*.png` image showing the pre-check state or the expected test gate;
@@ -135,3 +141,4 @@ device TODO.
 - [x] Skip provider `SecurityException`/`IllegalArgumentException` without crashing.
 - [x] Preserve existing privacy gate: no snapshot unless location context opt-in and foreground permission are present.
 - [x] Production `LocationContextCollectionRunner.create` uses the Android reader instead of the no-op reader.
+- [x] Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260430-174439`.

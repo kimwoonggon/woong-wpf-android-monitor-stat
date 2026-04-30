@@ -1685,7 +1685,7 @@ milestones below are finished.
 - [x] Preserve existing privacy gates: location context opt-in, foreground permission, and precise coordinate opt-in remain required before coordinates are stored.
 - [x] Run focused location tests.
 - [x] Run Android Gradle unit/build/androidTest build.
-- [x] Regenerate Android emulator screenshots at `artifacts/android-ui-snapshots/20260430-173746`.
+- [x] Regenerate Android emulator screenshots at `artifacts/android-ui-snapshots/20260430-174439`.
 
 ## Milestone 65: QA Checklists And Coverage Triage
 
@@ -1700,4 +1700,18 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
 - [x] Android Gradle unit/build/androidTest build passed.
-- [x] Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-173746`.
+- [x] Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-174439`.
+
+## Milestone 66: Server Device Duplicate Registration Update Coverage
+
+- [x] Add API regression test proving duplicate `userId + platform + deviceKey` registration updates device name, timezone, and `LastSeenAtUtc`.
+- [x] Verify the duplicate registration keeps one persisted device row and returns `isNew = false`.
+- [x] Update `server_check_todo.md` device-registration coverage.
+- [x] Run focused server device registration test.
+
+### Milestone 66 Verification Update
+
+- [x] Full `.NET` solution tests passed: 417 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+- [x] Android emulator UI snapshots refreshed at `artifacts/android-ui-snapshots/20260430-174439` and resource measurements at `artifacts/android-resource-measurements/20260430-174552`.
