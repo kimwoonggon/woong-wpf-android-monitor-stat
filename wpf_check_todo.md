@@ -73,7 +73,7 @@ Each checked feature should have:
 | W37 | Responsive layout | UI snapshot/acceptance tests | 1920, 1366, 1024 screenshots and no clipped grids/tabs |
 | W38 | Reusable WPF components | architecture/XAML tests | DashboardView, HeaderStatusBar, ControlBar, CurrentFocusPanel, SummaryCardsPanel, ChartsPanel, DetailsTabsPanel, SettingsPanel |
 | W39 | Reusable controls/styles | architecture/XAML tests | StatusBadge, MetricCard, SectionCard, DetailRow, EmptyState, shared styles |
-| W40 | Coverage collection | coverage script | Coverlet/ReportGenerator output under `artifacts/coverage/` |
+| W40 | Coverage collection | coverage script plus `docs/coverage-gap-triage.md` | Coverlet/ReportGenerator output under `artifacts/coverage/` |
 | W41 | Privacy forbidden scopes absent | architecture/source guard tests | no keylogging, typed text, clipboard, page content, screenshots-as-telemetry |
 | W42 | UI screenshot privacy boundary | tool/docs tests | screenshots are of this app UI only, local developer artifacts |
 | W43 | Windows smoke tool | `tools/Woong.MonitorStack.Windows.Smoke` | real foreground metadata only |

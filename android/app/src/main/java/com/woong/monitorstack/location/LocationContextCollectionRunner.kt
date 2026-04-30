@@ -86,7 +86,7 @@ class LocationContextCollectionRunner(
                 provider = RuntimeLocationContextProvider(
                     locationSettings = SharedPreferencesAndroidLocationSettings(appContext),
                     permissionChecker = AndroidForegroundLocationPermissionChecker(appContext),
-                    locationReader = NoopRuntimeLocationReader
+                    locationReader = AndroidLastKnownLocationReader.create(appContext)
                 ),
                 snapshotDao = database.locationContextSnapshotDao(),
                 outbox = database.syncOutboxDao()

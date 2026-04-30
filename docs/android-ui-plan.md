@@ -214,8 +214,10 @@ and feature screenshots for each tab.
 - The existing WorkManager usage collection worker now invokes the local
   location-context collector with a device id and reports whether a local
   snapshot was captured. Tests use fake collectors and do not require a device;
-  the default runtime path still uses a no-op location reader until a
-  hardware-backed reader is implemented.
+  the default runtime path now uses `AndroidLastKnownLocationReader`, which
+  reads only Android framework last-known foreground location metadata after
+  the user has opted into location context and granted foreground location
+  permission. It does not request background location updates.
 - Server now exposes a dedicated `location_contexts` upload path and PostgreSQL
   table. The table keeps `latitude`, `longitude`, and `accuracyMeters`
   nullable, uses `deviceId + clientContextId` idempotency, and is separate from
@@ -308,6 +310,8 @@ enough:
 
 ## Not Implemented Yet
 
-- Hardware-backed runtime location reader.
+- Continuous or background hardware location tracking. The current runtime path
+  reads only last-known foreground location metadata after explicit opt-in and
+  foreground permission.
 - Future visual tightening from human/GPT review of the latest emulator
   screenshots.

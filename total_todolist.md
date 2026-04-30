@@ -1676,3 +1676,28 @@ milestones below are finished.
 - [x] Split focus and web durations into requested local-date segments during daily summary generation.
 - [x] Preserve idle exclusion from active totals and include web durations on the correct local date.
 - [x] Verify through full `.NET` test/build and coverage runs.
+
+## Milestone 64: Android Runtime Last-Known Location Reader
+
+- [x] Add RED tests for Android last-known GPS/network/passive location reading.
+- [x] Implement `AndroidLastKnownLocationReader` with provider failure handling and freshest-reading selection.
+- [x] Wire production `LocationContextCollectionRunner.create` to use the Android reader instead of `NoopRuntimeLocationReader`.
+- [x] Preserve existing privacy gates: location context opt-in, foreground permission, and precise coordinate opt-in remain required before coordinates are stored.
+- [x] Run focused location tests.
+- [x] Run Android Gradle unit/build/androidTest build.
+- [x] Regenerate Android emulator screenshots at `artifacts/android-ui-snapshots/20260430-173746`.
+
+## Milestone 65: QA Checklists And Coverage Triage
+
+- [x] Add `server_check_todo.md` mapping server API/idempotency/summary/provider validation status and gaps.
+- [x] Add `docs/coverage-gap-triage.md` separating intentional OS/bootstrap low coverage from actionable test gaps.
+- [x] Update WPF checklist to point at coverage triage.
+- [x] Note WPF check pointer package commit `4a89444` from the WPF agent.
+
+### Milestone 64-65 Verification Update
+
+- [x] Full `.NET` solution tests passed: 415 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+- [x] Android Gradle unit/build/androidTest build passed.
+- [x] Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-173746`.

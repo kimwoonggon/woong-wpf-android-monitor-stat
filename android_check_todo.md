@@ -127,3 +127,11 @@ device TODO.
 - [x] MainActivity reconciles UsageStats collection scheduling through `AndroidUsageCollectionScheduler`.
 - [x] Permission onboarding shows visible collection status text while permission is missing.
 - [x] Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260430-172700`.
+
+## Runtime Last-Known Location Reader 2026-04-30
+
+- [x] Add `AndroidLastKnownLocationReader` for framework last-known foreground location metadata.
+- [x] Read GPS/network/passive providers and choose the freshest available reading.
+- [x] Skip provider `SecurityException`/`IllegalArgumentException` without crashing.
+- [x] Preserve existing privacy gate: no snapshot unless location context opt-in and foreground permission are present.
+- [x] Production `LocationContextCollectionRunner.create` uses the Android reader instead of the no-op reader.

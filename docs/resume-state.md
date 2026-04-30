@@ -4281,3 +4281,32 @@ Verified:
 - Active totals continue to exclude idle segments; web totals preserve domain duration on the correct local date.
 
 Verified as part of the full `.NET` solution test/build/coverage runs above.
+
+## 2026-04-30 Android Runtime Last-Known Location Reader Slice
+
+- Added `AndroidLastKnownLocationReader` and tests for GPS/network/passive last-known location metadata.
+- The reader chooses the freshest last-known provider reading and skips provider `SecurityException`/`IllegalArgumentException` without crashing.
+- `LocationContextCollectionRunner.create` now wires this Android framework reader instead of `NoopRuntimeLocationReader`.
+- Privacy gates remain unchanged: no location snapshot without explicit location-context opt-in and foreground location permission; precise latitude/longitude still require separate precise opt-in and precise permission.
+- No background location updates, continuous GPS polling, screen capture, app-content inference, or hidden tracking were added.
+
+Verified:
+
+- `android\gradlew.bat -p android testDebugUnitTest --tests "com.woong.monitorstack.location.AndroidLastKnownLocationReaderTest" --no-daemon` passed.
+- `android\gradlew.bat -p android testDebugUnitTest --tests "com.woong.monitorstack.location.*" --no-daemon` passed.
+- `android\gradlew.bat -p android testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed with artifact `artifacts/android-ui-snapshots/20260430-173746`.
+
+## 2026-04-30 QA Checklist/Triage Slice
+
+- Added `server_check_todo.md` for server device/focus/web/raw/location/idempotency/daily-summary/provider validation status.
+- Added `docs/coverage-gap-triage.md` to explain intentional low/zero OS-bound coverage and prioritize future test gaps.
+- WPF agent committed `4a89444 Add WPF check pointer package`, adding `scripts/run-wpf-check-package.ps1` and a WPF test for pointer-only report/manifest generation.
+
+Milestone 64-65 final verification update:
+
+- Full `.NET` solution tests passed 415 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
+- Android Gradle unit/build/androidTest build passed.
+- Android UI screenshots passed at `artifacts/android-ui-snapshots/20260430-173746`.
