@@ -169,7 +169,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
         CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
-        CurrentBrowserDomainText = TextOrDefault(snapshot.CurrentBrowserDomain, BrowserDomainUnavailableText);
+        CurrentBrowserDomainText = FormatBrowserDomain(snapshot.CurrentBrowserDomain);
         BrowserCaptureStatusText = FormatBrowserCaptureStatus(snapshot.BrowserCaptureStatus);
         _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
         UpdateCurrentWindowTitleText();
@@ -611,6 +611,16 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private static string TextOrDefault(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static string FormatBrowserDomain(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return BrowserDomainUnavailableText;
+        }
+
+        return DomainNormalizer.ExtractRegistrableDomain(value);
+    }
 
     private static string FormatClockDuration(TimeSpan duration)
     {

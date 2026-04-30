@@ -445,6 +445,25 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void UpdateCurrentActivity_WhenBrowserDomainLooksLikeUrl_ShowsDomainOnly()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "Chrome",
+            ProcessName: "chrome.exe",
+            WindowTitle: null,
+            CurrentSessionDuration: TimeSpan.FromSeconds(5),
+            LastPersistedSession: null,
+            CurrentBrowserDomain: "https://github.com/org/private-repo?token=secret",
+            BrowserCaptureStatus: DashboardBrowserCaptureStatus.UiAutomationFallbackActive));
+
+        Assert.Equal("github.com", viewModel.CurrentBrowserDomainText);
+        Assert.DoesNotContain("private-repo", viewModel.CurrentBrowserDomainText, StringComparison.Ordinal);
+        Assert.DoesNotContain("token=secret", viewModel.CurrentBrowserDomainText, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenBrowserExtensionConnected_ShowsBrowserCaptureStatus()
     {
         DashboardViewModel viewModel = CreateViewModel();
