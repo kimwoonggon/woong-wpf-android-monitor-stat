@@ -1265,6 +1265,14 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Update WPF resume state after the Current Focus accessibility slice.
 
+## Milestone 35: WPF Header StatusBadge Accessibility
+
+- [x] Add a failing WPF App accessibility test requiring Header Tracking/Sync/Privacy badges to expose readable names matching their status text.
+- [x] Add minimal StatusBadge/Header XAML metadata so badge AutomationProperties.Name follows bound status text.
+- [x] Run focused WPF Header StatusBadge accessibility tests.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Update WPF resume state after the Header StatusBadge accessibility slice.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

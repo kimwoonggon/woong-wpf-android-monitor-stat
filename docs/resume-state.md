@@ -2,6 +2,21 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Header StatusBadge Accessibility Slice
+
+- Added RED WPF App accessibility coverage for Header Tracking, Sync, and
+  Privacy status badges so each badge exposes a readable
+  `AutomationProperties.Name` that matches its visible state text.
+- Updated reusable `StatusBadge` so the control-level accessible name follows
+  the bound `Text` value, including dynamic status text changes.
+- This is a WPF App-only accessibility slice. It does not change tracking,
+  persistence, sync upload behavior, Android, scripts, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~HeaderStatusBar_StatusBadgesExposeReadableNamesMatchingStateText" -maxcpucount:1 -v minimal` failed RED on empty `TrackingStatusBadge` automation name, then passed after the `StatusBadge` metadata update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 118 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 ## 2026-04-30 WPF Current Focus Runtime Accessibility Slice
 
 - Added RED WPF App accessibility coverage for Current Focus runtime values so
