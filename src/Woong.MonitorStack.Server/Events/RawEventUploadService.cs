@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
@@ -50,6 +51,15 @@ public sealed class RawEventUploadService
                 continue;
             }
 
+            if (ContainsForbiddenPayloadMetadata(item.PayloadJson))
+            {
+                results.Add(new UploadItemResult(
+                    item.ClientEventId,
+                    UploadItemStatus.Error,
+                    ErrorMessage: "Raw event payload contains forbidden user input or content metadata."));
+                continue;
+            }
+
             _dbContext.RawEvents.Add(new RawEventEntity
             {
                 DeviceId = deviceId,
@@ -65,4 +75,68 @@ public sealed class RawEventUploadService
 
         return new UploadBatchResult(results);
     }
+
+    private static bool ContainsForbiddenPayloadMetadata(string payloadJson)
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(payloadJson);
+
+            return ContainsForbiddenPayloadMetadata(document.RootElement);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool ContainsForbiddenPayloadMetadata(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (JsonProperty property in element.EnumerateObject())
+            {
+                if (ForbiddenPayloadPropertyNames.Contains(property.Name) ||
+                    ContainsForbiddenPayloadMetadata(property.Value))
+                {
+                    return true;
+                }
+            }
+        }
+
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                if (ContainsForbiddenPayloadMetadata(item))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static readonly HashSet<string> ForbiddenPayloadPropertyNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "clipboard",
+        "clipboardText",
+        "formInput",
+        "formText",
+        "key",
+        "keyText",
+        "keys",
+        "keystroke",
+        "keystrokes",
+        "message",
+        "messageBody",
+        "pageContent",
+        "password",
+        "screenContent",
+        "screenshot",
+        "textInput",
+        "touchCoordinates",
+        "typedText"
+    };
 }

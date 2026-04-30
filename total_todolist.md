@@ -1801,3 +1801,18 @@ milestones below are finished.
 - [x] Full `.NET` solution tests passed: 430 tests.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.7% (3908/4260), branch 71.5% (557/779).
+
+## Milestone 73: Server Raw Event Payload Privacy Guard
+
+- [x] Add RED relational test proving safe raw-event metadata can persist while forbidden user-input/content payload fields return per-item `Error`.
+- [x] Reject recursive forbidden raw-event payload property names such as `typedText`, `password`, `clipboardText`, `pageContent`, `screenshot`, and touch-coordinate fields.
+- [x] Preserve duplicate-first idempotency and safe metadata upload behavior.
+- [x] Update `server_check_todo.md` raw-event privacy guard coverage.
+
+### Milestone 73 Verification Update
+
+- [x] Full `.NET` solution tests passed: 431 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).
+- [x] Concurrent WPF commit `f6916e9` updates DB write time when a web session persists without a focus close.
+- [x] Concurrent Android commit `e127a52` records Room seeded-dashboard evidence.

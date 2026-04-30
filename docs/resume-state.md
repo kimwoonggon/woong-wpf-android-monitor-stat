@@ -4426,3 +4426,22 @@ Verified:
 - Full `.NET` solution tests passed 430 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3908/4260), branch 71.5% (557/779).
+
+## 2026-04-30 Server Raw Event Payload Privacy Guard Slice
+
+- Added relational coverage proving safe raw-event metadata can persist while a forbidden payload containing `typedText` returns per-item `Error` and is not stored.
+- Added a recursive server-side raw-event payload guard for forbidden property names associated with typed text, keylogging, passwords, form input, clipboard content, page/screen content, screenshots, and global touch coordinates.
+- Duplicate detection remains first so idempotent retries keep returning `Duplicate`; the privacy invariant is that newly uploaded forbidden payloads are never persisted.
+
+Concurrent agent breadcrumbs:
+
+- `f6916e9` updates WPF Current Focus `LastDbWriteTimeText` when a web session persists without a focus-session close.
+- `e127a52` records Android Room empty/seeded dashboard and seeded sessions evidence.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~UploadRawEvents_WhenPayloadContainsForbiddenUserInputMetadata_ReturnsErrorAndDoesNotPersistIt"` passed.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~RawEventUpload"` passed 4 tests.
+- Full `.NET` solution tests passed 431 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.5% (3957/4320), branch 71.5% (570/797).

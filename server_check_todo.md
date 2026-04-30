@@ -75,8 +75,9 @@ Status legend:
   duplicate, accepted new event, and intra-batch duplicate while persisting only
   accepted rows.
   Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses`.
-- [ ] Add raw-event payload privacy guard coverage if raw events become more
-  than metadata/debug diagnostics.
+- [x] Raw-event payload privacy guard rejects forbidden user-input/content
+  fields such as typed text while allowing safe metadata rows in the same batch.
+  Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenPayloadContainsForbiddenUserInputMetadata_ReturnsErrorAndDoesNotPersistIt`.
 
 ## Location Context Upload
 

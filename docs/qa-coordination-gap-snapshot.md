@@ -27,22 +27,25 @@ does not replace `total_todolist.md`.
    location contexts. HTTP invalid input/date-range behavior and date-range
    local-midnight split allocation are now covered in the active main-agent
    flow.
-2. Remaining server gaps are mostly externally blocked PostgreSQL/Testcontainers
-   checks plus optional raw-event privacy guard work if raw events expand beyond
-   metadata/debug diagnostics.
+2. Remaining server gaps are externally blocked PostgreSQL/Testcontainers
+   checks. Raw-event payload privacy guard work is now covered in the active
+   main-agent flow.
 3. PostgreSQL/Testcontainers validation remains externally blocked. Do not ask
    workers to close concurrency idempotency, migration application, or legacy
    web-session backfill verification without a real PostgreSQL fixture.
 4. Android physical-device resource measurement remains externally blocked.
    Emulator resource evidence is PASS, but PRD-grade physical-device evidence
    still needs an attached device.
-5. Android checklist has current UI screenshot evidence but does not yet call
-   out the latest resource-measurement artifact `20260430-174552`. Treat this
-   as a documentation breadcrumb gap, not a product/test failure.
+5. Android checklist has current UI/location/Usage Access evidence but does not
+   yet call out the latest resource-measurement artifact `20260430-174552`.
+   Treat this as a documentation breadcrumb gap, not a product/test failure.
 6. WPF checklist is aligned with the broad same-window browser, Chrome native,
    privacy, and acceptance artifacts. Commit `ddfc617` adds a narrower
-   origin-only UI Automation fallback behavior, but `docs/resume-state.md` does
-   not yet include a verification breadcrumb for that commit.
+   origin-only UI Automation fallback behavior and now has a resume-state
+   breadcrumb.
+7. WPF checklist still labels `artifacts/wpf-check/latest/` as a future
+   consolidated package in its evidence-folder/current-notes text, even though
+   `artifacts/wpf-check/latest/report.md` exists and reports PASS.
 
 ## Latest Commit Audit
 
@@ -72,31 +75,37 @@ does not replace `total_todolist.md`.
   local date range before commit.
 - `eb3cfdf Add QA coordination gap snapshot`: superseded by this refresh for
   server delegation order after web mixed-batch completion.
+- `0c08de6 Split range statistics across local midnight`: resume-state,
+  `server_check_todo.md`, and this QA snapshot are current. Date-range invalid
+  input and local-midnight partial allocation are closed with focused server
+  tests, full solution test/build, and coverage evidence.
+- raw-event payload privacy guard work: `server_check_todo.md` is current in
+  the active main-agent flow. Forbidden raw-event payload keys such as
+  `typedText` now return per-item `Error` and are not persisted before commit.
 
 ## Recommended Delegation
 
-- Server agent: next independent slice should be raw-event payload privacy guard
-  coverage only if raw events expand beyond metadata/debug diagnostics.
+- Server agent: no high-value non-blocked server checklist slice remains in the
+  current server checklist.
 - Server agent after that: PostgreSQL/Testcontainers items remain blocked until
   a real fixture is available.
 - Android agent: only queue documentation/evidence refresh for the latest
   resource-measurement artifact or physical-device measurement when a device is
   available. Avoid Android feature work unless main agent explicitly opens it.
-- WPF agent: safe queued task is docs/evidence review of WPF acceptance reports
-  or a resume-state verification note for `ddfc617`. Avoid Chrome acceptance
-  script/tests and browser-domain implementation while main integration is
-  active there.
+- WPF agent: safe queued task is checklist/docs hygiene for the existing
+  consolidated `artifacts/wpf-check/latest/` package and/or a resume-state
+  verification note for `ddfc617`. Avoid Chrome acceptance script/tests and
+  browser-domain implementation while main integration is active there.
 - Main integration: own cross-slice validation, `total_todolist.md`, final
   resume-state summary, and conflict resolution for server checklist edits
   already in progress.
 
 ## Conflict Watch
 
-- Current worktree audit after `6f6239a` shows active tracked edits in
-  `tests/Woong.MonitorStack.Server.Tests/Summaries/DateRangeStatisticsApiTests.cs`
-  and `src/Woong.MonitorStack.Server/Program.cs`, plus untracked visual/export
-  artifacts. Do not assign another worker to date-range summary tests until
-  those edits land; QA agents should still avoid `total_todolist.md`.
+- Current worktree audit after `0c08de6` shows active tracked edits in raw-event
+  tests/service and this QA snapshot, plus untracked visual/export artifacts.
+  Do not assign another worker to raw-event payload privacy until those edits
+  land; QA agents should still avoid `total_todolist.md`.
 - Android and WPF checklist edits are low-conflict but should be batched
   sparingly; prefer this QA snapshot for coordination notes.
 - Untracked visual/export artifacts are present and should not be removed by QA.

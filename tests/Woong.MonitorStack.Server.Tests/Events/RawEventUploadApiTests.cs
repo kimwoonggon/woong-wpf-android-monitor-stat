@@ -115,6 +115,42 @@ public sealed class RawEventUploadApiTests
         Assert.Equal(["existing-raw-event", "new-raw-event"], persisted.Select(rawEvent => rawEvent.ClientEventId));
     }
 
+    [Fact]
+    public async Task UploadRawEvents_WhenPayloadContainsForbiddenUserInputMetadata_ReturnsErrorAndDoesNotPersistIt()
+    {
+        using var factory = new RelationalServerFactory();
+        using HttpClient client = factory.CreateClient();
+        await factory.EnsureDatabaseCreatedAsync();
+        Guid deviceId = Guid.NewGuid();
+        await SeedDeviceAsync(factory, deviceId);
+        var request = new UploadRawEventsRequest(
+            deviceId.ToString("N"),
+            [
+                Raw("safe-metadata-event"),
+                new RawEventUploadItem(
+                    clientEventId: "forbidden-typed-text-event",
+                    eventType: "keyboard_debug",
+                    occurredAtUtc: new DateTimeOffset(2026, 4, 27, 15, 1, 0, TimeSpan.Zero),
+                    payloadJson: """{"processName":"Code.exe","typedText":"secret"}""")
+            ]);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        JsonElement[] items = json.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal("safe-metadata-event", items[0].GetProperty("clientId").GetString());
+        Assert.Equal((int)UploadItemStatus.Accepted, items[0].GetProperty("status").GetInt32());
+        Assert.Equal("forbidden-typed-text-event", items[1].GetProperty("clientId").GetString());
+        Assert.Equal((int)UploadItemStatus.Error, items[1].GetProperty("status").GetInt32());
+        Assert.Contains("forbidden", items[1].GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        RawEventEntity persisted = Assert.Single(await dbContext.RawEvents.ToListAsync());
+        Assert.Equal("safe-metadata-event", persisted.ClientEventId);
+    }
+
     private static async Task SeedDeviceAsync(WebApplicationFactory<Program> factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
