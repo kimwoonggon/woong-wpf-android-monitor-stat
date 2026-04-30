@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/focusSessionRowRoot"
+    android:layout_width="match_parent"
+    android:layout_height="82dp"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/sessionAppIconPlaceholder"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_rounded_icon_placeholder"
+        android:gravity="center"
+        android:text="A"
+        android:textColor="@color/wms_text_primary"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/sessionPackageText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:textColor="@color/wms_text_primary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
+        app:layout_constraintStart_toEndOf="@id/sessionAppIconPlaceholder"
+        app:layout_constraintTop_toTopOf="@id/sessionAppIconPlaceholder" />
+
+    <TextView
+        android:id="@+id/sessionTimeRangeText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/wms_text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
+        app:layout_constraintStart_toStartOf="@id/sessionPackageText"
+        app:layout_constraintTop_toBottomOf="@id/sessionPackageText" />
+
+    <TextView
+        android:id="@+id/sessionStateText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/wms_info"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/sessionDurationText"
+        app:layout_constraintStart_toStartOf="@id/sessionPackageText"
+        app:layout_constraintTop_toBottomOf="@id/sessionTimeRangeText" />
+
+    <TextView
+        android:id="@+id/sessionDurationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/wms_text_primary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/sessionPackageText" />
+</androidx.constraintlayout.widget.ConstraintLayout>

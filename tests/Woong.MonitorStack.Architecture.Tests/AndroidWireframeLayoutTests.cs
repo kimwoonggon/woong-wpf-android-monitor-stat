@@ -122,6 +122,38 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("@+id/dailySummaryTopCard", dailySummary);
     }
 
+    [Fact]
+    public void AndroidFocusSessionRowLayout_SeparatesPackageTimeDurationAndState()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string row = ReadAndroidLayout(repoRoot, "item_focus_session.xml");
+
+        Assert.Contains("@+id/sessionAppIconPlaceholder", row);
+        Assert.Contains("@+id/sessionPackageText", row);
+        Assert.Contains("@+id/sessionTimeRangeText", row);
+        Assert.Contains("@+id/sessionDurationText", row);
+        Assert.Contains("@+id/sessionStateText", row);
+    }
+
+    [Fact]
+    public void AndroidPrimaryActivityLayouts_AvoidSystemBarOverlap()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string[] layouts =
+        [
+            "activity_dashboard.xml",
+            "activity_sessions.xml",
+            "activity_settings.xml",
+            "activity_daily_summary.xml"
+        ];
+
+        foreach (string layout in layouts)
+        {
+            string xml = ReadAndroidLayout(repoRoot, layout);
+            Assert.Contains("android:fitsSystemWindows=\"true\"", xml);
+        }
+    }
+
     private static string ReadAndroidLayout(string repoRoot, string fileName)
     {
         return File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", fileName));

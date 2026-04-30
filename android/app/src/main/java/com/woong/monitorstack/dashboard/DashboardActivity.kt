@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +17,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivityDashboardBinding
+import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 
 class DashboardActivity : AppCompatActivity() {
@@ -149,10 +150,13 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
-            val textView = TextView(parent.context)
-            textView.setPadding(0, 12, 0, 12)
+            val binding = ItemFocusSessionBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
 
-            return SessionViewHolder(textView)
+            return SessionViewHolder(binding)
         }
 
         override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
@@ -163,10 +167,17 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private class SessionViewHolder(
-        private val textView: TextView
-    ) : RecyclerView.ViewHolder(textView) {
+        private val binding: ItemFocusSessionBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(row: DashboardSessionRow) {
-            textView.text = "${row.startedAtLocalText}  ${row.packageName}  ${row.durationText}"
+            binding.sessionAppIconPlaceholder.text = row.packageName.firstOrNull()
+                ?.uppercaseChar()
+                ?.toString()
+                ?: "A"
+            binding.sessionPackageText.text = row.packageName
+            binding.sessionTimeRangeText.text = row.startedAtLocalText
+            binding.sessionDurationText.text = row.durationText
+            binding.sessionStateText.text = "Active"
         }
     }
 }

@@ -219,9 +219,14 @@ alignment.
 - Android screenshot automation now captures numbered feature screenshots for
   dashboard overview, summary/location, charts, recent sessions, settings
   privacy/sync, settings location permission, sessions list, and daily summary.
+- Primary Android Activity layouts now opt into system-window fitting so content
+  does not render underneath the status bar.
+- Sessions and Dashboard recent-session lists now use a structured
+  `item_focus_session` row with package, local time range, active/idle state,
+  and duration.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
 - FragmentContainerView/BottomNavigationView shell refactor.
-- Reusable Material row/card layouts for summary cards and session rows.
+- Reusable Material card layout for summary metric tiles.

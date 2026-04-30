@@ -4,7 +4,8 @@
     android:id="@+id/dashboardRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/wms_background">
+    android:background="@color/wms_background"
+    android:fitsSystemWindows="true">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/dashboardScroll"

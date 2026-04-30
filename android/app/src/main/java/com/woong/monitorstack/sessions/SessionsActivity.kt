@@ -3,12 +3,13 @@ package com.woong.monitorstack.sessions
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivitySessionsBinding
+import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 
 class SessionsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySessionsBinding
@@ -50,7 +51,13 @@ class SessionsActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
-            return SessionViewHolder(TextView(parent.context))
+            val binding = ItemFocusSessionBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+
+            return SessionViewHolder(binding)
         }
 
         override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
@@ -61,10 +68,17 @@ class SessionsActivity : AppCompatActivity() {
     }
 
     private class SessionViewHolder(
-        private val textView: TextView
-    ) : RecyclerView.ViewHolder(textView) {
+        private val binding: ItemFocusSessionBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(row: SessionRow) {
-            textView.text = "${row.packageName}\n${row.durationText}"
+            binding.sessionAppIconPlaceholder.text = row.packageName.firstOrNull()
+                ?.uppercaseChar()
+                ?.toString()
+                ?: "A"
+            binding.sessionPackageText.text = row.packageName
+            binding.sessionTimeRangeText.text = row.timeRangeText
+            binding.sessionDurationText.text = row.durationText
+            binding.sessionStateText.text = row.stateText
         }
     }
 }

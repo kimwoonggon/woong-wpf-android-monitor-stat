@@ -2,6 +2,9 @@ package com.woong.monitorstack.sessions
 
 import com.woong.monitorstack.data.local.FocusSessionDao
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class RoomSessionsRepository(
     private val focusSessionDao: FocusSessionDao
@@ -14,7 +17,9 @@ class RoomSessionsRepository(
     private fun FocusSessionEntity.toSessionRow(): SessionRow {
         return SessionRow(
             packageName = packageName,
-            durationText = formatDuration(durationMs)
+            durationText = formatDuration(durationMs),
+            timeRangeText = formatTimeRange(this),
+            stateText = if (isIdle) "Idle" else "Active"
         )
     }
 
@@ -32,10 +37,22 @@ class RoomSessionsRepository(
 
     companion object {
         private const val DefaultLimit = 50
+        private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    }
+
+    private fun formatTimeRange(entity: FocusSessionEntity): String {
+        val zoneId = runCatching { ZoneId.of(entity.timezoneId) }
+            .getOrDefault(ZoneId.systemDefault())
+        val start = TimeFormatter.format(Instant.ofEpochMilli(entity.startedAtUtcMillis).atZone(zoneId))
+        val end = TimeFormatter.format(Instant.ofEpochMilli(entity.endedAtUtcMillis).atZone(zoneId))
+
+        return "$start - $end"
     }
 }
 
 data class SessionRow(
     val packageName: String,
-    val durationText: String
+    val durationText: String,
+    val timeRangeText: String,
+    val stateText: String
 )

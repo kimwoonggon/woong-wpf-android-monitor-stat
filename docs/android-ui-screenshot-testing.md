@@ -103,11 +103,15 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-110459`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-112341`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
   captured screenshots.
+- Dashboard, Sessions, Settings, and Daily Summary now avoid status-bar overlap
+  through `fitsSystemWindows`, which is visible in the latest screenshots.
+- Sessions rows now use a structured local row layout with package, local time
+  range, duration, and active/idle state instead of plain debug text.
 
 Future connected-device improvements:
 
@@ -123,9 +127,6 @@ Future connected-device improvements:
 - Dashboard summary tiles still use simple local card blocks and should be
   upgraded to reusable MaterialCard-style item rows in a follow-up polish
   slice.
-- Session list rows are still plain text rows even though the screen itself is
-  now card-based; a follow-up slice should adopt `item_focus_session` style
-  rows with app/package/time/duration hierarchy.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

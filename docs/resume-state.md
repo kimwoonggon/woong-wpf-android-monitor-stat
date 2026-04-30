@@ -2,6 +2,24 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Android Session Row And System Bar Polish Slice
+
+- Added RED Android repository coverage requiring session rows to expose local time range and active/idle state in addition to package and duration.
+- Added RED architecture coverage requiring a reusable `item_focus_session.xml` row and requiring primary Activity layouts to avoid status-bar overlap through `fitsSystemWindows`.
+- Added `item_focus_session.xml` and wired both `SessionsActivity` and Dashboard recent sessions to the structured row layout.
+- Updated `RoomSessionsRepository` so `SessionRow` includes `timeRangeText` and `stateText` based on persisted Room session fields and timezone.
+- Latest connected-emulator screenshot artifact: `artifacts/android-ui-snapshots/20260430-112341`; the title no longer overlaps the status bar and Sessions rows show package, time range, duration, and state.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFocusSessionRowLayout|FullyQualifiedName~AndroidPrimaryActivityLayouts_AvoidSystemBarOverlap" -maxcpucount:1 -v minimal` passed.
+- `.\gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sessions.RoomSessionsRepositoryTest" --no-daemon --stacktrace` passed after RED compile failure and implementation.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on `emulator-5554` and generated the latest numbered screenshots.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 371 `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
+
 ## 2026-04-30 Android Wireframe XML Alignment Slice
 
 - Added RED architecture tests proving Android Dashboard, Settings, Sessions, and Daily Summary layouts follow the wireframe card/chip/scroll structure and that period buttons use readable mixed-case content-width styling.

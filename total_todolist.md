@@ -664,8 +664,10 @@ milestones below are finished.
 - [x] Capture connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-110459`.
 - [x] Verify Android wireframe XML alignment with focused architecture tests, full `.NET` tests (368), full `.NET` build, Android `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, connected-emulator screenshot capture, and coverage generation at 91.7% line coverage.
 - [x] Document remaining UI polish gaps: reusable rounded summary cards and structured session row items.
+- [x] Fix Android primary Activity layouts so Dashboard, Sessions, Settings, and Daily Summary avoid status-bar overlap.
+- [x] Verify session row/system-bar polish with focused architecture tests, focused RoomSessionsRepository test, Android `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-112341`, full `.NET` tests (371), full `.NET` build, and coverage generation at 91.7% line coverage.
 - [ ] Follow-up: convert Android summary tiles to reusable rounded Material card/item components.
-- [ ] Follow-up: convert Android sessions RecyclerView rows to structured app/package/time/duration rows.
+- [x] Follow-up: convert Android sessions RecyclerView rows to structured app/package/time/duration rows.
 - [ ] Follow-up: decide separately whether to migrate Activity navigation to a FragmentContainerView + BottomNavigationView shell.
 
 ## Milestone 28: Privacy And Retention Hardening
