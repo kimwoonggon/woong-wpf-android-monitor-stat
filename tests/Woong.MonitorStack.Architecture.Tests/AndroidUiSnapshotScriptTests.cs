@@ -61,7 +61,8 @@ public sealed class AndroidUiSnapshotScriptTests
             "06-settings-location-permission.png",
             "07-sessions-list.png",
             "08-daily-summary.png",
-            "09-main-shell.png"
+            "09-main-shell.png",
+            "10-main-shell-sessions.png"
         ];
 
         foreach (string screen in expectedFeatureScreens)
@@ -185,7 +186,8 @@ exit /b 0
                 "06-settings-location-permission.png",
                 "07-sessions-list.png",
                 "08-daily-summary.png",
-                "09-main-shell.png"
+                "09-main-shell.png",
+                "10-main-shell-sessions.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -203,6 +205,7 @@ exit /b 0
             Assert.Contains("01-dashboard-overview.png", manifestText);
             Assert.Contains("08-daily-summary.png", manifestText);
             Assert.Contains("09-main-shell.png", manifestText);
+            Assert.Contains("10-main-shell-sessions.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
@@ -214,6 +217,7 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/01-dashboard-overview.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/08-daily-summary.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/09-main-shell.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/10-main-shell-sessions.png", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }

@@ -1,6 +1,29 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Sessions Fragment Room Wiring Slice
+
+- Added RED architecture coverage requiring `SessionsFragment` to use the
+  local Room-facing `RoomSessionsRepository`, expose an empty state, and submit
+  rows to a RecyclerView.
+- Updated `SessionsFragment` so the launcher shell Sessions tab reads persisted
+  Room focus sessions through `MonitorDatabase.getInstance(...).focusSessionDao()`.
+- Added `emptySessionsText` to `fragment_sessions.xml` for a safe no-data
+  state.
+- Extended Android screenshot automation and script evidence with
+  `10-main-shell-sessions.png`, captured after selecting the Sessions bottom
+  navigation item.
+- Updated Android UI docs to record that the user-provided XML wireframe
+  skeleton is the target shape, not merely a loose reference. Current shell
+  gaps remain: toolbar/header sizing, bottom-navigation readability, app-label
+  display, Report fragment wiring, and Settings fragment wiring.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidSessionsFragment_UsesRoomRepositoryAndEmptyState" -maxcpucount:1 -v minimal` failed RED first, then passed after implementation.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidUiSnapshotScript_DocumentsFeatureByFeatureScreenshots|FullyQualifiedName~AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens" -maxcpucount:1 -v minimal` failed RED first, then passed after adding `10-main-shell-sessions.png`.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-121642`.
 ## 2026-04-30 WPF Minimum Size Reachability Evidence Slice
 
 - Added RED WPF App acceptance-tool coverage requiring grouped minimum-size reachability evidence in both `report.md` and `manifest.json`.

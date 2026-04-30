@@ -42,6 +42,10 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "09-main-shell.png")
         )
+        captureMainShellSessions(
+            device = device,
+            output = File(outputDir, "10-main-shell-sessions.png")
+        )
         captureDashboardFeatureScreens(
             device = device,
             outputDir = outputDir
@@ -120,6 +124,21 @@ class SnapshotCaptureTest {
             waitForScreen(device)
             captureScreen(device, File(outputDir, "05-settings-privacy-sync.png"))
             captureScreen(device, File(outputDir, "06-settings-location-permission.png"))
+        }
+    }
+
+    private fun captureMainShellSessions(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                ).selectedItemId = R.id.navSessions
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
         }
     }
 

@@ -151,6 +151,13 @@ the Android XML wireframe skeleton. Existing Activity screens remain in place
 as stable Room-backed runtime surfaces while the fragment shell is brought up
 screen by screen.
 
+The user-provided XML wireframe skeleton is the target shape for the fragment
+shell, not just a loose reference. A fragment shell screen is not complete until
+it is both Room-backed and visually usable: compact toolbar/header, reachable
+bottom navigation, card-based dashboard sections, period filters, recent
+sessions, report/settings flows, optional latitude/longitude location context,
+and feature screenshots for each tab.
+
 - Shared `wms_*` color tokens.
 - Shared `WmsCard`, status chip, section title, key/value, and period button
   styles.
@@ -234,9 +241,32 @@ screen by screen.
 - `DashboardFragment` now loads `RoomDashboardRepository` through
   `DashboardViewModel`, removes hardcoded demo runtime data, and renders seeded
   local Room totals/current-focus copy in the launcher shell screenshot.
+- `SessionsFragment` now reads persisted Room focus sessions through
+  `RoomSessionsRepository`; screenshot automation captures
+  `10-main-shell-sessions.png` after selecting the Sessions bottom-navigation
+  item.
+
+## Current Fragment Shell Gaps
+
+These are intentionally tracked as incomplete because the latest screenshot
+evidence still does not match the user-provided XML wireframe skeleton closely
+enough:
+
+- The launcher toolbar/header is too large and must be normalized to the
+  compact MaterialToolbar shell from the XML skeleton.
+- Bottom navigation is present, but labels/icons are not comfortably readable
+  enough and must stay above gesture/system navigation.
+- Dashboard fragments need the same polished card hierarchy as the existing
+  Activity dashboard, including location context when enabled.
+- Sessions rows are Room-backed, but they still show package names as the
+  primary label; a user-facing app label should be preferred when available.
+- Report and Settings fragments still need to be wired to runtime repositories
+  instead of remaining skeleton-only views.
+- Screenshot automation should keep adding one feature screenshot per shell tab
+  as each fragment becomes runtime-backed.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- Wiring the new Sessions, Report, and Settings fragments to the same runtime
+- Wiring the new Report and Settings fragments to the same runtime
   behavior as the existing Activity screens.

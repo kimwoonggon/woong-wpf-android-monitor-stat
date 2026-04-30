@@ -327,6 +327,31 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("MonitorDatabase.getInstance", fragment);
     }
 
+    [Fact]
+    public void AndroidSessionsFragment_UsesRoomRepositoryAndEmptyState()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layout = ReadAndroidLayout(repoRoot, "fragment_sessions.xml");
+        string fragment = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "sessions",
+            "SessionsFragment.kt"));
+
+        Assert.Contains("@+id/sessionsRecyclerView", layout);
+        Assert.Contains("@+id/emptySessionsText", layout);
+        Assert.Contains("RoomSessionsRepository", fragment);
+        Assert.Contains("MonitorDatabase.getInstance", fragment);
+        Assert.Contains("submitRows", fragment);
+    }
+
     private static string ReadAndroidLayout(string repoRoot, string fileName)
     {
         return File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", fileName));

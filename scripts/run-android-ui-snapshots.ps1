@@ -28,6 +28,7 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 $expectedScreens = @("dashboard", "settings", "sessions", "daily summary")
 $featureScreens = @(
     "main shell",
+    "main shell sessions",
     "dashboard overview",
     "dashboard summary and location",
     "dashboard charts",
@@ -109,6 +110,11 @@ $screenTargets = @(
     [ordered]@{
         Name = "main shell"
         FileName = "09-main-shell.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "main shell sessions"
+        FileName = "10-main-shell-sessions.png"
         Capture = "SnapshotCaptureTest"
     }
 )

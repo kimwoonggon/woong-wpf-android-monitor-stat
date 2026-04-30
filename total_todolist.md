@@ -1412,6 +1412,21 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Run WPF UI acceptance script and confirm grouped minimum-size evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the minimum-size reachability evidence slice.
+## Milestone 45: Android Fragment Shell Runtime And Wireframe Correction
+
+- [x] Add a failing architecture test requiring `SessionsFragment` to use the Room-backed sessions repository and expose a readable empty state.
+- [x] Wire `SessionsFragment` to `RoomSessionsRepository` and `MonitorDatabase` instead of leaving it as a blank skeleton.
+- [x] Add `10-main-shell-sessions.png` to Android screenshot automation and connected-device artifact pulling.
+- [x] Capture emulator evidence at `artifacts/android-ui-snapshots/20260430-121642`.
+- [x] Document that the user-provided XML wireframe skeleton is the target shape for the Android fragment shell.
+- [x] Verify Android Sessions fragment slice with Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests, full `.NET` build, and coverage generation.
+- [ ] Normalize the launcher toolbar/header so it matches the compact MaterialToolbar skeleton.
+- [ ] Fix bottom-navigation readability so icons and labels stay visible above system/gesture navigation.
+- [ ] Add fragment Dashboard location-context card parity with the Activity dashboard, including latitude/longitude only after explicit opt-in.
+- [ ] Prefer user-facing app labels over package names in fragment Sessions rows when labels are available.
+- [ ] Wire `ReportFragment` to runtime summary repository/client behavior.
+- [ ] Wire `SettingsFragment` to runtime privacy/sync/location settings behavior.
+- [ ] Add feature screenshots for each newly runtime-backed shell tab.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

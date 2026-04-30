@@ -90,7 +90,8 @@ Current behavior:
   `01-dashboard-overview.png`, `02-dashboard-summary-location.png`,
   `03-dashboard-charts.png`, `04-dashboard-recent-sessions.png`,
   `05-settings-privacy-sync.png`, `06-settings-location-permission.png`,
-  `07-sessions-list.png`, `08-daily-summary.png`, and `09-main-shell.png`.
+  `07-sessions-list.png`, `08-daily-summary.png`, `09-main-shell.png`, and
+  `10-main-shell-sessions.png`.
 - The instrumentation test captures local PNG screenshots into the app's
   external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
@@ -104,7 +105,7 @@ Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-120317`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-121642`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -121,6 +122,9 @@ Latest emulator evidence:
   `DashboardViewModel`/`RoomDashboardRepository`, so `09-main-shell.png` shows
   the seeded `com.android.chrome` current focus and non-zero Active/Screen/Idle
   totals.
+- `10-main-shell-sessions.png` captures the real launcher shell after selecting
+  Sessions; the list is loaded from seeded Room focus sessions through
+  `SessionsFragment` and `RoomSessionsRepository`.
 
 Future connected-device improvements:
 
@@ -135,6 +139,9 @@ Future connected-device improvements:
 - Emulator-backed screenshot evidence is complete for the current environment.
 - Sessions, Report, and Settings fragments still need to be wired to the same
   runtime behavior as the existing Activity screens.
+- The fragment shell still needs visual tightening against the user-provided
+  XML skeleton: compact toolbar/header, comfortable bottom navigation labels,
+  and more polished card spacing.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is
