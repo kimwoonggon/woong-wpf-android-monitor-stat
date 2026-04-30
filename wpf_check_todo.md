@@ -195,3 +195,13 @@ Key PNGs:
 - `artifacts/wpf-check/latest/05-after-sync.png`
 - `artifacts/wpf-check/latest/06-settings.png`
 - `artifacts/wpf-check/latest/app-sessions-window-titles-visible.png`
+
+## WPF Same-Window Browser Navigation Regression Tests 2026-04-30
+
+- [x] Add coordinator regression test for same Chrome HWND/PID navigation: youtube.com -> github.com -> chatgpt.com.
+- [x] Add MainWindow vertical regression test for two same-window browser domain changes before Stop.
+- [x] Verify prior domains are persisted as SQLite WebSessions while the Chrome FocusSession remains open.
+- [x] Verify Web Sessions grid and Web Focus summary refresh from SQLite before Stop.
+- [x] Verify domain-only privacy: URL path/query data is not stored in SQLite or outbox payloads.
+- [x] Verify full solution tests, build, coverage, and WPF UI acceptance.
+- [x] Latest WPF acceptance artifact: `artifacts/wpf-ui-acceptance/20260430-165524`.

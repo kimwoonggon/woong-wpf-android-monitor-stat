@@ -1599,3 +1599,14 @@ milestones below are finished.
 - [x] Regenerate local WPF check package at `artifacts/wpf-check/latest/`.
 - [x] Run full solution test/build, WPF UI acceptance, and coverage.
 - [x] Current coverage: line 91.9% (3774/4104), branch 70.8% (536/757).
+
+## Milestone 56: WPF Same-Window Browser Navigation Regression Tests
+
+- [x] Audit post-acceptance WPF/browser coverage and identify repeated same-window Chrome domain changes as the next regression gap.
+- [x] Add coordinator behavior coverage for `youtube.com -> github.com -> chatgpt.com` in one Chrome HWND/PID.
+- [x] Add MainWindow vertical behavior coverage proving current domain, SQLite WebSessions, outbox rows, Web Focus summary, and Web Sessions grid update before Stop.
+- [x] Confirm domain-only storage redacts full URL path/query values from SQLite and outbox payloads.
+- [x] Run focused WPF App tests.
+- [x] Run full solution tests and solution build.
+- [x] Run coverage generation and WPF UI acceptance.
+- [x] Update WPF resume/checklist docs for the regression slice.

@@ -592,6 +592,114 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         });
 
     [Fact]
+    public void PollTick_WhenSameChromeWindowDomainChangesTwice_ShowsCurrentDomainAndPriorWebRows()
+        => RunOnStaThread(() =>
+        {
+            var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            var clock = new MutableClock(startedAtUtc);
+            var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+                hwnd: 200,
+                processId: 20,
+                processName: "chrome.exe",
+                executablePath: "C:\\Apps\\chrome.exe",
+                windowTitle: "YouTube - Chrome"));
+            var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+                startedAtUtc,
+                "https://youtube.com/watch?v=private",
+                "youtube.com",
+                "YouTube"));
+            SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+            SqliteWebSessionRepository webRepository = CreateWebRepository();
+            SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+            var coordinator = new WindowsTrackingDashboardCoordinator(
+                () => new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+                focusRepository,
+                webRepository,
+                outboxRepository,
+                clock,
+                browserReader);
+            var viewModel = new DashboardViewModel(
+                new SqliteDashboardDataSource(focusRepository, webRepository),
+                clock,
+                new DashboardOptions("Asia/Seoul"),
+                coordinator);
+            var ticker = new ManualTrackingTicker();
+            var window = new MainWindow(viewModel, ticker);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                InvokeButton(FindByAutomationId<Button>(window, "StartTrackingButton"));
+
+                clock.UtcNow = startedAtUtc.AddMinutes(2);
+                browserReader.Snapshot = CreateBrowserSnapshot(
+                    clock.UtcNow,
+                    "https://github.com/org/repo?token=secret",
+                    "github.com",
+                    "Repository");
+                ticker.RaiseTick();
+                window.UpdateLayout();
+
+                clock.UtcNow = startedAtUtc.AddMinutes(5);
+                browserReader.Snapshot = CreateBrowserSnapshot(
+                    clock.UtcNow,
+                    "https://chatgpt.com/codex",
+                    "chatgpt.com",
+                    "ChatGPT");
+                ticker.RaiseTick();
+                window.UpdateLayout();
+
+                string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
+                IReadOnlyList<WebSession> saved = webRepository.QueryByFocusSessionId(chromeFocusSessionId);
+                Assert.Collection(
+                    saved,
+                    youtube =>
+                    {
+                        Assert.Equal("youtube.com", youtube.Domain);
+                        Assert.Null(youtube.Url);
+                        Assert.Equal(120_000, youtube.DurationMs);
+                    },
+                    github =>
+                    {
+                        Assert.Equal("github.com", github.Domain);
+                        Assert.Null(github.Url);
+                        Assert.Equal(180_000, github.DurationMs);
+                    });
+                Assert.Empty(focusRepository.QueryByRange(startedAtUtc.AddMinutes(-1), startedAtUtc.AddMinutes(6)));
+                Assert.Equal(2, outboxRepository.QueryAll().Count);
+                Assert.All(outboxRepository.QueryAll(), item =>
+                {
+                    Assert.Equal("web_session", item.AggregateType);
+                    Assert.DoesNotContain("watch?v=", item.PayloadJson, StringComparison.Ordinal);
+                    Assert.DoesNotContain("token=secret", item.PayloadJson, StringComparison.Ordinal);
+                });
+
+                Assert.Equal("Running", FindByAutomationId<TextBlock>(window, "TrackingStatusText").Text);
+                Assert.Equal("chatgpt.com", FindByAutomationId<TextBlock>(window, "CurrentBrowserDomainText").Text);
+                Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "youtube.com" && row.Duration == "2m");
+                Assert.Contains(viewModel.RecentWebSessions, row => row.Domain == "github.com" && row.Duration == "3m");
+                Assert.Contains(viewModel.SummaryCards, card => card.Label == "Web Focus" && card.Value == "5m");
+                IReadOnlyList<DashboardWebSessionRow> webRows = FindByAutomationId<DataGrid>(
+                        window,
+                        "RecentWebSessionsList")
+                    .ItemsSource
+                    .Cast<DashboardWebSessionRow>()
+                    .ToArray();
+                Assert.Contains(webRows, row => row.Domain == "youtube.com" && row.Duration == "2m");
+                Assert.Contains(webRows, row => row.Domain == "github.com" && row.Duration == "3m");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void StopButton_WhenBrowserSessionIsOpen_PersistsWebSessionAndRefreshesDashboard()
         => RunOnStaThread(() =>
         {

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
@@ -168,6 +169,84 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         Assert.Equal("github.com", payload.Domain);
         Assert.Null(payload.Url);
         Assert.Equal(300_000, payload.DurationMs);
+    }
+
+    [Fact]
+    public void PollOnce_WhenSameChromeWindowVisitsYoutubeGithubChatGpt_PersistsPriorDomainsOnly()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "YouTube - Chrome"));
+        var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+            capturedAtUtc: startedAtUtc,
+            domain: "youtube.com",
+            url: "https://youtube.com/watch?v=private"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteWebSessionRepository webRepository = CreateWebSessionRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            webRepository,
+            outboxRepository,
+            clock,
+            browserReader);
+
+        coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(2);
+        browserReader.Snapshot = CreateBrowserSnapshot(
+            capturedAtUtc: clock.UtcNow,
+            domain: "github.com",
+            url: "https://github.com/org/repo?token=secret");
+        var githubSnapshot = coordinator.PollOnce();
+        clock.UtcNow = startedAtUtc.AddMinutes(5);
+        browserReader.Snapshot = CreateBrowserSnapshot(
+            capturedAtUtc: clock.UtcNow,
+            domain: "chatgpt.com",
+            url: "https://chatgpt.com/codex");
+
+        var chatGptSnapshot = coordinator.PollOnce();
+
+        string chromeFocusSessionId = $"{foregroundReader.ForegroundWindow.ProcessId}:{foregroundReader.ForegroundWindow.Hwnd}:{startedAtUtc.ToUnixTimeMilliseconds()}";
+        IReadOnlyList<WebSession> saved = webRepository.QueryByFocusSessionId(chromeFocusSessionId);
+        Assert.Collection(
+            saved,
+            youtube =>
+            {
+                Assert.Equal("youtube.com", youtube.Domain);
+                Assert.Null(youtube.Url);
+                Assert.Equal(120_000, youtube.DurationMs);
+            },
+            github =>
+            {
+                Assert.Equal("github.com", github.Domain);
+                Assert.Null(github.Url);
+                Assert.Equal(180_000, github.DurationMs);
+            });
+        Assert.True(githubSnapshot.HasPersistedWebSession);
+        Assert.True(chatGptSnapshot.HasPersistedWebSession);
+        Assert.Equal("github.com", githubSnapshot.CurrentBrowserDomain);
+        Assert.Equal("chatgpt.com", chatGptSnapshot.CurrentBrowserDomain);
+        Assert.Empty(focusRepository.QueryByRange(startedAtUtc.AddMinutes(-1), startedAtUtc.AddMinutes(6)));
+
+        IReadOnlyList<SyncOutboxItem> outbox = outboxRepository.QueryAll();
+        Assert.Equal(2, outbox.Count);
+        Assert.All(outbox, item =>
+        {
+            Assert.Equal("web_session", item.AggregateType);
+            Assert.Equal(SyncOutboxStatus.Pending, item.Status);
+            Assert.DoesNotContain("watch?v=", item.PayloadJson, StringComparison.Ordinal);
+            Assert.DoesNotContain("token=secret", item.PayloadJson, StringComparison.Ordinal);
+        });
     }
 
     [Fact]

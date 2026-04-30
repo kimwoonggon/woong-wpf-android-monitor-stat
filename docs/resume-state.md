@@ -4184,3 +4184,18 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-163246`.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3774/4104), branch 70.8% (536/757).
+
+## 2026-04-30 WPF Same-Window Browser Navigation Regression Slice
+
+- Added real WPF coordinator regression coverage for repeated same Chrome HWND/PID navigation: `youtube.com -> github.com -> chatgpt.com`.
+- Added MainWindow vertical coverage proving manual Start plus two poll ticks keeps tracking running, shows the current domain as `chatgpt.com`, persists prior `youtube.com` and `github.com` WebSessions to SQLite, creates pending `web_session` outbox rows, and refreshes the Web Focus summary plus Web Sessions grid before Stop.
+- Verified privacy-safe domain-only behavior: test URLs include path/query values, but persisted SQLite rows and outbox payloads keep `Url = null` and do not contain path/query secrets.
+- Confirmed no Chrome FocusSession is persisted while only the browser domain changes; FocusSession persistence still waits for foreground change or Stop.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~PollOnce_WhenSameChromeWindowVisitsYoutubeGithubChatGpt|FullyQualifiedName~PollTick_WhenSameChromeWindowDomainChangesTwice" -maxcpucount:1 -v minimal` passed 2 tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 409 total `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3774/4104), branch 70.8% (536/757).
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-165524`. The known non-fatal cleanup warning appeared because the process was already closed.

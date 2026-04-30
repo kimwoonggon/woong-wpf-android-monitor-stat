@@ -505,3 +505,21 @@ Latest local run passed at:
 `artifacts/wpf-ui-acceptance/20260430-163246`
 
 Coverage after this slice: line 91.9%, branch 70.8%.
+
+## Same-Window Browser Navigation Regression Evidence 2026-04-30
+
+Automated checks now cover the product-critical case where one Chrome window stays foreground while the active tab/domain changes repeatedly:
+
+1. Start tracking on Chrome at `youtube.com`.
+2. Poll after the same Chrome HWND/PID reports `github.com`.
+3. Poll again after the same Chrome HWND/PID reports `chatgpt.com`.
+4. Verify `youtube.com` and `github.com` are persisted to SQLite as WebSessions before Stop.
+5. Verify the current domain shown in the WPF UI is `chatgpt.com`.
+6. Verify Web Focus and Web Sessions grid refresh from SQLite before Stop.
+7. Verify full URLs, query strings, and page content are not persisted in default domain-only mode.
+
+Latest verification:
+
+- Focused WPF tests passed: `PollOnce_WhenSameChromeWindowVisitsYoutubeGithubChatGpt` and `PollTick_WhenSameChromeWindowDomainChangesTwice`.
+- Full `.NET` solution tests passed: 409 tests.
+- WPF UI acceptance passed: `artifacts/wpf-ui-acceptance/20260430-165524`.
