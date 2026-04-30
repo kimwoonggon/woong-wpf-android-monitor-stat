@@ -135,9 +135,9 @@ Status legend:
 - [x] Focus active, focus idle, and web sessions spanning requested local
   midnight are split across adjacent daily summaries.
   Evidence: `DailySummaryAggregationServiceTests.GenerateAsync_SplitsFocusIdleAndWebSessionsAcrossRequestedLocalMidnight`.
-- [ ] Add equivalent split behavior for date-range statistics if range views
-  must allocate only the in-range portion of sessions instead of including the
-  whole session by start date.
+- [x] Date-range statistics split focus active, focus idle, and web sessions
+  across requested local midnight and include only the in-range portion.
+  Evidence: `DateRangeStatisticsApiTests.GetDateRangeStatistics_SplitsCrossMidnightSessionsToOnlyInRangePortion`.
 
 ## Database Provider Strategy
 

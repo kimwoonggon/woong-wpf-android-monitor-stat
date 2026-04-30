@@ -4412,3 +4412,17 @@ Verified:
 - Full `.NET` solution tests passed 429 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3916/4268), branch 71.2% (555/779).
+
+## 2026-04-30 Server Date Range Local-Midnight Partial Allocation Slice
+
+- Added HTTP coverage proving `/api/statistics/range` splits cross-midnight active focus, idle focus, and web sessions by requested local date and includes only the in-range portion.
+- Updated `DailySummaryQueryService.GetRangeAsync` to reuse the same local-date duration segmentation used by daily summaries instead of summing whole sessions by start date.
+- This keeps date-range totals, top apps, and top domains aligned with the product rule that reports are based on user-local dates and actual active/idle/web durations inside the selected period.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~GetDateRangeStatistics_SplitsCrossMidnightSessionsToOnlyInRangePortion"` passed.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~DateRangeStatisticsApiTests"` passed 7 tests.
+- Full `.NET` solution tests passed 430 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3908/4260), branch 71.5% (557/779).

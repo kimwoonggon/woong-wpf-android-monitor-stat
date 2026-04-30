@@ -1788,3 +1788,16 @@ milestones below are finished.
 - [x] Coverage generated: line 91.7% (3916/4268), branch 71.2% (555/779).
 - [x] Concurrent WPF commit `04e9fd7` clarifies origin-only web URL mode as domain-only.
 - [x] Concurrent Android commit `50f8790` records Usage Access Settings handoff screenshots/evidence.
+
+## Milestone 72: Server Date Range Local-Midnight Partial Allocation
+
+- [x] Add RED range statistics test proving a cross-midnight active focus session contributes only the in-range local-date portion.
+- [x] Cover equivalent idle and web-session portions in the same HTTP behavior test.
+- [x] Reuse local-date duration splitting for `DailySummaryQueryService.GetRangeAsync`.
+- [x] Update `server_check_todo.md` cross-midnight range coverage.
+
+### Milestone 72 Verification Update
+
+- [x] Full `.NET` solution tests passed: 430 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3908/4260), branch 71.5% (557/779).

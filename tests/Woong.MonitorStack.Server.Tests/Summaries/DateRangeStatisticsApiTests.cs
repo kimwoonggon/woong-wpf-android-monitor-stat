@@ -40,6 +40,35 @@ public sealed class DateRangeStatisticsApiTests
         Assert.Equal(540_000, topDomains[0].GetProperty("durationMs").GetInt64());
     }
 
+    [Fact]
+    public async Task GetDateRangeStatistics_SplitsCrossMidnightSessionsToOnlyInRangePortion()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Guid deviceId = Guid.NewGuid();
+        DateTimeOffset startedAtUtc = new(2026, 4, 28, 14, 50, 0, TimeSpan.Zero);
+        dbContext.Devices.Add(Device(deviceId, "user-1", Platform.Windows, "cross-midnight-key", "Windows PC"));
+        dbContext.FocusSessions.AddRange(
+            FocusAt(deviceId, "active-cross-midnight", "chrome.exe", startedAtUtc, 1_200_000, isIdle: false),
+            FocusAt(deviceId, "idle-cross-midnight", "chrome.exe", startedAtUtc, 1_200_000, isIdle: true));
+        dbContext.WebSessions.Add(Web(deviceId, "active-cross-midnight", "example.com", startedAtUtc, 1_200_000));
+        await dbContext.SaveChangesAsync();
+        using HttpClient client = factory.CreateClient();
+
+        HttpResponseMessage response = await client.GetAsync(
+            "/api/statistics/range?userId=user-1&from=2026-04-29&to=2026-04-29&timezoneId=Asia%2FSeoul");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        JsonElement root = json.RootElement;
+        Assert.Equal(600_000, root.GetProperty("totalActiveMs").GetInt64());
+        Assert.Equal(600_000, root.GetProperty("totalIdleMs").GetInt64());
+        Assert.Equal(600_000, root.GetProperty("totalWebMs").GetInt64());
+        Assert.Equal(600_000, root.GetProperty("topApps")[0].GetProperty("durationMs").GetInt64());
+        Assert.Equal(600_000, root.GetProperty("topDomains")[0].GetProperty("durationMs").GetInt64());
+    }
+
     [Theory]
     [InlineData("/api/statistics/range?userId=user-1&from=not-a-date&to=2026-04-29&timezoneId=Asia%2FSeoul")]
     [InlineData("/api/statistics/range?userId=user-1&from=2026-04-28&to=not-a-date&timezoneId=Asia%2FSeoul")]
@@ -130,6 +159,27 @@ public sealed class DateRangeStatisticsApiTests
             Source = "test"
         };
     }
+
+    private static FocusSessionEntity FocusAt(
+        Guid deviceId,
+        string clientSessionId,
+        string platformAppKey,
+        DateTimeOffset startedAtUtc,
+        long durationMs,
+        bool isIdle)
+        => new()
+        {
+            DeviceId = deviceId,
+            ClientSessionId = clientSessionId,
+            PlatformAppKey = platformAppKey,
+            StartedAtUtc = startedAtUtc,
+            EndedAtUtc = startedAtUtc.AddMilliseconds(durationMs),
+            DurationMs = durationMs,
+            LocalDate = new DateOnly(2026, 4, 28),
+            TimezoneId = "Asia/Seoul",
+            IsIdle = isIdle,
+            Source = "test"
+        };
 
     private static WebSessionEntity Web(
         Guid deviceId,

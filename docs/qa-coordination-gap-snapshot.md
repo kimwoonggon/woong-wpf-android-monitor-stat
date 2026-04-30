@@ -24,13 +24,12 @@ does not replace `total_todolist.md`.
 ## PRD-To-Checklist Gaps
 
 1. Server mixed-batch upload behavior is covered for focus, web, raw-event, and
-   location contexts. HTTP invalid input/date-range behavior is now covered in
-   the active main-agent flow. The highest-value remaining server queue is
-   date-range local-midnight split allocation and PostgreSQL-backed blocked
-   checks.
-2. Server invalid input/date-range edges are now mostly covered. Remaining open
-   slice: date-range local-midnight split allocation if range views must include
-   only in-range session portions.
+   location contexts. HTTP invalid input/date-range behavior and date-range
+   local-midnight split allocation are now covered in the active main-agent
+   flow.
+2. Remaining server gaps are mostly externally blocked PostgreSQL/Testcontainers
+   checks plus optional raw-event privacy guard work if raw events expand beyond
+   metadata/debug diagnostics.
 3. PostgreSQL/Testcontainers validation remains externally blocked. Do not ask
    workers to close concurrency idempotency, migration application, or legacy
    web-session backfill verification without a real PostgreSQL fixture.
@@ -67,14 +66,17 @@ does not replace `total_todolist.md`.
   current in the active main-agent flow. Malformed dates, missing query values,
   invalid timezone ids, and `from > to` now return controlled HTTP 400
   responses before commit.
+- date-range local-midnight split work: `server_check_todo.md` is current in
+  the active main-agent flow. Range statistics now include only the portion of
+  focus active, focus idle, and web sessions that falls inside the requested
+  local date range before commit.
 - `eb3cfdf Add QA coordination gap snapshot`: superseded by this refresh for
   server delegation order after web mixed-batch completion.
 
 ## Recommended Delegation
 
-- Server agent: next independent slice should be date-range local-midnight
-  allocation behavior if range views must include only in-range session
-  portions.
+- Server agent: next independent slice should be raw-event payload privacy guard
+  coverage only if raw events expand beyond metadata/debug diagnostics.
 - Server agent after that: PostgreSQL/Testcontainers items remain blocked until
   a real fixture is available.
 - Android agent: only queue documentation/evidence refresh for the latest

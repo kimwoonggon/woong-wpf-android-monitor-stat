@@ -89,33 +89,25 @@ public sealed class DailySummaryQueryService
             .Where(session => deviceIds.Contains(session.DeviceId))
             .ToListAsync();
 
-        List<FocusSessionEntity> focusSessionsForRange = focusSessions
-            .Where(session =>
-            {
-                DateOnly localDate = LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId);
-
-                return localDate >= fromDate && localDate <= toDate;
-            })
+        List<FocusDailySegment> focusSegmentsForRange = focusSessions
+            .SelectMany(session => SplitFocusSessionByLocalDate(session, timezoneId))
+            .Where(segment => segment.LocalDate >= fromDate && segment.LocalDate <= toDate)
             .ToList();
-        List<WebSessionEntity> webSessionsForRange = webSessions
-            .Where(session =>
-            {
-                DateOnly localDate = LocalDateCalculator.GetLocalDate(session.StartedAtUtc, timezoneId);
-
-                return localDate >= fromDate && localDate <= toDate;
-            })
+        List<WebDailySegment> webSegmentsForRange = webSessions
+            .SelectMany(session => SplitWebSessionByLocalDate(session, timezoneId))
+            .Where(segment => segment.LocalDate >= fromDate && segment.LocalDate <= toDate)
             .ToList();
 
-        List<UsageTotal> topApps = focusSessionsForRange
-            .Where(session => !session.IsIdle)
-            .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+        List<UsageTotal> topApps = focusSegmentsForRange
+            .Where(segment => !segment.IsIdle)
+            .GroupBy(segment => AppFamilyMapper.GetFamilyLabel(segment.PlatformAppKey))
+            .Select(group => new UsageTotal(group.Key, group.Sum(segment => segment.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
             .ToList();
-        List<UsageTotal> topDomains = webSessionsForRange
-            .GroupBy(session => session.Domain)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+        List<UsageTotal> topDomains = webSegmentsForRange
+            .GroupBy(segment => segment.Domain)
+            .Select(group => new UsageTotal(group.Key, group.Sum(segment => segment.DurationMs)))
             .OrderByDescending(total => total.DurationMs)
             .ThenBy(total => total.Key, StringComparer.Ordinal)
             .ToList();
@@ -123,9 +115,9 @@ public sealed class DailySummaryQueryService
         return new DateRangeStatisticsResponse(
             fromDate,
             toDate,
-            focusSessionsForRange.Where(session => !session.IsIdle).Sum(session => session.DurationMs),
-            focusSessionsForRange.Where(session => session.IsIdle).Sum(session => session.DurationMs),
-            webSessionsForRange.Sum(session => session.DurationMs),
+            focusSegmentsForRange.Where(segment => !segment.IsIdle).Sum(segment => segment.DurationMs),
+            focusSegmentsForRange.Where(segment => segment.IsIdle).Sum(segment => segment.DurationMs),
+            webSegmentsForRange.Sum(segment => segment.DurationMs),
             topApps,
             topDomains);
     }
