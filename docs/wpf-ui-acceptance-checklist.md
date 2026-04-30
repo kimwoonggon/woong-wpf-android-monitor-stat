@@ -105,6 +105,8 @@ Examples:
 - `report.md`
 - `manifest.json`
 - `visual-review-prompt.md`
+- `real-start-report.md` beside the RealStart acceptance temp DB
+- `real-start-manifest.json` beside the RealStart acceptance temp DB
 
 The report must include:
 
@@ -113,6 +115,9 @@ The report must include:
 - Actual values.
 - Screenshot list.
 - Skipped screenshots with reason.
+- RealStart local DB evidence for `focus_session` persistence, `sync_outbox`
+  queueing, readable app/process text, and server sync remaining disabled
+  unless explicitly allowed.
 - Next recommended fixes.
 
 ## Required Scripts

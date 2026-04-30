@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
@@ -74,13 +75,40 @@ internal static class RealStartAcceptanceRunner
                 throw new InvalidOperationException("No sync_outbox rows were queued.");
             }
 
-            VerifyRecentAppSessionVisible(mainWindow, options.DatabasePath, options.Timeout);
+            string processName = ReadLatestFocusSessionProcessName(options.DatabasePath);
+            VerifyRecentAppSessionVisible(mainWindow, processName, options.Timeout);
+
+            RealStartEvidence[] evidence =
+            [
+                new(
+                    "focus_session persisted",
+                    "> 0 rows in local SQLite focus_session",
+                    focusCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    AcceptanceStatus.Pass),
+                new(
+                    "sync_outbox queued",
+                    "> 0 rows queued while sync remains opt-in",
+                    outboxCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    AcceptanceStatus.Pass),
+                new(
+                    "latest focus session app/process readable",
+                    "non-empty app or process name",
+                    processName,
+                    AcceptanceStatus.Pass),
+                new(
+                    "server sync disabled unless explicitly allowed",
+                    "AllowServerSync=false by default",
+                    options.AllowServerSync ? "AllowServerSync=true" : "AllowServerSync=false",
+                    options.AllowServerSync ? AcceptanceStatus.Warn : AcceptanceStatus.Pass)
+            ];
+            WriteRealStartArtifacts(options, evidence, isSuccess: true);
 
             Console.WriteLine($"PASS: persisted {focusCount} focus_session row(s) and queued {outboxCount} sync_outbox row(s).");
             return 0;
         }
         catch (Exception exception)
         {
+            WriteRealStartFailureArtifacts(options, exception);
             Console.Error.WriteLine($"[FAIL] RealStart acceptance failed: {exception.Message}");
             return 1;
         }
@@ -186,9 +214,8 @@ internal static class RealStartAcceptanceRunner
         return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static void VerifyRecentAppSessionVisible(Window mainWindow, string databasePath, TimeSpan timeout)
+    private static void VerifyRecentAppSessionVisible(Window mainWindow, string processName, TimeSpan timeout)
     {
-        string processName = ReadLatestFocusSessionProcessName(databasePath);
         AutomationElement? list = mainWindow.FindFirstDescendant("RecentAppSessionsList");
         if (list is null)
         {
@@ -204,6 +231,101 @@ internal static class RealStartAcceptanceRunner
 
         Console.WriteLine($"PASS: persisted focus session appeared in RecentAppSessionsList: {processName}");
     }
+
+    private static void WriteRealStartFailureArtifacts(RealStartOptions options, Exception exception)
+    {
+        try
+        {
+            RealStartEvidence[] evidence =
+            [
+                new(
+                    "real-start acceptance completed",
+                    "real WPF app start persists focus_session and queues sync_outbox",
+                    exception.Message,
+                    AcceptanceStatus.Fail)
+            ];
+            WriteRealStartArtifacts(options, evidence, isSuccess: false, exception.Message);
+        }
+        catch (Exception artifactException)
+        {
+            Console.Error.WriteLine($"[WARN] Failed to write RealStart failure artifacts: {artifactException.Message}");
+        }
+    }
+
+    private static void WriteRealStartArtifacts(
+        RealStartOptions options,
+        IReadOnlyCollection<RealStartEvidence> evidence,
+        bool isSuccess,
+        string? failure = null)
+    {
+        string outputDirectory = Path.GetDirectoryName(options.DatabasePath) ?? Environment.CurrentDirectory;
+        Directory.CreateDirectory(outputDirectory);
+
+        WriteRealStartReport(outputDirectory, evidence, isSuccess, failure);
+        WriteRealStartManifest(outputDirectory, options, evidence, isSuccess, failure);
+    }
+
+    private static void WriteRealStartReport(
+        string outputDirectory,
+        IReadOnlyCollection<RealStartEvidence> evidence,
+        bool isSuccess,
+        string? failure)
+    {
+        string reportPath = Path.Combine(outputDirectory, "real-start-report.md");
+        using var writer = new StreamWriter(reportPath, append: false);
+        writer.WriteLine("# WPF RealStart Acceptance Report");
+        writer.WriteLine();
+        writer.WriteLine($"Status: {(isSuccess ? "PASS" : "FAIL")}");
+        writer.WriteLine($"Generated at UTC: {DateTimeOffset.UtcNow:O}");
+        if (!string.IsNullOrWhiteSpace(failure))
+        {
+            writer.WriteLine($"Failure: {EscapeMarkdownCell(failure)}");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("## RealStart Local DB Evidence");
+        writer.WriteLine();
+        writer.WriteLine("| Claim | Expected | Actual | Status |");
+        writer.WriteLine("| --- | --- | --- | --- |");
+        foreach (RealStartEvidence item in evidence)
+        {
+            writer.WriteLine(
+                $"| {EscapeMarkdownCell(item.Claim)} | {EscapeMarkdownCell(item.Expected)} | {EscapeMarkdownCell(item.Actual)} | {item.Status} |");
+        }
+    }
+
+    private static void WriteRealStartManifest(
+        string outputDirectory,
+        RealStartOptions options,
+        IReadOnlyCollection<RealStartEvidence> evidence,
+        bool isSuccess,
+        string? failure)
+    {
+        string manifestPath = Path.Combine(outputDirectory, "real-start-manifest.json");
+        var manifest = new
+        {
+            status = isSuccess ? "PASS" : "FAIL",
+            generatedAtUtc = DateTimeOffset.UtcNow,
+            appPath = options.AppPath,
+            databasePath = options.DatabasePath,
+            allowServerSync = options.AllowServerSync,
+            failure,
+            realStartEvidence = evidence.Select(item => new
+            {
+                claim = item.Claim,
+                expected = item.Expected,
+                actual = item.Actual,
+                status = item.Status.ToString()
+            }).ToArray()
+        };
+
+        File.WriteAllText(
+            manifestPath,
+            JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    private static string EscapeMarkdownCell(string value)
+        => value.Replace("|", "\\|", StringComparison.Ordinal);
 
     private static string ReadLatestFocusSessionProcessName(string databasePath)
     {
@@ -247,6 +369,19 @@ internal static class RealStartAcceptanceRunner
         return false;
     }
 }
+
+internal enum AcceptanceStatus
+{
+    Pass,
+    Warn,
+    Fail
+}
+
+internal sealed record RealStartEvidence(
+    string Claim,
+    string Expected,
+    string Actual,
+    AcceptanceStatus Status);
 
 internal sealed record RealStartOptions(
     string AppPath,

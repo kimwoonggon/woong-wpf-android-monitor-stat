@@ -585,6 +585,32 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void RealStartAcceptanceTool_WritesLocalDbPersistenceEvidenceArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.RealStartAcceptance", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF real-start acceptance tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("real-start-report.md", tool);
+        Assert.Contains("real-start-manifest.json", tool);
+        Assert.Contains("WriteRealStartArtifacts", tool);
+        Assert.Contains("## RealStart Local DB Evidence", tool);
+        Assert.Contains("| Claim | Expected | Actual | Status |", tool);
+        Assert.Contains("realStartEvidence", tool);
+        Assert.Contains("evidence.Select", tool);
+        Assert.Contains("claim = item.Claim", tool);
+        Assert.Contains("expected = item.Expected", tool);
+        Assert.Contains("actual = item.Actual", tool);
+        Assert.Contains("status = item.Status.ToString()", tool);
+        Assert.Contains("focus_session persisted", tool);
+        Assert.Contains("sync_outbox queued", tool);
+        Assert.Contains("latest focus session app/process readable", tool);
+        Assert.Contains("server sync disabled unless explicitly allowed", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_EmptyDataModeDisablesAutoStartAndVerifiesZeroSqliteRows()
     {
         string repoRoot = FindRepositoryRoot();

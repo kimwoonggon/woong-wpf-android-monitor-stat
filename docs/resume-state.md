@@ -1,6 +1,30 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF RealStart Local DB Evidence Slice
+
+- Audited WPF runtime acceptance evidence after Milestone 44 and found the
+  RealStart path proved local DB persistence/outbox behavior only through
+  console output.
+- Added RED WPF App/tool coverage requiring durable RealStart acceptance
+  artifacts.
+- Updated `Woong.MonitorStack.Windows.RealStartAcceptance` to write
+  `real-start-report.md` and `real-start-manifest.json` beside the temp
+  acceptance DB.
+- The artifacts include `realStartEvidence` rows for `focus_session`
+  persistence, `sync_outbox` queueing, readable latest app/process text, and
+  server sync remaining disabled unless explicitly allowed.
+- This is a WPF tool/test/docs acceptance evidence slice only. It does not
+  change Android, Android scripts, Android docs, parked design refs, product
+  telemetry collection policy, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~RealStartAcceptanceTool_WritesLocalDbPersistenceEvidenceArtifacts" -maxcpucount:1 -v minimal` failed RED on missing `real-start-report.md`, then passed after the RealStart artifact writer was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 128 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 386 solution tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-123830`; `real-start-report.md` and `real-start-manifest.json` include all RealStart local DB evidence rows as Pass.
 ## 2026-04-30 Android Sessions Fragment Room Wiring Slice
 
 - Added RED architecture coverage requiring `SessionsFragment` to use the

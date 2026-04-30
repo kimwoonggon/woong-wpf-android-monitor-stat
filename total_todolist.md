@@ -1412,6 +1412,17 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Run WPF UI acceptance script and confirm grouped minimum-size evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the minimum-size reachability evidence slice.
+## Milestone 46: WPF RealStart Local DB Evidence Artifacts
+
+- [x] Audit WPF runtime acceptance evidence after minimum-size reachability and identify RealStart console-only DB proof as the next WPF-only gap.
+- [x] Add a failing WPF App/tool test requiring RealStart local DB persistence evidence artifacts.
+- [x] Add `real-start-report.md` and `real-start-manifest.json` beside the RealStart temp SQLite DB.
+- [x] Include `focus_session` persistence, `sync_outbox` queueing, readable latest app/process text, and sync-disabled evidence.
+- [x] Update WPF acceptance documentation and resume state for the RealStart evidence artifacts.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build and solution tests.
+- [x] Run WPF UI acceptance script and confirm RealStart evidence appears in latest artifacts.
 ## Milestone 45: Android Fragment Shell Runtime And Wireframe Correction
 
 - [x] Add a failing architecture test requiring `SessionsFragment` to use the Room-backed sessions repository and expose a readable empty state.
