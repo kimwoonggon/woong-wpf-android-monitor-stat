@@ -38,22 +38,22 @@ $screenTargets = @(
     [ordered]@{
         Name = "dashboard"
         FileName = "dashboard.png"
-        Activity = "com.woong.monitorstack/.dashboard.DashboardActivity"
+        Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
         Name = "settings"
         FileName = "settings.png"
-        Activity = "com.woong.monitorstack/.settings.SettingsActivity"
+        Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
         Name = "sessions"
         FileName = "sessions.png"
-        Activity = "com.woong.monitorstack/.sessions.SessionsActivity"
+        Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
         Name = "daily summary"
         FileName = "daily-summary.png"
-        Activity = "com.woong.monitorstack/.summary.DailySummaryActivity"
+        Capture = "SnapshotCaptureTest"
     }
 )
 
@@ -215,20 +215,20 @@ try {
 
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")
     $seedTestClass = "com.woong.monitorstack.snapshots.SnapshotSeedTest"
+    $captureTestClass = "com.woong.monitorstack.snapshots.SnapshotCaptureTest"
     $testRunner = "com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner"
     $notes.Add("Seeding deterministic sample sessions and location context with $seedTestClass.")
     Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $seedTestClass, $testRunner) -Description "Seed Android snapshot sample data"
+    $notes.Add("Capturing screenshots through instrumentation with $captureTestClass so non-exported activities stay private.")
+    Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $captureTestClass, $testRunner) -Description "Capture Android snapshot screens"
+
+    $remoteSnapshotDir = "/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots"
 
     foreach ($target in $screenTargets) {
-        $notes.Add("Capturing $($target.Name) via $($target.Activity).")
-        Invoke-AdbChecked -Arguments @("shell", "am", "start", "-W", "-n", $target.Activity) -Description "Launch $($target.Name)"
-        Start-Sleep -Milliseconds 750
-
-        $remotePath = "/sdcard/Download/woong-monitor-$($target.Name -replace '\s+', '-').png"
+        $notes.Add("Pulling $($target.Name) screenshot captured by instrumentation.")
+        $remotePath = "$remoteSnapshotDir/$($target.FileName)"
         $localPath = Join-Path $runRoot $target.FileName
-        Invoke-AdbChecked -Arguments @("shell", "screencap", "-p", $remotePath) -Description "Capture $($target.Name)"
         Invoke-AdbChecked -Arguments @("pull", $remotePath, $localPath) -Description "Pull $($target.Name) screenshot"
-        & $AdbPath shell rm $remotePath | Out-Null
 
         if (-not (Test-Path $localPath)) {
             throw "Expected screenshot was not created: $localPath"
@@ -238,7 +238,7 @@ try {
             name = $target.Name
             fileName = $target.FileName
             path = $localPath
-            activity = $target.Activity
+            capture = $target.Capture
         }
     }
     Write-AndroidSnapshotArtifacts -Status $status -BlockedReason $blockedReason

@@ -160,11 +160,13 @@ exit /b 0
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
-            Assert.Contains("com.woong.monitorstack/.dashboard.DashboardActivity", commands);
-            Assert.Contains("com.woong.monitorstack/.settings.SettingsActivity", commands);
-            Assert.Contains("com.woong.monitorstack/.sessions.SessionsActivity", commands);
-            Assert.Contains("com.woong.monitorstack/.summary.DailySummaryActivity", commands);
-            Assert.Contains("screencap", commands);
+            Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotCaptureTest", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/dashboard.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/settings.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/sessions.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/daily-summary.png", commands);
+            Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {

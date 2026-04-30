@@ -1,0 +1,88 @@
+package com.woong.monitorstack.snapshots
+
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import com.woong.monitorstack.dashboard.DashboardActivity
+import com.woong.monitorstack.sessions.SessionsActivity
+import com.woong.monitorstack.settings.SettingsActivity
+import com.woong.monitorstack.summary.DailySummaryActivity
+import java.io.File
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class SnapshotCaptureTest {
+    @Test
+    fun captureDashboardSettingsSessionsAndDailySummaryScreens() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val device = UiDevice.getInstance(instrumentation)
+        val outputDir = File(requireNotNull(context.getExternalFilesDir(null)), "ui-snapshots")
+        if (outputDir.exists()) {
+            outputDir.deleteRecursively()
+        }
+        outputDir.mkdirs()
+
+        captureActivity<DashboardActivity>(
+            device = device,
+            output = File(outputDir, "dashboard.png")
+        )
+        captureActivity<SettingsActivity>(
+            device = device,
+            output = File(outputDir, "settings.png")
+        )
+        captureActivity<SessionsActivity>(
+            device = device,
+            output = File(outputDir, "sessions.png")
+        )
+
+        val dailySummaryIntent = Intent(context, DailySummaryActivity::class.java)
+            .putExtra(DailySummaryActivity.EXTRA_SUMMARY_DATE, "2026-04-27")
+            .putExtra(DailySummaryActivity.EXTRA_ACTIVE_MS, 900_000L)
+            .putExtra(DailySummaryActivity.EXTRA_IDLE_MS, 120_000L)
+            .putExtra(DailySummaryActivity.EXTRA_WEB_MS, 240_000L)
+            .putExtra(DailySummaryActivity.EXTRA_TOP_APP, "com.android.chrome")
+            .putExtra(DailySummaryActivity.EXTRA_TOP_DOMAIN, "example.com")
+        captureIntent(
+            device = device,
+            intent = dailySummaryIntent,
+            output = File(outputDir, "daily-summary.png")
+        )
+    }
+
+    private inline fun <reified T : Activity> captureActivity(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(T::class.java).use {
+            waitForScreen(device)
+            assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
+            assertTrue("Expected screenshot file to exist: $output", output.isFile)
+        }
+    }
+
+    private fun captureIntent(
+        device: UiDevice,
+        intent: Intent,
+        output: File
+    ) {
+        ActivityScenario.launch<DailySummaryActivity>(intent).use {
+            waitForScreen(device)
+            assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
+            assertTrue("Expected screenshot file to exist: $output", output.isFile)
+        }
+    }
+
+    private fun waitForScreen(device: UiDevice) {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        device.waitForIdle()
+        Thread.sleep(500)
+    }
+}

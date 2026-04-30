@@ -1,6 +1,6 @@
 # Android UI Screenshot Testing
 
-Updated: 2026-04-29
+Updated: 2026-04-30
 
 Android screenshot testing is local evidence for this app's own UI. It is not
 product telemetry and must not capture other apps as usage data.
@@ -80,25 +80,34 @@ Current behavior:
   to seed deterministic Room focus sessions for Chrome, YouTube, Slack, and an
   idle interval. This keeps sample dashboard/session evidence local and
   test-only.
-- When a device is connected, it launches Dashboard, Settings, Sessions, and
-  Daily Summary activities and captures local PNG screenshots into the artifact
-  folder.
+- When a device is connected, it runs
+  `com.woong.monitorstack.snapshots.SnapshotCaptureTest` through
+  instrumentation. This keeps Dashboard, Settings, Sessions, and Daily Summary
+  activities `exported=false` in the production manifest while still allowing
+  local test screenshots.
+- The instrumentation test captures local PNG screenshots into the app's
+  external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
   model configuration and device steps.
 
+Latest emulator evidence:
+
+- `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
+  passed on `Medium_Phone`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-091721`.
+- Captured dashboard, settings, sessions, and daily summary screenshots.
+- Dashboard location card and Settings location section are visible in the
+  captured screenshots.
+
 Future connected-device improvements:
 
-- State whether it used an emulator or physical device.
 - Add optional Midscene visual review when model environment variables are
   configured.
+- Add physical-device resource measurement evidence when hardware is connected.
 
 ## Current Gaps
 
-- This environment currently has no connected Android device or emulator, so
-  the connected-device capture path is covered with fake-adb tests and remains
-  blocked for real visual evidence.
-- Real seeded screenshots still require an attached emulator or physical
-  device.
+- Emulator-backed screenshot evidence is complete for the current environment.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

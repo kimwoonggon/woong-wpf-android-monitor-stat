@@ -1,83 +1,92 @@
 # Completion Audit
 
-Date: 2026-04-29
+Date: 2026-04-30
 
-This audit checks whether the implemented repository still matches the PRD,
-the executable checklist in `total_todolist.md`, and the metadata-only safety
-boundary.
+This audit checks the implemented repository against `docs/prd.md`,
+`total_todolist.md`, and the metadata-only privacy boundary.
 
 ## Source Of Truth Check
 
-- `docs/prd.md` exists and remains the durable product/source-of-truth
-  document.
-- `total_todolist.md` exists and remains the executable checklist derived from
-  the PRD.
+- `docs/prd.md` remains the durable product/source-of-truth document.
+- `total_todolist.md` remains the executable checklist derived from the PRD.
 - No direct conflict was found between `docs/prd.md` and the current
   `total_todolist.md`.
-- Remaining unchecked work is either external-device-bound Android evidence or
-  optional WPF componentization cleanup. The current code/test/build state is
-  otherwise validated.
+- The remaining unchecked TODOs are physical-device-bound Android resource
+  measurements and final release bookkeeping only. Code/test/docs work
+  available in this Windows environment is complete.
 
 ## Remaining External Blockers
 
-The following items must not be marked complete without a connected Android
-device or emulator:
+The following item must not be marked complete without a physical Android
+device:
 
-- Capture Android dashboard, settings, sessions, and daily summary screenshots.
-- Seed deterministic sample Android app usage where possible.
 - Repeat Android resource measurements on a physical device.
 
-Latest availability check:
+Latest emulator-backed Android evidence:
 
 ```powershell
-adb devices -l
+powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 ```
 
 Result:
 
-```text
-List of devices attached
-```
-
-No emulator or physical device was attached.
-
-## Hidden Work Search
-
-Searched `src/`, `tests/`, `tools/`, `android/`, and `docs/` excluding build
-outputs for:
-
-- `TODO`
-- `FIXME`
-- `HACK`
-- `NotImplementedException`
-
-No hidden incomplete product-code work marker was found. Matches were in
-documentation, tests that intentionally assert forbidden/TODO text, or the
-audit document itself.
+- Status: PASS on `Medium_Phone` emulator.
+- Artifact: `artifacts/android-ui-snapshots/20260430-091721`.
+- Captured dashboard, settings, sessions, and daily summary screenshots.
+- Dashboard location card and Settings location section are visible in the
+  captured screenshots.
 
 ## Safety Boundary Search
 
-Searched product source/manifests for forbidden capability indicators including
-keyboard hooks, clipboard APIs, screen capture APIs, Android Accessibility
-services, SMS/audio capture, browser history/cookie permissions, tab capture,
-and desktop capture.
+The product remains a metadata measurement app. It measures app/window/site
+usage duration and never captures user content.
 
-No implemented forbidden tracking scope was found. Benign matches were
-metadata field names such as URL/domain capture policy, browser capture status,
-and server/domain model properties.
-
-The current product still measures metadata only:
+Allowed and implemented scopes:
 
 - Windows foreground app/window metadata.
 - Browser domain/full URL only through documented privacy settings, with
   domain-only storage by default.
-- Android app usage duration through UsageStatsManager and user-granted Usage
+- Android app usage duration through UsageStatsManager and explicit Usage
   Access.
-- Local UI screenshots only for this app's dashboard/testing artifacts.
+- Optional Android location context metadata, off by default, local-first, with
+  precise latitude/longitude requiring separate opt-in and foreground
+  permission.
+- Local UI screenshots of this app's own dashboard/testing surfaces only.
 
-It does not implement keylogging, typed text capture, passwords/forms/messages
-capture, clipboard capture, screen recording, browser page-content scraping,
-covert tracking, or Android global touch/text tracking.
+Forbidden scopes remain absent from product implementation:
+
+- Keylogging or typed text capture.
+- Passwords, forms, messages, page contents, clipboard contents, screenshots of
+  user activity, or screen recording.
+- Covert/background surveillance.
+- Android global touch-coordinate or text-input tracking.
+
+## Database Separation
+
+- Windows uses local SQLite repositories for Windows local focus/web/session
+  data and outbox rows.
+- Android uses Room/SQLite for Android local usage/location/session data and
+  outbox rows.
+- ASP.NET Core/PostgreSQL is the only integrated Windows + Android database.
+- Architecture tests preserve Domain, Windows, Presentation, WPF App, and Server
+  dependency direction so local clients do not depend on server internals or
+  each other's local databases.
+
+## Integrated Daily Summary
+
+Server tests prove the integrated summary path:
+
+- Windows and Android devices can register for the same user.
+- Windows and Android focus sessions upload through API DTO contracts.
+- Idle time is excluded from active time.
+- App family mapping combines Windows `chrome.exe` and Android
+  `com.android.chrome` into `Chrome`.
+- Web sessions aggregate top domains.
+- Other users' sessions are excluded.
+
+Representative test:
+
+- `DailySummaryApi_WhenWindowsAndAndroidClientsUploadSessions_ReturnsIntegratedSummary`
 
 ## Latest Validation Matrix
 
@@ -91,10 +100,26 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests succeeded: 304 tests.
-- .NET build succeeded with 0 warnings and 0 errors.
-- Coverage report generation succeeded.
-- Overall line coverage: 91.3%.
+- .NET tests passed: 351 total.
+- .NET build passed with 0 warnings and 0 errors.
+- Coverage report generation passed.
+- Overall line coverage: 91.7% (3663/3991).
+- Overall branch coverage: 70.7% (506/715).
+
+Android:
+
+```powershell
+.\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace
+.\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace
+powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
+```
+
+Result:
+
+- Android unit tests and debug build passed.
+- Android connected tests passed on `Medium_Phone`: 11 tests, 0 failures.
+- Android UI snapshot script passed on `Medium_Phone` and generated
+  `artifacts/android-ui-snapshots/20260430-091721`.
 
 WPF semantic acceptance:
 
@@ -105,9 +130,9 @@ powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1
 Result:
 
 - Passed.
-- Latest artifact: `artifacts/wpf-ui-acceptance/20260429-222624`.
-- The run used a temp SQLite DB, left server sync disabled, and printed the
-  required metadata-only privacy warning.
+- Artifact: `artifacts/wpf-ui-acceptance/20260430-033512`.
+- RealStart used a temp SQLite DB, server sync stayed disabled, focus sessions
+  persisted, and sync outbox rows were queued.
 
 Chrome native messaging sandbox safety:
 
@@ -118,28 +143,18 @@ powershell -ExecutionPolicy Bypass -File scripts\run-chrome-native-message-accep
 Result:
 
 - Passed.
-- Cleanup-only ran before Chrome for Testing resolution.
-- Cleanup touched only the scoped HKCU test host key in dry-run mode.
-- Chrome process cleanup was constrained to the generated temp profile path.
-
-Android:
-
-```powershell
-.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace
-```
-
-Result:
-
-- Android unit tests/debug build/androidTest APK build succeeded.
-- Connected Android UI tests and physical-device resource measurements remain
-  blocked by the absence of a connected device.
+- Dry-run cleanup touched no registry values.
+- The scoped HKCU test host key was the only target:
+  `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.woong.monitorstack.chrome_test`.
+- Cleanup remained sandboxed to a temp Chrome profile and did not touch user
+  Chrome windows/profiles.
 
 ## Completion Status
 
-The Windows, Android local build, server, architecture, privacy guardrail,
-coverage, WPF semantic acceptance, Chrome native messaging sandbox, and docs
-work are complete for the currently available environment.
+Windows, Android local build, Android emulator connected tests/screenshots,
+server, architecture, privacy guardrails, coverage, WPF semantic acceptance,
+Chrome native messaging sandbox, and docs are complete for the currently
+available environment.
 
-Do not mark physical-device Android measurement or screenshots complete from
-the absence of a device. Re-run those items when a real Android device or
-emulator is connected.
+Do not mark physical-device Android resource measurements complete from
+emulator evidence. Re-run that item when a real Android device is connected.
