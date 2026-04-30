@@ -20,11 +20,33 @@ public sealed class WindowsAppOptions
         TimeSpan idleThreshold,
         WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
         bool autoStartTracking = true)
+        : this(
+            dashboardOptions,
+            deviceId,
+            ExtractDataSource(localDatabaseConnectionString),
+            localDatabaseConnectionString,
+            idleThreshold,
+            acceptanceMode,
+            autoStartTracking)
+    {
+    }
+
+    public WindowsAppOptions(
+        DashboardOptions dashboardOptions,
+        string deviceId,
+        string localDatabasePath,
+        string localDatabaseConnectionString,
+        TimeSpan idleThreshold,
+        WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
+        bool autoStartTracking = true)
     {
         DashboardOptions = dashboardOptions ?? throw new ArgumentNullException(nameof(dashboardOptions));
         DeviceId = string.IsNullOrWhiteSpace(deviceId)
             ? throw new ArgumentException("Device id must not be empty.", nameof(deviceId))
             : deviceId;
+        LocalDatabasePath = string.IsNullOrWhiteSpace(localDatabasePath)
+            ? throw new ArgumentException("Local database path must not be empty.", nameof(localDatabasePath))
+            : localDatabasePath;
         LocalDatabaseConnectionString = string.IsNullOrWhiteSpace(localDatabaseConnectionString)
             ? throw new ArgumentException("Connection string must not be empty.", nameof(localDatabaseConnectionString))
             : localDatabaseConnectionString;
@@ -38,6 +60,8 @@ public sealed class WindowsAppOptions
     public DashboardOptions DashboardOptions { get; }
 
     public string DeviceId { get; }
+
+    public string LocalDatabasePath { get; }
 
     public string LocalDatabaseConnectionString { get; }
 
@@ -69,7 +93,8 @@ public sealed class WindowsAppOptions
             return new WindowsAppOptions(
                 dashboardOptions,
                 deviceId,
-                localDatabaseConnectionString: $"Data Source={localDbOverride};Pooling=False",
+                localDatabasePath: localDbOverride,
+                localDatabaseConnectionString: BuildConnectionString(localDbOverride),
                 idleThreshold: TimeSpan.FromMinutes(5),
                 acceptanceMode: ParseAcceptanceMode(),
                 autoStartTracking: ParseAutoStartTracking());
@@ -80,13 +105,34 @@ public sealed class WindowsAppOptions
             "WoongMonitorStack");
         Directory.CreateDirectory(dataDirectory);
 
+        string localDatabasePath = Path.Combine(dataDirectory, "windows-local.db");
         return new WindowsAppOptions(
             dashboardOptions,
             deviceId,
-            localDatabaseConnectionString: $"Data Source={Path.Combine(dataDirectory, "windows-local.db")};Pooling=False",
+            localDatabasePath: localDatabasePath,
+            localDatabaseConnectionString: BuildConnectionString(localDatabasePath),
             idleThreshold: TimeSpan.FromMinutes(5),
             acceptanceMode: ParseAcceptanceMode(),
             autoStartTracking: ParseAutoStartTracking());
+    }
+
+    public static string BuildConnectionString(string databasePath)
+        => $"Data Source={databasePath};Pooling=False";
+
+    private static string ExtractDataSource(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return "";
+        }
+
+        string? dataSourcePart = connectionString
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault(part => part.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase));
+
+        return dataSourcePart is null
+            ? connectionString
+            : dataSourcePart["Data Source=".Length..];
     }
 
     private static bool ParseAutoStartTracking()

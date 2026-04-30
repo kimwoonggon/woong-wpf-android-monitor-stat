@@ -30,6 +30,12 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     private bool _canClearLocalData;
 
     [ObservableProperty]
+    private string _currentDatabasePathText = "No local database configured";
+
+    [ObservableProperty]
+    private string _databaseStatusLabel = "Local database ready.";
+
+    [ObservableProperty]
     private bool _hasSyncFailure;
 
     [ObservableProperty]

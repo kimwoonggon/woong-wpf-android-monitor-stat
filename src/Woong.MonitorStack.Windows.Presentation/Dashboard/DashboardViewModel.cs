@@ -11,6 +11,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardDataSource _dataSource;
     private readonly IDashboardClock _clock;
     private readonly IDashboardTrackingCoordinator _trackingCoordinator;
+    private readonly IDashboardDatabaseController _databaseController;
     private readonly TimeZoneInfo _timeZone;
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
@@ -151,13 +152,17 @@ public sealed partial class DashboardViewModel : ObservableObject
         IDashboardDataSource dataSource,
         IDashboardClock clock,
         DashboardOptions options,
-        IDashboardTrackingCoordinator? trackingCoordinator = null)
+        IDashboardTrackingCoordinator? trackingCoordinator = null,
+        IDashboardDatabaseController? databaseController = null)
     {
         _dataSource = dataSource;
         _clock = clock;
         _trackingCoordinator = trackingCoordinator ?? new NoopDashboardTrackingCoordinator();
+        _databaseController = databaseController ?? new NullDashboardDatabaseController();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
+        Settings.CurrentDatabasePathText = _databaseController.CurrentDatabasePath;
+        Settings.CanClearLocalData = _databaseController.CanDeleteCurrentDatabase;
         Settings.PropertyChanged += OnSettingsPropertyChanged;
     }
 
@@ -220,6 +225,18 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void RefreshDashboard()
         => RefreshSummary(ResolveRange(SelectedPeriod));
+
+    [RelayCommand]
+    private void CreateLocalDatabase()
+        => ApplyDatabaseActionResult(_databaseController.CreateNewDatabase());
+
+    [RelayCommand]
+    private void LoadExistingLocalDatabase()
+        => ApplyDatabaseActionResult(_databaseController.LoadExistingDatabase());
+
+    [RelayCommand]
+    private void DeleteLocalDatabase()
+        => ApplyDatabaseActionResult(_databaseController.DeleteCurrentDatabase());
 
     [RelayCommand(CanExecute = nameof(CanStartTracking))]
     private void StartTracking()
@@ -375,6 +392,17 @@ public sealed partial class DashboardViewModel : ObservableObject
         CurrentWindowTitleText = Settings.IsWindowTitleVisible
             ? TextOrDefault(_currentWindowTitle, "No window title")
             : "Window title hidden by privacy settings";
+    }
+
+    private void ApplyDatabaseActionResult(DashboardDatabaseActionResult result)
+    {
+        Settings.CurrentDatabasePathText = result.DatabasePath;
+        Settings.DatabaseStatusLabel = result.StatusMessage;
+        Settings.CanClearLocalData = _databaseController.CanDeleteCurrentDatabase;
+        if (result.Succeeded)
+        {
+            RefreshSummary(ResolveRange(SelectedPeriod));
+        }
     }
 
     private void RefreshSummary(TimeRange range)

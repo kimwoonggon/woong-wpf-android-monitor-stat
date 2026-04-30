@@ -6,6 +6,34 @@ statistics and integrated daily summaries.
 This project follows `docs/prd.md`. It is a visible productivity statistics
 tool, not covert monitoring software.
 
+## Quick Start: WPF App
+
+Run the Windows dashboard from the repository root:
+
+```powershell
+dotnet run --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj
+```
+
+You do not need to start SQLite. The WPF app uses a local SQLite file and
+creates or updates it automatically:
+
+```text
+%LOCALAPPDATA%\WoongMonitorStack\windows-local.db
+```
+
+PostgreSQL and the ASP.NET Core server are only needed for server/integrated
+sync scenarios. The WPF app can track locally and show the local dashboard
+without them.
+
+Inside the app, open **Settings** to manage the SQLite file:
+
+- **Create / switch DB** creates a new local database file or switches to a
+  selected path.
+- **Load existing DB** opens an existing `.db` file and refreshes the dashboard
+  from it.
+- **Delete local DB** deletes the current local database and recreates an empty
+  one after confirmation.
+
 ## Privacy Boundaries
 
 - Measures metadata: foreground app/window/site usage duration.

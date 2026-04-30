@@ -23,6 +23,7 @@ public static class WindowsAppServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(options);
 
         services.AddSingleton(options);
+        services.AddSingleton(new WindowsLocalDatabaseState(options.LocalDatabasePath));
         services.AddSingleton(options.DashboardOptions);
         services.AddDashboardPresentation();
         services.AddWindowsInfrastructure();
@@ -79,21 +80,21 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(provider =>
         {
             var repository = new SqliteFocusSessionRepository(
-                provider.GetRequiredService<WindowsAppOptions>().LocalDatabaseConnectionString);
+                () => provider.GetRequiredService<WindowsLocalDatabaseState>().ConnectionString);
             repository.Initialize();
             return repository;
         });
         services.AddSingleton(provider =>
         {
             var repository = new SqliteWebSessionRepository(
-                provider.GetRequiredService<WindowsAppOptions>().LocalDatabaseConnectionString);
+                () => provider.GetRequiredService<WindowsLocalDatabaseState>().ConnectionString);
             repository.Initialize();
             return repository;
         });
         services.AddSingleton(provider =>
         {
             var repository = new SqliteSyncOutboxRepository(
-                provider.GetRequiredService<WindowsAppOptions>().LocalDatabaseConnectionString);
+                () => provider.GetRequiredService<WindowsLocalDatabaseState>().ConnectionString);
             repository.Initialize();
             return repository;
         });
@@ -105,6 +106,8 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<ISystemClock>(),
             BrowserUrlStoragePolicy.DomainOnly));
         services.AddSingleton<IDashboardDataSource, SqliteDashboardDataSource>();
+        services.AddSingleton<IWindowsDatabaseFilePicker, WindowsDatabaseFilePicker>();
+        services.AddSingleton<IDashboardDatabaseController, WindowsLocalDatabaseController>();
         services.AddSingleton<IDashboardTrackingCoordinator>(provider => new WindowsTrackingDashboardCoordinator(
             provider.GetRequiredService<Func<TrackingPoller>>(),
             provider.GetRequiredService<WindowsFocusSessionPersistenceService>(),

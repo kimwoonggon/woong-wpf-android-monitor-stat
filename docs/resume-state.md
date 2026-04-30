@@ -4500,3 +4500,21 @@ Server checklist closure note:
 - Rewrote `README.md` as an operator/developer runbook covering WPF execution, Android emulator flow, PostgreSQL/EF/Testcontainers integration, Chrome native messaging acceptance, and test/coverage commands.
 - The README keeps the PRD privacy boundary explicit: metadata-only measurement, local Windows/Android databases, and server-only integrated PostgreSQL storage.
 - README runbook validation: `git diff --check` passed; standard solution test passed with 437 passed and 6 explicit PostgreSQL tests skipped by default; solution build passed with 0 warnings/errors.
+
+## 2026-05-01 WPF Legacy SQLite Startup Fix
+
+- [x] Reproduced WPF startup failure from the default local SQLite DB: old `web_session` schema lacked `capture_method`.
+- [x] Added regression coverage proving `SqliteWebSessionRepository.Initialize()` migrates legacy `web_session` tables without losing rows.
+- [x] Added automatic nullable-column migration for `capture_method`, `capture_confidence`, and `is_private_or_unknown`.
+- [x] Verified the WPF exe starts against the default `%LOCALAPPDATA%\WoongMonitorStack\windows-local.db` and shows `Woong Monitor Stack`.
+- [x] Added a README Quick Start clarifying that SQLite does not need to be launched separately.
+
+## 2026-05-01 WPF Local Database Management UI
+
+- [x] Added Settings UI for current SQLite DB path/status, create/switch DB, load existing DB, and delete/recreate local DB.
+- [x] Added a testable dashboard database controller port so Presentation stays free of WPF dialogs and filesystem logic.
+- [x] Added WPF App database controller implementation with SaveFileDialog/OpenFileDialog/confirmation dialog in the App layer only.
+- [x] Made SQLite repositories use a switchable connection-string provider so dashboard/tracking reads and writes follow the selected DB without restarting.
+- [x] Added controller, ViewModel, XAML AutomationId, and legacy schema migration regression tests.
+- [x] Verified exact default local DB startup by launching the WPF exe; window title `Woong Monitor Stack` appeared and process was responding.
+- [x] Validation: full `.NET` tests passed, full `.NET` build passed, coverage generated at 88.4% line and 69.7% branch coverage.

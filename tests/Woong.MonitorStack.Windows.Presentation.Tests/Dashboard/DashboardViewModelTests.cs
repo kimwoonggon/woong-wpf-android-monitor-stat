@@ -526,10 +526,90 @@ public sealed class DashboardViewModelTests
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
         var dataSource = new FakeDashboardDataSource([], []);
-        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+        var databaseController = new FakeDatabaseController("D:\\data\\windows-local.db");
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            databaseController: databaseController);
 
         Assert.True(viewModel.Settings.IsCollectionVisible);
         Assert.False(viewModel.Settings.IsSyncEnabled);
+        Assert.Equal("D:\\data\\windows-local.db", viewModel.Settings.CurrentDatabasePathText);
+        Assert.True(viewModel.Settings.CanClearLocalData);
+    }
+
+    [Fact]
+    public void CreateLocalDatabaseCommand_UpdatesDatabaseStatusAndRefreshesDashboard()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "chrome.exe", now.AddMinutes(-10), now, isIdle: false)],
+            []);
+        var databaseController = new FakeDatabaseController("D:\\data\\old.db")
+        {
+            CreateResult = new DashboardDatabaseActionResult(true, "D:\\data\\created.db", "Created local database.")
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            databaseController: databaseController);
+
+        viewModel.CreateLocalDatabaseCommand.Execute(null);
+
+        Assert.Equal(1, databaseController.CreateCallCount);
+        Assert.Equal("D:\\data\\created.db", viewModel.Settings.CurrentDatabasePathText);
+        Assert.Equal("Created local database.", viewModel.Settings.DatabaseStatusLabel);
+        Assert.Equal(600_000, viewModel.TotalActiveMs);
+    }
+
+    [Fact]
+    public void LoadExistingLocalDatabaseCommand_UpdatesDatabaseStatusAndRefreshesDashboard()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [Session("session-1", "Code.exe", now.AddMinutes(-5), now, isIdle: false)],
+            []);
+        var databaseController = new FakeDatabaseController("D:\\data\\old.db")
+        {
+            LoadResult = new DashboardDatabaseActionResult(true, "D:\\data\\existing.db", "Loaded existing database.")
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            databaseController: databaseController);
+
+        viewModel.LoadExistingLocalDatabaseCommand.Execute(null);
+
+        Assert.Equal(1, databaseController.LoadCallCount);
+        Assert.Equal("D:\\data\\existing.db", viewModel.Settings.CurrentDatabasePathText);
+        Assert.Equal("Loaded existing database.", viewModel.Settings.DatabaseStatusLabel);
+        Assert.Equal("Code.exe", viewModel.TopAppName);
+    }
+
+    [Fact]
+    public void DeleteLocalDatabaseCommand_UpdatesDatabaseStatusAndRefreshesEmptyDashboard()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var databaseController = new FakeDatabaseController("D:\\data\\windows-local.db")
+        {
+            DeleteResult = new DashboardDatabaseActionResult(true, "D:\\data\\windows-local.db", "Deleted local database and recreated an empty one.")
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            databaseController: databaseController);
+
+        viewModel.DeleteLocalDatabaseCommand.Execute(null);
+
+        Assert.Equal(1, databaseController.DeleteCallCount);
+        Assert.Equal("D:\\data\\windows-local.db", viewModel.Settings.CurrentDatabasePathText);
+        Assert.Equal("Deleted local database and recreated an empty one.", viewModel.Settings.DatabaseStatusLabel);
+        Assert.Equal(0, viewModel.TotalActiveMs);
     }
 
     [Fact]
@@ -597,5 +677,48 @@ public sealed class DashboardViewModelTests
     private sealed class FixedClock(DateTimeOffset utcNow) : IDashboardClock
     {
         public DateTimeOffset UtcNow => utcNow;
+    }
+
+    private sealed class FakeDatabaseController(string currentDatabasePath) : IDashboardDatabaseController
+    {
+        public string CurrentDatabasePath { get; private set; } = currentDatabasePath;
+
+        public bool CanDeleteCurrentDatabase => true;
+
+        public int CreateCallCount { get; private set; }
+
+        public int LoadCallCount { get; private set; }
+
+        public int DeleteCallCount { get; private set; }
+
+        public DashboardDatabaseActionResult CreateResult { get; init; } =
+            new(true, currentDatabasePath, "Created local database.");
+
+        public DashboardDatabaseActionResult LoadResult { get; init; } =
+            new(true, currentDatabasePath, "Loaded existing database.");
+
+        public DashboardDatabaseActionResult DeleteResult { get; init; } =
+            new(true, currentDatabasePath, "Deleted local database.");
+
+        public DashboardDatabaseActionResult CreateNewDatabase()
+        {
+            CreateCallCount++;
+            CurrentDatabasePath = CreateResult.DatabasePath;
+            return CreateResult;
+        }
+
+        public DashboardDatabaseActionResult LoadExistingDatabase()
+        {
+            LoadCallCount++;
+            CurrentDatabasePath = LoadResult.DatabasePath;
+            return LoadResult;
+        }
+
+        public DashboardDatabaseActionResult DeleteCurrentDatabase()
+        {
+            DeleteCallCount++;
+            CurrentDatabasePath = DeleteResult.DatabasePath;
+            return DeleteResult;
+        }
     }
 }

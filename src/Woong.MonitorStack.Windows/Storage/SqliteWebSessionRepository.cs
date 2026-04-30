@@ -6,13 +6,16 @@ namespace Woong.MonitorStack.Windows.Storage;
 
 public sealed class SqliteWebSessionRepository
 {
-    private readonly string _connectionString;
+    private readonly Func<string> _connectionStringFactory;
 
     public SqliteWebSessionRepository(string connectionString)
+        : this(() => connectionString)
     {
-        _connectionString = string.IsNullOrWhiteSpace(connectionString)
-            ? throw new ArgumentException("Value must not be empty.", nameof(connectionString))
-            : connectionString;
+    }
+
+    public SqliteWebSessionRepository(Func<string> connectionStringFactory)
+    {
+        _connectionStringFactory = connectionStringFactory ?? throw new ArgumentNullException(nameof(connectionStringFactory));
     }
 
     public void Initialize()
@@ -39,6 +42,9 @@ public sealed class SqliteWebSessionRepository
                 ON web_session(focus_session_id);
             """;
         _ = command.ExecuteNonQuery();
+        EnsureNullableColumn(connection, "capture_method", "TEXT NULL");
+        EnsureNullableColumn(connection, "capture_confidence", "TEXT NULL");
+        EnsureNullableColumn(connection, "is_private_or_unknown", "INTEGER NULL");
     }
 
     public void Save(WebSession session)
@@ -146,9 +152,47 @@ public sealed class SqliteWebSessionRepository
 
     private SqliteConnection OpenConnection()
     {
-        var connection = new SqliteConnection(_connectionString);
+        string connectionString = _connectionStringFactory();
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("SQLite connection string must not be empty.");
+        }
+
+        var connection = new SqliteConnection(connectionString);
         connection.Open();
         return connection;
+    }
+
+    private static void EnsureNullableColumn(
+        SqliteConnection connection,
+        string columnName,
+        string columnDefinition)
+    {
+        if (HasColumn(connection, columnName))
+        {
+            return;
+        }
+
+        using SqliteCommand alterCommand = connection.CreateCommand();
+        alterCommand.CommandText = $"ALTER TABLE web_session ADD COLUMN {columnName} {columnDefinition};";
+        _ = alterCommand.ExecuteNonQuery();
+    }
+
+    private static bool HasColumn(SqliteConnection connection, string columnName)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "PRAGMA table_info(web_session);";
+
+        using SqliteDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void AddParameters(SqliteCommand command, WebSession session)

@@ -5,13 +5,16 @@ namespace Woong.MonitorStack.Windows.Storage;
 
 public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
 {
-    private readonly string _connectionString;
+    private readonly Func<string> _connectionStringFactory;
 
     public SqliteSyncOutboxRepository(string connectionString)
+        : this(() => connectionString)
     {
-        _connectionString = string.IsNullOrWhiteSpace(connectionString)
-            ? throw new ArgumentException("Value must not be empty.", nameof(connectionString))
-            : connectionString;
+    }
+
+    public SqliteSyncOutboxRepository(Func<string> connectionStringFactory)
+    {
+        _connectionStringFactory = connectionStringFactory ?? throw new ArgumentNullException(nameof(connectionStringFactory));
     }
 
     public void Initialize()
@@ -135,7 +138,13 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
 
     private SqliteConnection OpenConnection()
     {
-        var connection = new SqliteConnection(_connectionString);
+        string connectionString = _connectionStringFactory();
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("SQLite connection string must not be empty.");
+        }
+
+        var connection = new SqliteConnection(connectionString);
         connection.Open();
         return connection;
     }

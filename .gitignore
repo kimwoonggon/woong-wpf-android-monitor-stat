@@ -2,6 +2,7 @@
 bin/
 obj/
 TestResults/
+*.lscache
 
 # Local CLI/cache directories used inside the Codex sandbox
 .appdata/

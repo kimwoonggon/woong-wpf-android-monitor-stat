@@ -1203,16 +1203,21 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Contains("Poll interval: 1 second", text);
                 Assert.Contains("Idle threshold: 5 minutes", text);
-                Button openDbFolder = FindByAutomationId<Button>(panel, "OpenLocalDbFolderButton");
-                Button openLogsFolder = FindByAutomationId<Button>(panel, "OpenLogsFolderButton");
-                Button clearLocalData = FindByAutomationId<Button>(panel, "ClearLocalDataButton");
-                Assert.False(openDbFolder.IsEnabled);
-                Assert.False(openLogsFolder.IsEnabled);
-                Assert.Equal("Clear local data (disabled)", clearLocalData.Content);
-                Assert.False(clearLocalData.IsEnabled);
-                AssertReadableButton(openDbFolder);
-                AssertReadableButton(openLogsFolder);
-                AssertReadableButton(clearLocalData);
+                Assert.Contains("Local SQLite DB", text);
+                TextBlock currentDatabasePath = FindByAutomationId<TextBlock>(panel, "CurrentDatabasePathText");
+                TextBlock databaseStatus = FindByAutomationId<TextBlock>(panel, "DatabaseStatusLabel");
+                Button createDatabase = FindByAutomationId<Button>(panel, "CreateLocalDatabaseButton");
+                Button loadDatabase = FindByAutomationId<Button>(panel, "LoadExistingLocalDatabaseButton");
+                Button deleteDatabase = FindByAutomationId<Button>(panel, "DeleteLocalDatabaseButton");
+                Assert.Equal("No local database configured", currentDatabasePath.Text);
+                Assert.Equal("Local database ready.", databaseStatus.Text);
+                Assert.Equal("Create / switch DB", createDatabase.Content);
+                Assert.Equal("Load existing DB", loadDatabase.Content);
+                Assert.Equal("Delete local DB", deleteDatabase.Content);
+                Assert.False(deleteDatabase.IsEnabled);
+                AssertReadableButton(createDatabase);
+                AssertReadableButton(loadDatabase);
+                AssertReadableButton(deleteDatabase);
             }
             finally
             {

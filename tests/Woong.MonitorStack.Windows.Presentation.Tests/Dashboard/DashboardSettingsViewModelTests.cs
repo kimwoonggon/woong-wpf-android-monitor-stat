@@ -17,6 +17,8 @@ public sealed class DashboardSettingsViewModelTests
         Assert.Equal("Local only", viewModel.SyncModeLabel);
         Assert.Equal("No sync endpoint configured", viewModel.SyncEndpointText);
         Assert.False(viewModel.CanClearLocalData);
+        Assert.Equal("No local database configured", viewModel.CurrentDatabasePathText);
+        Assert.Equal("Local database ready.", viewModel.DatabaseStatusLabel);
     }
 
     [Fact]
