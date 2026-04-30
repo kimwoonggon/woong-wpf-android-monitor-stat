@@ -184,7 +184,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             LastPollTimeText = FormatLocalTime(snapshot.LastPollAtUtc.Value, _timeZone);
         }
 
-        DateTimeOffset? lastDbWriteAtUtc = snapshot.LastDbWriteAtUtc ?? snapshot.LastPersistedSession?.EndedAtUtc;
+        DateTimeOffset? lastDbWriteAtUtc = snapshot.LastDbWriteAtUtc
+            ?? snapshot.LastPersistedSession?.EndedAtUtc
+            ?? (snapshot.HasPersistedWebSession ? snapshot.LastPollAtUtc : null);
         if (lastDbWriteAtUtc is not null)
         {
             LastDbWriteTimeText = FormatLocalTime(lastDbWriteAtUtc.Value, _timeZone);

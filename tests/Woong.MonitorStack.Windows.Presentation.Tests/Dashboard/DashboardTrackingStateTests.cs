@@ -369,6 +369,7 @@ public sealed class DashboardTrackingStateTests
                 CurrentSessionDuration: TimeSpan.FromMinutes(5),
                 LastPersistedSession: null,
                 CurrentBrowserDomain: "github.com",
+                LastPollAtUtc: now,
                 HasPersistedWebSession: true)
         };
         var viewModel = new DashboardViewModel(
@@ -384,6 +385,7 @@ public sealed class DashboardTrackingStateTests
         var row = Assert.Single(viewModel.RecentWebSessions);
         Assert.Equal("github.com", row.Domain);
         Assert.Equal("github.com", viewModel.CurrentBrowserDomainText);
+        Assert.Equal("12:00", viewModel.LastDbWriteTimeText);
     }
 
     [Fact]
