@@ -117,6 +117,10 @@ Latest emulator evidence:
   `artifacts/android-ui-snapshots/20260430-151005`; `09-main-shell.png` shows
   Dashboard, Sessions, Report, and Settings labels visible above the Android
   system-navigation area while keeping the custom overlay label row removed.
+- Latest Current Focus wireframe-parity evidence:
+  `artifacts/android-ui-snapshots/20260430-152733`; `09-main-shell.png` shows
+  the launcher Dashboard Current Focus card as a compact horizontal app
+  identity and timing row using seeded local test data.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the

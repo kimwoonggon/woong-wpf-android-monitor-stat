@@ -291,6 +291,11 @@ and feature screenshots for each tab.
   on the emulator without returning to the oversized temporary overlay label
   row. This follows the XML skeleton direction while preserving Android
   touch-target and label-readability guidance from `mobile-android-design`.
+- The launcher Dashboard fragment `Current Focus` card now follows the
+  user-provided wireframe flow more closely: one compact horizontal runtime row
+  contains an app icon placeholder, app/package identity, and right-aligned
+  session/collection timing. Runtime values still come from local Room-backed
+  dashboard state and seeded screenshot test data only.
 
 ## Current Fragment Shell Gaps
 

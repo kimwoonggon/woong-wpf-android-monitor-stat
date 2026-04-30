@@ -56,11 +56,21 @@ class DashboardFragment : Fragment() {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
         val latestSession = state.recentSessions.firstOrNull()
 
-        binding.currentAppText.text = "Current app   $topApp"
-        binding.currentPackageText.text = "Package       ${latestSession?.packageName ?: topApp}"
-        binding.currentSessionDurationText.text = "Session duration   ${formatClockDuration(state.totalActiveMs)}"
-        binding.lastCollectedText.text = "Last collected   ${latestSession?.startedAtLocalText ?: getString(R.string.no_poll_yet)}"
-        binding.lastDbWriteText.text = "Last DB write   ${latestSession?.startedAtLocalText ?: getString(R.string.no_db_write_yet)}"
+        binding.currentFocusAppIconPlaceholder.text = topApp.firstOrNull()
+            ?.uppercaseChar()
+            ?.toString()
+            ?: "A"
+        binding.currentAppText.text = topApp
+        binding.currentPackageText.text = latestSession?.packageName ?: getString(R.string.no_package)
+        binding.currentSessionDurationText.text = formatClockDuration(state.totalActiveMs)
+        binding.lastCollectedText.text = getString(
+            R.string.last_collected_compact_value,
+            latestSession?.startedAtLocalText ?: getString(R.string.no_poll_yet)
+        )
+        binding.lastDbWriteText.text = getString(
+            R.string.last_db_write_compact_value,
+            latestSession?.startedAtLocalText ?: getString(R.string.no_db_write_yet)
+        )
         binding.activeFocusValueText.text = formatDuration(state.totalActiveMs)
         binding.screenOnValueText.text = formatDuration(state.totalActiveMs + state.idleMs)
         binding.idleValueText.text = formatDuration(state.idleMs)

@@ -23,6 +23,8 @@
     <string name="current_session_duration_label">Session duration</string>
     <string name="last_collected_label">Last collected</string>
     <string name="last_db_write_label">Last DB write</string>
+    <string name="last_collected_compact_value">Collected %1$s</string>
+    <string name="last_db_write_compact_value">DB %1$s</string>
     <string name="total_active">Active time</string>
     <string name="active_focus">Active Focus</string>
     <string name="screen_on">Screen On</string>

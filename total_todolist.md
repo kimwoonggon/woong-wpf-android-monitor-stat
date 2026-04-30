@@ -1555,6 +1555,18 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Run WPF UI acceptance script and confirm root next-recommended WPF checks at `artifacts/wpf-ui-acceptance/20260430-152612`.
 - [x] Attempt solution tests; WPF-owned projects passed before the run failed in Android-owned architecture coverage.
+
+## Milestone 55: Android Current Focus Wireframe Parity
+
+- [x] Audit the launcher fragment UI against the user-provided Android XML skeleton and Figma import artifact.
+- [x] Add a failing Android architecture/layout test for the highest-impact feasible mismatch.
+- [x] Correct the Dashboard fragment Current Focus card to match the compact horizontal wireframe shape.
+- [x] Run focused Android architecture tests.
+- [x] Run Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest`.
+- [x] Run Android screenshot automation if an emulator or device is available.
+- [x] Update Android docs and resume state for this slice.
+- [x] Commit and push the Android slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

@@ -346,6 +346,31 @@ public sealed class AndroidWireframeLayoutTests
     }
 
     [Fact]
+    public void AndroidFragmentDashboard_CurrentFocusUsesCompactHorizontalRuntimeCard()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+
+        Assert.Contains("@+id/currentFocusRuntimeRow", dashboard);
+        Assert.Contains("@+id/currentFocusAppIconPlaceholder", dashboard);
+        Assert.Contains("@+id/currentFocusIdentityColumn", dashboard);
+        Assert.Contains("@+id/currentFocusTimingColumn", dashboard);
+        Assert.Contains("android:orientation=\"horizontal\"", dashboard);
+
+        int titleIndex = dashboard.IndexOf("@+id/currentFocusTitle", StringComparison.Ordinal);
+        int rowIndex = dashboard.IndexOf("@+id/currentFocusRuntimeRow", StringComparison.Ordinal);
+        int iconIndex = dashboard.IndexOf("@+id/currentFocusAppIconPlaceholder", StringComparison.Ordinal);
+        int identityIndex = dashboard.IndexOf("@+id/currentFocusIdentityColumn", StringComparison.Ordinal);
+        int timingIndex = dashboard.IndexOf("@+id/currentFocusTimingColumn", StringComparison.Ordinal);
+
+        Assert.True(titleIndex >= 0, "Expected Current Focus title.");
+        Assert.True(rowIndex > titleIndex, "Expected the runtime row directly after the Current Focus title.");
+        Assert.True(iconIndex > rowIndex, "Expected the app icon placeholder inside the runtime row.");
+        Assert.True(identityIndex > iconIndex, "Expected app identity text after the icon.");
+        Assert.True(timingIndex > identityIndex, "Expected session and collection timing after app identity.");
+    }
+
+    [Fact]
     public void AndroidFragmentDashboard_ExposesRoomBackedValueIds()
     {
         string repoRoot = FindRepositoryRoot();

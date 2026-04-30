@@ -58,41 +58,91 @@
                     android:layout_height="wrap_content"
                     android:text="@string/current_focus" />
 
-                <TextView
-                    android:id="@+id/currentAppText"
-                    style="@style/WmsKeyValueText"
+                <LinearLayout
+                    android:id="@+id/currentFocusRuntimeRow"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="@string/no_top_app" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/currentPackageText"
-                    style="@style/WmsKeyValueText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_package" />
+                    <TextView
+                        android:id="@+id/currentFocusAppIconPlaceholder"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_rounded_icon_placeholder"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/currentSessionDurationText"
-                    style="@style/WmsKeyValueText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/zero_clock_duration" />
+                    <LinearLayout
+                        android:id="@+id/currentFocusIdentityColumn"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/lastCollectedText"
-                    style="@style/WmsKeyValueText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_poll_yet" />
+                        <TextView
+                            android:id="@+id/currentAppText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/no_top_app"
+                            android:textColor="@color/wms_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/lastDbWriteText"
-                    style="@style/WmsKeyValueText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/no_db_write_yet" />
+                        <TextView
+                            android:id="@+id/currentPackageText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/no_package"
+                            android:textColor="@color/wms_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/currentFocusTimingColumn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/currentSessionDurationText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="@string/zero_clock_duration"
+                            android:textColor="@color/wms_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/lastCollectedText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="@string/no_poll_yet"
+                            android:textColor="@color/wms_text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/lastDbWriteText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="@string/no_db_write_yet"
+                            android:textColor="@color/wms_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

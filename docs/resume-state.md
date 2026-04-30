@@ -2,6 +2,22 @@
 
 Updated: 2026-04-30
 
+
+## 2026-04-30 Android Current Focus Wireframe Parity Slice
+
+- Audited the launcher fragment UI against the user-provided Android XML skeleton direction and `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg`.
+- Picked the highest-impact feasible Android-only mismatch still present after the toolbar/bottom-nav slices: `DashboardFragment` rendered the Current Focus card as a vertical key/value stack while the wireframe shows a compact horizontal runtime card.
+- Added RED architecture coverage requiring `fragment_dashboard.xml` to expose `currentFocusRuntimeRow`, app icon placeholder, identity column, and timing column in a horizontal Current Focus card.
+- Updated `fragment_dashboard.xml` and `DashboardFragment.kt` so the card shows app icon, app/package identity, and right-aligned session/collection timing from Room-backed dashboard state. No tracking, sync, location, or privacy collection behavior changed.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-152733`; `09-main-shell.png` shows the compact Current Focus card with seeded local test data.
+
+Verified:
+
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidFragmentDashboard_CurrentFocusUsesCompactHorizontalRuntimeCard" -maxcpucount:1 -v minimal` failed on missing `currentFocusRuntimeRow`, then passed after the XML/Kotlin fix.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~Android" -maxcpucount:1 -v minimal` passed 34 Android architecture tests.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on emulator `emulator-5554` with artifact `artifacts/android-ui-snapshots/20260430-152733`.
+
 ## 2026-04-30 WPF Acceptance Final-Audit Recommendation Evidence Slice
 
 - Audited WPF acceptance/runtime evidence against `total_todolist.md`, `docs/wpf-ui-acceptance-checklist.md`, `docs/runtime-pipeline.md`, and current WPF scripts after Milestone 54.
