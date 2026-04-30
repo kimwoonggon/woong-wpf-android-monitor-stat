@@ -79,6 +79,42 @@ public sealed class RawEventUploadApiTests
         Assert.Empty(await dbContext.RawEvents.ToListAsync());
     }
 
+    [Fact]
+    public async Task UploadRawEvents_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses()
+    {
+        using var factory = new RelationalServerFactory();
+        using HttpClient client = factory.CreateClient();
+        await factory.EnsureDatabaseCreatedAsync();
+        Guid deviceId = Guid.NewGuid();
+        await SeedDeviceAndExistingRawEventAsync(factory, deviceId);
+        var request = new UploadRawEventsRequest(
+            deviceId.ToString("N"),
+            [
+                Raw("existing-raw-event"),
+                Raw("new-raw-event"),
+                Raw("new-raw-event")
+            ]);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        JsonElement[] items = json.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal("existing-raw-event", items[0].GetProperty("clientId").GetString());
+        Assert.Equal((int)UploadItemStatus.Duplicate, items[0].GetProperty("status").GetInt32());
+        Assert.Equal("new-raw-event", items[1].GetProperty("clientId").GetString());
+        Assert.Equal((int)UploadItemStatus.Accepted, items[1].GetProperty("status").GetInt32());
+        Assert.Equal("new-raw-event", items[2].GetProperty("clientId").GetString());
+        Assert.Equal((int)UploadItemStatus.Duplicate, items[2].GetProperty("status").GetInt32());
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        List<RawEventEntity> persisted = await dbContext.RawEvents
+            .OrderBy(rawEvent => rawEvent.ClientEventId)
+            .ToListAsync();
+        Assert.Equal(["existing-raw-event", "new-raw-event"], persisted.Select(rawEvent => rawEvent.ClientEventId));
+    }
+
     private static async Task SeedDeviceAsync(WebApplicationFactory<Program> factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
@@ -96,6 +132,40 @@ public sealed class RawEventUploadApiTests
         });
         await dbContext.SaveChangesAsync();
     }
+
+    private static async Task SeedDeviceAndExistingRawEventAsync(WebApplicationFactory<Program> factory, Guid deviceId)
+    {
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        dbContext.Devices.Add(new DeviceEntity
+        {
+            Id = deviceId,
+            UserId = "user-1",
+            Platform = Platform.Windows,
+            DeviceKey = "windows-raw-event-batch-key",
+            DeviceName = "Windows Workstation",
+            TimezoneId = "Asia/Seoul",
+            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
+            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
+        });
+        RawEventUploadItem existing = Raw("existing-raw-event");
+        dbContext.RawEvents.Add(new RawEventEntity
+        {
+            DeviceId = deviceId,
+            ClientEventId = existing.ClientEventId,
+            EventType = existing.EventType,
+            OccurredAtUtc = existing.OccurredAtUtc,
+            PayloadJson = existing.PayloadJson
+        });
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static RawEventUploadItem Raw(string clientEventId)
+        => new(
+            clientEventId,
+            eventType: "foreground_window",
+            occurredAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            payloadJson: """{"processName":"Code.exe"}""");
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()
         => new WebApplicationFactory<Program>()

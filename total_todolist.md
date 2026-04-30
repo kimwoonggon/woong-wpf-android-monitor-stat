@@ -1743,3 +1743,19 @@ milestones below are finished.
 - [x] Full `.NET` solution tests passed: 419 tests.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.7% (3838/4181), branch 70.9% (544/767).
+
+## Milestone 69: Server Raw Event Mixed-Batch Idempotency
+
+- [x] Add RED relational test for raw event upload batch containing an existing duplicate, one new event, and an intra-batch duplicate.
+- [x] Fix `RawEventUploadService` to track existing and newly accepted `clientEventId` values within the request batch.
+- [x] Verify per-item statuses are Duplicate, Accepted, Duplicate and only existing + one new row persist.
+- [x] Run focused mixed-batch test and raw-event upload tests.
+- [x] Update `server_check_todo.md` raw event upload coverage.
+
+### Milestone 69 Verification Update
+
+- [x] Full `.NET` solution tests passed: 421 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.8% (3851/4194), branch 71.0% (546/769).
+- [x] Concurrent WPF commits `ddfc617` and `024dec1` preserve domain-only browser metadata in fallback and current-focus UI.
+- [x] Concurrent Android commit `4fd5416` records location opt-in UI evidence.

@@ -31,13 +31,20 @@ public sealed class RawEventUploadService
                 .ToList());
         }
 
+        List<string> requestedEventIds = request.Events
+            .Select(item => item.ClientEventId)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        HashSet<string> seenEventIds = (await _dbContext.RawEvents
+                .Where(rawEvent => rawEvent.DeviceId == deviceId &&
+                    requestedEventIds.Contains(rawEvent.ClientEventId))
+                .Select(rawEvent => rawEvent.ClientEventId)
+                .ToListAsync())
+            .ToHashSet(StringComparer.Ordinal);
+
         foreach (RawEventUploadItem item in request.Events)
         {
-            bool exists = await _dbContext.RawEvents.AnyAsync(rawEvent =>
-                rawEvent.DeviceId == deviceId &&
-                rawEvent.ClientEventId == item.ClientEventId);
-
-            if (exists)
+            if (!seenEventIds.Add(item.ClientEventId))
             {
                 results.Add(new UploadItemResult(item.ClientEventId, UploadItemStatus.Duplicate, ErrorMessage: null));
                 continue;

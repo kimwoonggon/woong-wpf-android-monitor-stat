@@ -23,10 +23,9 @@ does not replace `total_todolist.md`.
 
 ## PRD-To-Checklist Gaps
 
-1. Server mixed-batch upload behavior is the highest-value independent queue.
-   `server_check_todo.md` still lists open web, raw-event, and location
-   mixed-batch slices. Focus mixed-batch is already recorded as covered in the
-   active server checklist/resume flow.
+1. Server mixed-batch upload behavior remains a high-value independent queue,
+   but focus, web, and raw-event uploads are now covered. `server_check_todo.md`
+   still lists open location unknown-device and location mixed-batch slices.
 2. Server invalid input/date-range edges remain actionable. Open slices:
    malformed dates, missing query values, invalid timezone ids, `from > to`,
    and date-range local-midnight split allocation.
@@ -39,23 +38,42 @@ does not replace `total_todolist.md`.
 5. Android checklist has current UI screenshot evidence but does not yet call
    out the latest resource-measurement artifact `20260430-174552`. Treat this
    as a documentation breadcrumb gap, not a product/test failure.
-6. WPF checklist is aligned with the latest same-window browser, Chrome native,
-   privacy, and acceptance artifacts. No new WPF implementation slice should be
-   queued until the current main-agent/browser-domain work lands.
+6. WPF checklist is aligned with the broad same-window browser, Chrome native,
+   privacy, and acceptance artifacts. Commit `ddfc617` adds a narrower
+   origin-only UI Automation fallback behavior, but `docs/resume-state.md` does
+   not yet include a verification breadcrumb for that commit.
+
+## Latest Commit Audit
+
+- `ddfc617 Limit browser fallback URL metadata`: implementation and focused
+  test changed WPF UI Automation address-bar fallback from full URL persistence
+  to origin-only URL metadata. Checklist rows W29/W31 cover the general privacy
+  surface, but resume-state does not record the focused verification for this
+  slice. Recommended main-agent action: add the verification breadcrumb when
+  finalizing integration.
+- `43d3d0b Handle web upload mixed-batch duplicates`: resume-state and
+  `server_check_todo.md` are current. Web mixed-batch is closed with focused
+  server test, full solution test/build, and coverage evidence.
+- raw-event mixed-batch local work: resume-state and `server_check_todo.md` are
+  current in the active main-agent flow. Raw-event mixed-batch closes with
+  focused server tests, full solution test/build, and coverage evidence before
+  commit.
+- `eb3cfdf Add QA coordination gap snapshot`: superseded by this refresh for
+  server delegation order after web mixed-batch completion.
 
 ## Recommended Delegation
 
-- Server agent: next independent slice should be mixed-batch web upload
-  coverage: existing duplicate, accepted new row, and missing focus parent in
-  one request. It does not overlap Android/WPF files.
-- Server agent after that: mixed-batch raw event upload, then unregistered
-  location upload, then mixed-batch location upload.
+- Server agent: next independent slice should be unregistered location upload
+  coverage under a relational provider.
+- Server agent after that: mixed-batch location upload with existing duplicate,
+  accepted new context, and intra-batch duplicate in one request.
 - Android agent: only queue documentation/evidence refresh for the latest
   resource-measurement artifact or physical-device measurement when a device is
   available. Avoid Android feature work unless main agent explicitly opens it.
 - WPF agent: safe queued task is docs/evidence review of WPF acceptance reports
-  only. Avoid Chrome acceptance script/tests and browser-domain implementation
-  while main integration is active there.
+  or a resume-state verification note for `ddfc617`. Avoid Chrome acceptance
+  script/tests and browser-domain implementation while main integration is
+  active there.
 - Main integration: own cross-slice validation, `total_todolist.md`, final
   resume-state summary, and conflict resolution for server checklist edits
   already in progress.

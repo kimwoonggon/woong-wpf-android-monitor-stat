@@ -4357,3 +4357,23 @@ Verified:
 - Full `.NET` solution tests passed 419 tests.
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3838/4181), branch 70.9% (544/767).
+
+## 2026-04-30 Server Raw Event Mixed-Batch Idempotency Slice
+
+- Added relational coverage for a raw-event upload batch containing an existing duplicate, a new accepted event, and an intra-batch duplicate of that new event.
+- Fixed `RawEventUploadService` to seed a request-local idempotency set with existing DB raw-event ids and add newly accepted ids as it processes the batch.
+- This prevents relational unique-index failures and returns item-level `Duplicate`, `Accepted`, and `Duplicate` statuses while persisting only one new row.
+
+Concurrent agent breadcrumbs:
+
+- `ddfc617` limits WPF UI Automation address-bar fallback URL metadata to origin-only while preserving domain extraction.
+- `024dec1` normalizes Current Focus browser-domain display to domain-only when a URL-like value reaches the VM.
+- `4fd5416` records Android Settings location opt-in UI evidence and screenshots.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~UploadRawEvents_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses"` passed.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~RawEventUpload"` passed 3 tests.
+- Full `.NET` solution tests passed 421 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.8% (3851/4194), branch 71.0% (546/769).

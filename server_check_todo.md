@@ -71,8 +71,10 @@ Status legend:
   Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows`.
 - [x] Relational FK requires raw events to belong to a registered device.
   Evidence: `ServerDbContextModelTests.ServerSessionEntities_HaveRequiredDeviceForeignKeys`.
-- [ ] Add mixed-batch raw event upload coverage: duplicate and accepted events
-  in one request.
+- [x] Mixed-batch raw event upload returns independent statuses for existing
+  duplicate, accepted new event, and intra-batch duplicate while persisting only
+  accepted rows.
+  Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses`.
 - [ ] Add raw-event payload privacy guard coverage if raw events become more
   than metadata/debug diagnostics.
 
