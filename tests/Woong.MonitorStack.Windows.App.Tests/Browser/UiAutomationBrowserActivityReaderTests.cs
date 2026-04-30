@@ -19,7 +19,7 @@ public sealed class UiAutomationBrowserActivityReaderTests
         Assert.Equal("Chrome", snapshot.BrowserName);
         Assert.Equal("chrome.exe", snapshot.ProcessName);
         Assert.Equal("github.com", snapshot.Domain);
-        Assert.Equal("https://github.com/kimwoonggon/woong-wpf-android-monitor-stat?tab=readme", snapshot.Url);
+        Assert.Equal("https://github.com/", snapshot.Url);
         Assert.Equal(CaptureMethod.UIAutomationAddressBar, snapshot.CaptureMethod);
         Assert.Equal(CaptureConfidence.Medium, snapshot.CaptureConfidence);
         Assert.False(snapshot.IsPrivateOrUnknown);

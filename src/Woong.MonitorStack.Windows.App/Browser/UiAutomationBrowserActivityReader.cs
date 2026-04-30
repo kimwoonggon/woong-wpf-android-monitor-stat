@@ -74,7 +74,7 @@ public sealed class UiAutomationBrowserActivityReader(
         string trimmed = address.Trim();
         if (TryCreateWebUri(trimmed, out Uri? absoluteUri))
         {
-            return absoluteUri.AbsoluteUri;
+            return ToOriginUri(absoluteUri);
         }
 
         if (trimmed.Contains(' ', StringComparison.Ordinal) || !trimmed.Contains('.', StringComparison.Ordinal))
@@ -83,9 +83,12 @@ public sealed class UiAutomationBrowserActivityReader(
         }
 
         return TryCreateWebUri($"https://{trimmed}", out Uri? hostOnlyUri)
-            ? hostOnlyUri.AbsoluteUri
+            ? ToOriginUri(hostOnlyUri)
             : null;
     }
+
+    private static string ToOriginUri(Uri uri)
+        => $"{uri.GetLeftPart(UriPartial.Authority)}/";
 
     private static bool TryCreateWebUri(string value, [NotNullWhen(true)] out Uri? uri)
     {
