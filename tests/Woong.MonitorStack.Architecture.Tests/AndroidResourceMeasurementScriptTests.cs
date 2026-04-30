@@ -18,6 +18,7 @@ public sealed class AndroidResourceMeasurementScriptTests
         Assert.Contains("dumpsys", script);
         Assert.Contains("meminfo", script);
         Assert.Contains("gfxinfo", script);
+        Assert.Contains("RequirePhysicalDevice", script);
         Assert.Contains("com.woong.monitorstack", script);
         Assert.Contains("report.md", script);
         Assert.Contains("manifest.json", script);
@@ -61,6 +62,58 @@ public sealed class AndroidResourceMeasurementScriptTests
             Assert.True(File.Exists(Path.Combine(latest, "manifest.json")));
             Assert.Contains("BLOCKED", File.ReadAllText(Path.Combine(latest, "report.md")));
             Assert.Contains("No connected Android device", File.ReadAllText(Path.Combine(latest, "manifest.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidResourceMeasurementScript_WhenPhysicalDeviceRequiredButOnlyEmulatorConnected_WritesBlockedArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-resource-measurement.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-resource-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, """
+@echo off
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeEmulator
+  exit /b 0
+)
+exit /b 0
+""");
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -RequirePhysicalDevice")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            process.WaitForExit(30_000);
+
+            Assert.Equal(0, process.ExitCode);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            string manifest = File.ReadAllText(Path.Combine(latest, "manifest.json"));
+            Assert.Contains("BLOCKED", report);
+            Assert.Contains("Physical Android device", report);
+            Assert.Contains("Physical Android device required", manifest);
         }
         finally
         {

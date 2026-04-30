@@ -132,7 +132,7 @@ powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1
 
 Results:
 
-- .NET tests passed: 436 total, with 6 explicit PostgreSQL/Testcontainers
+- .NET tests passed: 437 total, with 6 explicit PostgreSQL/Testcontainers
   tests skipped by default unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
 - .NET build passed with 0 warnings and 0 errors.
 - Coverage report generation passed.

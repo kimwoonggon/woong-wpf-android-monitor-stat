@@ -200,3 +200,10 @@ device TODO.
 - [x] Fresh UI evidence: `artifacts/android-ui-snapshots/20260430-184358`.
 - [x] Fresh resource evidence: `artifacts/android-resource-measurements/20260430-184442`.
 - [x] Physical-device resource measurement remains open; emulator evidence does not close that TODO.
+
+## Physical Device Required Measurement Guard 2026-04-30
+
+- [x] Added `-RequirePhysicalDevice` support to `scripts/run-android-resource-measurement.ps1`.
+- [x] Added architecture tests proving emulator-only device lists produce `BLOCKED` physical-device artifacts.
+- [x] Local physical-device-required run produced `artifacts/android-resource-measurements/20260430-191835` with status `BLOCKED` because only `emulator-5554` is connected.
+- [x] Physical-device resource measurement remains open until a non-`emulator-*` Android device is connected.

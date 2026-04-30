@@ -35,9 +35,18 @@ Useful shorter emulator smoke:
 powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -DurationSeconds 3
 ```
 
+Physical-device-only evidence:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -RequirePhysicalDevice
+```
+
 The script builds and installs the debug APK unless `-SkipBuild` is provided.
 It exits successfully with `Status: BLOCKED` when no emulator or physical device
 is connected, so missing device evidence is explicit.
+
+When `-RequirePhysicalDevice` is provided, emulator-only device lists produce a
+`BLOCKED` report instead of accidentally satisfying the physical-device TODO.
 
 When `-SkipBuild` is used, the debug app must already be installed. The script
 checks the package launcher before invoking `monkey`; if the app is missing, it
@@ -73,3 +82,10 @@ artifacts/android-resource-measurements/latest/
 
 Physical-device resource measurement is still open. Emulator evidence must not
 be used to mark the physical-device TODO complete.
+
+Latest physical-device-required check:
+
+- Command:
+  `powershell -ExecutionPolicy Bypass -File scripts/run-android-resource-measurement.ps1 -SkipBuild -RequirePhysicalDevice`
+- Result: BLOCKED because only `emulator-5554` is connected.
+- Artifact: `artifacts/android-resource-measurements/20260430-191835`.

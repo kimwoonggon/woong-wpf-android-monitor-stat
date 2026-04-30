@@ -4,7 +4,8 @@ param(
     [string]$GradleWrapperPath = "",
     [string]$PackageName = "com.woong.monitorstack",
     [int]$DurationSeconds = 10,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$RequirePhysicalDevice
 )
 
 $ErrorActionPreference = "Stop"
@@ -153,6 +154,7 @@ function Write-MeasurementArtifacts {
         gradleWrapperPath = $GradleWrapperPath
         packageName = $PackageName
         durationSeconds = $DurationSeconds
+        requirePhysicalDevice = [bool]$RequirePhysicalDevice
         artifacts = $artifacts
         blockedReason = $BlockedReason
     }
@@ -195,6 +197,27 @@ try {
         Write-Host "No connected Android device. Android resource measurement is blocked."
         Write-Host "Android resource measurement artifacts: $runRoot"
         exit 0
+    }
+
+    if ($RequirePhysicalDevice) {
+        $physicalDeviceLines = @($deviceLines | Where-Object {
+            $_ -notmatch "^emulator-" -and
+            $_ -notmatch "\bmodel:.*Emulator\b" -and
+            $_ -notmatch "\bdevice:emu"
+        })
+
+        if ($physicalDeviceLines.Count -eq 0) {
+            $status = "BLOCKED"
+            $blockedReason = "Physical Android device required, but adb devices -l reported only emulator devices."
+            $notes.Add($blockedReason)
+            $notes.Add("Detected device(s): $($deviceLines -join '; ')")
+            Write-MeasurementArtifacts -Status $status -BlockedReason $blockedReason
+            Write-Host $blockedReason
+            Write-Host "Android resource measurement artifacts: $runRoot"
+            exit 0
+        }
+
+        $notes.Add("Physical Android device required and detected: $($physicalDeviceLines -join '; ')")
     }
 
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")

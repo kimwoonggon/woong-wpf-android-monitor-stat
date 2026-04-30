@@ -4481,3 +4481,10 @@ Server checklist closure note:
 - Latest PostgreSQL validation artifact: `artifacts/server-postgres-validation/20260430-190958`, status PASS.
 - Server checklist now has no PostgreSQL/Testcontainers blocker remaining in this local environment.
 - Validation after PostgreSQL concurrency slice: standard solution test passed with 436 passed and 6 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage generated line 90.1% and branch 70.6%; explicit PostgreSQL/Testcontainers validation passed all 6 PostgreSQL tests.
+
+## 2026-04-30 - Android Physical Device Measurement Guard
+
+- Added `-RequirePhysicalDevice` to `scripts/run-android-resource-measurement.ps1` and architecture coverage for emulator-only blocking behavior.
+- Local run `scripts\run-android-resource-measurement.ps1 -SkipBuild -RequirePhysicalDevice` generated `artifacts/android-resource-measurements/20260430-191835` with status `BLOCKED` because only `emulator-5554` is connected.
+- This preserves the rule that emulator evidence must not close physical-device Android resource measurement TODOs.
+- Validation after physical-device guard slice: standard solution test passed with 437 passed and 6 explicit PostgreSQL tests skipped by default; build passed with 0 warnings/errors; coverage generated line 90.1% and branch 70.6%.

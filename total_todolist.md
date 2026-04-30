@@ -1874,3 +1874,17 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 90.1% (3965/4398), branch 70.6% (570/807).
 - [x] Explicit PostgreSQL/Testcontainers validation passed with 6 PostgreSQL tests run and 0 skipped.
+
+## Milestone 78: Android Physical Device Measurement Guard
+
+- [x] Add RED architecture test for physical-device-required resource measurement mode.
+- [x] Add `-RequirePhysicalDevice` to `scripts/run-android-resource-measurement.ps1`.
+- [x] Ensure emulator-only device lists write `BLOCKED` artifacts instead of closing physical-device TODOs.
+- [x] Run local physical-device-required check and record artifact `artifacts/android-resource-measurements/20260430-191835/`.
+- [x] Update Android resource measurement docs and Android checklist.
+
+### Milestone 78 Verification Update
+
+- [x] Standard `.NET` solution tests passed: 437 passed, 6 explicit PostgreSQL tests skipped unless `WOONG_MONITOR_RUN_POSTGRES_TESTS=1`.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 90.1% (3965/4398), branch 70.6% (570/807).
