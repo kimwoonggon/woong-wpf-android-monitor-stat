@@ -392,9 +392,10 @@ Acceptance:
 - `RefreshButton_ReloadsSqliteDashboard`
 - `SyncNow_WhenSyncOff_DoesNotUploadAndShowsSkippedStatus`
 
-The `Custom` button may remain disabled until the custom range picker is
-implemented, but it must be visible, readable, and clearly part of the period
-selector.
+The `Custom` button opens an inline custom range editor. The editor uses WPF
+`DatePicker` controls plus `HH:mm` time inputs for local start/end selection,
+then queries the SQLite-backed dashboard data source using the converted UTC
+range.
 
 ## Current Focus Panel
 
@@ -451,8 +452,10 @@ Required charts:
 
 - Hourly Active Focus: hour labels such as `09`, `10`, `11`; Y labels in
   minutes such as `0m`, `30m`, `60m`.
-- Top Apps by Focus Time: readable app labels and durations.
-- Top Domains by Web Focus Time: readable domain labels and durations.
+- Top Apps by Focus Time: horizontal bar chart with readable app/process
+  labels on the left side and duration on the horizontal axis.
+- Top Domains by Web Focus Time: horizontal bar chart with readable site/domain
+  labels on the left side and duration on the horizontal axis.
 
 Rules:
 
@@ -668,6 +671,12 @@ Current implementation:
 - App chart groups focus sessions by app/process.
 - Domain chart groups web sessions by domain.
 - Hourly chart splits focus sessions into hour buckets.
+- Summary cards and charts are selected-range aggregates from persisted local
+  data. They are not reset by app restart or PC restart as long as SQLite rows
+  remain in the selected range.
+- `Today`, `1h`, `6h`, and `24h` use fixed range rules. `Custom` uses the
+  inline local date/time editor and converts that range to UTC before querying
+  SQLite.
 
 ## Acceptance Script
 

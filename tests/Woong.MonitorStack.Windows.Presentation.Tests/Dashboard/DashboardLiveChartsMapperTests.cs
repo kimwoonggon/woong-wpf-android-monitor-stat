@@ -59,4 +59,25 @@ public sealed class DashboardLiveChartsMapperTests
         Assert.Equal("Domains", series.Name);
         Assert.Equal([600_000, 300_000], series.Values);
     }
+
+    [Fact]
+    public void BuildHorizontalBarChart_UsesRowSeriesAndCategoryLabelsOnYAxis()
+    {
+        var points = new[]
+        {
+            new DashboardChartPoint("Chrome", 1_200_000),
+            new DashboardChartPoint("VS Code", 600_000)
+        };
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", points);
+
+        Assert.Equal(["Chrome", "VS Code"], chart.Labels);
+        Assert.Equal("", chart.EmptyStateText);
+        Assert.Empty(Assert.Single(chart.XAxes).Labels ?? []);
+        Assert.Equal("10m", Assert.Single(chart.XAxes).Labeler?.Invoke(600_000));
+        Assert.Equal(["Chrome", "VS Code"], Assert.Single(chart.YAxes).Labels);
+        var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(chart.Series));
+        Assert.Equal("Apps", rowSeries.Name);
+        Assert.Equal([1_200_000, 600_000], rowSeries.Values);
+    }
 }

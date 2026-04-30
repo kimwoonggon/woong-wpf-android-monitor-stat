@@ -13,17 +13,23 @@
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Border Style="{StaticResource CompactSurfaceBorderStyle}">
         <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <WrapPanel AutomationProperties.AutomationId="TrackingActionGroup">
+            <WrapPanel Grid.Row="0"
+                       AutomationProperties.AutomationId="TrackingActionGroup">
                 <Button Content="▶ Start Tracking"
                         AutomationProperties.AutomationId="StartTrackingButton"
                         AutomationProperties.Name="Start tracking"
@@ -46,7 +52,8 @@
                         Style="{StaticResource SecondaryButtonStyle}" />
             </WrapPanel>
 
-            <WrapPanel Grid.Column="1"
+            <WrapPanel Grid.Row="0"
+                       Grid.Column="1"
                        AutomationProperties.AutomationId="PeriodFilterGroup"
                        HorizontalAlignment="Right">
                 <Button Content="Today"
@@ -80,6 +87,63 @@
                         CommandParameter="{x:Static dashboard:DashboardPeriod.Custom}"
                         Style="{StaticResource PeriodButtonStyle}" />
             </WrapPanel>
+
+            <Border Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Margin="0,12,0,0"
+                    Padding="12"
+                    Background="{StaticResource AppBackgroundBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Visibility="{Binding IsCustomRangeEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <WrapPanel AutomationProperties.AutomationId="CustomRangeEditor"
+                           VerticalAlignment="Center">
+                    <TextBlock Text="Custom range"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
+                    <TextBlock Text="Start"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding CustomStartDate, Mode=TwoWay}"
+                                AutomationProperties.AutomationId="CustomStartDatePicker"
+                                AutomationProperties.Name="Custom range start date"
+                                Width="140"
+                                Margin="0,0,6,0" />
+                    <TextBox Text="{Binding CustomStartTimeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.AutomationId="CustomStartTimeTextBox"
+                             AutomationProperties.Name="Custom range start time"
+                             Width="64"
+                             MinHeight="34"
+                             Margin="0,0,14,0" />
+                    <TextBlock Text="End"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding CustomEndDate, Mode=TwoWay}"
+                                AutomationProperties.AutomationId="CustomEndDatePicker"
+                                AutomationProperties.Name="Custom range end date"
+                                Width="140"
+                                Margin="0,0,6,0" />
+                    <TextBox Text="{Binding CustomEndTimeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.AutomationId="CustomEndTimeTextBox"
+                             AutomationProperties.Name="Custom range end time"
+                             Width="64"
+                             MinHeight="34"
+                             Margin="0,0,14,0" />
+                    <Button Content="Apply"
+                            AutomationProperties.AutomationId="ApplyCustomRangeButton"
+                            AutomationProperties.Name="Apply custom range"
+                            Command="{Binding ApplyCustomRangeCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    <TextBlock Text="{Binding CustomRangeStatusText}"
+                               AutomationProperties.AutomationId="CustomRangeStatusText"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="12,0,0,0" />
+                </WrapPanel>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

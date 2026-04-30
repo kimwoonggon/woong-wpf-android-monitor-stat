@@ -25,6 +25,24 @@ public sealed partial class DashboardViewModel : ObservableObject
     private DashboardPeriod _selectedPeriod = DashboardPeriod.Today;
 
     [ObservableProperty]
+    private bool _isCustomRangeEditorVisible;
+
+    [ObservableProperty]
+    private DateTime? _customStartDate;
+
+    [ObservableProperty]
+    private string _customStartTimeText = "09:00";
+
+    [ObservableProperty]
+    private DateTime? _customEndDate;
+
+    [ObservableProperty]
+    private string _customEndTimeText = "18:00";
+
+    [ObservableProperty]
+    private string _customRangeStatusText = "Choose a date and time range.";
+
+    [ObservableProperty]
     private DetailsTab _selectedDetailsTab = DetailsTab.AppSessions;
 
     [ObservableProperty]
@@ -109,10 +127,10 @@ public sealed partial class DashboardViewModel : ObservableObject
     private DashboardLiveChartsData _hourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", []);
 
     [ObservableProperty]
-    private DashboardLiveChartsData _appUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", []);
+    private DashboardLiveChartsData _appUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", []);
 
     [ObservableProperty]
-    private DashboardLiveChartsData _domainUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Domains", []);
+    private DashboardLiveChartsData _domainUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Domains", []);
 
     [ObservableProperty]
     private IReadOnlyList<DashboardSessionRow> _recentSessions = [];
@@ -167,6 +185,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         _applicationLifetime = applicationLifetime ?? new NullDashboardApplicationLifetime();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
+        InitializeCustomRangeDefaults();
         Settings.CurrentDatabasePathText = _databaseController.CurrentDatabasePath;
         Settings.RuntimeLogPathText = _runtimeLogSink.LogPath;
         Settings.CanClearLocalData = _databaseController.CanDeleteCurrentDatabase;
@@ -208,18 +227,47 @@ public sealed partial class DashboardViewModel : ObservableObject
     public void SelectPeriod(DashboardPeriod period)
     {
         SelectedPeriod = period;
+        IsCustomRangeEditorVisible = period == DashboardPeriod.Custom;
         RefreshSummary(ResolveRange(period));
     }
 
     public void SelectCustomRange(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
     {
         _customRange = TimeRange.FromUtc(startedAtUtc, endedAtUtc);
+        CustomRangeStatusText = FormatCustomRangeStatus(_customRange);
         SelectPeriod(DashboardPeriod.Custom);
     }
 
     [RelayCommand]
     private void SelectDashboardPeriod(DashboardPeriod period)
         => SelectPeriod(period);
+
+    [RelayCommand]
+    private void ApplyCustomRange()
+    {
+        if (CustomStartDate is null || CustomEndDate is null)
+        {
+            CustomRangeStatusText = "Choose both start and end dates.";
+            return;
+        }
+
+        if (!TryParseClockTime(CustomStartTimeText, out TimeSpan startTime)
+            || !TryParseClockTime(CustomEndTimeText, out TimeSpan endTime))
+        {
+            CustomRangeStatusText = "Use HH:mm for custom start and end times.";
+            return;
+        }
+
+        DateTimeOffset startedAtUtc = ConvertLocalDashboardDateTimeToUtc(CustomStartDate.Value, startTime);
+        DateTimeOffset endedAtUtc = ConvertLocalDashboardDateTimeToUtc(CustomEndDate.Value, endTime);
+        if (endedAtUtc <= startedAtUtc)
+        {
+            CustomRangeStatusText = "Custom end must be after custom start.";
+            return;
+        }
+
+        SelectCustomRange(startedAtUtc, endedAtUtc);
+    }
 
     [RelayCommand]
     private void ShowAppFocusDetails()
@@ -462,9 +510,9 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
         IReadOnlyList<WebSession> webSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
-        DateOnly summaryDate = LocalDateCalculator.GetLocalDate(_clock.UtcNow, _timeZone.Id);
-        DailySummary summary = DailySummaryCalculator.Calculate(focusSessions, webSessions, summaryDate, _timeZone.Id);
+        DailySummary summary = BuildRangeSummary(focusSessions, webSessions, range);
         long totalForegroundMs = focusSessions.Sum(session => session.DurationMs);
+        string periodDescriptor = FormatPeriodDescriptor(SelectedPeriod);
 
         TotalActiveMs = summary.TotalActiveMs;
         TotalForegroundMs = totalForegroundMs;
@@ -474,17 +522,17 @@ public sealed partial class DashboardViewModel : ObservableObject
         TopDomainName = summary.TopDomains.FirstOrDefault()?.Key ?? "";
         SummaryCards =
         [
-            new("Active Focus", FormatDuration(summary.TotalActiveMs), "Today's focused foreground time"),
-            new("Foreground", FormatDuration(totalForegroundMs), "Today's foreground time"),
-            new("Idle", FormatDuration(summary.TotalIdleMs), "Today's idle foreground time"),
-            new("Web Focus", FormatDuration(summary.TotalWebMs), "Today's browser domain time")
+            new("Active Focus", FormatDuration(summary.TotalActiveMs), $"{periodDescriptor} focused foreground time"),
+            new("Foreground", FormatDuration(totalForegroundMs), $"{periodDescriptor} foreground time"),
+            new("Idle", FormatDuration(summary.TotalIdleMs), $"{periodDescriptor} idle foreground time"),
+            new("Web Focus", FormatDuration(summary.TotalWebMs), $"{periodDescriptor} browser domain time")
         ];
         HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
         AppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
         DomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
-        AppUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Apps", AppUsagePoints);
-        DomainUsageChart = DashboardLiveChartsMapper.BuildColumnChart("Domains", DomainUsagePoints);
+        AppUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", AppUsagePoints);
+        DomainUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Domains", DomainUsagePoints);
         RecentSessions = BuildRecentSessionRows(focusSessions);
         RecentWebSessions = BuildRecentWebSessionRows(webSessions);
         _persistedLiveEvents = BuildLiveEventRows(focusSessions, webSessions);
@@ -601,6 +649,39 @@ public sealed partial class DashboardViewModel : ObservableObject
         NextDetailsPageCommand.NotifyCanExecuteChanged();
     }
 
+    private DailySummary BuildRangeSummary(
+        IEnumerable<FocusSession> focusSessions,
+        IEnumerable<WebSession> webSessions,
+        TimeRange range)
+    {
+        List<FocusSession> focusSessionList = focusSessions.ToList();
+        List<WebSession> webSessionList = webSessions.ToList();
+        DateOnly summaryDate = LocalDateCalculator.GetLocalDate(range.StartedAtUtc, _timeZone.Id);
+        long totalActiveMs = focusSessionList
+            .Where(session => !session.IsIdle)
+            .Sum(session => session.DurationMs);
+        long totalIdleMs = focusSessionList
+            .Where(session => session.IsIdle)
+            .Sum(session => session.DurationMs);
+        List<UsageTotal> topApps = focusSessionList
+            .Where(session => !session.IsIdle)
+            .GroupBy(session => session.PlatformAppKey)
+            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+            .OrderByDescending(total => total.DurationMs)
+            .ThenBy(total => total.Key, StringComparer.Ordinal)
+            .ToList();
+        long totalWebMs = webSessionList.Sum(session => session.DurationMs);
+        List<UsageTotal> topDomains = webSessionList
+            .Where(session => !string.IsNullOrWhiteSpace(session.Domain))
+            .GroupBy(session => session.Domain)
+            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
+            .OrderByDescending(total => total.DurationMs)
+            .ThenBy(total => total.Key, StringComparer.Ordinal)
+            .ToList();
+
+        return new DailySummary(summaryDate, totalActiveMs, totalIdleMs, totalWebMs, topApps, topDomains);
+    }
+
     private TimeRange ResolveRange(DashboardPeriod period)
     {
         DateTimeOffset utcNow = _clock.UtcNow.ToUniversalTime();
@@ -623,6 +704,46 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         return TimeRange.FromUtc(localStart.ToUniversalTime(), utcNow);
     }
+
+    private void InitializeCustomRangeDefaults()
+    {
+        DateTimeOffset localNow = TimeZoneInfo.ConvertTime(_clock.UtcNow, _timeZone);
+        CustomStartDate = localNow.Date;
+        CustomEndDate = localNow.Date;
+        CustomStartTimeText = localNow.AddHours(-1).ToString("HH:mm", CultureInfo.InvariantCulture);
+        CustomEndTimeText = localNow.ToString("HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private DateTimeOffset ConvertLocalDashboardDateTimeToUtc(DateTime date, TimeSpan time)
+    {
+        DateTime localDateTime = DateTime.SpecifyKind(date.Date.Add(time), DateTimeKind.Unspecified);
+        TimeSpan offset = _timeZone.GetUtcOffset(localDateTime);
+
+        return new DateTimeOffset(localDateTime, offset).ToUniversalTime();
+    }
+
+    private string FormatCustomRangeStatus(TimeRange range)
+    {
+        DateTimeOffset localStart = TimeZoneInfo.ConvertTime(range.StartedAtUtc, _timeZone);
+        DateTimeOffset localEnd = TimeZoneInfo.ConvertTime(range.EndedAtUtc, _timeZone);
+
+        return $"{localStart:yyyy-MM-dd HH:mm} - {localEnd:yyyy-MM-dd HH:mm}";
+    }
+
+    private static bool TryParseClockTime(string value, out TimeSpan time)
+        => TimeSpan.TryParseExact(value, "hh\\:mm", CultureInfo.InvariantCulture, out time)
+           || TimeSpan.TryParseExact(value, "h\\:mm", CultureInfo.InvariantCulture, out time);
+
+    private static string FormatPeriodDescriptor(DashboardPeriod period)
+        => period switch
+        {
+            DashboardPeriod.Today => "Today's",
+            DashboardPeriod.LastHour => "Last 1h",
+            DashboardPeriod.Last6Hours => "Last 6h",
+            DashboardPeriod.Last24Hours => "Last 24h",
+            DashboardPeriod.Custom => "Custom range",
+            _ => "Selected range"
+        };
 
     private IReadOnlyList<DashboardSessionRow> BuildRecentSessionRows(IEnumerable<FocusSession> focusSessions)
     {

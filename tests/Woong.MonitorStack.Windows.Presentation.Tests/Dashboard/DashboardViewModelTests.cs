@@ -26,6 +26,51 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectPeriod_Last24HoursAggregatesPersistedSessionsAcrossLocalDateBoundary()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 16, 30, 0, TimeSpan.Zero);
+        FocusSession previousLocalDateSession = Session(
+            "session-previous-local-date",
+            "Code.exe",
+            new DateTimeOffset(2026, 4, 28, 14, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 4, 28, 14, 30, 0, TimeSpan.Zero),
+            isIdle: false);
+        var dataSource = new FakeDashboardDataSource([previousLocalDateSession], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.Last24Hours);
+
+        Assert.Equal(1_800_000, viewModel.TotalActiveMs);
+        Assert.Equal(1_800_000, viewModel.TotalForegroundMs);
+        Assert.Equal("Code.exe", viewModel.TopAppName);
+        Assert.Equal(now.AddHours(-24), dataSource.LastFocusQueryStartedAtUtc);
+        Assert.Equal(now, dataSource.LastFocusQueryEndedAtUtc);
+    }
+
+    [Fact]
+    public void ApplyCustomRangeCommand_ParsesLocalDateAndTimeThenQueriesUtcRange()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource([], []);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"))
+        {
+            CustomStartDate = new DateTime(2026, 4, 28),
+            CustomStartTimeText = "09:15",
+            CustomEndDate = new DateTime(2026, 4, 28),
+            CustomEndTimeText = "10:45"
+        };
+
+        viewModel.ApplyCustomRangeCommand.Execute(null);
+
+        Assert.Equal(DashboardPeriod.Custom, viewModel.SelectedPeriod);
+        Assert.True(viewModel.IsCustomRangeEditorVisible);
+        Assert.Equal(new DateTimeOffset(2026, 4, 28, 0, 15, 0, TimeSpan.Zero), dataSource.LastFocusQueryStartedAtUtc);
+        Assert.Equal(new DateTimeOffset(2026, 4, 28, 1, 45, 0, TimeSpan.Zero), dataSource.LastFocusQueryEndedAtUtc);
+        Assert.Contains("09:15", viewModel.CustomRangeStatusText, StringComparison.Ordinal);
+        Assert.Contains("10:45", viewModel.CustomRangeStatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesSummaryCardModels()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

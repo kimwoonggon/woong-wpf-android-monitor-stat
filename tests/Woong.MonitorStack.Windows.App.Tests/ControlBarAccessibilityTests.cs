@@ -34,4 +34,29 @@ public sealed class ControlBarAccessibilityTests
                 window.Close();
             }
         });
+
+    [Fact]
+    public void ControlBar_CustomRangeEditorExposesDateTimeInputsAndApplyCommand()
+        => RunOnStaThread(() =>
+        {
+            var panel = new ControlBar();
+            var window = new Window { Content = panel };
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                AssertAutomationName<DatePicker>(panel, "CustomStartDatePicker", "Custom range start date");
+                AssertAutomationName<TextBox>(panel, "CustomStartTimeTextBox", "Custom range start time");
+                AssertAutomationName<DatePicker>(panel, "CustomEndDatePicker", "Custom range end date");
+                AssertAutomationName<TextBox>(panel, "CustomEndTimeTextBox", "Custom range end time");
+                AssertAutomationName<Button>(panel, "ApplyCustomRangeButton", "Apply custom range");
+                Assert.NotNull(FindByAutomationId<TextBlock>(panel, "CustomRangeStatusText"));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
 }

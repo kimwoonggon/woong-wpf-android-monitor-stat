@@ -2010,3 +2010,25 @@ milestones below are finished.
 - [x] `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings and 0 errors.
 - [x] `dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - [x] Coverage generated: line 88.6% (4299/4851), branch 69.4% (619/891).
+
+## 2026-05-01 WPF Range-Based Charts And Custom Period Picker
+
+- [x] App Focus and Domain Focus chart data now uses horizontal LiveCharts RowSeries, with app/process and site/domain labels on the left category axis.
+- [x] Dashboard summary cards, top apps, and top domains aggregate the selected SQLite-backed query range instead of filtering again to only the current local date.
+- [x] Today/1h/6h/24h ranges remain available and query persisted local DB data.
+- [x] Custom period selection now exposes start/end date pickers, HH:mm time inputs, an Apply button, and a status label in the WPF ControlBar.
+- [x] Custom local date/time input is converted to UTC before querying the dashboard data source.
+- [x] Added tests for last-24h cross-local-date aggregation, custom range parsing, horizontal chart axes, and custom range UI AutomationIds.
+
+### Validation Update
+
+- [x] Focused Windows Presentation tests passed: 67 passed.
+- [x] Focused Windows App tests passed: 155 passed.
+- [x] Full solution test/build passed for this slice.
+
+### Validation Update
+
+- [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 464 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing a stale running WPF process that locked Release binaries.
+
+- [x] Coverage collection passed for this slice: line 89.1% (4548/5100), branch 71.6% (734/1024). Report: artifacts/coverage/SummaryGithub.md.

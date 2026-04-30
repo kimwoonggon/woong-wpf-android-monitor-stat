@@ -4610,3 +4610,21 @@ Validation:
 - Release build passed with 0 warnings/errors.
 - Release test passed: 460 passed, 6 PostgreSQL/Testcontainers tests skipped by default.
 - Coverage generated: line 88.6%, branch 69.4%.
+
+## 2026-05-01 WPF Range-Based Charts And Custom Period Picker
+
+- Updated the WPF dashboard chart contract so App Focus and Domain Focus use horizontal LiveCharts RowSeries data. App/process labels and site/domain labels now live on the left category axis, with duration on the horizontal minute axis.
+- Updated dashboard aggregation so summary cards, top apps, and top domains are calculated from the selected SQLite-backed query range rather than being filtered again to only the current local date. This keeps today's and custom focused foreground time tied to persisted local DB rows instead of process lifetime.
+- Added an inline Custom period editor to ControlBar: start/end DatePicker controls, HH:mm time inputs, an Apply button, and a status label. The ViewModel converts local date/time input to UTC before querying the data source.
+- Added behavior and UI contract tests for cross-local-date last-24h aggregation, custom date/time range parsing, horizontal chart mapping, and custom range control AutomationIds.
+
+Focused validation:
+
+- dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -maxcpucount:1 -v minimal passed: 67 passed.
+- dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal passed: 155 passed.
+
+Final validation for this slice:
+
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 464 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal initially failed because stale process Woong.MonitorStack.Windows.App (PID 16904) locked Release binaries. After stopping that local app process, the Release build passed with 0 warnings and 0 errors.
+- Coverage collection passed for this slice: line 89.1% (4548/5100), branch 71.6% (734/1024). Report: artifacts/coverage/SummaryGithub.md.

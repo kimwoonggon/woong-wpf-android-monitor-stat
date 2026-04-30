@@ -26,6 +26,28 @@ public static class DashboardLiveChartsMapper
             pointList.Count == 0 ? "No data for selected period" : "");
     }
 
+    public static DashboardLiveChartsData BuildHorizontalBarChart(
+        string seriesName,
+        IEnumerable<DashboardChartPoint> points)
+    {
+        ArgumentNullException.ThrowIfNull(points);
+
+        List<DashboardChartPoint> pointList = points.ToList();
+        var series = new RowSeries<long>
+        {
+            Name = seriesName,
+            Values = pointList.Select(point => point.ValueMs).ToArray()
+        };
+        string[] labels = pointList.Select(point => point.Label).ToArray();
+
+        return new DashboardLiveChartsData(
+            [series],
+            labels,
+            [new Axis { MinLimit = 0, Labeler = FormatMillisecondsAsMinutes }],
+            [new Axis { Labels = labels }],
+            pointList.Count == 0 ? "No data for selected period" : "");
+    }
+
     private static string FormatMillisecondsAsMinutes(double value)
     {
         double safeValue = Math.Max(0, value);
