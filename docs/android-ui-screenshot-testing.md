@@ -9,6 +9,7 @@ product telemetry and must not capture other apps as usage data.
 
 Allowed screenshot targets:
 
+- Woong Monitor Stack main shell.
 - Woong Monitor Stack Dashboard.
 - Sessions screen.
 - Settings screen.
@@ -89,21 +90,21 @@ Current behavior:
   `01-dashboard-overview.png`, `02-dashboard-summary-location.png`,
   `03-dashboard-charts.png`, `04-dashboard-recent-sessions.png`,
   `05-settings-privacy-sync.png`, `06-settings-location-permission.png`,
-  `07-sessions-list.png`, and `08-daily-summary.png`.
+  `07-sessions-list.png`, `08-daily-summary.png`, and `09-main-shell.png`.
 - The instrumentation test captures local PNG screenshots into the app's
   external files directory, then the script pulls them into the artifact folder.
 - It does not use Midscene unless a future explicit visual-review slice adds
   model configuration and device steps.
-- The current Activity-based XML layouts intentionally keep the existing
-  ViewBinding IDs while adopting the wireframe card/chip/scroll hierarchy from
-  the Android UI flow reference. A full FragmentContainerView shell remains a
-  future navigation refactor rather than part of this visual-alignment slice.
+- The launcher `MainActivity` now uses a `MaterialToolbar`,
+  `FragmentContainerView`, and `BottomNavigationView` shell. Existing Activity
+  screenshots remain because they are still the Room-backed runtime surfaces
+  while fragment ViewModels are wired incrementally.
 
 Latest emulator evidence:
 
 - `powershell -ExecutionPolicy Bypass -File scripts/run-android-ui-snapshots.ps1`
   passed on `Medium_Phone`.
-- Artifact: `artifacts/android-ui-snapshots/20260430-112341`.
+- Artifact: `artifacts/android-ui-snapshots/20260430-115054`.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -112,6 +113,10 @@ Latest emulator evidence:
   through `fitsSystemWindows`, which is visible in the latest screenshots.
 - Sessions rows now use a structured local row layout with package, local time
   range, duration, and active/idle state instead of plain debug text.
+- `09-main-shell.png` captures the real launcher shell with top app bar,
+  fragment dashboard content, and Material bottom navigation.
+- The fragment dashboard summary tiles use distinct metric labels instead of
+  repeating the same placeholder title.
 
 Future connected-device improvements:
 
@@ -124,9 +129,9 @@ Future connected-device improvements:
 ## Current Gaps
 
 - Emulator-backed screenshot evidence is complete for the current environment.
-- Dashboard summary tiles still use simple local card blocks and should be
-  upgraded to reusable MaterialCard-style item rows in a follow-up polish
-  slice.
+- The new fragment shell is visually aligned, but its Dashboard/Sessions/Report
+  fragments still need to be wired to the same Room-backed ViewModels as the
+  existing Activity screens.
 - Optional Midscene/android-device-automation requires model environment
   variables and a connected device/emulator.
 - Physical-device resource measurement remains blocked until a device is

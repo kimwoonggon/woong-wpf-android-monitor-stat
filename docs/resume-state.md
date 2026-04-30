@@ -1,6 +1,26 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 Android Main Shell Wireframe Correction Slice
+
+- Added RED architecture and Robolectric tests proving `MainActivity` is a real XML/View shell instead of redirecting immediately to `DashboardActivity`.
+- Added `activity_main.xml` with `MaterialToolbar`, `FragmentContainerView`, and `BottomNavigationView`, plus menu/color resources.
+- Added fragment XML skeletons for Splash, Permission onboarding, Dashboard, Sessions, App detail, Report, and Settings from the provided Android wireframe direction.
+- Added minimal XML/View fragments for Dashboard, Sessions, Report, Settings, Splash, and Permission onboarding while keeping existing Activity screens available as the current Room-backed runtime surfaces.
+- Fixed Android summary metric cards to use rounded Material card containers and fixed fragment Dashboard summary cards so they show distinct Active Focus, Screen On, Idle time, and local-only sync labels.
+- Extended Android screenshot automation to capture `09-main-shell.png`; latest connected-emulator artifact is `artifacts/android-ui-snapshots/20260430-115054`.
+- Remaining Android UI gap: wire the new fragment shell screens to the same Room-backed ViewModels/repositories as the existing Activity screens.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesFragmentContainerAndMaterialBottomNavigation|FullyQualifiedName~AndroidFragmentWireframeLayouts_ExistForProductFlow|FullyQualifiedName~AndroidSummaryMetricCards_UseMaterialCardContainers" -maxcpucount:1 -v minimal` passed.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesCompactReadableToolbarTitle|FullyQualifiedName~AndroidFragmentDashboard_SummaryCardsUseDistinctMetrics" -maxcpucount:1 -v minimal` passed after RED.
+- `.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator and produced `09-main-shell.png`.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 378 `.NET` tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
+
 
 ## 2026-04-30 Android Session Row And System Bar Polish Slice
 

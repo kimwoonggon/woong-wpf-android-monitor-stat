@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsScrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/wms_background">
+
+    <LinearLayout
+        android:id="@+id/settingsContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/settingsTitle"
+            style="@style/WmsScreenTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_title" />
+
+        <include
+            android:id="@+id/permissionsSettingsCard"
+            layout="@layout/item_settings_group" />
+
+        <include
+            android:id="@+id/collectionSettingsCard"
+            layout="@layout/item_settings_group" />
+
+        <include
+            android:id="@+id/privacySettingsCard"
+            layout="@layout/item_settings_group" />
+
+        <include
+            android:id="@+id/locationSettingsCard"
+            layout="@layout/item_settings_group" />
+
+        <include
+            android:id="@+id/syncSettingsCard"
+            layout="@layout/item_settings_group" />
+
+        <include
+            android:id="@+id/storageSettingsCard"
+            layout="@layout/item_settings_group" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -241,15 +241,19 @@
                 android:columnCount="2"
                 android:useDefaultMargins="true">
 
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/totalActiveCard"
+                    style="@style/WmsCard"
                     android:layout_width="0dp"
                     android:layout_height="96dp"
-                    android:layout_columnWeight="1"
-                    android:background="@color/wms_surface"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="14dp">
+                    android:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                     <TextView
                         android:id="@+id/totalActiveLabel"
@@ -271,17 +275,22 @@
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/screenOnCard"
+                    style="@style/WmsCard"
                     android:layout_width="0dp"
                     android:layout_height="96dp"
-                    android:layout_columnWeight="1"
-                    android:background="@color/wms_surface"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="14dp">
+                    android:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                     <TextView
                         android:id="@+id/screenOnLabel"
@@ -303,17 +312,22 @@
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/idleCard"
+                    style="@style/WmsCard"
                     android:layout_width="0dp"
                     android:layout_height="96dp"
-                    android:layout_columnWeight="1"
-                    android:background="@color/wms_surface"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="14dp">
+                    android:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                     <TextView
                         android:id="@+id/idleLabel"
@@ -335,17 +349,22 @@
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/webFocusCard"
+                    style="@style/WmsCard"
                     android:layout_width="0dp"
                     android:layout_height="96dp"
-                    android:layout_columnWeight="1"
-                    android:background="@color/wms_surface"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="14dp">
+                    android:layout_columnWeight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                     <TextView
                         android:id="@+id/webFocusLabel"
@@ -367,7 +386,8 @@
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                         android:textColor="@color/wms_text_primary"
                         android:textStyle="bold" />
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </GridLayout>
 
             <com.google.android.material.card.MaterialCardView

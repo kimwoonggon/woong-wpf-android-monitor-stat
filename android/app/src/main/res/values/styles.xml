@@ -22,6 +22,12 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="WmsToolbarTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textColor">@color/wms_text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="WmsSectionTitle" parent="TextAppearance.MaterialComponents.Subtitle1">
         <item name="android:textColor">@color/wms_text_primary</item>
         <item name="android:textStyle">bold</item>

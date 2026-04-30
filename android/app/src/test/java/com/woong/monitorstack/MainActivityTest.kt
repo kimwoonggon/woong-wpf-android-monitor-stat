@@ -1,8 +1,8 @@
 package com.woong.monitorstack
 
-import com.woong.monitorstack.dashboard.DashboardActivity
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -14,17 +14,20 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class MainActivityTest {
     @Test
-    fun launcherImmediatelyOpensDashboard() {
+    fun launcherShowsMainShellWithoutRedirectingToAnotherActivity() {
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
             .get()
 
-        val startedIntent = shadowOf(activity).nextStartedActivity
-
+        assertNull(shadowOf(activity).nextStartedActivity)
+        assertNotNull(activity.findViewById(R.id.topAppBar))
+        assertNotNull(activity.findViewById(R.id.mainFragmentContainer))
+        assertNotNull(activity.findViewById(R.id.bottomNavigation))
         assertEquals(
-            DashboardActivity::class.java.name,
-            startedIntent.component?.className
+            R.id.navDashboard,
+            activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            ).selectedItemId
         )
-        assertTrue(activity.isFinishing)
     }
 }

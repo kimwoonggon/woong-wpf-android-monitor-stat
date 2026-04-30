@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/appUsageRowRoot"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:paddingHorizontal="4dp">
+
+    <TextView
+        android:id="@+id/appIconPlaceholder"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_rounded_icon_placeholder"
+        android:gravity="center"
+        android:text="A"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/appNameText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="Chrome"
+        android:textColor="@color/wms_text_primary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/appDurationText"
+        app:layout_constraintStart_toEndOf="@id/appIconPlaceholder"
+        app:layout_constraintTop_toTopOf="@id/appIconPlaceholder" />
+
+    <TextView
+        android:id="@+id/packageNameText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="com.android.chrome"
+        android:textColor="@color/wms_text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/appDurationText"
+        app:layout_constraintStart_toStartOf="@id/appNameText"
+        app:layout_constraintTop_toBottomOf="@id/appNameText" />
+
+    <TextView
+        android:id="@+id/appDurationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1h 20m"
+        android:textColor="@color/wms_text_primary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/appDetailText"
+        app:layout_constraintTop_toTopOf="@id/appNameText" />
+
+    <TextView
+        android:id="@+id/appDetailText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="Detail"
+        android:textColor="@color/wms_primary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/appNameText" />
+</androidx.constraintlayout.widget.ConstraintLayout>

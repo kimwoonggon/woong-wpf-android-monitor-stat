@@ -154,9 +154,145 @@ public sealed class AndroidWireframeLayoutTests
         }
     }
 
+    [Fact]
+    public void AndroidSummaryMetricCards_UseMaterialCardContainers()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "activity_dashboard.xml");
+        string dailySummary = ReadAndroidLayout(repoRoot, "activity_daily_summary.xml");
+
+        string[] dashboardCards =
+        [
+            "totalActiveCard",
+            "screenOnCard",
+            "idleCard",
+            "webFocusCard"
+        ];
+
+        foreach (string card in dashboardCards)
+        {
+            AssertMaterialCardContainer(dashboard, card);
+        }
+
+        string[] dailySummaryCards =
+        [
+            "dailySummaryActiveCard",
+            "dailySummaryIdleCard",
+            "dailySummaryWebCard"
+        ];
+
+        foreach (string card in dailySummaryCards)
+        {
+            AssertMaterialCardContainer(dailySummary, card);
+        }
+    }
+
+    [Fact]
+    public void AndroidMainShell_UsesFragmentContainerAndMaterialBottomNavigation()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
+        string menu = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "menu", "menu_bottom_navigation.xml"));
+
+        Assert.Contains("androidx.coordinatorlayout.widget.CoordinatorLayout", main);
+        Assert.Contains("com.google.android.material.appbar.MaterialToolbar", main);
+        Assert.Contains("@+id/topAppBar", main);
+        Assert.Contains("androidx.fragment.app.FragmentContainerView", main);
+        Assert.Contains("@+id/mainFragmentContainer", main);
+        Assert.Contains("com.google.android.material.bottomnavigation.BottomNavigationView", main);
+        Assert.Contains("@+id/bottomNavigation", main);
+        Assert.Contains("@menu/menu_bottom_navigation", main);
+
+        Assert.Contains("@+id/navDashboard", menu);
+        Assert.Contains("@+id/navSessions", menu);
+        Assert.Contains("@+id/navReport", menu);
+        Assert.Contains("@+id/navSettings", menu);
+    }
+
+    [Fact]
+    public void AndroidFragmentWireframeLayouts_ExistForProductFlow()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string[] requiredLayouts =
+        [
+            "fragment_splash.xml",
+            "fragment_permission_onboarding.xml",
+            "fragment_dashboard.xml",
+            "fragment_sessions.xml",
+            "fragment_app_detail.xml",
+            "fragment_report.xml",
+            "fragment_settings.xml",
+            "item_summary_card.xml",
+            "item_app_usage.xml",
+            "item_focus_session.xml",
+            "item_settings_group.xml"
+        ];
+
+        foreach (string layout in requiredLayouts)
+        {
+            string path = Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", layout);
+            Assert.True(File.Exists(path), $"Expected Android XML wireframe layout to exist: {layout}");
+        }
+
+        string permission = ReadAndroidLayout(repoRoot, "fragment_permission_onboarding.xml");
+        Assert.Contains("@+id/openUsageAccessSettingsButton", permission);
+        Assert.Contains("@+id/collectsCard", permission);
+        Assert.Contains("@+id/doesNotCollectCard", permission);
+
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+        Assert.Contains("@+id/currentFocusCard", dashboard);
+        Assert.Contains("@+id/summaryCardsGrid", dashboard);
+        Assert.Contains("@+id/topAppsRecyclerView", dashboard);
+        Assert.Contains("@+id/recentSessionsRecyclerView", dashboard);
+
+        string settings = ReadAndroidLayout(repoRoot, "fragment_settings.xml");
+        Assert.Contains("@+id/permissionsSettingsCard", settings);
+        Assert.Contains("@+id/locationSettingsCard", settings);
+        Assert.Contains("@+id/privacySettingsCard", settings);
+    }
+
+    [Fact]
+    public void AndroidMainShell_UsesCompactReadableToolbarTitle()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
+        string styles = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "styles.xml"));
+
+        Assert.Contains("app:titleTextAppearance=\"@style/WmsToolbarTitle\"", main);
+        Assert.Contains("name=\"WmsToolbarTitle\"", styles);
+        Assert.Contains("<item name=\"android:textSize\">18sp</item>", styles);
+    }
+
+    [Fact]
+    public void AndroidFragmentDashboard_SummaryCardsUseDistinctMetrics()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
+
+        Assert.Contains("@+id/activeFocusCard", dashboard);
+        Assert.Contains("@+id/screenOnCard", dashboard);
+        Assert.Contains("@+id/idleGapCard", dashboard);
+        Assert.Contains("@+id/syncedCard", dashboard);
+        Assert.Contains("@string/active_focus", dashboard);
+        Assert.Contains("@string/screen_on", dashboard);
+        Assert.Contains("@string/idle_time", dashboard);
+        Assert.Contains("@string/sync_local_only_status", dashboard);
+    }
+
     private static string ReadAndroidLayout(string repoRoot, string fileName)
     {
         return File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", fileName));
+    }
+
+    private static void AssertMaterialCardContainer(string xml, string cardId)
+    {
+        string marker = $"android:id=\"@+id/{cardId}\"";
+        int markerIndex = xml.IndexOf(marker, StringComparison.Ordinal);
+        Assert.True(markerIndex >= 0, $"Expected layout to contain {marker}.");
+        int start = Math.Max(0, markerIndex - 160);
+        string prefix = xml[start..markerIndex];
+
+        Assert.Contains("com.google.android.material.card.MaterialCardView", prefix);
     }
 
     private static string FindRepositoryRoot()

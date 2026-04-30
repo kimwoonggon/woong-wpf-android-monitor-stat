@@ -145,24 +145,23 @@ artifacts only. They must not capture other apps as telemetry.
 
 ## Current XML Implementation Direction
 
-The current Android app remains Activity-based (`DashboardActivity`,
-`SessionsActivity`, `SettingsActivity`, and `DailySummaryActivity`) because that
-is the existing stable ViewBinding/runtime contract. The UI is being aligned to
-the wireframe skeleton by applying the same visual structure to these activity
-layouts first:
+The current Android app now has a `MainActivity` shell with
+`FragmentContainerView`, `MaterialToolbar`, and `BottomNavigationView`, matching
+the Android XML wireframe skeleton. Existing Activity screens remain in place
+as stable Room-backed runtime surfaces while the fragment shell is brought up
+screen by screen.
 
 - Shared `wms_*` color tokens.
 - Shared `WmsCard`, status chip, section title, key/value, and period button
   styles.
+- `activity_main.xml` shell with top app bar, fragment container, and Material
+  bottom navigation.
+- Fragment XML skeletons for Splash, Permission onboarding, Dashboard,
+  Sessions, App detail, Report, and Settings.
 - Dashboard card/chip/period/current-focus/summary/chart/recent-session
   hierarchy.
 - Settings grouped cards for permissions, sync, privacy, location, and storage.
 - Sessions and Daily Summary card-based screens.
-
-A future navigation refactor may introduce a `MainActivity` shell with
-`FragmentContainerView` and `BottomNavigationView`, but it should be a separate
-TDD slice because it changes navigation architecture rather than only visual
-alignment.
 
 ## Implemented So Far
 
@@ -224,9 +223,17 @@ alignment.
 - Sessions and Dashboard recent-session lists now use a structured
   `item_focus_session` row with package, local time range, active/idle state,
   and duration.
+- `MainActivity` no longer redirects to `DashboardActivity`; it owns the
+  Material shell and selects Dashboard, Sessions, Report, and Settings
+  fragments through bottom navigation.
+- Android UI snapshot automation now captures `09-main-shell.png` to prove the
+  real launcher shell is visible on an emulator.
+- Fragment Dashboard summary cards now use distinct labels for Active Focus,
+  Screen On, Idle time, and local-only sync state instead of repeating one
+  placeholder title.
 
 ## Not Implemented Yet
 
 - Hardware-backed runtime location reader.
-- FragmentContainerView/BottomNavigationView shell refactor.
-- Reusable Material card layout for summary metric tiles.
+- Wiring the new fragments to the same Room-backed ViewModels used by the
+  existing Activity screens.

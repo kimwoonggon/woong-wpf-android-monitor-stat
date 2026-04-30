@@ -666,9 +666,13 @@ milestones below are finished.
 - [x] Document remaining UI polish gaps: reusable rounded summary cards and structured session row items.
 - [x] Fix Android primary Activity layouts so Dashboard, Sessions, Settings, and Daily Summary avoid status-bar overlap.
 - [x] Verify session row/system-bar polish with focused architecture tests, focused RoomSessionsRepository test, Android `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-112341`, full `.NET` tests (371), full `.NET` build, and coverage generation at 91.7% line coverage.
-- [ ] Follow-up: convert Android summary tiles to reusable rounded Material card/item components.
+- [x] Follow-up: convert Android summary tiles to rounded Material card containers.
 - [x] Follow-up: convert Android sessions RecyclerView rows to structured app/package/time/duration rows.
-- [ ] Follow-up: decide separately whether to migrate Activity navigation to a FragmentContainerView + BottomNavigationView shell.
+- [x] Follow-up: migrate launcher `MainActivity` to a `FragmentContainerView` + `BottomNavigationView` shell while preserving existing Activity runtime surfaces.
+- [x] Add fragment XML skeletons for Splash, Permission onboarding, Dashboard, Sessions, App detail, Report, and Settings based on the provided Android wireframe skeleton.
+- [x] Add RED/GREEN tests proving the Android shell, fragment layout resources, compact toolbar title style, distinct fragment summary labels, and shell screenshot contract.
+- [x] Capture connected-emulator screenshots at `artifacts/android-ui-snapshots/20260430-115054`, including `09-main-shell.png`.
+- [ ] Follow-up: wire the new fragment shell screens to the same Room-backed ViewModels/repositories as the existing Activity screens.
 
 ## Milestone 28: Privacy And Retention Hardening
 

@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dashboardScrollRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/wms_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/dashboardContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/statusChipRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/usageAccessStatusChip"
+                style="@style/WmsStatusChip.Success"
+                android:text="@string/status_usage_ok" />
+
+            <TextView
+                android:id="@+id/syncStatusChip"
+                style="@style/WmsStatusChip.Warning"
+                android:layout_marginStart="8dp"
+                android:text="@string/status_sync_off" />
+
+            <TextView
+                android:id="@+id/privacyStatusChip"
+                style="@style/WmsStatusChip.Info"
+                android:layout_marginStart="8dp"
+                android:text="@string/status_privacy_safe" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/currentFocusCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/currentFocusTitle"
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/current_focus" />
+
+                <TextView
+                    android:id="@+id/currentAppText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Current app   Chrome" />
+
+                <TextView
+                    android:id="@+id/currentPackageText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Package       com.android.chrome" />
+
+                <TextView
+                    android:id="@+id/currentSessionDurationText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Session duration   00:12:31" />
+
+                <TextView
+                    android:id="@+id/lastCollectedText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Last collected   09:25" />
+
+                <TextView
+                    android:id="@+id/lastDbWriteText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Last DB write   09:25" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <GridLayout
+            android:id="@+id/summaryCardsGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/activeFocusCard"
+                style="@style/WmsCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:minHeight="96dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/active_focus"
+                        android:textColor="@color/wms_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/zero_duration"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Today focus"
+                        android:textColor="@color/wms_text_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/screenOnCard"
+                style="@style/WmsCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:minHeight="96dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/screen_on"
+                        android:textColor="@color/wms_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/zero_duration"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Device foreground"
+                        android:textColor="@color/wms_text_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/idleGapCard"
+                style="@style/WmsCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:minHeight="96dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/idle_time"
+                        android:textColor="@color/wms_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/zero_duration"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Inactive gaps"
+                        android:textColor="@color/wms_text_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/syncedCard"
+                style="@style/WmsCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:minHeight="96dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/status_sync_off"
+                        android:textColor="@color/wms_text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Local"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/sync_local_only_status"
+                        android:textColor="@color/wms_text_muted"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/periodFilterScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/periodFilterRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/todayFilterButton"
+                    style="@style/WmsPeriodButton.Selected"
+                    android:text="@string/filter_today" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/oneHourFilterButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_1h" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sixHourFilterButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_6h" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/twentyFourHourFilterButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_24h" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sevenDayFilterButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_7d" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/hourlyFocusChartCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hourly_focus_chart_title" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/hourlyFocusChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/topAppsCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_usage_chart_title" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/topAppsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/recentSessionsCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/recent_sessions" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recentSessionsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/showAllSessionsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:gravity="center"
+                    android:text="Show all"
+                    android:textColor="@color/wms_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

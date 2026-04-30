@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sessionsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/wms_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/sessionsTitle"
+        style="@style/WmsScreenTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sessions_title" />
+
+    <HorizontalScrollView
+        android:id="@+id/sessionsFilterScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/sessionsFilterRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sessionsTodayButton"
+                style="@style/WmsPeriodButton.Selected"
+                android:text="@string/filter_today" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sessionsOneHourButton"
+                style="@style/WmsPeriodButton"
+                android:text="@string/filter_1h" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sessionsSixHourButton"
+                style="@style/WmsPeriodButton"
+                android:text="@string/filter_6h" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sessionsTwentyFourHourButton"
+                style="@style/WmsPeriodButton"
+                android:text="@string/filter_24h" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sessionsSevenDayButton"
+                style="@style/WmsPeriodButton"
+                android:text="@string/filter_7d" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sessionsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1" />
+</LinearLayout>
