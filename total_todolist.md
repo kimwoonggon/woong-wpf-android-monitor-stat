@@ -1512,6 +1512,18 @@ milestones below are finished.
 - [x] Run solution tests and solution build.
 - [x] Run WPF UI acceptance script and confirm root report includes complete privacy boundary evidence at `artifacts/wpf-ui-acceptance/20260430-141948`.
 
+## Milestone 53: WPF Acceptance Run Configuration Evidence
+
+- [x] Audit WPF/browser/runtime acceptance TODOs after Milestone 52 and identify the missing grouped root run-configuration evidence.
+- [x] Add a failing WPF App script test requiring root acceptance report/manifest run configuration evidence.
+- [x] Add root report `## Run Configuration` rows for acceptance seconds, server sync allowed, and app path.
+- [x] Add root manifest `runConfiguration` with `seconds`, `allowServerSync`, and `appPath`.
+- [x] Update WPF resume state for the run-configuration evidence slice.
+- [x] Run focused WPF App script test.
+- [x] Run WPF App tests.
+- [x] Run solution tests and solution build.
+- [x] Run WPF UI acceptance script and confirm root run-configuration evidence at `artifacts/wpf-ui-acceptance/20260430-143517`.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

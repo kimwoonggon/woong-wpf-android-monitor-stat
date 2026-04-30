@@ -104,6 +104,24 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootArtifactsIncludeRunConfigurationEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("## Run Configuration", script);
+        Assert.Contains("Acceptance seconds", script);
+        Assert.Contains("Server sync allowed", script);
+        Assert.Contains("runConfiguration = [ordered]@", script);
+        Assert.Contains("seconds = $Seconds", script);
+        Assert.Contains("allowServerSync = [bool]$AllowServerSync", script);
+        Assert.Contains("appPath = $AppPath", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

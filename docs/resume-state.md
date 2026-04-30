@@ -2,6 +2,21 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Acceptance Run Configuration Evidence Slice
+
+- Audited WPF acceptance artifacts after Milestone 52 and found no remaining WPF implementation TODO, but the root acceptance report/manifest did not expose the run configuration as a grouped evidence object.
+- Added RED WPF App script coverage requiring the root `report.md` and `manifest.json` to include acceptance seconds, server sync opt-in state, and app path run-configuration evidence.
+- Updated `scripts/run-wpf-ui-acceptance.ps1` so the root report has a `## Run Configuration` section and the root manifest has a `runConfiguration` object with `seconds`, `allowServerSync`, and `appPath`.
+- This is a WPF script/test/docs acceptance-evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootArtifactsIncludeRunConfigurationEvidence" -maxcpucount:1 -v minimal` failed RED on missing root run-configuration evidence, then passed after the report/manifest fields were added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 134 WPF App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 398 solution tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-143517`; root `report.md` includes `## Run Configuration` and root `manifest.json` includes `runConfiguration` with `allowServerSync: false`.
+
 ## 2026-04-30 Android Report Fragment Runtime Wiring Slice
 
 - Treated the user-provided Android XML wireframe skeleton as the launcher shell target and closed the remaining Report tab skeleton gap.

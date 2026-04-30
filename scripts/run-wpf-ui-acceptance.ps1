@@ -79,6 +79,12 @@ try {
         "RealStart temp DB: ``$dbPath``",
         "TrackingPipeline temp DB: ``$trackingPipelineDbPath``",
         "",
+        "## Run Configuration",
+        "",
+        "- Acceptance seconds: ``$Seconds``",
+        "- Server sync allowed: ``$([bool]$AllowServerSync)``",
+        "- App path: ``$AppPath``",
+        "",
         "## Semantic Checks",
         "",
         "- RealStart acceptance launched the WPF app.",
@@ -115,6 +121,11 @@ try {
         generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
         appPath = $AppPath
         report = $reportPath
+        runConfiguration = [ordered]@{
+            seconds = $Seconds
+            allowServerSync = [bool]$AllowServerSync
+            appPath = $AppPath
+        }
         privacyBoundary = @(
             "No keystrokes recorded",
             "No screen contents captured as product telemetry",
