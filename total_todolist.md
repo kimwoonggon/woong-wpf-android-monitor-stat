@@ -1585,3 +1585,9 @@ milestones below are finished.
 - [x] Run connected-emulator Android architecture tests, Gradle unit/build/androidTest build, UI screenshot automation, and resource measurement for the Android check package.
 - [x] Generate before/after PNG evidence for Android features A01-A17 under `artifacts/android-check/latest/`.
 - [x] Document that emulator evidence does not close the remaining physical-device resource measurement TODO.
+
+## WPF Check Package 2026-04-30
+
+- [x] Add explicit WPF feature verification checklist as `wpf_check_todo.md`.
+- [x] Map WPF runtime, SQLite, outbox, dashboard, browser, native messaging, UI acceptance, and privacy features to test/evidence targets.
+- [x] Document WPF validation commands and expected visual review artifacts.

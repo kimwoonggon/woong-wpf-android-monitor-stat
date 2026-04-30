@@ -17,6 +17,7 @@ artifacts/coverage/
 artifacts/ui-snapshots/
 artifacts/ui-diffs/
 artifacts/wpf-ui-acceptance/
+artifacts/wpf-check/
 artifacts/android-ui-snapshots/
 artifacts/android-resource-measurements/
 artifacts/android-check/
