@@ -67,6 +67,8 @@ try {
     $snapshotReport = Join-Path $snapshotRoot "latest/report.md"
     $snapshotManifest = Join-Path $snapshotRoot "latest/manifest.json"
     $visualReviewPrompt = Join-Path $snapshotRoot "latest/visual-review-prompt.md"
+    $realStartReport = Join-Path $runRoot "real-start-report.md"
+    $realStartManifest = Join-Path $runRoot "real-start-manifest.json"
     $lines = @(
         "# WPF UI Acceptance Report",
         "",
@@ -83,6 +85,12 @@ try {
         "- At least one focus_session row was persisted to temp SQLite.",
         "- At least one sync_outbox row was queued.",
         "- Server sync stayed disabled unless explicitly allowed.",
+        "",
+        "## RealStart Evidence Artifacts",
+        "",
+        "- Latest RealStart report: ``$realStartReport``",
+        "- Latest RealStart manifest: ``$realStartManifest``",
+        "- RealStart manifest evidence arrays: ``realStartEvidence`` and ``realStartSafetyEvidence``",
         "",
         "## Snapshot Evidence",
         "",

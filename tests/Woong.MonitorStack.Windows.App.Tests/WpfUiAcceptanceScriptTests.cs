@@ -30,6 +30,24 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootReportLinksRealStartEvidenceArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$realStartReport = Join-Path $runRoot \"real-start-report.md\"", script);
+        Assert.Contains("$realStartManifest = Join-Path $runRoot \"real-start-manifest.json\"", script);
+        Assert.Contains("## RealStart Evidence Artifacts", script);
+        Assert.Contains("Latest RealStart report", script);
+        Assert.Contains("Latest RealStart manifest", script);
+        Assert.Contains("realStartEvidence", script);
+        Assert.Contains("realStartSafetyEvidence", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

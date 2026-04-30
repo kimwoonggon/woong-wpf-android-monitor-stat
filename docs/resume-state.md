@@ -1,6 +1,21 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF Acceptance Root Report RealStart Links Slice
+
+- Audited WPF acceptance evidence after Milestone 48 and found no incomplete WPF runtime TODO, but the composed root WPF acceptance report did not link the deeper RealStart report/manifest evidence.
+- Added RED WPF App script coverage requiring `scripts/run-wpf-ui-acceptance.ps1` to expose `real-start-report.md`, `real-start-manifest.json`, `realStartEvidence`, and `realStartSafetyEvidence` in the root report.
+- Updated the WPF UI acceptance script so `report.md` includes a `## RealStart Evidence Artifacts` section pointing to the generated RealStart report and manifest.
+- This is a WPF script/test/docs audit-evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootReportLinksRealStartEvidenceArtifacts" -maxcpucount:1 -v minimal` failed RED on missing RealStart report/manifest links, then passed after the root report section was added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 130 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 391 solution tests.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-131811`; root `report.md` links the RealStart report/manifest and names `realStartEvidence` plus `realStartSafetyEvidence`.
+
 ## 2026-04-30 Android Compact Shell And Location Context Slice
 
 - Treated the user-provided Android XML wireframe skeleton as the immediate launcher-shell target after screenshot review showed the prior shell fix had made bottom navigation too large.
