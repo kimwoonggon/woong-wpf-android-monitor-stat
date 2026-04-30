@@ -362,6 +362,33 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeGroupedControlActionEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## Control Action Evidence", tool);
+        Assert.Contains("| Action | AutomationId | Result | Status |", tool);
+        Assert.Contains("controlActionEvidence", tool);
+        Assert.Contains("context.ControlActionEvidence.Select", tool);
+        Assert.Contains("action = evidence.Action", tool);
+        Assert.Contains("automationId = evidence.AutomationId", tool);
+        Assert.Contains("result = evidence.Result", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+        Assert.Contains("RecordControlAction", tool);
+        Assert.Contains("Start tracking", tool);
+        Assert.Contains("StartTrackingButton", tool);
+        Assert.Contains("Stop tracking", tool);
+        Assert.Contains("StopTrackingButton", tool);
+        Assert.Contains("Sync local-only", tool);
+        Assert.Contains("Sync enabled", tool);
+        Assert.Contains("SyncNowButton", tool);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

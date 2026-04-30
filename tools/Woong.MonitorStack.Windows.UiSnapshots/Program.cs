@@ -339,7 +339,7 @@ internal static class UiSnapshotRunner
         context.CheckContains("LastPersistedSessionText", "Code.exe", GetElementText(mainWindow, "LastPersistedSessionText"));
         CaptureWindow(mainWindow, "03-after-generated-activity.png", context);
 
-        InvokeRequired(mainWindow, "StopTrackingButton");
+        InvokeRequired(mainWindow, "StopTrackingButton", "Stop tracking", context);
         Thread.Sleep(700);
         context.Pass("StopTrackingButton", "Invoked", "Invoked");
         context.CheckContains("TrackingStatusText stopped", "Stopped", GetElementText(mainWindow, "TrackingStatusText"));
@@ -363,7 +363,7 @@ internal static class UiSnapshotRunner
         context.CheckContains("TrackingPipeline shows github.com", "github.com", webText);
         context.CheckContains("TrackingPipeline shows chatgpt.com", "chatgpt.com", webText);
 
-        InvokeRequired(mainWindow, "SyncNowButton");
+        InvokeRequired(mainWindow, "SyncNowButton", "Sync local-only", context);
         Thread.Sleep(500);
         context.CheckContains("SyncNow local-only skipped status", "Sync skipped", GetElementText(mainWindow, "LastSyncStatusText"));
 
@@ -390,7 +390,7 @@ internal static class UiSnapshotRunner
         RequireExists(mainWindow, "WindowTitleVisibleCheckBox", context);
         RequireExists(mainWindow, "SyncEnabledCheckBox", context);
         EnableCheckBox(mainWindow, "SyncEnabledCheckBox", context);
-        InvokeRequired(mainWindow, "SyncNowButton");
+        InvokeRequired(mainWindow, "SyncNowButton", "Sync enabled", context);
         Thread.Sleep(500);
         context.CheckContains("SyncNow fake sync status", "Fake sync completed", GetElementText(mainWindow, "LastSyncStatusText"));
         CaptureWindow(mainWindow, "05-after-sync.png", context);
@@ -403,6 +403,11 @@ internal static class UiSnapshotRunner
         string trackingStatus = GetElementText(window, "TrackingStatusText");
         if (trackingStatus.Contains("Running", StringComparison.OrdinalIgnoreCase))
         {
+            context.RecordControlAction(
+                "Start tracking",
+                "StartTrackingButton",
+                "Tracking already running; StartTrackingButton is disabled because auto-start already ran.",
+                CheckStatus.Pass);
             context.Pass(
                 "StartTrackingButton",
                 "Tracking starts by button or auto-start",
@@ -426,6 +431,7 @@ internal static class UiSnapshotRunner
         }
 
         startButton.AsButton().Invoke();
+        context.RecordControlAction("Start tracking", "StartTrackingButton", "Invoked", CheckStatus.Pass);
         context.Pass("StartTrackingButton", "Invoked or already running", "Invoked");
     }
 
@@ -554,6 +560,16 @@ internal static class UiSnapshotRunner
             ?? throw new InvalidOperationException($"Could not find required control `{automationId}`.");
 
         element.AsButton().Invoke();
+    }
+
+    private static void InvokeRequired(
+        Window window,
+        string automationId,
+        string actionName,
+        UiSnapshotContext context)
+    {
+        InvokeRequired(window, automationId);
+        context.RecordControlAction(actionName, automationId, "Invoked", CheckStatus.Pass);
     }
 
     private static void EnableCheckBox(Window window, string automationId, UiSnapshotContext context)
@@ -965,6 +981,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## Control Action Evidence");
+        lines.Add("");
+        lines.Add("| Action | AutomationId | Result | Status |");
+        lines.Add("|:---|:---|:---|:---|");
+        if (context.ControlActionEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  | Warn |");
+        }
+        else
+        {
+            foreach (ControlActionEvidence evidence in context.ControlActionEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Action)} | {Escape(evidence.AutomationId)} | {Escape(evidence.Result)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Screenshots");
         lines.Add("");
         foreach (string screenshot in context.Screenshots.Distinct(StringComparer.Ordinal))
@@ -1069,6 +1103,13 @@ internal static class UiSnapshotRunner
                 skippedReason = evidence.SkippedReason,
                 status = evidence.Status.ToString()
             }).ToArray(),
+            controlActionEvidence = context.ControlActionEvidence.Select(evidence => new
+            {
+                action = evidence.Action,
+                automationId = evidence.AutomationId,
+                result = evidence.Result,
+                status = evidence.Status.ToString()
+            }).ToArray(),
             checks = context.Results.Select(result => new
             {
                 result.Name,
@@ -1148,6 +1189,8 @@ internal sealed class UiSnapshotContext
 
     public List<SectionScreenshotEvidence> SectionScreenshotEvidence { get; } = [];
 
+    public List<ControlActionEvidence> ControlActionEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1205,6 +1248,9 @@ internal sealed class UiSnapshotContext
         AddSectionScreenshotEvidence(fileName, skippedReason, CheckStatus.Warn, automationId);
     }
 
+    public void RecordControlAction(string action, string automationId, string result, CheckStatus status)
+        => ControlActionEvidence.Add(new ControlActionEvidence(action, automationId, result, status));
+
     private void AddSectionScreenshotEvidence(
         string fileName,
         string skippedReason,
@@ -1240,6 +1286,12 @@ internal sealed record SectionScreenshotEvidence(
     string AutomationId,
     string Screenshot,
     string SkippedReason,
+    CheckStatus Status);
+
+internal sealed record ControlActionEvidence(
+    string Action,
+    string AutomationId,
+    string Result,
     CheckStatus Status);
 
 internal sealed record SectionScreenshotDefinition(string Section, string AutomationId)

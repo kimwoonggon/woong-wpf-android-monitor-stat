@@ -1361,6 +1361,18 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm grouped section screenshot evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the section screenshot evidence slice.
 
+## Milestone 41: WPF Control Action Evidence
+
+- [x] Audit remaining WPF runtime acceptance evidence after section screenshot grouping.
+- [x] Add a failing WPF App/tool test requiring grouped Start/Stop/Sync action evidence in report and manifest.
+- [x] Add control action rows for Start tracking, Stop tracking, Sync local-only, and Sync enabled with action, AutomationId, result, and status.
+- [x] Preserve the existing generic `checks` report/manifest evidence for backward compatibility.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm grouped control action evidence appears in latest report/manifest.
+- [x] Update WPF resume state after the control action evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
