@@ -156,6 +156,33 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void WpfCheckPackageScript_WritesPointerOnlyManifestAndReportWithoutCopyingPngArtifacts()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-check-package.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF check package script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("artifacts/wpf-check", script);
+        Assert.Contains("manifest.json", script);
+        Assert.Contains("report.md", script);
+        Assert.Contains("wpfUiAcceptance", script);
+        Assert.Contains("uiSnapshots", script);
+        Assert.Contains("chromeNativeAcceptance", script);
+        Assert.Contains("realStart", script);
+        Assert.Contains("sourcePath", script);
+        Assert.Contains("reportPath", script);
+        Assert.Contains("manifestPath", script);
+        Assert.Contains("pngArtifactsAreReferencedOnly", script);
+        Assert.Contains("doNotCommitPngArtifacts", script);
+        Assert.Contains("Get-ChildItem", script);
+        Assert.Contains("*.png", script);
+        Assert.DoesNotContain("Copy-Item -Recurse", script);
+        Assert.DoesNotContain("Copy-Item $", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();
