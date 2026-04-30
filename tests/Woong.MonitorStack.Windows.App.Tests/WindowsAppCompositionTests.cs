@@ -185,6 +185,25 @@ public sealed class WindowsAppCompositionTests
         });
 
     [Fact]
+    public void DispatcherTrackingTicker_WhenIntervalEnvironmentVariableIsSet_UsesConfiguredInterval()
+        => RunOnStaThread(() =>
+        {
+            string? previousValue = Environment.GetEnvironmentVariable(DispatcherTrackingTicker.IntervalEnvironmentVariable);
+            try
+            {
+                Environment.SetEnvironmentVariable(DispatcherTrackingTicker.IntervalEnvironmentVariable, "3000");
+
+                var ticker = new DispatcherTrackingTicker();
+
+                Assert.Equal(TimeSpan.FromSeconds(3), ticker.Interval);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(DispatcherTrackingTicker.IntervalEnvironmentVariable, previousValue);
+            }
+        });
+
+    [Fact]
     public void AddWindowsApp_WhenSampleDashboardMode_RegistersDeterministicSampleDashboardDataSource()
     {
         string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");

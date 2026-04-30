@@ -1591,3 +1591,11 @@ milestones below are finished.
 - [x] Add explicit WPF feature verification checklist as `wpf_check_todo.md`.
 - [x] Map WPF runtime, SQLite, outbox, dashboard, browser, native messaging, UI acceptance, and privacy features to test/evidence targets.
 - [x] Document WPF validation commands and expected visual review artifacts.
+
+## WPF Same-Window Browser Navigation Evidence 2026-04-30
+
+- [x] Add TDD coverage for Chrome same-window navigation (`youtube.com -> github.com -> chatgpt.com`) without closing the Chrome FocusSession.
+- [x] Update WPF TrackingPipeline acceptance PNG capture names and semantic checks for same-window navigation, second Chrome process/window, Notepad, and File Explorer.
+- [x] Regenerate local WPF check package at `artifacts/wpf-check/latest/`.
+- [x] Run full solution test/build, WPF UI acceptance, and coverage.
+- [x] Current coverage: line 91.9% (3774/4104), branch 70.8% (536/757).

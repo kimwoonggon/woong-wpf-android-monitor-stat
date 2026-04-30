@@ -479,3 +479,29 @@ The latest combined WPF UI acceptance run passed at:
 `artifacts/wpf-ui-acceptance/20260429-161328`
 
 Coverage after this slice remains 92.0% overall.
+
+## 2026-04-30 Same-Window Browser Navigation Acceptance
+
+The WPF TrackingPipeline acceptance now covers a Chrome same-window navigation path before switching to another Chrome process/window:
+
+1. Start with VS Code foreground.
+2. Switch to one Chrome HWND/PID on `youtube.com`.
+3. Navigate the same Chrome HWND/PID to `github.com`.
+4. Navigate the same Chrome HWND/PID to `chatgpt.com`.
+5. Switch to a second Chrome process/window on `learn.microsoft.com`.
+6. Switch to Notepad.
+7. Switch to File Explorer.
+8. Stop and flush.
+
+Expected evidence:
+
+- The same Chrome HWND/PID navigation persists `youtube.com`, `github.com`, and `chatgpt.com` as separate WebSessions without closing the Chrome FocusSession.
+- The second Chrome process/window and arbitrary app switches close/persist FocusSessions.
+- The default browser privacy path persists domains only and does not persist full URLs, page titles, or page content.
+- The local report and PNG package live under `artifacts/wpf-check/latest/`.
+
+Latest local run passed at:
+
+`artifacts/wpf-ui-acceptance/20260430-163246`
+
+Coverage after this slice: line 91.9%, branch 70.8%.

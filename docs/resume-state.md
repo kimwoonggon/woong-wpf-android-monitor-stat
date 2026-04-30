@@ -4169,3 +4169,18 @@ Latest WPF UI acceptance artifact:
 `artifacts/wpf-ui-acceptance/20260429-220702`.
 
 Coverage after this slice: overall line coverage 91.2%.
+
+## 2026-04-30 WPF Same-Window Browser Navigation Evidence Slice
+
+- Added a RED acceptance-coordinator test for one Chrome foreground window navigating `youtube.com -> github.com -> chatgpt.com` without closing the Chrome FocusSession.
+- Updated `AcceptanceTrackingDashboardCoordinator` so same HWND/PID browser domain changes persist WebSessions only, while a foreground change to the second Chrome process/window closes the Chrome FocusSession.
+- Updated WPF UI snapshot acceptance to use manual Start plus a slower test ticker, then capture before/during/after PNG evidence for same-window browser navigation, second Chrome process/window, Notepad, File Explorer, Stop, Sync, and Settings.
+- Generated consolidated visual package at `artifacts/wpf-check/latest/`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~AcceptanceTrackingDashboardCoordinatorTests|FullyQualifiedName~WpfUiAcceptanceScriptTests" -maxcpucount:1 -v minimal` passed 40 tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 407 tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-163246`.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` generated coverage: line 91.9% (3774/4104), branch 70.8% (536/757).

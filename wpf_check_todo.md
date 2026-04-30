@@ -172,3 +172,26 @@ Forbidden:
 - If a future consolidated `artifacts/wpf-check/latest/` package is added, it
   should aggregate the existing WPF acceptance, UI snapshot, Chrome native, and
   RealStart reports without committing PNG artifacts to git.
+
+## WPF Same-Window Browser Navigation Evidence 2026-04-30
+
+- [x] Add TDD coverage for same Chrome HWND/PID navigation: youtube.com -> github.com -> chatgpt.com persists WebSessions without closing the Chrome FocusSession.
+- [x] Update TrackingPipeline acceptance to capture before/during/after PNGs for same-window Chrome navigation, second Chrome process/window, Notepad, File Explorer, Stop, Sync, and Settings.
+- [x] Verify TrackingPipeline temp SQLite evidence: focus_session rows = 5, web_session rows = 4, sync_outbox rows = 9.
+- [x] Verify default browser privacy evidence: domain rows exist for youtube.com, github.com, chatgpt.com, learn.microsoft.com; full URL/page title/page content are not stored.
+- [x] Generate consolidated package at `artifacts/wpf-check/latest/`.
+
+Key PNGs:
+
+- `artifacts/wpf-check/latest/01-startup.png`
+- `artifacts/wpf-check/latest/02-after-start.png`
+- `artifacts/wpf-check/latest/03a-during-chrome-youtube-window.png`
+- `artifacts/wpf-check/latest/03b-during-chrome-github-same-window.png`
+- `artifacts/wpf-check/latest/03c-during-chrome-chatgpt-same-window.png`
+- `artifacts/wpf-check/latest/03d-during-chrome-second-process-docs.png`
+- `artifacts/wpf-check/latest/03e-during-notepad-switch.png`
+- `artifacts/wpf-check/latest/03f-during-explorer-switch.png`
+- `artifacts/wpf-check/latest/04-after-stop.png`
+- `artifacts/wpf-check/latest/05-after-sync.png`
+- `artifacts/wpf-check/latest/06-settings.png`
+- `artifacts/wpf-check/latest/app-sessions-window-titles-visible.png`

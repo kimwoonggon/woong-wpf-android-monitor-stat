@@ -244,7 +244,9 @@ internal static class UiSnapshotRunner
         {
             startInfo.Environment["WOONG_MONITOR_ACCEPTANCE_MODE"] = "TrackingPipeline";
             startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
-            startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "1";
+            // Manual start keeps before/during/after screenshots deterministic.
+            startInfo.Environment["WOONG_MONITOR_AUTO_START_TRACKING"] = "0";
+            startInfo.Environment["WOONG_MONITOR_TRACKING_TICK_INTERVAL_MS"] = "5000";
         }
         else if (options.Mode == UiSnapshotMode.SampleDashboard)
         {
@@ -334,10 +336,37 @@ internal static class UiSnapshotRunner
         CaptureWindow(mainWindow, "02-after-start.png", context);
         CaptureElementOrWindowFallback(mainWindow, "CurrentActivityPanel", "current-activity.png", context);
 
-        Thread.Sleep(1500);
-        context.CheckContains("CurrentAppNameText after generated activity", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
-        context.CheckContains("LastPersistedSessionText", "Code.exe", GetElementText(mainWindow, "LastPersistedSessionText"));
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText Chrome YouTube same window", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("CurrentBrowserDomainText Chrome YouTube same window", "youtube.com", GetElementText(mainWindow, "CurrentBrowserDomainText"));
+        context.CheckContains("LastPersistedSessionText first app switch", "Code.exe", GetElementText(mainWindow, "LastPersistedSessionText"));
         CaptureWindow(mainWindow, "03-after-generated-activity.png", context);
+        CaptureWindow(mainWindow, "03a-during-chrome-youtube-window.png", context);
+
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText Chrome GitHub same window", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("CurrentBrowserDomainText Chrome GitHub same window", "github.com", GetElementText(mainWindow, "CurrentBrowserDomainText"));
+        CaptureWindow(mainWindow, "03b-during-chrome-github-same-window.png", context);
+
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText Chrome ChatGPT same window", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("CurrentBrowserDomainText Chrome ChatGPT same window", "chatgpt.com", GetElementText(mainWindow, "CurrentBrowserDomainText"));
+        CaptureWindow(mainWindow, "03c-during-chrome-chatgpt-same-window.png", context);
+
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText Chrome second process docs", "chrome.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        context.CheckContains("CurrentBrowserDomainText Chrome second process docs", "learn.microsoft.com", GetElementText(mainWindow, "CurrentBrowserDomainText"));
+        CaptureWindow(mainWindow, "03d-during-chrome-second-process-docs.png", context);
+
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText Notepad switch", "notepad.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        CaptureWindow(mainWindow, "03e-during-notepad-switch.png", context);
+
+        Thread.Sleep(5300);
+        context.CheckContains("CurrentAppNameText File Explorer switch", "explorer.exe", GetElementText(mainWindow, "CurrentAppNameText"));
+        CaptureWindow(mainWindow, "03f-during-explorer-switch.png", context);
+
+        context.CheckContains("LastPersistedSessionText", "notepad.exe", GetElementText(mainWindow, "LastPersistedSessionText"));
 
         InvokeRequired(mainWindow, "StopTrackingButton", "Stop tracking", context);
         Thread.Sleep(700);
@@ -353,6 +382,8 @@ internal static class UiSnapshotRunner
         string appText = GetAllVisibleText(mainWindow);
         context.CheckContains("TrackingPipeline shows Visual Studio Code process", "Code.exe", appText);
         context.CheckContains("TrackingPipeline shows Chrome process", "chrome.exe", appText);
+        context.CheckContains("TrackingPipeline shows Notepad process", "notepad.exe", appText);
+        context.CheckContains("TrackingPipeline shows File Explorer process", "explorer.exe", appText);
         context.CheckContains("SummaryCards show expected duration", "15m", appText);
 
         SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
@@ -360,8 +391,10 @@ internal static class UiSnapshotRunner
         RequireExists(mainWindow, "RecentWebSessionsList", context);
         CaptureElementIfAvailable(mainWindow, "RecentWebSessionsList", "recent-web-sessions.png", context);
         string webText = GetAllVisibleText(mainWindow);
+        context.CheckContains("TrackingPipeline shows youtube.com", "youtube.com", webText);
         context.CheckContains("TrackingPipeline shows github.com", "github.com", webText);
         context.CheckContains("TrackingPipeline shows chatgpt.com", "chatgpt.com", webText);
+        context.CheckContains("TrackingPipeline shows learn.microsoft.com", "learn.microsoft.com", webText);
 
         InvokeRequired(mainWindow, "SyncNowButton", "Sync local-only", context);
         Thread.Sleep(500);
@@ -389,6 +422,19 @@ internal static class UiSnapshotRunner
         Thread.Sleep(300);
         RequireExists(mainWindow, "WindowTitleVisibleCheckBox", context);
         RequireExists(mainWindow, "SyncEnabledCheckBox", context);
+        EnableCheckBox(mainWindow, "WindowTitleVisibleCheckBox", context);
+        InvokeRequired(mainWindow, "RefreshButton", "Refresh after enabling window titles", context);
+        Thread.Sleep(500);
+        SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
+        Thread.Sleep(300);
+        CaptureElementIfAvailable(mainWindow, "RecentAppSessionsList", "app-sessions-window-titles-visible.png", context);
+        string titleVisibleText = GetAllVisibleText(mainWindow);
+        context.CheckContains("Window title visible YouTube Chrome", "YouTube - Google Chrome", titleVisibleText);
+        context.CheckContains("Window title visible Learn Chrome", "Learn Microsoft - Google Chrome", titleVisibleText);
+        context.CheckContains("Window title visible Notepad", "Untitled - Notepad", titleVisibleText);
+        context.CheckContains("Window title visible File Explorer", "Downloads - File Explorer", titleVisibleText);
+        SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
+        Thread.Sleep(300);
         EnableCheckBox(mainWindow, "SyncEnabledCheckBox", context);
         InvokeRequired(mainWindow, "SyncNowButton", "Sync enabled", context);
         Thread.Sleep(500);
@@ -965,19 +1011,49 @@ internal static class UiSnapshotRunner
             "> 0",
             evidence.SyncOutboxRows,
             evidence.SyncOutboxRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        VerifyForegroundSwitchEvidence(context, databasePath);
         VerifyBrowserDomainPrivacyEvidence(context, databasePath);
+    }
+
+    private static void VerifyForegroundSwitchEvidence(UiSnapshotContext context, string databasePath)
+    {
+        (string Claim, string WhereClause)[] checks =
+        [
+            ("Visual Studio Code window title persisted", "process_name = 'Code.exe' AND window_title = 'Project Alpha - Visual Studio Code'"),
+            ("Chrome same-window navigation persisted as one focus session", "process_name = 'chrome.exe' AND process_id = 20 AND window_handle = 200 AND window_title = 'YouTube - Google Chrome' AND duration_ms = 360000"),
+            ("Chrome second process docs window title persisted", "process_name = 'chrome.exe' AND process_id = 22 AND window_title = 'Learn Microsoft - Google Chrome'"),
+            ("Arbitrary Notepad switch persisted", "process_name = 'notepad.exe' AND window_title = 'Untitled - Notepad'"),
+            ("Arbitrary File Explorer switch persisted", "process_name = 'explorer.exe' AND window_title = 'Downloads - File Explorer'")
+        ];
+
+        foreach ((string claim, string whereClause) in checks)
+        {
+            int rows = CountRowsWhere(databasePath, "focus_session", whereClause);
+            context.Add(
+                claim,
+                "> 0 focus_session rows",
+                rows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                rows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        }
     }
 
     private static void VerifyBrowserDomainPrivacyEvidence(UiSnapshotContext context, string databasePath)
     {
+        int youtubeDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'youtube.com'");
         int githubDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'github.com'");
         int chatGptDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'chatgpt.com'");
+        int learnDomainRows = CountRowsWhere(databasePath, "web_session", "domain = 'learn.microsoft.com'");
         int fullUrlRows = CountRowsWhere(databasePath, "web_session", "url IS NOT NULL AND TRIM(url) <> ''");
         int pageTitleRows = CountRowsWhere(databasePath, "web_session", "page_title IS NOT NULL AND TRIM(page_title) <> ''");
         bool hasPageContentColumn = ColumnExists(databasePath, "web_session", "page_content")
             || ColumnExists(databasePath, "web_session", "content")
             || ColumnExists(databasePath, "web_session", "body");
 
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Domain youtube.com persisted",
+            "> 0 web_session rows",
+            youtubeDomainRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            youtubeDomainRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.RecordBrowserDomainPrivacyEvidence(
             "Domain github.com persisted",
             "> 0 web_session rows",
@@ -988,6 +1064,11 @@ internal static class UiSnapshotRunner
             "> 0 web_session rows",
             chatGptDomainRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
             chatGptDomainRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
+        context.RecordBrowserDomainPrivacyEvidence(
+            "Domain learn.microsoft.com persisted",
+            "> 0 web_session rows",
+            learnDomainRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            learnDomainRows > 0 ? CheckStatus.Pass : CheckStatus.Fail);
         context.RecordBrowserDomainPrivacyEvidence(
             "Full URL values absent",
             "0 non-empty web_session.url rows",
@@ -1137,13 +1218,21 @@ internal static class UiSnapshotRunner
     {
         string safeTableName = tableName switch
         {
+            "focus_session" => tableName,
             "web_session" => tableName,
             _ => throw new ArgumentException($"Unsupported table name: {tableName}.", nameof(tableName))
         };
         string safeWhereClause = whereClause switch
         {
+            "process_name = 'Code.exe' AND window_title = 'Project Alpha - Visual Studio Code'" => whereClause,
+            "process_name = 'chrome.exe' AND process_id = 20 AND window_handle = 200 AND window_title = 'YouTube - Google Chrome' AND duration_ms = 360000" => whereClause,
+            "process_name = 'chrome.exe' AND process_id = 22 AND window_title = 'Learn Microsoft - Google Chrome'" => whereClause,
+            "process_name = 'notepad.exe' AND window_title = 'Untitled - Notepad'" => whereClause,
+            "process_name = 'explorer.exe' AND window_title = 'Downloads - File Explorer'" => whereClause,
+            "domain = 'youtube.com'" => whereClause,
             "domain = 'github.com'" => whereClause,
             "domain = 'chatgpt.com'" => whereClause,
+            "domain = 'learn.microsoft.com'" => whereClause,
             "url IS NOT NULL AND TRIM(url) <> ''" => whereClause,
             "page_title IS NOT NULL AND TRIM(page_title) <> ''" => whereClause,
             _ => throw new ArgumentException($"Unsupported where clause: {whereClause}.", nameof(whereClause))
@@ -1504,8 +1593,11 @@ internal static class UiSnapshotRunner
             "",
             "- Current activity is readable.",
             "- Start/Stop state is clear.",
-            "- Expected app names appear: Visual Studio Code / Code.exe and Chrome / chrome.exe.",
-            "- Expected domains appear: github.com and chatgpt.com.",
+            "- Before/during/after screenshots exist for startup, tracking start, generated activity, stop, sync, and settings.",
+            "- Expected app names appear: Visual Studio Code / Code.exe, Chrome / chrome.exe, Notepad / notepad.exe, and File Explorer / explorer.exe.",
+            "- Same-window Chrome navigation appears in sequence: youtube.com, github.com, and chatgpt.com before the Chrome focus session closes.",
+            "- Expected Chrome window titles appear when window-title visibility is enabled: YouTube - Google Chrome and Learn Microsoft - Google Chrome.",
+            "- Expected domains appear: youtube.com, github.com, chatgpt.com, and learn.microsoft.com.",
             "- Summary values match the fake TrackingPipeline data.",
             "- Lists are not clipped in a way that hides required content.",
             "- Chart area is visible when expected.",

@@ -178,6 +178,39 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_CapturesBeforeDuringAfterWindowSwitchEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        string[] requiredEvidence =
+        [
+            "03a-during-chrome-youtube-window.png",
+            "03b-during-chrome-github-same-window.png",
+            "03c-during-chrome-chatgpt-same-window.png",
+            "03d-during-chrome-second-process-docs.png",
+            "03e-during-notepad-switch.png",
+            "03f-during-explorer-switch.png",
+            "YouTube - Google Chrome",
+            "Learn Microsoft - Google Chrome",
+            "Untitled - Notepad",
+            "Downloads - File Explorer",
+            "youtube.com",
+            "learn.microsoft.com",
+            "notepad.exe",
+            "explorer.exe"
+        ];
+
+        foreach (string item in requiredEvidence)
+        {
+            Assert.Contains(item, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_ToleratesAutoStartedTrackingPipeline()
     {
         string repoRoot = FindRepositoryRoot();
@@ -204,6 +237,20 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("CheckContainsAny", tool);
         Assert.Contains("CurrentAppNameText start", tool);
         Assert.Contains("\"Code.exe\", \"chrome.exe\"", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotsTool_UsesManualStartAndSlowerTickerForBeforeDuringAfterSwitchCaptures()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("WOONG_MONITOR_AUTO_START_TRACKING", tool);
+        Assert.Contains("WOONG_MONITOR_TRACKING_TICK_INTERVAL_MS", tool);
+        Assert.Contains("Manual start keeps before/during/after screenshots deterministic", tool);
     }
 
     [Fact]
@@ -703,6 +750,7 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("VerifyBrowserDomainPrivacyEvidence", tool);
         Assert.Contains("Domain github.com persisted", tool);
         Assert.Contains("Domain chatgpt.com persisted", tool);
+        Assert.Contains("Domain youtube.com persisted", tool);
         Assert.Contains("Full URL values absent", tool);
         Assert.Contains("Page title values absent", tool);
         Assert.Contains("Page content storage absent", tool);
