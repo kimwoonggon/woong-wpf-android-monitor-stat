@@ -36,13 +36,43 @@ It runs on `windows-latest` and performs:
 - Release build
 - Release test
 - WPF app publish
-- unsigned MSIX packaging
+- signed MSIX packaging with a per-run test certificate
 - artifact upload
 
 Artifacts:
 
 - `woong-monitor-windows-app`
 - `woong-monitor-windows-msix`
+
+The `woong-monitor-windows-msix` artifact contains:
+
+- `WoongMonitorStack.Windows.msix`
+- `certificates\WoongMonitorStack.Windows.TestSigning.cer`
+- `install-windows-msix.ps1`
+- `README.md`
+
+The CI artifact does not include the private `.pfx` key.
+
+## Download From GitHub Actions
+
+After the `Windows WPF CI` workflow finishes:
+
+1. Open the workflow run in GitHub Actions.
+2. Download the artifact named `woong-monitor-windows-msix`.
+3. Extract the zip to a local folder.
+4. Open PowerShell in the extracted folder.
+5. Run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
+  -PackagePath .\WoongMonitorStack.Windows.msix `
+  -CertificatePath .\certificates\WoongMonitorStack.Windows.TestSigning.cer `
+  -TrustCertificate
+```
+
+The first install trusts the public test certificate for the current Windows
+user only. Before the certificate is trusted, `Get-AuthenticodeSignature` can
+report an untrusted-root status even though the MSIX has a signer certificate.
 
 ## Local MSIX Package
 
@@ -62,16 +92,31 @@ artifacts\windows-msix\WoongMonitorStack.Windows.msix
 An unsigned MSIX is useful as a packaging artifact, but Windows normally requires
 a signed MSIX for installation.
 
+To create a signed local test MSIX plus public certificate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -CreateTestCertificate
+```
+
+This writes:
+
+```text
+artifacts\windows-msix\WoongMonitorStack.Windows.msix
+artifacts\windows-msix\certificates\WoongMonitorStack.Windows.TestSigning.cer
+artifacts\windows-msix\install-windows-msix.ps1
+artifacts\windows-msix\README.md
+```
+
 ## Signed MSIX Install
 
-Use a trusted development certificate or a release certificate. The install
-script imports a certificate only when `-TrustCertificate` is explicitly passed,
-and only into the current user store:
+Use a trusted development certificate, a release certificate, or the CI/local
+test certificate. The install script imports a certificate only when
+`-TrustCertificate` is explicitly passed, and only into the current user store:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\install-windows-msix.ps1 `
   -PackagePath artifacts\windows-msix\WoongMonitorStack.Windows.msix `
-  -CertificatePath D:\path\to\woong-monitor.cer `
+  -CertificatePath artifacts\windows-msix\certificates\WoongMonitorStack.Windows.TestSigning.cer `
   -TrustCertificate
 ```
 
@@ -95,4 +140,3 @@ Do not commit private signing certificates or passwords.
 - The app remains a visible WPF desktop app. MSIX packaging does not change the
   privacy boundary: no keylogging, typed text capture, screen capture, page
   content capture, passwords, messages, forms, or clipboard capture.
-

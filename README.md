@@ -238,8 +238,8 @@ GitHub Actions workflow:
 .github/workflows/windows-wpf-ci.yml
 ```
 
-It restores, builds, tests, publishes the Windows app, packages an unsigned
-MSIX, and uploads artifacts.
+It restores, builds, tests, publishes the Windows app, packages a signed test
+MSIX, and uploads installable artifacts.
 
 Local MSIX packaging:
 
@@ -247,12 +247,25 @@ Local MSIX packaging:
 powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1
 ```
 
+Signed local test MSIX packaging:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -CreateTestCertificate
+```
+
+GitHub Actions uploads `woong-monitor-windows-msix` with:
+
+- `WoongMonitorStack.Windows.msix`
+- `certificates\WoongMonitorStack.Windows.TestSigning.cer`
+- `install-windows-msix.ps1`
+- `README.md`
+
 Signed install, using a certificate trusted only for the current user:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install-windows-msix.ps1 `
+powershell -ExecutionPolicy Bypass -File artifacts\windows-msix\install-windows-msix.ps1 `
   -PackagePath artifacts\windows-msix\WoongMonitorStack.Windows.msix `
-  -CertificatePath D:\path\to\woong-monitor.cer `
+  -CertificatePath artifacts\windows-msix\certificates\WoongMonitorStack.Windows.TestSigning.cer `
   -TrustCertificate
 ```
 

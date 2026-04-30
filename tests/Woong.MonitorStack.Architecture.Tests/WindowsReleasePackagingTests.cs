@@ -48,9 +48,15 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal", workflow, StringComparison.Ordinal);
         Assert.Contains("dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal", workflow, StringComparison.Ordinal);
         Assert.Contains("scripts\\package-windows-msix.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("-CreateTestCertificate", workflow, StringComparison.Ordinal);
         Assert.Contains("actions/upload-artifact", workflow, StringComparison.Ordinal);
         Assert.Contains("woong-monitor-windows-app", workflow, StringComparison.Ordinal);
         Assert.Contains("woong-monitor-windows-msix", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/windows-msix/*.msix", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/windows-msix/certificates/*.cer", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/windows-msix/install-windows-msix.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/windows-msix/README.md", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("*.pfx", workflow, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -90,10 +96,20 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("NewPlaceholderPng", packageScript, StringComparison.Ordinal);
         Assert.Contains("Assert-NativeCommandSucceeded", packageScript, StringComparison.Ordinal);
         Assert.Contains("Copy-Item -Path", packageScript, StringComparison.Ordinal);
+        Assert.Contains("CreateTestCertificate", packageScript, StringComparison.Ordinal);
+        Assert.Contains("New-SelfSignedCertificate", packageScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Export-PfxCertificate", packageScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Export-Certificate", packageScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WoongMonitorStack.Windows.TestSigning.cer", packageScript, StringComparison.Ordinal);
+        Assert.Contains("WoongMonitorStack.Windows.TestSigning.pfx", packageScript, StringComparison.Ordinal);
+        Assert.Contains("install-windows-msix.ps1", packageScript, StringComparison.Ordinal);
+        Assert.Contains("README.md", packageScript, StringComparison.Ordinal);
         Assert.Contains("Add-AppxPackage", installScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Cert:\\CurrentUser\\TrustedPeople", installScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("TrustCertificate", installScript, StringComparison.Ordinal);
+        Assert.DoesNotContain("MSIX_SIGNING_CERTIFICATE", packageScript, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Cert:\\LocalMachine", installScript, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Cert:\\LocalMachine", packageScript, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Remove-Item Cert:", installScript, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -109,8 +125,12 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("dotnet run --configuration Release --project src\\Woong.MonitorStack.Windows.App\\Woong.MonitorStack.Windows.App.csproj", doc, StringComparison.Ordinal);
         Assert.Contains("scripts\\package-windows-msix.ps1", doc, StringComparison.Ordinal);
         Assert.Contains("scripts\\install-windows-msix.ps1", doc, StringComparison.Ordinal);
+        Assert.Contains("-CreateTestCertificate", doc, StringComparison.Ordinal);
+        Assert.Contains("WoongMonitorStack.Windows.TestSigning.cer", doc, StringComparison.Ordinal);
+        Assert.Contains("woong-monitor-windows-msix", doc, StringComparison.Ordinal);
         Assert.Contains("unsigned MSIX", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("signed MSIX", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Download the artifact named `woong-monitor-windows-msix`", doc, StringComparison.Ordinal);
         Assert.Contains("CurrentUser", doc, StringComparison.Ordinal);
     }
 

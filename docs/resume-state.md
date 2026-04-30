@@ -4560,3 +4560,27 @@ Next Windows release work:
 - Add signing certificate/secrets guidance for real distribution.
 - Optionally add a release workflow triggered by tags after signing policy is decided.
 - Release WPF run smoke passed with temp DB and auto-start disabled: `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj` started `Woong.MonitorStack.Windows.App` and the process was responding.
+
+## 2026-05-01 Windows Signed MSIX CI Artifact
+
+- Added TDD architecture checks for signed CI MSIX artifacts, CurrentUser-scoped install trust, GitHub Actions artifact contents, and `.pfx` non-upload behavior.
+- Updated `.github/workflows/windows-wpf-ci.yml` so Windows CI packages with `scripts\package-windows-msix.ps1 -CreateTestCertificate`.
+- `scripts\package-windows-msix.ps1 -CreateTestCertificate` now creates a transient CurrentUser test-signing cert, signs the MSIX, exports a public `.cer`, copies `install-windows-msix.ps1`, and writes an artifact README.
+- The generated CI artifact `woong-monitor-windows-msix` contains the installable `.msix`, public `.cer`, install script, and README. It intentionally does not include the private `.pfx`.
+- `docs/windows-release-msix.md` and `README.md` now explain how to download the GitHub Actions artifact and install it.
+
+Validation:
+
+- Focused Windows release packaging architecture tests passed: 6 passed.
+- Local signed MSIX packaging passed with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -CreateTestCertificate`.
+- Install script `-WhatIf` passed and reported `Cert:\CurrentUser\TrustedPeople` plus `Add-AppxPackage` actions without performing them.
+- `Get-AuthenticodeSignature artifacts\windows-msix\WoongMonitorStack.Windows.msix` found signer `CN=WoongMonitorStack`; untrusted-root status is expected until the `.cer` is trusted.
+- Full Debug solution test passed: 460 passed, 6 PostgreSQL/Testcontainers tests skipped by default.
+- Release build passed with 0 warnings/errors.
+- Release test passed: 460 passed, 6 PostgreSQL/Testcontainers tests skipped by default.
+- Coverage generated: line 88.6%, branch 69.4%.
+
+Next:
+
+- For real public release, replace the per-run test certificate with a stable release signing certificate/secrets policy.
+- Then add a tag-based release workflow.

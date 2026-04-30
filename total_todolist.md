@@ -1963,3 +1963,30 @@ milestones below are finished.
 - [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1` passed and created an unsigned MSIX.
 - [x] Coverage generated: line 87.2% (4232/4851), branch 68.1% (607/891).
 - [x] Release WPF run smoke passed with temp DB and auto-start disabled: `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj` started `Woong.MonitorStack.Windows.App` and the process was responding.
+
+## 2026-05-01 Windows Signed MSIX CI Artifact
+
+- [x] Added architecture tests requiring the Windows CI workflow to create a signed MSIX with `-CreateTestCertificate`.
+- [x] CI uploads the installable MSIX bundle: `.msix`, public `.cer`, `install-windows-msix.ps1`, and artifact `README.md`.
+- [x] CI workflow does not upload generated `.pfx` private keys.
+- [x] `scripts\package-windows-msix.ps1 -CreateTestCertificate` generates a per-run CurrentUser test signing certificate, signs the MSIX, exports only the public `.cer` for installation, and removes the transient cert from `CurrentUser\My`.
+- [x] Install trust remains explicit and CurrentUser-scoped through `scripts\install-windows-msix.ps1 -TrustCertificate`; no LocalMachine certificate store is used.
+- [x] Documented how to download `woong-monitor-windows-msix` from GitHub Actions and install it locally.
+- [x] Local signed MSIX generated at `artifacts/windows-msix/WoongMonitorStack.Windows.msix`.
+- [x] Public certificate generated at `artifacts/windows-msix/certificates/WoongMonitorStack.Windows.TestSigning.cer`.
+- [x] `Get-AuthenticodeSignature` shows signer `CN=WoongMonitorStack`; untrusted-root status before certificate trust is expected.
+
+### Validation Update
+
+- [x] Focused Windows release packaging architecture tests passed: 6 passed.
+- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -CreateTestCertificate` passed and signed the MSIX.
+- [x] `artifacts\windows-msix\install-windows-msix.ps1 ... -TrustCertificate -WhatIf` passed and showed CurrentUser-only trust/install actions.
+- [x] `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings and 0 errors.
+- [x] `dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal` passed: 460 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] Coverage generated: line 88.6% (4299/4851), branch 69.4% (619/891).
+
+### Remaining Windows Release Work
+
+- [ ] Replace per-run test certificate with a stable release signing certificate/secrets strategy before public distribution.
+- [ ] Add a tag-based release workflow after signing policy is finalized.

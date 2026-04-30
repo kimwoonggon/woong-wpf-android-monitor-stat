@@ -5,6 +5,9 @@ param(
     [switch]$Sign,
     [string]$CertificatePath = "",
     [string]$CertificatePassword = "",
+    [string]$InstallCertificatePath = "",
+    [switch]$CreateTestCertificate,
+    [string]$CertificateSubject = "CN=WoongMonitorStack",
     [switch]$Install,
     [switch]$TrustCertificate
 )
@@ -19,7 +22,9 @@ $publishDir = Join-Path $repoRoot "artifacts\windows-app"
 $layoutDir = Join-Path $outputRootPath "layout"
 $appLayoutDir = Join-Path $layoutDir "App"
 $assetLayoutDir = Join-Path $layoutDir "Assets"
+$certificateOutputDir = Join-Path $outputRootPath "certificates"
 $msixPath = Join-Path $outputRootPath "WoongMonitorStack.Windows.msix"
+$generatedCerPath = ""
 
 function Assert-UnderArtifacts {
     param([string]$Path)
@@ -98,6 +103,74 @@ function NewPlaceholderPng {
     }
 }
 
+function New-TestSigningCertificate {
+    param(
+        [string]$Subject,
+        [string]$OutputDirectory,
+        [string]$Password
+    )
+
+    New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+
+    $pfxPath = Join-Path $OutputDirectory "WoongMonitorStack.Windows.TestSigning.pfx"
+    $cerPath = Join-Path $OutputDirectory "WoongMonitorStack.Windows.TestSigning.cer"
+    $securePassword = ConvertTo-SecureString $Password -AsPlainText -Force
+    $certificate = New-SelfSignedCertificate `
+        -Type Custom `
+        -Subject $Subject `
+        -KeyAlgorithm RSA `
+        -KeyLength 2048 `
+        -KeyExportPolicy Exportable `
+        -KeyUsage DigitalSignature `
+        -CertStoreLocation "Cert:\CurrentUser\My" `
+        -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3")
+
+    try {
+        Export-PfxCertificate -Cert $certificate -FilePath $pfxPath -Password $securePassword | Out-Null
+        Export-Certificate -Cert $certificate -FilePath $cerPath | Out-Null
+    }
+    finally {
+        Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -Force -ErrorAction SilentlyContinue
+    }
+
+    return [pscustomobject]@{
+        PfxPath = $pfxPath
+        CerPath = $cerPath
+        Password = $Password
+    }
+}
+
+function Write-InstallReadme {
+    param(
+        [string]$Path,
+        [string]$CertificateFileName
+    )
+
+    $content = @"
+# Woong Monitor Stack signed MSIX artifact
+
+This artifact contains a signed MSIX package for local Windows testing:
+
+- `WoongMonitorStack.Windows.msix`
+- `certificates\$CertificateFileName`
+- `install-windows-msix.ps1`
+
+Install from an elevated or normal PowerShell prompt:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
+  -PackagePath .\WoongMonitorStack.Windows.msix `
+  -CertificatePath .\certificates\$CertificateFileName `
+  -TrustCertificate
+```
+
+The installer script trusts the public certificate only in `Cert:\CurrentUser\TrustedPeople`.
+It does not use the machine-wide certificate store.
+"@
+
+    Set-Content -Path $Path -Value $content -Encoding UTF8
+}
+
 if (-not (Test-Path -LiteralPath $manifestTemplatePath)) {
     throw "Missing MSIX manifest template: $manifestTemplatePath"
 }
@@ -112,6 +185,21 @@ if (-not $SkipPublish) {
 
 if (-not (Test-Path -LiteralPath (Join-Path $publishDir "Woong.MonitorStack.Windows.App.exe"))) {
     throw "Published app executable not found. Run without -SkipPublish or publish to $publishDir first."
+}
+
+if ($CreateTestCertificate) {
+    if ([string]::IsNullOrWhiteSpace($CertificatePassword)) {
+        $CertificatePassword = [Guid]::NewGuid().ToString("N")
+    }
+
+    $generatedCertificate = New-TestSigningCertificate `
+        -Subject $CertificateSubject `
+        -OutputDirectory $certificateOutputDir `
+        -Password $CertificatePassword
+    $Sign = $true
+    $CertificatePath = $generatedCertificate.PfxPath
+    $generatedCerPath = $generatedCertificate.CerPath
+    $InstallCertificatePath = $generatedCertificate.CerPath
 }
 
 Reset-Directory -Path $layoutDir
@@ -129,7 +217,7 @@ if (Test-Path -LiteralPath $msixPath) {
     Remove-Item -LiteralPath $msixPath -Force
 }
 
-Write-Host "Packing unsigned MSIX with $makeAppx"
+Write-Host "Packing MSIX with $makeAppx"
 & $makeAppx pack /d $layoutDir /p $msixPath /o
 Assert-NativeCommandSucceeded -Operation "MakeAppx.exe pack"
 
@@ -153,15 +241,37 @@ if ($Sign) {
 if ($Install) {
     $installScript = Join-Path $repoRoot "scripts\install-windows-msix.ps1"
     $installArgs = @("-PackagePath", $msixPath)
-    if (-not [string]::IsNullOrWhiteSpace($CertificatePath)) {
-        $installArgs += @("-CertificatePath", $CertificatePath)
+    $certificateForInstall = $InstallCertificatePath
+    if ([string]::IsNullOrWhiteSpace($certificateForInstall) -and -not [string]::IsNullOrWhiteSpace($generatedCerPath)) {
+        $certificateForInstall = $generatedCerPath
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($certificateForInstall)) {
+        $installArgs += @("-CertificatePath", $certificateForInstall)
     }
 
     if ($TrustCertificate) {
+        if ([string]::IsNullOrWhiteSpace($certificateForInstall)) {
+            throw "-TrustCertificate requires -InstallCertificatePath or -CreateTestCertificate."
+        }
+
         $installArgs += "-TrustCertificate"
     }
 
     & $installScript @installArgs
 }
 
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\install-windows-msix.ps1") `
+    -Destination (Join-Path $outputRootPath "install-windows-msix.ps1") `
+    -Force
+
+if (-not [string]::IsNullOrWhiteSpace($generatedCerPath)) {
+    Write-InstallReadme `
+        -Path (Join-Path $outputRootPath "README.md") `
+        -CertificateFileName (Split-Path -Leaf $generatedCerPath)
+}
+
 Write-Host "MSIX package: $msixPath"
+if (-not [string]::IsNullOrWhiteSpace($generatedCerPath)) {
+    Write-Host "MSIX public certificate: $generatedCerPath"
+}
