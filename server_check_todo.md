@@ -37,9 +37,10 @@ Status legend:
 - [x] Focus session `(DeviceId, ClientSessionId)` unique index is modeled and
   exercised through relational FK/idempotency coverage.
   Evidence: `ServerDbContextModelTests`, `RelationalMonitorDbContextTests`.
-- [ ] Add mixed-batch focus upload coverage: accepted item, duplicate item, and
-  invalid item should return independent statuses and persist only accepted
-  rows.
+- [x] Mixed-batch focus upload returns independent statuses for existing
+  duplicate, accepted new item, and intra-batch duplicate while persisting only
+  accepted rows.
+  Evidence: `FocusSessionUploadApiRelationalTests.UploadFocusSessions_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses`.
 
 ## Web Session Upload
 

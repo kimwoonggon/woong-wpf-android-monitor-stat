@@ -31,13 +31,20 @@ public sealed class FocusSessionUploadService
                 .ToList());
         }
 
+        List<string> requestedSessionIds = request.Sessions
+            .Select(item => item.ClientSessionId)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        HashSet<string> seenSessionIds = (await _dbContext.FocusSessions
+                .Where(session => session.DeviceId == deviceId &&
+                    requestedSessionIds.Contains(session.ClientSessionId))
+                .Select(session => session.ClientSessionId)
+                .ToListAsync())
+            .ToHashSet(StringComparer.Ordinal);
+
         foreach (FocusSessionUploadItem item in request.Sessions)
         {
-            bool exists = await _dbContext.FocusSessions.AnyAsync(session =>
-                session.DeviceId == deviceId &&
-                session.ClientSessionId == item.ClientSessionId);
-
-            if (exists)
+            if (!seenSessionIds.Add(item.ClientSessionId))
             {
                 results.Add(new UploadItemResult(item.ClientSessionId, UploadItemStatus.Duplicate, ErrorMessage: null));
                 continue;

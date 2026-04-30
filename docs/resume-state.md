@@ -4326,3 +4326,20 @@ Milestone 66 final verification update:
 - Full `.NET` solution build passed with 0 warnings and 0 errors.
 - Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
 - Android emulator UI snapshots refreshed at `artifacts/android-ui-snapshots/20260430-174439` and resource measurements at `artifacts/android-resource-measurements/20260430-174552`.
+
+## 2026-04-30 Server Focus Upload Mixed-Batch Idempotency Slice
+
+- Added relational coverage for a focus upload batch containing an existing duplicate, a new accepted session, and an intra-batch duplicate of that new session.
+- Fixed `FocusSessionUploadService` to seed a request-local idempotency set with existing DB session ids and add newly accepted ids as it processes the batch.
+- This prevents EF tracker/unique-index failures and returns item-level `Duplicate`, `Accepted`, `Duplicate` statuses while persisting only one new row.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~UploadFocusSessions_WhenBatchContainsExistingAndIntraBatchDuplicate_ReturnsIndependentStatuses"` passed.
+- `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore -maxcpucount:1 -v minimal --filter "FullyQualifiedName~FocusSessionUpload"` passed 3 tests.
+
+Milestone 67 final verification update:
+
+- Full `.NET` solution tests passed 418 tests.
+- Full `.NET` solution build passed with 0 warnings and 0 errors.
+- Coverage generated: line 91.7% (3830/4173), branch 70.9% (544/767).

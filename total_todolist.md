@@ -1715,3 +1715,17 @@ milestones below are finished.
 - [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
 - [x] Coverage generated: line 91.7% (3823/4166), branch 70.9% (544/767).
 - [x] Android emulator UI snapshots refreshed at `artifacts/android-ui-snapshots/20260430-174439` and resource measurements at `artifacts/android-resource-measurements/20260430-174552`.
+
+## Milestone 67: Server Focus Upload Mixed-Batch Idempotency
+
+- [x] Add RED relational test for focus upload batch containing an existing duplicate, one new session, and an intra-batch duplicate of that new session.
+- [x] Fix `FocusSessionUploadService` to track existing and newly accepted `clientSessionId` values within the request batch.
+- [x] Verify per-item statuses are Duplicate, Accepted, Duplicate and only existing + one new row persist.
+- [x] Run focused mixed-batch test and focus-session upload tests.
+- [x] Update `server_check_todo.md` focus upload coverage.
+
+### Milestone 67 Verification Update
+
+- [x] Full `.NET` solution tests passed: 418 tests.
+- [x] Full `.NET` solution build passed with 0 warnings and 0 errors.
+- [x] Coverage generated: line 91.7% (3830/4173), branch 70.9% (544/767).
