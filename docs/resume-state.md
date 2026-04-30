@@ -2,6 +2,21 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Control Bar Accessibility Polish Slice
+
+- Added RED WPF App accessibility coverage for Control Bar button semantic
+  names so icon-prefixed visual labels do not become noisy assistive names.
+- Added explicit `AutomationProperties.Name` values for Start Tracking, Stop
+  Tracking, Refresh, Sync Now, Today, 1h, 6h, 24h, and Custom period buttons.
+- This is a WPF App-only accessibility slice. It does not change tracking,
+  SQLite persistence, sync behavior, browser capture, Android, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlBar_ButtonsExposeReadableAutomationNames" -maxcpucount:1 -v minimal` failed RED on empty `StartTrackingButton` automation name, then passed after XAML names were added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 115 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+
 ## 2026-04-29 WPF App Root Style Merge Slice
 
 - Added RED architecture tests proving that `App.xaml` merges every shared

@@ -1247,6 +1247,15 @@ milestones below are finished.
 - [x] Run Android debug build.
 - [x] Update resume state after Android SVG UI alignment.
 
+## Milestone 33: WPF Control Bar Accessibility Polish
+
+- [x] Add a failing WPF App accessibility test requiring readable semantic names for Control Bar tracking and period buttons.
+- [x] Add explicit `AutomationProperties.Name` values to Control Bar buttons without changing visible labels, commands, or privacy behavior.
+- [x] Run focused WPF App accessibility tests.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Update WPF resume state after the accessibility polish.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
