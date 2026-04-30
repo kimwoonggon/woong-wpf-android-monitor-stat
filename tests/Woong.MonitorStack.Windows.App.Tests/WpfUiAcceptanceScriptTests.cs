@@ -266,6 +266,52 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ManifestIncludesGroupedCurrentFocusRuntimeEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("currentFocusRuntimeEvidence", tool);
+        Assert.Contains("context.CurrentFocusSemanticEvidence.Select", tool);
+        Assert.Contains("field = evidence.Field", tool);
+        Assert.Contains("readableName = evidence.ReadableName", tool);
+        Assert.Contains("automationId = evidence.AutomationId", tool);
+        Assert.Contains("runtimeValue = evidence.RuntimeValue", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+        Assert.Contains("checks = context.Results.Select", tool);
+
+        string[] requiredRuntimeEvidenceFields =
+        [
+            "Current app",
+            "CurrentAppNameText",
+            "Current process",
+            "CurrentProcessNameText",
+            "Current window title",
+            "CurrentWindowTitleText",
+            "Current browser domain",
+            "CurrentBrowserDomainText",
+            "Current session duration",
+            "CurrentSessionDurationText",
+            "Last poll time",
+            "LastPollTimeText",
+            "Last DB write time",
+            "LastDbWriteTimeText",
+            "Last persisted session",
+            "LastPersistedSessionText",
+            "Sync state",
+            "LastSyncStatusText"
+        ];
+
+        foreach (string requiredRuntimeEvidenceField in requiredRuntimeEvidenceFields)
+        {
+            Assert.Contains(requiredRuntimeEvidenceField, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_TrackingPipelineVerifiesLiveEventRuntimeSemantics()
     {
         string repoRoot = FindRepositoryRoot();

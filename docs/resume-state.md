@@ -21,6 +21,14 @@ Verified:
 - `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest coverage summary reports 91.7% line coverage and 70.7% branch coverage.
 
+## 2026-04-30 WPF Current Focus Manifest Evidence Slice
+
+- Added RED WPF App acceptance-tool coverage requiring `manifest.json` to include a dedicated machine-readable `currentFocusRuntimeEvidence` array separate from generic `checks`.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so manifest rows include `field`, `readableName`, `automationId`, `runtimeValue`, and `status` for Current app, Current process, Current window title, Current browser domain, Current session duration, Last poll time, Last DB write time, Last persisted session, and Sync state.
+- Kept the existing generic `checks` manifest array for backward compatibility.
+- Verified WPF App tests, solution build, and WPF UI acceptance at `artifacts/wpf-ui-acceptance/20260430-111517`; the latest manifest includes `currentFocusRuntimeEvidence` and `checks`.
+- This is a WPF App/tool manifest evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, product telemetry collection, SQLite schema, or server code.
+
 ## 2026-04-30 WPF Current Focus Report Table Slice
 
 - Added RED WPF App acceptance-tool coverage requiring the snapshot report to include a human-readable Current Focus runtime semantic evidence table.

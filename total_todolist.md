@@ -1335,6 +1335,18 @@ milestones below are finished.
 - [x] Run WPF UI acceptance script and confirm the table appears in the latest report.
 - [x] Update WPF resume state after the report-table evidence slice.
 
+## Milestone 39: WPF Current Focus Manifest Evidence
+
+- [x] Add a failing WPF App/tool test requiring a dedicated `currentFocusRuntimeEvidence` manifest array separate from generic `checks`.
+- [x] Add machine-readable Current Focus rows with field, readableName, automationId, runtimeValue, and status.
+- [x] Include Current app, Current process, Current window title, Current browser domain, Current session duration, Last poll, Last DB write, Last persisted session, and Sync state.
+- [x] Preserve the existing generic `checks` manifest array for backward compatibility.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm the latest manifest includes both `currentFocusRuntimeEvidence` and `checks`.
+- [x] Update WPF resume state after the manifest evidence slice.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

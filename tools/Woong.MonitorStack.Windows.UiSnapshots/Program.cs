@@ -1035,6 +1035,14 @@ internal static class UiSnapshotRunner
                 ViewportWidth = (int?)null,
                 Reason = skipped
             }).ToArray(),
+            currentFocusRuntimeEvidence = context.CurrentFocusSemanticEvidence.Select(evidence => new
+            {
+                field = evidence.Field,
+                readableName = evidence.ReadableName,
+                automationId = evidence.AutomationId,
+                runtimeValue = evidence.RuntimeValue,
+                status = evidence.Status.ToString()
+            }).ToArray(),
             checks = context.Results.Select(result => new
             {
                 result.Name,
