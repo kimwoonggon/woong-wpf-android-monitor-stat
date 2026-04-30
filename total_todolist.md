@@ -1401,6 +1401,17 @@ milestones below are finished.
 - [x] Run solution build.
 - [x] Run WPF UI acceptance script and confirm grouped browser-domain privacy evidence appears in latest report/manifest.
 - [x] Update WPF resume state after the browser-domain privacy evidence slice.
+## Milestone 44: WPF Minimum Size Reachability Evidence
+
+- [x] Add a failing WPF App/tool test requiring grouped 1024x768 reachability evidence in report and manifest.
+- [x] Add minimum-size reachability rows for Header, ControlBar, CurrentFocus, App Sessions, Web Sessions, Live Events, and Settings.
+- [x] Capture or reference supporting 1024x768 screenshots for the minimum-size rows.
+- [x] Update the WPF UI acceptance checklist with minimum-size semantic expectations.
+- [x] Run focused WPF acceptance-tool test.
+- [x] Run WPF App tests.
+- [x] Run solution build.
+- [x] Run WPF UI acceptance script and confirm grouped minimum-size evidence appears in latest report/manifest.
+- [x] Update WPF resume state after the minimum-size reachability evidence slice.
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.

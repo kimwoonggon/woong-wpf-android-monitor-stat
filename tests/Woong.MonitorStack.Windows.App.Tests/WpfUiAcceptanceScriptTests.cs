@@ -115,6 +115,49 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiSnapshotsTool_ReportAndManifestIncludeMinimumSizeReachabilityEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("## Minimum Size Reachability Evidence", tool);
+        Assert.Contains("| Viewport | Section | AutomationId | Screenshot | Status |", tool);
+        Assert.Contains("minimumSizeReachabilityEvidence", tool);
+        Assert.Contains("context.MinimumSizeReachabilityEvidence.Select", tool);
+        Assert.Contains("viewport = evidence.Viewport", tool);
+        Assert.Contains("section = evidence.Section", tool);
+        Assert.Contains("automationId = evidence.AutomationId", tool);
+        Assert.Contains("screenshot = evidence.Screenshot", tool);
+        Assert.Contains("status = evidence.Status.ToString()", tool);
+        Assert.Contains("VerifyMinimumSizeReachability", tool);
+        Assert.Contains("RecordMinimumSizeReachability", tool);
+        Assert.Contains("1024x768", tool);
+
+        string[] requiredMinimumSizeSelectors =
+        [
+            "HeaderStatusBar",
+            "ControlBar",
+            "CurrentActivityPanel",
+            "AppSessionsTab",
+            "RecentAppSessionsList",
+            "WebSessionsTab",
+            "RecentWebSessionsList",
+            "LiveEventsTab",
+            "LiveEventsList",
+            "SettingsTab",
+            "SettingsPanel"
+        ];
+
+        foreach (string selector in requiredMinimumSizeSelectors)
+        {
+            Assert.Contains(selector, tool);
+        }
+    }
+
+    [Fact]
     public void UiSnapshotsTool_BringsSectionsIntoViewBeforeCapturingCrops()
     {
         string repoRoot = FindRepositoryRoot();

@@ -38,10 +38,16 @@ Examples:
 - `LastPersistedSessionText`
 - `LastSyncStatusText`
 - `CurrentActivityPanel`
+- `HeaderStatusBar`
+- `ControlBar`
 - `WindowTitleVisibleCheckBox`
+- `AppSessionsTab`
 - `RecentAppSessionsList`
+- `WebSessionsTab`
 - `RecentWebSessionsList`
+- `LiveEventsTab`
 - `LiveEventsList`
+- `SettingsPanel`
 - `SummaryCardsContainer`
 - `ChartArea`
 - `SettingsTab`
@@ -72,6 +78,8 @@ Examples:
   setting changes.
 - Stop changes `TrackingStatusText` to `Stopped`.
 - Sync Now updates `LastSyncStatusText`.
+- At 1024x768, Header, Control Bar, Current Focus, App Sessions, Web Sessions,
+  Live Events, and Settings remain reachable through stable AutomationIds.
 
 ## Required Screenshots
 
@@ -87,6 +95,10 @@ Examples:
 - `recent-web-sessions.png`
 - `live-events.png`
 - `chart-area.png`, when visible
+- `viewport-1024-header.png`
+- `viewport-1024-control-bar.png`
+- `viewport-1024-current-focus.png`
+- `viewport-1024-settings.png`
 
 ## Required Artifacts
 

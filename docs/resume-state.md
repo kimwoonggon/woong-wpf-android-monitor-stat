@@ -1,6 +1,20 @@
 # Resume State
 
 Updated: 2026-04-30
+## 2026-04-30 WPF Minimum Size Reachability Evidence Slice
+
+- Added RED WPF App acceptance-tool coverage requiring grouped minimum-size reachability evidence in both `report.md` and `manifest.json`.
+- Updated `Woong.MonitorStack.Windows.UiSnapshots` so the 1024x768 viewport records `minimumSizeReachabilityEvidence` rows for Header, ControlBar, CurrentFocus, App Sessions, Web Sessions, Live Events, and Settings using stable AutomationIds and screenshot references.
+- Updated the WPF UI acceptance checklist with the required minimum-size AutomationIds, semantic check, and supporting screenshots.
+- This is a WPF App/tool/docs acceptance evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, product telemetry collection policy, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiSnapshotsTool_ReportAndManifestIncludeMinimumSizeReachabilityEvidence" -maxcpucount:1 -v minimal` failed RED on missing `## Minimum Size Reachability Evidence`, then passed after the snapshot tool update.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 127 WPF App tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-122205`; the latest snapshot report/manifest include grouped minimum-size reachability evidence and all 1024x768 rows are Pass.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 384 solution tests, including `WpfUiAcceptanceScriptTests.UiSnapshotsTool_ReportAndManifestIncludeMinimumSizeReachabilityEvidence`.
 ## 2026-04-30 WPF Browser Domain Privacy Evidence Slice
 
 - Added RED WPF App acceptance-tool coverage requiring grouped browser-domain privacy evidence in both `report.md` and `manifest.json`.

@@ -611,21 +611,156 @@ internal static class UiSnapshotRunner
             ApplyViewport(mainWindow, viewportWidth, context);
             Thread.Sleep(300);
             CaptureWindow(mainWindow, GetViewportDashboardFileName(viewportWidth), context);
+            CaptureMinimumSizeChrome(mainWindow, viewportWidth, context);
             CaptureViewportSection(mainWindow, "SummaryCardsContainer", viewportWidth, "summary-cards", context);
             CaptureViewportSection(mainWindow, "ChartArea", viewportWidth, "chart-area", context);
 
             SelectTabIfAvailable(mainWindow, "AppSessionsTab", "App Sessions", context);
             Thread.Sleep(150);
             CaptureViewportSection(mainWindow, "RecentAppSessionsList", viewportWidth, "recent-sessions", context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "App Sessions tab",
+                "AppSessionsTab",
+                $"viewport-{viewportWidth}-recent-sessions.png",
+                context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "App Sessions",
+                "RecentAppSessionsList",
+                $"viewport-{viewportWidth}-recent-sessions.png",
+                context);
 
             SelectTabIfAvailable(mainWindow, "WebSessionsTab", "Web Sessions", context);
             Thread.Sleep(150);
             CaptureViewportSection(mainWindow, "RecentWebSessionsList", viewportWidth, "recent-web-sessions", context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "Web Sessions tab",
+                "WebSessionsTab",
+                $"viewport-{viewportWidth}-recent-web-sessions.png",
+                context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "Web Sessions",
+                "RecentWebSessionsList",
+                $"viewport-{viewportWidth}-recent-web-sessions.png",
+                context);
 
             SelectTabIfAvailable(mainWindow, "LiveEventsTab", "Live Event Log", context);
             Thread.Sleep(150);
             CaptureViewportSection(mainWindow, "LiveEventsList", viewportWidth, "live-events", context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "Live Events tab",
+                "LiveEventsTab",
+                $"viewport-{viewportWidth}-live-events.png",
+                context);
+            VerifyMinimumSizeReachability(
+                mainWindow,
+                viewportWidth,
+                "Live Events",
+                "LiveEventsList",
+                $"viewport-{viewportWidth}-live-events.png",
+                context);
+
+            if (viewportWidth == 1024)
+            {
+                SelectTabIfAvailable(mainWindow, "SettingsTab", "Settings", context);
+                Thread.Sleep(150);
+                CaptureElementIfAvailable(mainWindow, "SettingsPanel", "viewport-1024-settings.png", context);
+                VerifyMinimumSizeReachability(
+                    mainWindow,
+                    viewportWidth,
+                    "Settings tab",
+                    "SettingsTab",
+                    "viewport-1024-settings.png",
+                    context);
+                VerifyMinimumSizeReachability(
+                    mainWindow,
+                    viewportWidth,
+                    "Settings",
+                    "SettingsPanel",
+                    "viewport-1024-settings.png",
+                    context);
+            }
         }
+    }
+
+    private static void CaptureMinimumSizeChrome(Window mainWindow, int viewportWidth, UiSnapshotContext context)
+    {
+        if (viewportWidth != 1024)
+        {
+            return;
+        }
+
+        VerifyMinimumSizeReachability(
+            mainWindow,
+            viewportWidth,
+            "Header",
+            "HeaderStatusBar",
+            "viewport-1024-dashboard.png",
+            context,
+            fallbackAutomationId: "TrackingStatusBadge");
+        VerifyMinimumSizeReachability(
+            mainWindow,
+            viewportWidth,
+            "ControlBar",
+            "ControlBar",
+            "viewport-1024-dashboard.png",
+            context,
+            fallbackAutomationId: "StartTrackingButton");
+        CaptureElementIfAvailable(mainWindow, "CurrentActivityPanel", "viewport-1024-current-focus.png", context);
+        VerifyMinimumSizeReachability(
+            mainWindow,
+            viewportWidth,
+            "CurrentFocus",
+            "CurrentActivityPanel",
+            "viewport-1024-current-focus.png",
+            context);
+    }
+
+    private static void VerifyMinimumSizeReachability(
+        Window window,
+        int viewportWidth,
+        string section,
+        string automationId,
+        string screenshot,
+        UiSnapshotContext context,
+        string? fallbackAutomationId = null)
+    {
+        if (viewportWidth != 1024)
+        {
+            return;
+        }
+
+        const string viewport = "1024x768";
+        AutomationElement? element = window.FindFirstDescendant(automationId);
+        string matchedAutomationId = automationId;
+        if (element is null && !string.IsNullOrWhiteSpace(fallbackAutomationId))
+        {
+            element = window.FindFirstDescendant(fallbackAutomationId);
+            matchedAutomationId = fallbackAutomationId;
+        }
+
+        CheckStatus status = element is null ? CheckStatus.Fail : CheckStatus.Pass;
+        string actual = element is null ? "Missing" : $"Reachable via {matchedAutomationId}";
+        context.RecordMinimumSizeReachability(
+            viewport,
+            section,
+            automationId,
+            element is null ? "" : screenshot,
+            status);
+        context.Add(
+            $"Minimum size {section}",
+            $"{automationId} reachable at {viewport}",
+            actual,
+            status);
     }
 
     private static void CaptureViewportSection(
@@ -1232,6 +1367,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## Minimum Size Reachability Evidence");
+        lines.Add("");
+        lines.Add("| Viewport | Section | AutomationId | Screenshot | Status |");
+        lines.Add("|:---|:---|:---|:---|:---|");
+        if (context.MinimumSizeReachabilityEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  |  | Warn |");
+        }
+        else
+        {
+            foreach (MinimumSizeReachabilityEvidence evidence in context.MinimumSizeReachabilityEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Viewport)} | {Escape(evidence.Section)} | {Escape(evidence.AutomationId)} | {Escape(evidence.Screenshot)} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Notes");
         lines.Add("");
         foreach (string note in context.Notes)
@@ -1285,6 +1438,14 @@ internal static class UiSnapshotRunner
                 claim = evidence.Claim,
                 expected = evidence.Expected,
                 actual = evidence.Actual,
+                status = evidence.Status.ToString()
+            }).ToArray(),
+            minimumSizeReachabilityEvidence = context.MinimumSizeReachabilityEvidence.Select(evidence => new
+            {
+                viewport = evidence.Viewport,
+                section = evidence.Section,
+                automationId = evidence.AutomationId,
+                screenshot = evidence.Screenshot,
                 status = evidence.Status.ToString()
             }).ToArray(),
             viewportWidths = context.Options.ViewportWidths.ToArray(),
@@ -1403,6 +1564,8 @@ internal sealed class UiSnapshotContext
 
     public List<BrowserDomainPrivacyEvidence> BrowserDomainPrivacyEvidence { get; } = [];
 
+    public List<MinimumSizeReachabilityEvidence> MinimumSizeReachabilityEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1469,6 +1632,19 @@ internal sealed class UiSnapshotContext
     public void RecordBrowserDomainPrivacyEvidence(string claim, string expected, string actual, CheckStatus status)
         => BrowserDomainPrivacyEvidence.Add(new BrowserDomainPrivacyEvidence(claim, expected, actual, status));
 
+    public void RecordMinimumSizeReachability(
+        string viewport,
+        string section,
+        string automationId,
+        string screenshot,
+        CheckStatus status)
+        => MinimumSizeReachabilityEvidence.Add(new MinimumSizeReachabilityEvidence(
+            viewport,
+            section,
+            automationId,
+            screenshot,
+            status));
+
     private void AddSectionScreenshotEvidence(
         string fileName,
         string skippedReason,
@@ -1522,6 +1698,13 @@ internal sealed record BrowserDomainPrivacyEvidence(
     string Claim,
     string Expected,
     string Actual,
+    CheckStatus Status);
+
+internal sealed record MinimumSizeReachabilityEvidence(
+    string Viewport,
+    string Section,
+    string AutomationId,
+    string Screenshot,
     CheckStatus Status);
 
 internal sealed record SectionScreenshotDefinition(string Section, string AutomationId)
