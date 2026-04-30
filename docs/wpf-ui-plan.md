@@ -352,6 +352,9 @@ Badge colors:
 - Sync Off: orange or gray
 - Sync Error: red
 - Privacy Safe: blue or green
+- Badge color is applied only to the rounded badge surface. Do not bind badge
+  fill to the `UserControl.Background` property, because that can paint a
+  rectangular background outside the rounded shape.
 
 Acceptance:
 
@@ -411,11 +414,16 @@ Required fields:
 - Last poll time
 - Last DB write time
 - Sync state
+- Each runtime row has a compact left-side icon/glyph with a stable
+  AutomationId so the panel visually scans like the UI reference while keeping
+  automation selectors stable.
 
 Privacy behavior:
 
 - Window title is hidden by default.
-- Browser domain can display when available.
+- Browser domain can display when available. The display strips URL path,
+  query, fragment, and port while preserving the visible host label such as
+  `learn.microsoft.com`.
 - Full URL is not shown unless explicit future opt-in exists.
 
 Acceptance:

@@ -26,6 +26,20 @@ public partial class DetailRow : UserControl
             typeof(DetailRow),
             new PropertyMetadata(""));
 
+    public static readonly DependencyProperty IconGlyphProperty =
+        DependencyProperty.Register(
+            nameof(IconGlyph),
+            typeof(string),
+            typeof(DetailRow),
+            new PropertyMetadata(""));
+
+    public static readonly DependencyProperty IconAutomationIdProperty =
+        DependencyProperty.Register(
+            nameof(IconAutomationId),
+            typeof(string),
+            typeof(DetailRow),
+            new PropertyMetadata(""));
+
     public static readonly DependencyProperty RowMarginProperty =
         DependencyProperty.Register(
             nameof(RowMargin),
@@ -82,6 +96,18 @@ public partial class DetailRow : UserControl
     {
         get => (string)GetValue(ValueAutomationIdProperty);
         set => SetValue(ValueAutomationIdProperty, value);
+    }
+
+    public string IconGlyph
+    {
+        get => (string)GetValue(IconGlyphProperty);
+        set => SetValue(IconGlyphProperty, value);
+    }
+
+    public string IconAutomationId
+    {
+        get => (string)GetValue(IconAutomationIdProperty);
+        set => SetValue(IconAutomationIdProperty, value);
     }
 
     public Thickness RowMargin

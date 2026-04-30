@@ -35,17 +35,17 @@
                    VerticalAlignment="Center">
             <controls:StatusBadge AutomationProperties.AutomationId="TrackingStatusBadge"
                                   Text="{Binding TrackingBadgeText}"
-                                  Background="{StaticResource TrackingBadgeBackgroundBrush}"
+                                  BadgeBackground="{StaticResource TrackingBadgeBackgroundBrush}"
                                   BorderBrush="{StaticResource TrackingBadgeBorderBrush}"
                                   TextBrush="{StaticResource TrackingBadgeTextBrush}" />
             <controls:StatusBadge AutomationProperties.AutomationId="SyncStatusBadge"
                                   Text="{Binding SyncBadgeText}"
-                                  Background="{StaticResource SyncBadgeBackgroundBrush}"
+                                  BadgeBackground="{StaticResource SyncBadgeBackgroundBrush}"
                                   BorderBrush="{StaticResource SyncBadgeBorderBrush}"
                                   TextBrush="{StaticResource SyncBadgeTextBrush}" />
             <controls:StatusBadge AutomationProperties.AutomationId="PrivacyStatusBadge"
                                   Text="{Binding PrivacyBadgeText}"
-                                  Background="{StaticResource PrivacyBadgeBackgroundBrush}"
+                                  BadgeBackground="{StaticResource PrivacyBadgeBackgroundBrush}"
                                   BorderBrush="{StaticResource PrivacyBadgeBorderBrush}"
                                   TextBrush="{StaticResource PrivacyBadgeTextBrush}" />
         </WrapPanel>

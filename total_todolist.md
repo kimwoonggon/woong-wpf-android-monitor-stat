@@ -2078,3 +2078,23 @@ milestones below are finished.
 - [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 474 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing the stale local Release WPF process that was locking binaries.
 - [x] Coverage collection passed: line 88.3% (4480/5073), branch 69.6% (667/957). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF Current Focus Icons And Rounded Badge Surface Fix
+
+- [x] Added RED WPF tests proving `StatusBadge` uses a dedicated `BadgeBackground` instead of painting `UserControl.Background` as a rectangular surface behind the rounded badge.
+- [x] Updated Header status badges so Tracking Running, Sync Off, and Privacy Safe colors apply only inside the rounded badge shape.
+- [x] Added RED WPF tests requiring Current Focus runtime rows to expose stable left-side icon AutomationIds.
+- [x] Added icon/glyph support to reusable `DetailRow` and wired Current Focus rows for tracking state, current app, process, window title, browser domain, session duration, persisted session, poll time, browser capture, DB write, and sync state.
+- [x] Split the previous combined `Last DB write / Sync state` label into clearer icon-backed `Last DB write time` and `Sync state` rows.
+- [x] Updated `docs/wpf-ui-plan.md` for the badge-surface and Current Focus icon rules.
+
+### Validation Update
+
+- [x] Focused badge RED/GREEN tests passed.
+- [x] Focused Current Focus icon RED/GREEN tests passed.
+- [x] Focused Windows App tests passed: 158 passed.
+- [x] Added RED Presentation test proving current browser-domain display preserves host labels such as `learn.microsoft.com` while still stripping URL path/query secrets.
+- [x] WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260501-040320` after restoring host-label display.
+- [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 475 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
+- [x] Coverage collection passed: line 88.2% (4511/5112), branch 69.7% (673/965). Report: artifacts/coverage/SummaryGithub.md.

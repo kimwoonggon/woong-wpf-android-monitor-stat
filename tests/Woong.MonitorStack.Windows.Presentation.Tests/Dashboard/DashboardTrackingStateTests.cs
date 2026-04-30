@@ -466,6 +466,23 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void UpdateCurrentActivity_WhenBrowserDomainIsSubdomain_PreservesHostLabel()
+    {
+        DashboardViewModel viewModel = CreateViewModel();
+
+        viewModel.UpdateCurrentActivity(new DashboardTrackingSnapshot(
+            AppName: "chrome.exe",
+            ProcessName: "chrome.exe",
+            WindowTitle: "Learn Microsoft - Google Chrome",
+            CurrentSessionDuration: TimeSpan.Zero,
+            LastPersistedSession: null,
+            CurrentBrowserDomain: "learn.microsoft.com",
+            BrowserCaptureStatus: DashboardBrowserCaptureStatus.ExtensionConnected));
+
+        Assert.Equal("learn.microsoft.com", viewModel.CurrentBrowserDomainText);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenBrowserExtensionConnected_ShowsBrowserCaptureStatus()
     {
         DashboardViewModel viewModel = CreateViewModel();

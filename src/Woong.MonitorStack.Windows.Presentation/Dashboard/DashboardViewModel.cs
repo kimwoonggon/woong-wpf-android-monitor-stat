@@ -865,7 +865,26 @@ public sealed partial class DashboardViewModel : ObservableObject
             return BrowserDomainUnavailableText;
         }
 
-        return DomainNormalizer.ExtractRegistrableDomain(value);
+        string trimmed = value.Trim();
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out Uri? absoluteUri) && !string.IsNullOrWhiteSpace(absoluteUri.Host))
+        {
+            return absoluteUri.Host.ToLowerInvariant();
+        }
+
+        string candidate = trimmed;
+        int pathStart = candidate.IndexOfAny(['/', '?', '#']);
+        if (pathStart >= 0)
+        {
+            candidate = candidate[..pathStart];
+        }
+
+        int portStart = candidate.LastIndexOf(':');
+        if (portStart > 0)
+        {
+            candidate = candidate[..portStart];
+        }
+
+        return candidate.Trim().ToLowerInvariant();
     }
 
     private static string FormatUrlMode(WebSession session)

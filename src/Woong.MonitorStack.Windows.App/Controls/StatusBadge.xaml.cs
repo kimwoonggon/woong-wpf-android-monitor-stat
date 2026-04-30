@@ -20,6 +20,13 @@ public partial class StatusBadge : UserControl
             typeof(StatusBadge),
             new PropertyMetadata(Brushes.Black));
 
+    public static readonly DependencyProperty BadgeBackgroundProperty =
+        DependencyProperty.Register(
+            nameof(BadgeBackground),
+            typeof(Brush),
+            typeof(StatusBadge),
+            new PropertyMetadata(Brushes.Transparent));
+
     public StatusBadge()
     {
         InitializeComponent();
@@ -35,5 +42,11 @@ public partial class StatusBadge : UserControl
     {
         get => (Brush)GetValue(TextBrushProperty);
         set => SetValue(TextBrushProperty, value);
+    }
+
+    public Brush BadgeBackground
+    {
+        get => (Brush)GetValue(BadgeBackgroundProperty);
+        set => SetValue(BadgeBackgroundProperty, value);
     }
 }

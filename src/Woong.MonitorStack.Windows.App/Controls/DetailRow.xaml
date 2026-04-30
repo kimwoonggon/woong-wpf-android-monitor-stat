@@ -8,17 +8,33 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <StackPanel Margin="{Binding RowMargin, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
-        <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   Style="{StaticResource MutedTextStyle}" />
-        <TextBlock AutomationProperties.AutomationId="{Binding ValueAutomationId, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   AutomationProperties.Name="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   AutomationProperties.ItemStatus="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   Text="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   Style="{StaticResource BodyTextStyle}"
-                   FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   FontWeight="{Binding ValueFontWeight, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   TextWrapping="{Binding ValueTextWrapping, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                   TextTrimming="{Binding ValueTextTrimming, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
-    </StackPanel>
+    <Grid Margin="{Binding RowMargin, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="24" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0"
+                   AutomationProperties.AutomationId="{Binding IconAutomationId, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                   Text="{Binding IconGlyph, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                   Foreground="{StaticResource TextMutedBrush}"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Top"
+                   Margin="0,2,8,0" />
+
+        <StackPanel Grid.Column="1">
+            <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       Style="{StaticResource MutedTextStyle}" />
+            <TextBlock AutomationProperties.AutomationId="{Binding ValueAutomationId, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       AutomationProperties.Name="{Binding Label, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       AutomationProperties.ItemStatus="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       Text="{Binding Value, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       Style="{StaticResource BodyTextStyle}"
+                       FontSize="{Binding ValueFontSize, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       FontWeight="{Binding ValueFontWeight, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       TextWrapping="{Binding ValueTextWrapping, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                       TextTrimming="{Binding ValueTextTrimming, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
+        </StackPanel>
+    </Grid>
 </UserControl>

@@ -32,6 +32,17 @@ public sealed class CurrentFocusPanelAccessibilityTests
                 AssertAutomationName<TextBlock>(panel, "BrowserCaptureStatusText", "Browser capture");
                 AssertAutomationName<TextBlock>(panel, "LastDbWriteTimeText", "Last DB write time");
                 AssertAutomationName<TextBlock>(panel, "LastSyncStatusText", "Sync state");
+                Assert.Equal("◷", FindByAutomationId<TextBlock>(panel, "TrackingStatusIcon").Text);
+                Assert.Equal("▣", FindByAutomationId<TextBlock>(panel, "CurrentAppNameIcon").Text);
+                Assert.Equal("□", FindByAutomationId<TextBlock>(panel, "CurrentProcessNameIcon").Text);
+                Assert.Equal("▭", FindByAutomationId<TextBlock>(panel, "CurrentWindowTitleIcon").Text);
+                Assert.Equal("◎", FindByAutomationId<TextBlock>(panel, "CurrentBrowserDomainIcon").Text);
+                Assert.Equal("◴", FindByAutomationId<TextBlock>(panel, "CurrentSessionDurationIcon").Text);
+                Assert.Equal("▤", FindByAutomationId<TextBlock>(panel, "LastPersistedSessionIcon").Text);
+                Assert.Equal("◷", FindByAutomationId<TextBlock>(panel, "LastPollTimeIcon").Text);
+                Assert.Equal("◎", FindByAutomationId<TextBlock>(panel, "BrowserCaptureStatusIcon").Text);
+                Assert.Equal("▥", FindByAutomationId<TextBlock>(panel, "LastDbWriteTimeIcon").Text);
+                Assert.Equal("⇅", FindByAutomationId<TextBlock>(panel, "LastSyncStatusIcon").Text);
             }
             finally
             {

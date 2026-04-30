@@ -191,7 +191,7 @@ public sealed class MainWindowUiExpectationTests
             var badge = new StatusBadge
             {
                 Text = "Tracking Running",
-                Background = uniqueBackground
+                BadgeBackground = uniqueBackground
             };
             var window = new Window { Content = badge };
 
@@ -212,6 +212,7 @@ public sealed class MainWindowUiExpectationTests
 
                 TextBlock label = FindTextBlock(badge, "Tracking Running");
                 AssertStatusBadgeTextStyle(label);
+                Assert.Null(badge.Background);
             }
             finally
             {
@@ -227,7 +228,9 @@ public sealed class MainWindowUiExpectationTests
             {
                 Label = "Current app",
                 Value = "Chrome",
-                ValueAutomationId = "CurrentAppNameText"
+                ValueAutomationId = "CurrentAppNameText",
+                IconGlyph = "A",
+                IconAutomationId = "CurrentAppNameIcon"
             };
             var window = new Window { Content = row };
 
@@ -242,6 +245,8 @@ public sealed class MainWindowUiExpectationTests
                 TextBlock value = FindByAutomationId<TextBlock>(row, "CurrentAppNameText");
                 Assert.Equal("Chrome", value.Text);
                 Assert.Equal(TextTrimming.CharacterEllipsis, value.TextTrimming);
+                TextBlock icon = FindByAutomationId<TextBlock>(row, "CurrentAppNameIcon");
+                Assert.Equal("A", icon.Text);
             }
             finally
             {
@@ -563,9 +568,10 @@ public sealed class MainWindowUiExpectationTests
                 Assert.IsType<Style>(panel.FindResource("CurrentFocusValueTextStyle"));
                 Assert.IsType<Style>(panel.FindResource("CurrentFocusSecondaryTextStyle"));
                 AssertSectionTitleStyle(FindTextBlock(panel, "Current Focus"));
-                AssertMutedTextStyle(FindTextBlock(panel, "Last DB write / Sync state"));
-                AssertCurrentFocusValueTextStyle(FindByAutomationId<TextBlock>(panel, "LastDbWriteTimeText"));
-                AssertCurrentFocusSecondaryTextStyle(FindByAutomationId<TextBlock>(panel, "LastSyncStatusText"));
+                AssertMutedTextStyle(FindTextBlock(panel, "Last DB write time"));
+                AssertMutedTextStyle(FindTextBlock(panel, "Sync state"));
+                AssertBodyTextStyle(FindByAutomationId<TextBlock>(panel, "LastDbWriteTimeText"));
+                AssertBodyTextStyle(FindByAutomationId<TextBlock>(panel, "LastSyncStatusText"));
             }
             finally
             {
@@ -1590,7 +1596,8 @@ public sealed class MainWindowUiExpectationTests
     {
         StatusBadge badge = FindByAutomationId<StatusBadge>(root, automationId);
 
-        Assert.Same(root.FindResource(backgroundBrushKey), badge.Background);
+        Assert.Same(root.FindResource(backgroundBrushKey), badge.BadgeBackground);
+        Assert.Null(badge.Background);
         Assert.Same(root.FindResource(borderBrushKey), badge.BorderBrush);
         Assert.Same(root.FindResource(textBrushKey), badge.TextBrush);
     }

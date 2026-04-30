@@ -4673,3 +4673,22 @@ Validation:
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 474 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors after closing the stale local Release WPF process that was locking binaries.
 - Coverage collection passed: line 88.3% (4480/5073), branch 69.6% (667/957). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF Current Focus Icons And Rounded Badge Surface Fix
+
+- Addressed the visual feedback that Current Focus runtime rows needed left-side icons and the header status badge colors should not paint a rectangular area outside the rounded badge shape.
+- Added `StatusBadge.BadgeBackground` so badge fill is applied only to the inner rounded `Border`; `UserControl.Background` remains unset.
+- Added `DetailRow.IconGlyph` and `DetailRow.IconAutomationId`, then wired icons for tracking state, current app, process, window title, browser domain, session duration, persisted session, poll time, browser capture, DB write, and sync state.
+- Split the old combined `Last DB write / Sync state` visual label into clearer separate rows.
+- No tracking, browser capture, SQLite, sync, or privacy behavior changed.
+
+Validation in progress:
+
+- Focused badge RED/GREEN tests passed.
+- Focused Current Focus icon RED/GREEN tests passed.
+- Focused Windows App tests passed: 158 passed.
+- Added a Presentation RED/GREEN regression so current browser-domain display preserves host labels such as `learn.microsoft.com` while still stripping URL path/query/fragment and port.
+- WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260501-040320`; the previous `learn.microsoft.com` semantic failure is resolved.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 475 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.2% (4511/5112), branch 69.7% (673/965). Report: artifacts/coverage/SummaryGithub.md.
