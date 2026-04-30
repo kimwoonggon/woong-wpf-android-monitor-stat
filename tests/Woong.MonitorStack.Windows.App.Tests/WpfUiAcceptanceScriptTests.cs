@@ -87,6 +87,23 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootReportIncludesCompletePrivacyBoundaryEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("## Privacy Boundary", script);
+        Assert.Contains("No keystrokes are recorded.", script);
+        Assert.Contains("No screen contents are captured as product telemetry.", script);
+        Assert.Contains("Screenshots are local developer artifacts for this app UI only.", script);
+        Assert.Contains("Server sync is disabled unless explicitly allowed.", script);
+        Assert.Contains("Acceptance uses temp SQLite databases only.", script);
+    }
+
+    [Fact]
     public void UiSnapshotsTool_SupportsTrackingPipelineSemanticArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

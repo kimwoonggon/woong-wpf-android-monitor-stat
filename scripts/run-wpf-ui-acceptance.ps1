@@ -104,7 +104,9 @@ try {
         "",
         "- No keystrokes are recorded.",
         "- No screen contents are captured as product telemetry.",
-        "- Screenshots are local developer artifacts for this app UI only."
+        "- Screenshots are local developer artifacts for this app UI only.",
+        "- Server sync is disabled unless explicitly allowed.",
+        "- Acceptance uses temp SQLite databases only."
     )
     Set-Content -Path $reportPath -Value $lines
 

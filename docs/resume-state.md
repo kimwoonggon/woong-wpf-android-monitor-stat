@@ -2,6 +2,21 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 WPF Root Report Privacy Boundary Evidence Slice
+
+- Audited WPF/browser/runtime acceptance after Milestone 51 and found no remaining WPF implementation TODO, but the human-readable root WPF acceptance report omitted two privacy/safety rows already present in the machine-readable root manifest.
+- Added RED WPF App script coverage requiring the root `report.md` Privacy Boundary section to include server sync disabled unless explicitly allowed and temp SQLite-only acceptance evidence.
+- Updated `scripts/run-wpf-ui-acceptance.ps1` so the root report now mirrors the manifest privacy boundary for no keystrokes, no product screen telemetry, local-only app UI screenshots, explicit server sync opt-in, and temp SQLite databases.
+- This is a WPF script/test/docs acceptance-evidence slice only. It does not change Android, Android scripts, Android docs, parked design refs, WPF XAML, SQLite schema, or server code.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~UiAcceptanceScript_RootReportIncludesCompletePrivacyBoundaryEvidence" -maxcpucount:1 -v minimal` failed RED on the missing root report privacy rows, then passed after the report lines were added.
+- `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -maxcpucount:1 -v minimal` passed 133 WPF App tests.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 397 solution tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-wpf-ui-acceptance.ps1` passed with artifact `artifacts/wpf-ui-acceptance/20260430-141948`; root `report.md` includes explicit server sync opt-in and temp SQLite privacy boundary rows.
+
 ## 2026-04-30 WPF Acceptance Root Manifest Privacy Boundary Slice
 
 - Audited WPF acceptance evidence after Milestone 50 and found the root manifest summarized child artifacts but did not carry the privacy boundary that the root report states.

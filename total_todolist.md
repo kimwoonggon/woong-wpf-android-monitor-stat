@@ -1496,6 +1496,18 @@ milestones below are finished.
 - [x] Run WPF App tests.
 - [x] Run solution build and solution tests.
 - [x] Run WPF UI acceptance script and confirm root manifest includes privacy boundary evidence.
+
+## Milestone 52: WPF Root Report Privacy Boundary Evidence
+
+- [x] Audit WPF/browser/runtime acceptance TODOs after Milestone 51 and identify the human-readable root report privacy boundary evidence gap.
+- [x] Add a failing WPF App script test requiring root `report.md` Privacy Boundary rows for explicit server sync opt-in and temp SQLite-only acceptance.
+- [x] Update the WPF UI acceptance script so the root report mirrors the root manifest privacy boundary evidence.
+- [x] Update WPF resume state for the root-report privacy boundary evidence slice.
+- [x] Run focused WPF App script test.
+- [x] Run WPF App tests.
+- [x] Run solution tests and solution build.
+- [x] Run WPF UI acceptance script and confirm root report includes complete privacy boundary evidence at `artifacts/wpf-ui-acceptance/20260430-141948`.
+
 ## Final Definition Of Done
 
 - [ ] All PRD requirements reflected in code/tests/docs after Original Intent Restoration.
