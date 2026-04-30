@@ -25,19 +25,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="72dp" />
+        android:layout_marginBottom="144dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="96dp"
         android:layout_gravity="bottom"
+        android:layout_marginBottom="48dp"
         android:background="@color/wms_surface"
         android:clipToPadding="false"
-        app:itemIconSize="22dp"
+        app:itemIconSize="18dp"
         app:itemIconTint="@color/wms_bottom_nav_selector"
-        app:itemPaddingBottom="8dp"
-        app:itemPaddingTop="8dp"
+        app:itemPaddingBottom="0dp"
+        app:itemPaddingTop="0dp"
         app:itemTextColor="@color/wms_bottom_nav_selector"
         app:itemTextAppearanceActive="@style/WmsBottomNavLabel"
         app:itemTextAppearanceInactive="@style/WmsBottomNavLabel"

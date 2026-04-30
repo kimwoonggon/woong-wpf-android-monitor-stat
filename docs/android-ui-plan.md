@@ -285,6 +285,12 @@ and feature screenshots for each tab.
   `actionBarSize` to 56dp, `MaterialToolbar` has matching `minHeight`, the title
   uses a 16sp `WmsToolbarTitle`, and start insets are fixed at 16dp to match the
   XML skeleton's compact header intent.
+- The launcher bottom navigation now uses a compact 96dp Material navigation
+  bar with a 48dp system-navigation reserve and a 144dp fragment-content bottom
+  reserve. This keeps Dashboard, Sessions, Report, and Settings labels visible
+  on the emulator without returning to the oversized temporary overlay label
+  row. This follows the XML skeleton direction while preserving Android
+  touch-target and label-readability guidance from `mobile-android-design`.
 
 ## Current Fragment Shell Gaps
 

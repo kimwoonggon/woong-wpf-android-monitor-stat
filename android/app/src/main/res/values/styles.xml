@@ -30,7 +30,7 @@
     </style>
 
     <style name="WmsBottomNavLabel" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">10sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 

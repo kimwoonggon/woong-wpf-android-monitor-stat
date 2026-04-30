@@ -113,6 +113,10 @@ Latest emulator evidence:
   `artifacts/android-ui-snapshots/20260430-142758`.
 - Latest compact toolbar evidence:
   `artifacts/android-ui-snapshots/20260430-143723`.
+- Latest compact bottom-navigation label evidence:
+  `artifacts/android-ui-snapshots/20260430-151005`; `09-main-shell.png` shows
+  Dashboard, Sessions, Report, and Settings labels visible above the Android
+  system-navigation area while keeping the custom overlay label row removed.
 - Captured dashboard, settings, sessions, daily summary, and the numbered
   feature screenshots listed above.
 - Dashboard location card and Settings location section are visible in the
@@ -158,6 +162,9 @@ Latest emulator evidence:
   and top-app rows from seeded local focus-session data.
 - The launcher toolbar contract is now compact and test-guarded: 56dp app bar
   height, 16sp title text, and fixed 16dp title insets.
+- The launcher bottom navigation is now compact and test-guarded: 96dp
+  navigation height, 48dp system-navigation reserve, 144dp content reserve,
+  18dp icons, 10sp labels, and no temporary overlay label row.
 
 Future connected-device improvements:
 

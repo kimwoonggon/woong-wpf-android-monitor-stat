@@ -1453,6 +1453,11 @@ milestones below are finished.
 - [x] Add RED/GREEN architecture coverage requiring the launcher toolbar to use explicit 56dp actionBarSize, matching minHeight, 16dp title insets, and 16sp title text.
 - [x] Capture emulator evidence for the compact toolbar contract at `artifacts/android-ui-snapshots/20260430-143723`.
 - [x] Verify compact toolbar slice with Android Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests (398), full `.NET` build, and coverage generation at 91.7% line coverage.
+- [x] Install and read `mobile-android-design`; apply only the Material/accessibility guidance that does not conflict with the PRD's Kotlin XML/View MVP.
+- [x] Add RED/GREEN architecture coverage requiring compact bottom navigation labels to stay visible above Android system navigation without restoring the oversized overlay label row.
+- [x] Capture emulator evidence for compact readable bottom navigation labels at `artifacts/android-ui-snapshots/20260430-151005`, including `09-main-shell.png`.
+- [x] Verify compact bottom-navigation label slice with Android Gradle unit/build/androidTest build, emulator screenshots, full `.NET` tests (400), full `.NET` build, and coverage generation at 91.7% line coverage.
+
 ## Milestone 47: Chrome Native Messaging Sandbox Evidence
 
 - [x] Audit Chrome/native messaging acceptance docs, script, and Windows browser tests for sandbox safety coverage.

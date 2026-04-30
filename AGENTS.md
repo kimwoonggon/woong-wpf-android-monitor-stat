@@ -15,10 +15,11 @@ files before working. Do not skip them silently:
 - `C:\Users\gerard\.codex\skills\android-kotlin`
 - `C:\Users\gerard\.codex\skills\android-device-automation`
 - `C:\Users\gerard\.codex\skills\wpf-mvvm-generator`
+- `C:\Users\gerard\.agents\skills\mobile-android-design`
 
 The PRD wins over generic skill guidance. In particular, Android MVP is
 Kotlin + XML/View based; do not switch it to Compose because a generic Android
-skill suggests Compose.
+or mobile design skill suggests Compose.
 
 ## Non-Negotiable Product Rules
 

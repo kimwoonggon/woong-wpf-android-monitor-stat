@@ -2,6 +2,23 @@
 
 Updated: 2026-04-30
 
+## 2026-04-30 Android Bottom Navigation Label Visibility Slice
+
+- Installed `mobile-android-design` into `C:\Users\gerard\.agents\skills\mobile-android-design` and read its guidance. The PRD still wins: Android MVP remains Kotlin + XML/View, so only Material/accessibility guidance was applied.
+- Reworked the launcher shell bottom navigation from the too-tall 112dp temporary fix to a compact 96dp Material `BottomNavigationView` with a 48dp system-navigation reserve and 144dp fragment-content reserve.
+- Kept the temporary overlay label row removed while preserving visible Dashboard, Sessions, Report, and Settings labels in emulator screenshots.
+- Latest emulator evidence: `artifacts/android-ui-snapshots/20260430-151005`; `09-main-shell.png` shows readable bottom-navigation labels above the Android system-navigation area.
+
+Verified:
+
+- RED first: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesCompactWireframeBottomNavigation|FullyQualifiedName~AndroidMainShell_BottomNavigationKeepsWireframeHeightAndLabelsAboveSystemNavigation" -v minimal` failed on the previous oversized 112dp contract, then passed after the compact label-safe contract was implemented.
+- Focused GREEN: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidMainShell_UsesCompactWireframeBottomNavigation|FullyQualifiedName~AndroidMainShell_BottomNavigationKeepsCompactLabelsAboveSystemNavigation" -v minimal` passed.
+- `./gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed from `android/`.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1` passed on the emulator with artifact `artifacts/android-ui-snapshots/20260430-151005`.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 400 tests.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest report shows 91.7% line coverage and 70.7% branch coverage.
+
 ## 2026-04-30 WPF Acceptance Snapshot Matrix Evidence Slice
 
 - Audited WPF acceptance artifacts after Milestone 53 and found no remaining WPF implementation TODO, but the root run-configuration evidence did not expose the snapshot mode or viewport-width matrix used by the UI snapshot tool.

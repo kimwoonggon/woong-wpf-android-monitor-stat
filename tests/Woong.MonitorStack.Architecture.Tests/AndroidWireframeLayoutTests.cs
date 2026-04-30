@@ -285,11 +285,12 @@ public sealed class AndroidWireframeLayoutTests
         string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
         string styles = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "styles.xml"));
 
-        Assert.Contains("android:layout_marginBottom=\"72dp\"", main);
-        Assert.Contains("android:layout_height=\"72dp\"", main);
-        Assert.Contains("app:itemIconSize=\"22dp\"", main);
-        Assert.Contains("app:itemPaddingTop=\"8dp\"", main);
-        Assert.Contains("app:itemPaddingBottom=\"8dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
+        Assert.Contains("android:layout_height=\"96dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
+        Assert.Contains("app:itemIconSize=\"18dp\"", main);
+        Assert.Contains("app:itemPaddingTop=\"0dp\"", main);
+        Assert.Contains("app:itemPaddingBottom=\"0dp\"", main);
         Assert.Contains("app:itemTextAppearanceActive=\"@style/WmsBottomNavLabel\"", main);
         Assert.Contains("app:itemTextAppearanceInactive=\"@style/WmsBottomNavLabel\"", main);
         Assert.DoesNotContain("@+id/bottomNavigationLabelRow", main);
@@ -298,7 +299,22 @@ public sealed class AndroidWireframeLayoutTests
         Assert.DoesNotContain("@+id/mainNavReportLabel", main);
         Assert.DoesNotContain("@+id/mainNavSettingsLabel", main);
         Assert.Contains("name=\"WmsBottomNavLabel\"", styles);
-        Assert.Contains("<item name=\"android:textSize\">12sp</item>", styles);
+        Assert.Contains("<item name=\"android:textSize\">10sp</item>", styles);
+    }
+
+    [Fact]
+    public void AndroidMainShell_BottomNavigationKeepsCompactLabelsAboveSystemNavigation()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
+
+        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
+        Assert.Contains("android:layout_height=\"96dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
+        Assert.DoesNotContain("android:paddingBottom=\"8dp\"", main);
+        Assert.Contains("app:itemIconSize=\"18dp\"", main);
+        Assert.Contains("app:itemPaddingTop=\"0dp\"", main);
+        Assert.Contains("app:itemPaddingBottom=\"0dp\"", main);
     }
 
     [Fact]
