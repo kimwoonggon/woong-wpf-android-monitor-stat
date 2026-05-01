@@ -289,10 +289,10 @@ class SnapshotCaptureTest {
             scrollDashboardTo(scenario, R.id.locationContextCard)
             waitForScreen(device)
             captureScreen(device, File(outputDir, "02-dashboard-summary-location.png"))
-            scrollDashboardTo(scenario, R.id.chartsPanel)
+            scrollDashboardTo(scenario, R.id.hourlyFocusChartCard)
             waitForScreen(device)
             captureScreen(device, File(outputDir, "03-dashboard-charts.png"))
-            scrollDashboardTo(scenario, R.id.recentSessionsTitle)
+            scrollDashboardTo(scenario, R.id.recentSessionsCard)
             waitForScreen(device)
             captureScreen(device, File(outputDir, "04-dashboard-recent-sessions.png"))
         }
@@ -468,7 +468,7 @@ class SnapshotCaptureTest {
         targetViewId: Int
     ) {
         scenario.onActivity { activity ->
-            val scrollView = activity.findViewById<NestedScrollView>(R.id.dashboardScroll)
+            val scrollView = activity.findViewById<NestedScrollView>(R.id.dashboardScrollRoot)
             val target = activity.findViewById<View>(targetViewId)
             val targetRect = Rect()
             target.getDrawingRect(targetRect)
@@ -482,7 +482,7 @@ class SnapshotCaptureTest {
         targetViewId: Int
     ) {
         scenario.onActivity { activity ->
-            val scrollView = activity.findViewById<NestedScrollView>(R.id.settingsRoot)
+            val scrollView = activity.findViewById<NestedScrollView>(R.id.settingsScrollRoot)
             val target = activity.findViewById<View>(targetViewId)
             val targetRect = Rect()
             target.getDrawingRect(targetRect)

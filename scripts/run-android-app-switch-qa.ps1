@@ -48,6 +48,8 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
 $status = "PASS"
 $blockedReason = ""
+$classification = "none"
+$nextAction = ""
 $installBlocked = $false
 $packageManagerBlocked = $false
 $notes = New-Object System.Collections.Generic.List[string]
@@ -249,6 +251,11 @@ function Write-AppSwitchArtifacts {
 
     $reportLines += @(
         "",
+        "## Classification",
+        "",
+        "- Classification: $classification",
+        "- Next action: $nextAction",
+        "",
         "## Notes"
     )
     foreach ($note in $notes) {
@@ -280,6 +287,8 @@ function Write-AppSwitchArtifacts {
         packageManagerPreflightTimeoutSeconds = $PackageManagerPreflightTimeoutSeconds
         installTimeoutSeconds = $InstallTimeoutSeconds
         skipBuild = [bool]$SkipBuild
+        classification = $classification
+        nextAction = $nextAction
         artifacts = $artifacts
         blockedReason = $BlockedReason
     }
@@ -332,7 +341,7 @@ function Get-ForegroundPackage {
 function Capture-ProcessMetadata {
     param([string]$FileName)
 
-    Save-AdbTextArtifact `
+    return Save-AdbTextArtifact `
         -Name $FileName `
         -FileName $FileName `
         -Arguments @(
@@ -341,7 +350,85 @@ function Capture-ProcessMetadata {
             "-c",
             "echo Woong pid:; pidof $PackageName || true; echo Chrome pid:; pidof $ChromePackageName || true; echo Matching processes:; ps -A | grep -E '$PackageName|$ChromePackageName' || true"
         ) `
-        -Description "Capture process metadata" | Out-Null
+        -Description "Capture process metadata"
+}
+
+function Get-WoongPidFromProcessMetadata {
+    param([string[]]$Lines)
+
+    for ($index = 0; $index -lt $Lines.Count; $index += 1) {
+        if ($Lines[$index] -eq "Woong pid:") {
+            for ($valueIndex = $index + 1; $valueIndex -lt $Lines.Count; $valueIndex += 1) {
+                $candidate = $Lines[$valueIndex].Trim()
+                if ($candidate -eq "Chrome pid:" -or $candidate -eq "Matching processes:") {
+                    return ""
+                }
+
+                if ($candidate -match "^\d+$") {
+                    return $candidate
+                }
+            }
+        }
+    }
+
+    return ""
+}
+
+function Save-CrashLogcatArtifact {
+    $crashLines = Save-AdbTextArtifact `
+        -Name "Crash logcat" `
+        -FileName "logcat-crash.txt" `
+        -Arguments @("logcat", "-d", "-b", "crash") `
+        -Description "Capture crash logcat"
+    return $crashLines
+}
+
+function Test-AndroidRuntimeCrashEvidence {
+    param([string[]]$Lines)
+
+    foreach ($line in $Lines) {
+        if ($line -match "AndroidRuntime|FATAL EXCEPTION|Process:\s*$([regex]::Escape($PackageName))") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Try-ClassifyProcessDeathAfterReturn {
+    param(
+        [string[]]$BeforeProcessLines,
+        [string[]]$AfterProcessLines
+    )
+
+    $beforePid = Get-WoongPidFromProcessMetadata -Lines $BeforeProcessLines
+    $afterPid = Get-WoongPidFromProcessMetadata -Lines $AfterProcessLines
+
+    if ([string]::IsNullOrWhiteSpace($beforePid)) {
+        return $false
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($afterPid) -and $beforePid -eq $afterPid) {
+        return $false
+    }
+
+    $crashLines = Save-CrashLogcatArtifact
+    $hasAndroidRuntimeCrash = Test-AndroidRuntimeCrashEvidence -Lines $crashLines
+
+    if ($hasAndroidRuntimeCrash) {
+        $script:status = "FAIL"
+        $script:classification = "product-crash-process-death"
+        $script:nextAction = "Inspect logcat-crash.txt for the AndroidRuntime stack trace and fix the app crash before rerunning app-switch QA."
+        $script:blockedReason = "Woong process changed during Chrome app-switch from pid '$beforePid' to '$afterPid' and AndroidRuntime crash evidence was found."
+    } else {
+        $script:status = "BLOCKED"
+        $script:classification = "emulator-stability-process-death"
+        $script:nextAction = "Treat this as emulator stability evidence: restart the emulator with scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart, then rerun app-switch QA."
+        $script:blockedReason = "Woong process changed during Chrome app-switch from pid '$beforePid' to '$afterPid' without AndroidRuntime crash evidence."
+    }
+
+    $notes.Add("Process death classification: before Woong pid '$beforePid', after-return Woong pid '$afterPid'.")
+    return $true
 }
 
 function Clear-AppSwitchInterference {
@@ -451,10 +538,72 @@ function Invoke-AppSwitchInstrumentation {
     Invoke-AdbChecked -Arguments $arguments -Description "Run $TestName instrumentation" | Out-Null
 }
 
+function Test-WoongScreenshotPerceptuallyBlank {
+    param([string]$Path)
+
+    $file = Get-Item -Path $Path -ErrorAction SilentlyContinue
+    if ($null -eq $file -or $file.Length -eq 0) {
+        return $true
+    }
+
+    try {
+        Add-Type -AssemblyName System.Drawing -ErrorAction Stop
+        $bitmap = [System.Drawing.Bitmap]::FromFile($Path)
+        try {
+            $sampleCount = 0
+            $darkCount = 0
+            $brightCount = 0
+            $firstColor = $null
+            $differentColorCount = 0
+            $xStep = [Math]::Max(1, [int][Math]::Floor($bitmap.Width / 8))
+            $yStep = [Math]::Max(1, [int][Math]::Floor($bitmap.Height / 8))
+
+            for ($x = 0; $x -lt $bitmap.Width; $x += $xStep) {
+                for ($y = 0; $y -lt $bitmap.Height; $y += $yStep) {
+                    $pixel = $bitmap.GetPixel($x, $y)
+                    $brightness = ($pixel.R + $pixel.G + $pixel.B) / 3
+                    $sampleCount += 1
+                    if ($brightness -le 8) {
+                        $darkCount += 1
+                    }
+                    if ($brightness -ge 247) {
+                        $brightCount += 1
+                    }
+
+                    if ($null -eq $firstColor) {
+                        $firstColor = $pixel
+                    } elseif (
+                        [Math]::Abs($pixel.R - $firstColor.R) -gt 4 -or
+                        [Math]::Abs($pixel.G - $firstColor.G) -gt 4 -or
+                        [Math]::Abs($pixel.B - $firstColor.B) -gt 4) {
+                        $differentColorCount += 1
+                    }
+                }
+            }
+
+            if ($sampleCount -eq 0) {
+                return $true
+            }
+
+            return ($darkCount -eq $sampleCount) -or
+                ($brightCount -eq $sampleCount) -or
+                ($differentColorCount -eq 0)
+        }
+        finally {
+            $bitmap.Dispose()
+        }
+    }
+    catch {
+        $notes.Add("WARNING: Unable to perform perceptual screenshot check for $([System.IO.Path]::GetFileName($Path)): $($_.Exception.Message)")
+        return $false
+    }
+}
+
 function Pull-AppSwitchArtifact {
     param(
         [string]$Name,
-        [string]$FileName
+        [string]$FileName,
+        [switch]$RetryBlankScreenshot
     )
 
     $localPath = Join-Path $runRoot $FileName
@@ -463,7 +612,64 @@ function Pull-AppSwitchArtifact {
         "$remoteDir/$FileName",
         $localPath
     ) -Description "Pull $Name" | Out-Null
+
+    if ($RetryBlankScreenshot -and $FileName.EndsWith(".png", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $screenshotFile = Get-Item -Path $localPath -ErrorAction SilentlyContinue
+        $isZeroByte = $null -ne $screenshotFile -and $screenshotFile.Length -eq 0
+        $isPerceptuallyBlank = (-not $isZeroByte) -and (Test-WoongScreenshotPerceptuallyBlank -Path $localPath)
+        if ($isZeroByte -or $isPerceptuallyBlank) {
+            if ($isZeroByte) {
+                $notes.Add("Blank screenshot pull detected for $FileName; rerunning Woong-only capture instrumentation and retrying pull.")
+            } else {
+                $notes.Add("Perceptually blank screenshot detected for $FileName; rerunning Woong-only capture instrumentation and retrying pull.")
+            }
+            Invoke-AppSwitchInstrumentation `
+                -TestName $captureTestName `
+                -ExtraArguments @{
+                    chromePackageName = $ChromePackageName
+                }
+            Invoke-AdbChecked -Arguments @(
+                "pull",
+                "$remoteDir/$FileName",
+                $localPath
+            ) -Description "Retry pull $Name after blank screenshot" | Out-Null
+
+            $retriedScreenshotFile = Get-Item -Path $localPath -ErrorAction SilentlyContinue
+            if ($null -eq $retriedScreenshotFile -or
+                $retriedScreenshotFile.Length -eq 0 -or
+                (Test-WoongScreenshotPerceptuallyBlank -Path $localPath)) {
+                throw "Blank screenshot persisted for $FileName after retry. Refusing to report false visual evidence."
+            }
+        }
+    }
+
     Add-Artifact -Name $Name -FileName $FileName -Path $localPath
+}
+
+function Assert-RoomAssertionsPassed {
+    $roomAssertionsPath = Join-Path $runRoot "room-assertions.json"
+    if (-not (Test-Path $roomAssertionsPath)) {
+        throw "Room assertions artifact was not found after pull: $roomAssertionsPath"
+    }
+
+    try {
+        $roomAssertions = Get-Content -Path $roomAssertionsPath -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "Room assertions artifact is not valid JSON: $($_.Exception.Message)"
+    }
+
+    $roomStatus = [string]$roomAssertions.status
+    if ($roomStatus -eq "PASS") {
+        return
+    }
+
+    $focusRows = if ($null -ne $roomAssertions.focusSessionChromeRows) { [string]$roomAssertions.focusSessionChromeRows } else { "unknown" }
+    $outboxRows = if ($null -ne $roomAssertions.syncOutboxChromeRows) { [string]$roomAssertions.syncOutboxChromeRows } else { "unknown" }
+    $script:status = "FAIL"
+    $script:classification = "room-assertions-failed"
+    $script:nextAction = "Inspect room-assertions.json and fix Android UsageStats collection/outbox persistence before accepting app-switch QA."
+    $script:blockedReason = "Room assertions failed: status=$roomStatus, focusSessionChromeRows=$focusRows, syncOutboxChromeRows=$outboxRows."
 }
 
 function Test-PackageManagerPreflight {
@@ -741,7 +947,7 @@ try {
     Start-WoongApp
     Start-Sleep -Seconds 2
     Get-ForegroundPackage -FileName "foreground-before.txt" | Out-Null
-    Capture-ProcessMetadata -FileName "process-before.txt"
+    $processBeforeLines = Capture-ProcessMetadata -FileName "process-before.txt"
 
     Start-ChromeAboutBlank
     $notes.Add("Launched Chrome with about:blank. No Chrome screenshots are captured.")
@@ -749,14 +955,23 @@ try {
         Start-Sleep -Seconds $ChromeForegroundSeconds
     }
     Get-ForegroundPackage -FileName "foreground-during-chrome.txt" | Out-Null
-    Capture-ProcessMetadata -FileName "process-during-chrome.txt"
+    Capture-ProcessMetadata -FileName "process-during-chrome.txt" | Out-Null
 
     $foregroundAfterReturn = Wait-ForWoongForegroundAfterChrome
-    Capture-ProcessMetadata -FileName "process-after-return.txt"
+    $processAfterReturnLines = Capture-ProcessMetadata -FileName "process-after-return.txt"
     $notes.Add("Foreground package after return: $foregroundAfterReturn")
+
+    if (Try-ClassifyProcessDeathAfterReturn -BeforeProcessLines $processBeforeLines -AfterProcessLines $processAfterReturnLines) {
+        Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
+        Write-Host $blockedReason
+        Write-Host "Android app-switch QA artifacts: $runRoot"
+        exit 0
+    }
 
     if ($foregroundAfterReturn -ne $PackageName) {
         $status = "BLOCKED"
+        $classification = "foreground-return-blocked"
+        $nextAction = "Return Woong to foreground and rerun app-switch QA; screenshots are refused until the foreground package is Woong."
         $blockedReason = "Refusing to capture Woong screenshots because foreground package is '$foregroundAfterReturn', not '$PackageName'."
         Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
         Write-Host $blockedReason
@@ -775,6 +990,14 @@ try {
         }
 
     Pull-AppSwitchArtifact -Name "Room assertions" -FileName "room-assertions.json"
+    Assert-RoomAssertionsPassed
+
+    if ($status -eq "FAIL" -and $classification -eq "room-assertions-failed") {
+        Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
+        Write-Host $blockedReason
+        Write-Host "Android app-switch QA artifacts: $runRoot"
+        exit 1
+    }
 
     Invoke-AppSwitchInstrumentation `
         -TestName $captureTestName `
@@ -782,16 +1005,14 @@ try {
             chromePackageName = $ChromePackageName
         }
 
-    Pull-AppSwitchArtifact -Name "Dashboard after app-switch screenshot" -FileName "dashboard-after-app-switch.png"
+    Pull-AppSwitchArtifact -Name "Dashboard after app-switch screenshot" -FileName "dashboard-after-app-switch.png" -RetryBlankScreenshot
     Pull-AppSwitchArtifact -Name "Dashboard after app-switch UI hierarchy" -FileName "dashboard-after-app-switch.xml"
-    Pull-AppSwitchArtifact -Name "Sessions after app-switch screenshot" -FileName "sessions-after-app-switch.png"
+    Pull-AppSwitchArtifact -Name "Sessions after app-switch screenshot" -FileName "sessions-after-app-switch.png" -RetryBlankScreenshot
     Pull-AppSwitchArtifact -Name "Sessions after app-switch UI hierarchy" -FileName "sessions-after-app-switch.xml"
 
-    Save-AdbTextArtifact `
-        -Name "Crash logcat" `
-        -FileName "logcat-crash.txt" `
-        -Arguments @("logcat", "-d", "-b", "crash") `
-        -Description "Capture crash logcat" | Out-Null
+    if (-not (Test-Path (Join-Path $runRoot "logcat-crash.txt"))) {
+        Save-CrashLogcatArtifact | Out-Null
+    }
 
     Save-WoongAppLogcatAfterEvidence
 

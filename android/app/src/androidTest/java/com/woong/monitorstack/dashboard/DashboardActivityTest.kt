@@ -7,6 +7,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isSelected
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.platform.app.InstrumentationRegistry
@@ -30,24 +31,16 @@ class DashboardActivityTest {
 
     @Test
     fun dashboardDisplaysSummaryFiltersGuidanceAndRecentSessions() {
-        onView(withId(R.id.dashboardRoot)).check(matches(isDisplayed()))
+        onView(withId(R.id.dashboardScrollRoot)).check(matches(isDisplayed()))
         onView(withId(R.id.todayFilterButton)).check(matches(isDisplayed()))
-        onView(withId(R.id.totalActiveCard)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.totalActiveText)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.activeFocusCard)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.activeFocusValueText)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.topAppsCard)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.topAppText)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.idleCard)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.idleText)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.usageAccessGuidanceText))
-            .perform(scrollTo())
-            .check(matches(withText(R.string.usage_access_guidance)))
-        onView(withId(R.id.usageAccessSettingsButton)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.activityLineChart)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.appUsageBarChart)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.emptySessionsText))
-            .perform(scrollTo())
-            .check(matches(withText(R.string.empty_sessions)))
-        onView(withId(R.id.recentSessionsList)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.topAppsRecyclerView)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.idleGapCard)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.idleValueText)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.hourlyFocusChart)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.recentSessionsRecyclerView)).perform(scrollTo()).check(matches(isDisplayed()))
     }
 
     @Test
@@ -63,13 +56,10 @@ class DashboardActivityTest {
 
     @Test
     fun periodFilterClicksUpdateSelectedPeriodLabel() {
-        onView(withId(R.id.yesterdayFilterButton)).perform(scrollTo(), click())
-        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_yesterday)))
-
-        onView(withId(R.id.recent7DaysFilterButton)).perform(scrollTo(), click())
-        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_recent_7_days)))
+        onView(withId(R.id.oneHourFilterButton)).perform(scrollTo(), click())
+        onView(withId(R.id.oneHourFilterButton)).check(matches(isSelected()))
 
         onView(withId(R.id.todayFilterButton)).perform(scrollTo(), click())
-        onView(withId(R.id.selectedPeriodText)).check(matches(withText(R.string.filter_today)))
+        onView(withId(R.id.todayFilterButton)).check(matches(isSelected()))
     }
 }

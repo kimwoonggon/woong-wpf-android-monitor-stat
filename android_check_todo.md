@@ -34,11 +34,17 @@ Latest Android UsageStats current-focus evidence:
 artifacts/android-usage-current-focus/20260502-012243/
 ```
 
-Latest Android app-switch QA evidence:
+Latest accepted Android app-switch QA evidence:
 
 ```text
-artifacts/android-app-switch-qa/20260502-052729/
-artifacts/android-app-switch-qa/latest/
+artifacts/android-app-switch-qa/20260502-073336/
+```
+
+Historical attempted Android app-switch QA evidence, not accepted:
+
+```text
+artifacts/android-app-switch-qa/20260502-071800/  # full command failed during Android build
+artifacts/android-app-switch-qa/20260502-071830/  # -SkipBuild run: report PASS, room-assertions FAIL
 ```
 
 Latest location opt-in emulator evidence:
@@ -153,38 +159,38 @@ Product boundary reminder:
 
 ### B. Splash Screen Parity
 
-- [ ] Add/verify tests that cold start shows Splash before routing.
+- [x] Add/verify tests that cold start shows Splash before routing.
 - [ ] Match the Figma Splash hierarchy: phone-safe top spacing, Woong logo
   mark, `Woong Monitor`, `Android Focus Tracker`, loading indicator, loading
   copy.
-- [ ] Keep shell toolbar and bottom navigation hidden on Splash.
-- [ ] Keep Android 12+ system splash branding consistent with the in-app Splash.
+- [x] Keep shell toolbar and bottom navigation hidden on Splash.
+- [x] Keep Android 12+ system splash branding consistent with the in-app Splash.
 - [ ] Capture `01-splash-before.png` and `01-splash-after.png`.
 - [ ] Ensure Splash does not delay normal relaunch longer than necessary after
   process death.
 
 ### C. Permission Onboarding Parity
 
-- [ ] Add/verify tests that missing Usage Access routes to Permission, not
+- [x] Add/verify tests that missing Usage Access routes to Permission, not
   Dashboard.
-- [ ] Match the Figma Permission screen: back affordance, shield/lock visual,
+- [x] Match the Figma Permission screen: back affordance, shield/lock visual,
   title, explanation, principles card, and primary Settings button.
 - [ ] Explain exactly what is collected: app name, package name, start/end time,
   duration.
 - [ ] Explain exactly what is not collected: keyboard input, screen contents,
   passwords, touch coordinates.
-- [ ] Open Android Usage Access settings from the permission button.
-- [ ] Re-check permission after returning from Settings.
-- [ ] Capture permission missing, settings handoff, and post-return screenshots.
+- [x] Open Android Usage Access settings from the permission button.
+- [x] Re-check permission after returning from Settings.
+- [x] Capture permission missing, settings handoff, and post-return screenshots.
 
 ### D. Dashboard Parity And Runtime Truth
 
-- [ ] Add/verify tests that Dashboard Current Focus is Room/UsageStats-backed
+- [x] Add/verify tests that Dashboard Current Focus is Room/UsageStats-backed
   and not fake in production paths.
-- [ ] Current Focus must show the currently foreground app when Android can
+- [x] Current Focus must show the currently foreground app when Android can
   prove it; when a foreground app cannot be proven, it may fall back to the
   most recent meaningful UsageStats app according to Android constraints.
-- [ ] If Woong Monitor itself is foreground immediately after return, Dashboard
+- [x] If Woong Monitor itself is foreground immediately after return, Dashboard
   must make that state explicit and not incorrectly show stale Chrome as if it
   is still active.
 - [ ] Add a clear copy distinction between `current foreground app`, `latest
@@ -193,11 +199,11 @@ Product boundary reminder:
 - [ ] Match Figma status chips: Usage OK, Sync Off, Privacy Safe.
 - [ ] Match Figma Current Focus card: app icon placeholder, app label, package,
   session duration, last collected time.
-- [ ] Summary cards must show Active Focus, Screen On/Foreground, Idle/Gap, and
+- [x] Summary cards must show Active Focus, Screen On/Foreground, Idle/Gap, and
   local sync state.
-- [ ] Period buttons Today/1h/6h/24h/7d must reload Room-backed data and visibly
+- [x] Period buttons Today/1h/6h/24h/7d must reload Room-backed data and visibly
   show selected state.
-- [ ] Hourly chart must show meaningful labels and non-broken empty state.
+- [x] Hourly chart must show meaningful labels and non-broken empty state.
 - [x] Top apps list must show readable ranked app rows with proportional bars or
   an equivalent visual cue.
 - [ ] Recent sessions must be visible without bottom navigation clipping.
@@ -207,41 +213,41 @@ Product boundary reminder:
 
 ### E. Sessions Screen Parity
 
-- [ ] Add/verify tests for Sessions period filters: Today, 1h, 6h, 24h, 7d.
-- [ ] Match Figma Sessions layout: title/subtitle, filter row, total count,
+- [x] Add/verify tests for Sessions period filters: Today, 1h, 6h, 24h, 7d.
+- [x] Match Figma Sessions layout: title/subtitle, filter row, total count,
   scrollable session list, bottom navigation reachable.
-- [ ] Rows must show app label, package, local time range, duration, and
+- [x] Rows must show app label, package, local time range, duration, and
   active/idle state without clipping.
-- [ ] Tapping a session row must open the selected app detail screen.
-- [ ] Add empty-state copy for no sessions in the selected period.
+- [x] Tapping a session row must open the selected app detail screen.
+- [x] Add empty-state copy for no sessions in the selected period.
 - [ ] Capture Sessions default, filtered, empty-state if possible, and row-tap
   screenshots.
 
 ### F. App Detail Screen Parity
 
-- [ ] Add/verify tests that App Detail loads only the selected package from Room.
-- [ ] Match Figma App Detail layout: back button, app icon, app name, package,
+- [x] Add/verify tests that App Detail loads only the selected package from Room.
+- [x] Match Figma App Detail layout: back button, app icon, app name, package,
   total usage, session count, hourly chart, session list.
-- [ ] Hourly chart must use real selected-app Room data.
-- [ ] Session list must show selected package only.
+- [x] Hourly chart must use real selected-app Room data.
+- [x] Session list must show selected package only.
 - [ ] Back returns to Sessions without losing selected tab state.
 - [ ] Capture App Detail for a seeded Chrome row and another seeded app row.
 
 ### G. Report Screen Parity
 
-- [ ] Add/verify tests for 7d, 30d, 90d, and Custom report ranges.
-- [ ] Match Figma Report layout: title, period filters, date range, total usage,
+- [x] Add/verify tests for 7d, 30d, 90d, and Custom report ranges.
+- [x] Match Figma Report layout: title, period filters, date range, total usage,
   daily average, trend chart, top apps.
-- [ ] Custom range must support valid date input, invalid/reversed error state,
+- [x] Custom range must support valid date input, invalid/reversed error state,
   and a visible selected state after apply.
-- [ ] Trend chart must use Room-backed aggregate data and readable day labels.
+- [x] Trend chart must use Room-backed aggregate data and readable day labels.
 - [x] Top apps list must show ranked apps with readable labels/durations and
   proportional usage bars.
 - [ ] Capture Report 7d, 30d/90d, Custom valid, and Custom invalid states.
 
 ### H. Settings Screen Parity
 
-- [ ] Add/verify tests that Settings shows permissions, collection, sync,
+- [x] Add/verify tests that Settings shows permissions, collection, sync,
   privacy, location, and storage sections.
 - [x] Match Figma Settings card grouping and spacing.
 - [ ] Usage Access permission status must be visible.
@@ -256,24 +262,29 @@ Product boundary reminder:
 - [x] Sync-on manual sync with valid configuration must enqueue
   `AndroidSyncWorker` with explicit base URL/device ID input data.
 - [ ] Privacy defaults must be safe.
-- [ ] Location context must default off, with precise coordinates requiring
+- [x] Location context must default off, with precise coordinates requiring
   separate opt-in.
-- [ ] Storage/local data controls must be visible or explicitly disabled with
+- [x] Storage/local data controls must be visible or explicitly disabled with
   reason.
 - [ ] Capture Settings top, collection/sync, privacy/location, and storage
   scrolled states.
 
 ### I. Legacy Activity Cleanup
 
-- [ ] Inventory legacy `DashboardActivity`, `SessionsActivity`,
-  `DailySummaryActivity`, and `SettingsActivity`.
-- [ ] Decide which legacy Activities remain as deep-link/dev compatibility and
-  which should be removed.
-- [ ] If removed, update AndroidManifest, tests, screenshots, and docs.
-- [ ] If retained, document why they coexist with the MainActivity Fragment
-  shell.
-- [ ] Ensure no duplicate screen path shows stale UI that differs from the
-  Figma shell.
+- [x] Inventory legacy `DashboardActivity`, `SessionsActivity`,
+  `DailySummaryActivity`, and `SettingsActivity`; no `ReportActivity` or
+  `AppDetailActivity` exists.
+- [x] Retain `DashboardActivity`, `SessionsActivity`, and `SettingsActivity` as
+  internal, non-exported compatibility/dev entry points.
+- [x] Keep `DailySummaryActivity` as a separate previous-day summary
+  compatibility surface, not as a canonical Report screen.
+- [x] Document why retained legacy Activities coexist with the `MainActivity`
+  Fragment shell.
+- [x] Ensure retained legacy screen paths host canonical Fragment content instead
+  of stale standalone Activity UI.
+- [x] Removed obsolete `activity_dashboard.xml`, `activity_sessions.xml`, and
+  `activity_settings.xml` after tests and screenshot references moved to
+  canonical Fragment layouts.
 
 ### J. Chrome/App-Switch UsageStats Regression QA
 
@@ -286,17 +297,29 @@ Product boundary reminder:
   as `dumpsys` for external foreground proof.
 - [x] App-switch QA PASS evidence:
   `artifacts/android-app-switch-qa/20260502-052729/` and
-  `artifacts/android-app-switch-qa/latest/`.
+  historical `artifacts/android-app-switch-qa/latest/` at that time.
+- [x] Historical 2026-05-02 app-switch QA rerun was rejected correctly:
+  full command generated `artifacts/android-app-switch-qa/20260502-071800/`
+  and failed during Android build at `:app:dataBindingGenBaseClassesDebug`
+  because `id privacySettingsCard` was missing; installed-APK `-SkipBuild`
+  rerun generated `artifacts/android-app-switch-qa/20260502-071830/` with
+  report/manifest `PASS`, but `room-assertions.json` is `FAIL`
+  (`focusSessionChromeRows=1`, `syncOutboxChromeRows=0`).
+- [x] App-switch QA script guardrail: non-`PASS` `room-assertions.json` now
+  forces report/manifest `FAIL` and exits nonzero before Dashboard/Sessions
+  screenshot evidence can be accepted.
 - [x] `report.md` status is `PASS`.
-- [x] `room-assertions.json` status is `PASS`, with
-  `focusSessionChromeRows=4` and `syncOutboxChromeRows=4`.
+- [x] Fresh accepted app-switch QA evidence:
+  `artifacts/android-app-switch-qa/20260502-073336/`.
+- [x] `room-assertions.json` status is `PASS`, with Chrome focus rows and
+  pending sync outbox rows.
 - [x] Foreground-after-return evidence shows `com.woong.monitorstack`.
 - [x] Woong-only screenshots exist:
   `dashboard-after-app-switch.png` and `sessions-after-app-switch.png`.
 - [x] No Chrome screenshots or Chrome UI dumps were captured.
 - [ ] Use `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
   -Restart` for repeatable emulator launch.
-- [ ] Add an app-switch QA script that performs:
+- [x] Add an app-switch QA script that performs:
   Woong launch -> Chrome launch -> wait -> Woong return -> collection refresh.
 - [x] Capture only Woong Monitor UI screenshots before launch, after return,
   Dashboard, and Sessions; prove Chrome foreground via package/process/window
@@ -304,31 +327,32 @@ Product boundary reminder:
 - [x] Assert Room `focus_session` includes Chrome after returning.
 - [x] Assert `sync_outbox` rows are created for collected sessions.
 - [x] Assert Dashboard summary and Sessions list refresh from Room after return.
-- [ ] Record process ids before/during/after Chrome to detect emulator process
+- [x] Record process ids before/during/after Chrome to detect emulator process
   death/relaunch.
-- [ ] Capture logcat crash buffer, app logcat, `dumpsys meminfo`, and
+- [x] Capture logcat crash buffer, app logcat, `dumpsys meminfo`, and
   `dumpsys gfxinfo`.
-- [ ] If emulator low-memory kills the app, classify as emulator stability issue
+- [x] If emulator low-memory kills the app, classify as emulator stability issue
   unless `AndroidRuntime` crash evidence exists.
-- [ ] Add retry/timing logic when screenshot capture is blank.
+- [x] Add retry/timing logic when screenshot capture is zero-byte or
+  perceptually blank/all-black/all-white.
 
 ### K. Test Plan To Add Before Implementation
 
-- [ ] `MainActivity_ColdStart_ShowsSplashThenRoutes`
-- [ ] `MainActivity_WhenUsageAccessMissing_ShowsPermissionOnboarding`
-- [ ] `PermissionOnboarding_OpenSettingsButton_UsesUsageAccessIntent`
-- [ ] `Dashboard_CurrentFocus_SeparatesCurrentMonitorFromLatestExternalApp`
-- [ ] `Dashboard_PeriodButtons_ReloadRoomBackedSummary`
-- [ ] `Dashboard_TopApps_ShowRankedRowsWithDurations`
-- [ ] `Sessions_PeriodButtons_FilterRoomRows`
-- [ ] `Sessions_RowClick_OpensAppDetailForSelectedPackage`
-- [ ] `AppDetail_LoadsOnlySelectedPackageSessions`
-- [ ] `Report_PeriodButtons_ReloadRoomBackedRanges`
-- [ ] `Report_CustomRange_ValidatesAndAppliesDateRange`
-- [ ] `Settings_DefaultsArePrivacySafeAndSyncOff`
-- [ ] `Settings_ManualSyncWhenOff_ShowsLocalOnlySkipped`
-- [ ] `AndroidUiSnapshots_CapturesAllSevenFigmaScreens`
-- [ ] `AndroidAppSwitch_ChromeReturn_PersistsRoomSessionAndRefreshesDashboard`
+- [x] `MainActivity_ColdStart_ShowsSplashThenRoutes`
+- [x] `MainActivity_WhenUsageAccessMissing_ShowsPermissionOnboarding`
+- [x] `PermissionOnboarding_OpenSettingsButton_UsesUsageAccessIntent`
+- [x] `Dashboard_CurrentFocus_SeparatesCurrentMonitorFromLatestExternalApp`
+- [x] `Dashboard_PeriodButtons_ReloadRoomBackedSummary`
+- [x] `Dashboard_TopApps_ShowRankedRowsWithDurations`
+- [x] `Sessions_PeriodButtons_FilterRoomRows`
+- [x] `Sessions_RowClick_OpensAppDetailForSelectedPackage`
+- [x] `AppDetail_LoadsOnlySelectedPackageSessions`
+- [x] `Report_PeriodButtons_ReloadRoomBackedRanges`
+- [x] `Report_CustomRange_ValidatesAndAppliesDateRange`
+- [x] `Settings_DefaultsArePrivacySafeAndSyncOff`
+- [x] `Settings_ManualSyncWhenOff_ShowsLocalOnlySkipped`
+- [x] `AndroidUiSnapshots_CapturesAllSevenFigmaScreens`
+- [x] `AndroidAppSwitch_ChromeReturn_PersistsRoomSessionAndRefreshesDashboard`
 
 ### L. Verification Commands For This Backlog
 
@@ -356,18 +380,18 @@ dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
 
 ### M. Definition Of Done For Android Figma Parity
 
-- [ ] All seven Figma screens have current emulator PNG evidence.
-- [ ] Each screen has at least one behavior test or screenshot automation gate.
-- [ ] Dashboard and Sessions are Room-backed and refresh after collection.
+- [x] All seven Figma screens have current emulator PNG evidence.
+- [x] Each screen has at least one behavior test or screenshot automation gate.
+- [x] Dashboard and Sessions are Room-backed and refresh after collection.
 - [x] Chrome/app-switch QA proves collected UsageStats sessions persist to Room
   and update Dashboard/Sessions after returning to Woong.
-- [ ] Report and App Detail charts use real Room-backed data.
-- [ ] Settings exposes safe privacy/sync/location defaults.
-- [ ] Legacy Activity coexistence is resolved or documented.
-- [ ] Android Gradle tests/build pass.
-- [ ] Full solution test/build pass.
-- [ ] Docs and this checklist are updated.
-- [ ] Commit and push are completed.
+- [x] Report and App Detail charts use real Room-backed data.
+- [x] Settings exposes safe privacy/sync/location defaults.
+- [x] Legacy Activity coexistence is resolved or documented.
+- [x] Android Gradle tests/build pass.
+- [x] Full solution test/build pass.
+- [x] Docs and this checklist are updated.
+- [x] Commit and push are completed for the validated multi-agent integration slice.
 
 ## Feature Checklist
 
@@ -560,7 +584,9 @@ workspace.
   - `artifacts/android-check/latest/00-os-splash-branded.png`
   - `artifacts/android-check/latest/02-permission-late2.png`
   - `artifacts/android-check/latest/05-dashboard-final.png`
-- [ ] Continue UI parity pass: dashboard top-app/chart/report/detail visuals still need work against the provided Figma/SVG reference.
+- [x] Continue UI parity pass: compare the latest seven canonical screenshots
+  against the Android UI flow reference and close remaining visual-only gaps,
+  including dense Dashboard chart labels.
 
 ## 2026-05-01 Android Sessions, App Detail, Report, And Settings Parity Slice
 
@@ -579,8 +605,13 @@ workspace.
   - `android-04-report.png`
   - `android-05-settings.png`
 - [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
-- [ ] Remaining Android UI gap: wire real chart entries for App Detail hourly usage and Report trend instead of chart containers/no-data states.
-- [ ] Remaining Android parity gap: WPF browser domain/window-title tracking is not available through Android UsageStatsManager; Android should show app/package usage only unless a future explicit, safe Android API scope is approved.
+- [x] Remaining Android UI gap resolved: App Detail hourly usage and Report
+  trend now use real Room-backed chart entries instead of chart-only/no-data
+  placeholders.
+- [x] Android parity note documented: WPF browser domain/window-title tracking
+  is not available through Android UsageStatsManager; Android should show
+  app/package usage only unless a future explicit, safe Android API scope is
+  approved.
 
 ## 2026-05-01 Android Current Focus External App Follow-Up
 
@@ -606,7 +637,8 @@ workspace.
 - [x] Remaining Android gap resolved: Settings sync controls now wire to real
   opt-in state, local-only sync-off status, required configuration checks, and
   configured manual worker enqueue.
-- [ ] Remaining Android gap: add period-filter behavior for Dashboard/Sessions/Report buttons beyond the current default views.
+- [x] Remaining Android gap resolved: Dashboard, Sessions, and Report period
+  buttons now reload Room-backed ranges beyond the original default views.
 
 ## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
 
@@ -619,8 +651,10 @@ workspace.
 - [x] Android UI snapshot automation passed on `emulator-5554`.
 - [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
-- [ ] Remaining Android gap: Dashboard period buttons still need full period reload behavior.
-- [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
+- [x] Remaining Android gap resolved: Dashboard period buttons now perform full
+  Room-backed period reloads.
+- [x] Remaining Android gap resolved: Report 30d/90d/custom filters now use
+  real Room-backed range behavior.
 - [x] Manual sync-on now enqueues a configured `AndroidSyncWorker` once server
   URL/device ID fields are present and valid.
 - [ ] Remaining Android sync hardening: real server auth, device registration,
@@ -638,9 +672,13 @@ workspace.
 - [x] Android UI snapshot automation passed on `emulator-5554`.
 - [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
-- [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
-- [ ] Remaining Android gap: UsageStats collection needs anchored lookback/clamping for apps resumed before the collection start.
-- [ ] Remaining Android visual gap: Dashboard chart styling is functional but still needs polish against the supplied reference.
+- [x] Remaining Android gap resolved: Report 30d/90d/custom filters now use
+  real Room-backed range behavior.
+- [x] Remaining Android gap resolved: UsageStats collection now uses anchored
+  lookback/clamping for apps resumed before the collection start.
+- [x] Remaining Android visual gap resolved: Dashboard/App Detail/Report charts
+  now share readable MPAndroidChart styling; dense Dashboard label handling
+  remains tracked separately below.
 
 ## 2026-05-01 Android UsageStats Anchored Lookback And Report Ranges
 
@@ -701,4 +739,4 @@ workspace.
 - [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
-- [ ] Remaining Android visual gap: improve Dashboard chart density so app labels remain readable when many apps exist.
+- [x] Remaining Android visual gap resolved: Dashboard chart/card density was tightened so ranked app content appears earlier and remains readable.

@@ -20,7 +20,7 @@ class SessionsActivityTest {
     @Test
     fun sessionsActivityDisplaysListSurfaceAndEmptyState() {
         onView(withId(R.id.sessionsRoot)).check(matches(isDisplayed()))
-        onView(withId(R.id.sessionsList)).check(matches(isDisplayed()))
+        onView(withId(R.id.sessionsRecyclerView)).check(matches(isDisplayed()))
         onView(withId(R.id.emptySessionsText)).check(matches(withText(R.string.empty_sessions)))
     }
 }

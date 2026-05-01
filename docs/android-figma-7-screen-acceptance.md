@@ -19,17 +19,18 @@ evidence.
 Latest clean emulator evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-063728/
+artifacts/android-ui-snapshots/20260502-073133/
 artifacts/android-ui-snapshots/latest/
 ```
 
 Latest snapshot result: `report.md` status is `PASS`, all seven canonical
-Figma screenshots are `PASS`, and the crash buffer remained empty. The
-Dashboard first viewport now shows Hourly focus immediately after the period
-filters, with Top apps next below. The latest `figma-06-report.png` shows a
-seeded multi-day, multi-point trend; Sessions rows are compact; Settings is
-grouped by Permissions, Collection, Sync, and Privacy, including sync server URL
-and device ID configuration fields.
+Figma screenshots are `PASS`, and the crash buffer remained empty. Dashboard,
+App Detail, Report, and Settings first-viewports were tightened against the
+reference so charts, ranked rows, settings sections, and session lists appear
+earlier without clipping. The latest `figma-06-report.png` shows a seeded
+multi-day, multi-point trend; Sessions rows are compact; Settings is grouped by
+Permissions, Collection, Sync, and Privacy, including sync server URL and device
+ID configuration fields.
 
 The Android app remains UsageStatsManager metadata only. It measures which apps
 were foreground for how long, local Room persistence, sync state, optional
@@ -86,11 +87,18 @@ best-effort BACK key event. It does not change product telemetry behavior.
 ## Legacy Activity cleanup
 
 The MainActivity Fragment shell is the target user-facing implementation for
-the Figma flow. Older standalone `DashboardActivity`, `SessionsActivity`,
-`DailySummaryActivity`, and `SettingsActivity` still exist as compatibility and
-test surfaces. They must either be removed in a later cleanup slice or
-documented as deliberate deep-link/dev surfaces. They must not become stale
-alternate UI paths that contradict the shell.
+the Figma flow. `DashboardActivity`, `SessionsActivity`, and `SettingsActivity`
+are retained only as internal compatibility/dev entry points with
+`android:exported="false"`; each hosts the same canonical `DashboardFragment`,
+`SessionsFragment`, or `SettingsFragment` content used by the shell. There is no
+separate `ReportActivity` or `AppDetailActivity` path. `DailySummaryActivity`
+remains a separate previous-day summary compatibility surface and is not one of
+the seven canonical Figma screens.
+
+Legacy compatibility Activities must not inflate stale standalone Activity XML.
+The obsolete `activity_dashboard.xml`, `activity_sessions.xml`, and
+`activity_settings.xml` layouts have been removed; resource/build contracts now
+keep the retained Activities on canonical Fragment content.
 
 ## Chrome/app-switch QA
 
@@ -139,7 +147,7 @@ Status: `PASS`
 Evidence:
 
 ```text
-artifacts/android-app-switch-qa/20260502-052729/
+artifacts/android-app-switch-qa/20260502-073336/
 artifacts/android-app-switch-qa/latest/
 ```
 
@@ -147,8 +155,8 @@ Verified:
 
 - `report.md` status is `PASS`.
 - `room-assertions.json` status is `PASS`.
-- `focusSessionChromeRows=4`.
-- `syncOutboxChromeRows=4`.
+- Room assertions include Chrome focus-session rows and pending sync outbox
+  rows.
 - Foreground-after-return shows `com.woong.monitorstack`.
 - `dashboard-after-app-switch.png` and `sessions-after-app-switch.png` exist.
 - No Chrome screenshots or Chrome UI dumps were captured.

@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
 import com.woong.monitorstack.databinding.FragmentDashboardBinding
+import kotlin.math.roundToInt
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +38,33 @@ class DashboardFirstViewportLayoutTest {
         assertTrue("Top apps should appear before optional location context", topAppsIndex < locationIndex)
     }
 
+    @Test
+    fun dashboardHourlyChartUsesCompactFirstViewportCard() {
+        val context = ContextThemeWrapper(
+            ApplicationProvider.getApplicationContext<Context>(),
+            R.style.Theme_WoongMonitor
+        )
+        val binding = FragmentDashboardBinding.inflate(LayoutInflater.from(context))
+        val density = context.resources.displayMetrics.density
+
+        assertTrue(
+            "Hourly chart card should stay compact enough to leave a visible Top apps hint.",
+            binding.hourlyFocusChartCard.layoutParams.height <= 176.dp(density)
+        )
+        assertTrue(
+            "Top apps should follow the chart tightly for first-viewport readability.",
+            (binding.topAppsCard.layoutParams as ViewGroup.MarginLayoutParams).topMargin <= 10.dp(density)
+        )
+        assertEquals(
+            "Chart view should fill its compact card instead of forcing extra fixed height.",
+            0,
+            binding.hourlyFocusChart.layoutParams.height
+        )
+    }
+
     private fun ViewGroup.indexOfChild(child: View): Int {
         return (0 until childCount).firstOrNull { index -> getChildAt(index) == child } ?: -1
     }
+
+    private fun Int.dp(density: Float): Int = (this * density).roundToInt()
 }

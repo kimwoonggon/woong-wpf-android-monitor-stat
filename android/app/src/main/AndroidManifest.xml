@@ -11,6 +11,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.WoongMonitor">
+        <!-- Internal compatibility hosts; MainActivity owns the canonical shell. -->
         <activity
             android:name=".dashboard.DashboardActivity"
             android:exported="false" />

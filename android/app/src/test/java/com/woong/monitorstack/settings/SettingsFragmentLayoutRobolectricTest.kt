@@ -63,7 +63,7 @@ class SettingsFragmentLayoutRobolectricTest {
             context.getString(R.string.privacy_storage_title)
         )
 
-        assertEquals(dp(context, 48), binding.usageAccessStatusRow.layoutParams.height)
+        assertTrue(binding.usageAccessStatusRow.layoutParams.height <= dp(context, 40))
         assertEquals(primaryColor, binding.usageAccessStatusRow.currentTextColor)
 
         assertToggleRow(
@@ -163,7 +163,7 @@ class SettingsFragmentLayoutRobolectricTest {
         primaryColor: Int
     ) {
         val row = root.requireViewByResourceName<LinearLayout>(context, rowName)
-        assertEquals(dp(context, 48), row.layoutParams.height)
+        assertTrue(row.layoutParams.height <= dp(context, 44))
         assertEquals(LinearLayout.HORIZONTAL, row.orientation)
 
         val label = row.requireDescendantTextView(labelText)

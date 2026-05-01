@@ -40,4 +40,25 @@ class AndroidManifestPrivacyTest {
         assertTrue(permissions.contains("android.permission.ACCESS_FINE_LOCATION"))
         assertFalse(permissions.contains("android.permission.ACCESS_BACKGROUND_LOCATION"))
     }
+
+    @Test
+    fun manifestKeepsLegacyCompatibilityActivitiesInternalAndAvoidsReportOrAppDetailForks() {
+        val manifest = DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder()
+            .parse(Path.of("src/main/AndroidManifest.xml").toFile())
+        val activities = (0 until manifest.getElementsByTagName("activity").length)
+            .associate { index ->
+                val attributes = manifest.getElementsByTagName("activity")
+                    .item(index)
+                    .attributes
+                attributes.getNamedItem("android:name").nodeValue to
+                    attributes.getNamedItem("android:exported")?.nodeValue
+            }
+
+        assertEquals("false", activities[".dashboard.DashboardActivity"])
+        assertEquals("false", activities[".sessions.SessionsActivity"])
+        assertEquals("false", activities[".settings.SettingsActivity"])
+        assertFalse(activities.keys.any { it.endsWith("ReportActivity") })
+        assertFalse(activities.keys.any { it.endsWith("AppDetailActivity") })
+    }
 }

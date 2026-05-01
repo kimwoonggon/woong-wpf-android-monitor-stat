@@ -21,7 +21,7 @@ class SettingsActivityTest {
 
     @Test
     fun settingsActivityDisplaysPrivacyAndSyncDefaults() {
-        onView(withId(R.id.settingsRoot)).check(matches(isDisplayed()))
+        onView(withId(R.id.settingsScrollRoot)).check(matches(isDisplayed()))
         onView(withId(R.id.collectionVisibleText))
             .check(matches(withText(R.string.collection_visible_default)))
         onView(withId(R.id.usageAccessGuidanceText))

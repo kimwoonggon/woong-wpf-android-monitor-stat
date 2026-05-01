@@ -1,13 +1,12 @@
 package com.woong.monitorstack.dashboard
 
-import android.content.Context
-import android.view.ContextThemeWrapper
-import android.view.LayoutInflater
-import androidx.test.core.app.ApplicationProvider
+import android.view.View
+import android.widget.TextView
+import androidx.test.core.app.ActivityScenario
 import com.woong.monitorstack.R
-import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -17,48 +16,63 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class DashboardActivityRobolectricTest {
     @Test
-    fun dashboardLayoutCoversPlannedAndroidSvgCoreSurface() {
-        val context = ContextThemeWrapper(
-            ApplicationProvider.getApplicationContext<Context>(),
-            R.style.Theme_WoongMonitor
-        )
-        val binding = ActivityDashboardBinding.inflate(LayoutInflater.from(context))
+    fun dashboardActivityHostsCanonicalDashboardFragmentSurface() {
+        ActivityScenario.launch(DashboardActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.supportFragmentManager.executePendingTransactions()
 
-        assertEquals("Usage OK", binding.usageAccessStatusChip.text.toString())
-        assertEquals("Sync Off", binding.syncStatusChip.text.toString())
-        assertEquals("Privacy Safe", binding.privacyStatusChip.text.toString())
-        assertEquals("Current Focus", binding.currentFocusTitle.text.toString())
-        assertEquals("Current app", binding.currentAppLabel.text.toString())
-        assertEquals("Package", binding.currentPackageLabel.text.toString())
-        assertEquals("Session duration", binding.currentSessionDurationLabel.text.toString())
-        assertNotNull(binding.screenOnCard)
-        assertNotNull(binding.webFocusCard)
-        assertEquals("1h", binding.oneHourFilterButton.text.toString())
-        assertEquals("6h", binding.sixHourFilterButton.text.toString())
-        assertEquals("24h", binding.twentyFourHourFilterButton.text.toString())
-        assertEquals("7d", binding.recent7DaysFilterButton.text.toString())
-        assertNotNull(binding.topAppsCard)
-        assertNotNull(binding.bottomNavigationRow)
-        assertEquals("Dashboard", binding.navDashboardText.text.toString())
-        assertEquals("Sessions", binding.navSessionsText.text.toString())
-        assertEquals("Report", binding.navReportText.text.toString())
-        assertEquals("Settings", binding.navSettingsText.text.toString())
+                val fragment = activity.supportFragmentManager.findFragmentById(
+                    R.id.mainFragmentContainer
+                )
+                assertTrue(fragment is DashboardFragment)
+                assertNotNull(activity.findViewById<View>(R.id.dashboardScrollRoot))
+                assertEquals(
+                    "Obsolete legacy Activity id must not remain in packaged resources: dashboardRoot",
+                    0,
+                    activity.resources.getIdentifier("dashboardRoot", "id", activity.packageName)
+                )
+                assertEquals(
+                    "Current Focus",
+                    activity.findViewById<TextView>(R.id.currentFocusTitle).text.toString()
+                )
+                assertNotNull(activity.findViewById<View>(R.id.hourlyFocusChartCard))
+                assertNotNull(activity.findViewById<View>(R.id.topAppsCard))
+            }
+        }
     }
 
     @Test
-    fun dashboardLayoutShowsLocationStatusCardWithSafeDefaults() {
-        val context = ContextThemeWrapper(
-            ApplicationProvider.getApplicationContext<Context>(),
-            R.style.Theme_WoongMonitor
-        )
-        val binding = ActivityDashboardBinding.inflate(LayoutInflater.from(context))
+    fun dashboardActivityCanonicalFragmentShowsLocationStatusCardWithSafeDefaults() {
+        ActivityScenario.launch(DashboardActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.supportFragmentManager.executePendingTransactions()
 
-        assertNotNull(binding.locationContextCard)
-        assertEquals("Location context", binding.locationContextLabel.text.toString())
-        assertEquals("Location capture off", binding.locationStatusText.text.toString())
-        assertEquals("Latitude not stored", binding.locationLatitudeText.text.toString())
-        assertEquals("Longitude not stored", binding.locationLongitudeText.text.toString())
-        assertEquals("Accuracy unavailable", binding.locationAccuracyText.text.toString())
-        assertEquals("No location captured", binding.locationCapturedAtText.text.toString())
+                assertNotNull(activity.findViewById<View>(R.id.locationContextCard))
+                assertEquals(
+                    "Location context",
+                    activity.findViewById<TextView>(R.id.locationContextLabel).text.toString()
+                )
+                assertEquals(
+                    "Location capture off",
+                    activity.findViewById<TextView>(R.id.locationStatusText).text.toString()
+                )
+                assertEquals(
+                    activity.getString(R.string.location_latitude_value, "Latitude not stored"),
+                    activity.findViewById<TextView>(R.id.locationLatitudeText).text.toString()
+                )
+                assertEquals(
+                    activity.getString(R.string.location_longitude_value, "Longitude not stored"),
+                    activity.findViewById<TextView>(R.id.locationLongitudeText).text.toString()
+                )
+                assertEquals(
+                    activity.getString(R.string.location_accuracy_value, "Accuracy unavailable"),
+                    activity.findViewById<TextView>(R.id.locationAccuracyText).text.toString()
+                )
+                assertEquals(
+                    activity.getString(R.string.location_captured_at_value, "No location captured"),
+                    activity.findViewById<TextView>(R.id.locationCapturedAtText).text.toString()
+                )
+            }
+        }
     }
 }

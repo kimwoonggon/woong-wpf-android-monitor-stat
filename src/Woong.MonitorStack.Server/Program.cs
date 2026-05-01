@@ -22,6 +22,15 @@ builder.Services.AddScoped<DeviceRegistrationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
 builder.Services.AddScoped<RawEventUploadService>();
+builder.Services.Configure<RawEventRetentionOptions>(
+    builder.Configuration.GetSection("RawEventRetention"));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IRawEventRetentionService, RawEventRetentionService>();
+builder.Services.AddScoped<IRawEventRetentionMaintenanceService, RawEventRetentionMaintenanceService>();
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<RawEventRetentionBackgroundService>();
+}
 builder.Services.AddScoped<LocationContextUploadService>();
 builder.Services.AddScoped<DailySummaryQueryService>();
 builder.Services.AddScoped<DailySummaryAggregationService>();

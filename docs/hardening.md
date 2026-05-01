@@ -41,6 +41,12 @@ long-term behavior archive.
 MVP policy:
 
 - Default retention target: 30 days.
+- Server production defaults in `appsettings.json` enable
+  `RawEventRetention` with `RetentionDays = 30` and a daily
+  `Interval = 1.00:00:00`.
+- Development config keeps `RawEventRetention:Enabled = false` so local runs do
+  not prune debugging rows unexpectedly; production deployment should either
+  accept the default or set an explicit environment-specific value.
 - Keep derived `focus_sessions`, `web_sessions`, and `daily_summaries` after
   raw event expiry.
 - Never store key contents, message contents, form input, passwords, or Android
@@ -63,6 +69,25 @@ policy:
 
 This retention path applies only to local browser raw events. Derived
 `web_session` rows remain available for dashboard and sync behavior.
+
+Server retention observability:
+
+- Expected startup/interval logs are `Raw event retention run starting.`,
+  `Raw event retention run skipped because retention is disabled.`, and
+  `Raw event retention run completed. Deleted {DeletedCount} rows older than
+  {CutoffUtc}.`
+- Failure logs use `Raw event retention run failed.` at error level and should
+  be investigated because raw events are intended to be short-lived debug/sync
+  artifacts.
+- Operators should watch for repeated failures, unexpectedly high
+  `DeletedCount`, or no completion/skip logs after service startup.
+- Configure per environment with `RawEventRetention:Enabled`,
+  `RawEventRetention:RetentionDays`, and `RawEventRetention:Interval`.
+  Production defaults enable daily 30-day retention; local Development defaults
+  keep retention disabled to avoid surprising debug data deletion.
+- Do not log raw-event payload contents while investigating retention. The
+  useful operational facts are run status, cutoff, deleted row count, and
+  exception type/message.
 
 ## Android Local Metadata Backup
 

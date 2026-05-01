@@ -2,16 +2,12 @@ package com.woong.monitorstack.settings
 
 import android.content.Context
 import android.content.Intent
-import android.view.ContextThemeWrapper
-import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
-import com.woong.monitorstack.databinding.ActivitySettingsBinding
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -23,49 +19,60 @@ import org.robolectric.annotation.Config
 class SettingsActivityRobolectricTest {
     @Test
     fun settingsActivityDisplaysClearUsageAccessGuidanceAndSyncOffStatus() {
-        val context = ContextThemeWrapper(
-            ApplicationProvider.getApplicationContext<Context>(),
-            R.style.Theme_WoongMonitor
-        )
-        val binding = ActivitySettingsBinding.inflate(LayoutInflater.from(context))
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearSettingsPreferences(context)
+        val activity = Robolectric.buildActivity(SettingsActivity::class.java)
+            .setup()
+            .get()
 
-        assertNotNull(binding.openUsageAccessSettingsButton)
+        assertEquals(
+            activity.getString(R.string.settings_title),
+            activity.findViewById<TextView>(R.id.settingsTitle).text.toString()
+        )
         assertEquals(
             "Usage Access is needed to calculate app usage statistics.",
-            binding.usageAccessGuidanceText.text.toString()
+            activity.findViewById<TextView>(R.id.usageAccessGuidanceText).text.toString()
         )
         assertEquals(
             "This app does not collect messages, passwords, form input, or global touch coordinates.",
-            binding.sensitiveDataBoundaryText.text.toString()
+            activity.findViewById<TextView>(R.id.sensitiveDataBoundaryText).text.toString()
         )
-        assertEquals("Open Usage Access settings", binding.openUsageAccessSettingsButton.text.toString())
-        assertEquals("Sync is off. Data stays on this Android device.", binding.syncStatusText.text.toString())
+        assertEquals(
+            "Open Usage Access settings",
+            activity.findViewById<Button>(R.id.openUsageAccessSettingsButton).text.toString()
+        )
+        assertEquals(
+            "Sync is off. Data stays on this Android device.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
         assertEquals(
             "Morning summary notifications require notification permission on Android 13+.",
-            binding.notificationPermissionGuidanceText.text.toString()
+            activity.findViewById<TextView>(
+                R.id.notificationPermissionGuidanceText
+            ).text.toString()
         )
-        assertEquals("Allow notifications", binding.requestNotificationPermissionButton.text.toString())
+        assertEquals(
+            "Allow notifications",
+            activity.findViewById<Button>(R.id.requestNotificationPermissionButton).text.toString()
+        )
         assertEquals(
             "Location context is off by default.",
-            binding.locationContextDefaultText.text.toString()
+            activity.findViewById<TextView>(R.id.locationContextDefaultText).text.toString()
         )
         assertEquals(
             "Latitude/longitude are not stored unless location context is enabled.",
-            binding.locationCoordinateBoundaryText.text.toString()
+            activity.findViewById<TextView>(R.id.locationCoordinateBoundaryText).text.toString()
         )
         assertEquals(
             "Precise latitude/longitude requires a separate explicit opt-in.",
-            binding.preciseLocationOptInText.text.toString()
+            activity.findViewById<TextView>(R.id.preciseLocationOptInText).text.toString()
         )
     }
 
     @Test
     fun settingsActivityLocationControlsDefaultToSafeOptInState() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        context.getSharedPreferences(
-            SharedPreferencesAndroidLocationSettings.PreferenceName,
-            Context.MODE_PRIVATE
-        ).edit().clear().commit()
+        clearSettingsPreferences(context)
 
         val activity = Robolectric.buildActivity(SettingsActivity::class.java)
             .setup()
@@ -86,10 +93,7 @@ class SettingsActivityRobolectricTest {
     @Test
     fun locationPermissionRequestStaysDisabledUntilLocationContextOptIn() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        context.getSharedPreferences(
-            SharedPreferencesAndroidLocationSettings.PreferenceName,
-            Context.MODE_PRIVATE
-        ).edit().clear().commit()
+        clearSettingsPreferences(context)
         val activity = Robolectric.buildActivity(SettingsActivity::class.java)
             .setup()
             .get()
@@ -108,8 +112,9 @@ class SettingsActivityRobolectricTest {
     }
 
     @Test
-    fun settingsActivityDisplaysRetryableSyncFailureStatusFromIntent() {
+    fun settingsActivityShowsCanonicalSyncStatusEvenWhenLegacyFailureExtrasArePresent() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        clearSettingsPreferences(context)
         val intent = Intent(context, SettingsActivity::class.java)
             .putExtra(SettingsActivity.EXTRA_SYNC_FAILED_COUNT, 2)
             .putExtra(SettingsActivity.EXTRA_SYNC_FAILURE_MESSAGE, "server unavailable")
@@ -121,8 +126,19 @@ class SettingsActivityRobolectricTest {
         val syncStatus = activity.findViewById<TextView>(R.id.syncStatusText)
 
         assertEquals(
-            "Sync failed for 2 queued items: server unavailable. Data remains local and will retry.",
+            "Sync is off. Data stays on this Android device.",
             syncStatus.text.toString()
         )
+    }
+
+    private fun clearSettingsPreferences(context: Context) {
+        context.getSharedPreferences(
+            SharedPreferencesAndroidLocationSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
     }
 }

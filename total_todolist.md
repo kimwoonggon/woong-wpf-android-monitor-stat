@@ -614,7 +614,7 @@ milestones below are finished.
 - [x] Add Android UI plan for optional latitude/longitude location context.
 - [x] Add architecture documentation guardrail test for Android latitude/longitude opt-in wording.
 - [x] Verify Android location plan slice with Architecture tests, full .NET tests, full .NET build, WPF acceptance after XAML resource changes, coverage generation (91.3% line), and Android `testDebugUnitTest assembleDebug`.
-- [x] Update PRD/privacy/screenshot docs so ?„ë„/ê²½ë„ is explicit opt-in metadata, not default tracking.
+- [x] Update PRD/privacy/screenshot docs so ?ê¾¨ë£„/å¯ƒìŽˆë£„ is explicit opt-in metadata, not default tracking.
 - [x] Add Android settings tests: location context defaults Off, approximate mode preferred, precise latitude/longitude requires explicit opt-in.
 - [x] Add Android foreground-only manifest guard for optional location context: coarse/fine permissions allowed, background location forbidden.
 - [x] Add Android permission UI tests: location permission request remains disabled until location context opt-in and guidance shows no coordinates by default.
@@ -939,7 +939,7 @@ milestones below are finished.
 - [x] Settings privacy coverage verification: `.NET` build passed.
 - [x] Settings privacy coverage verification: WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260429-141606`.
 - [x] Settings privacy coverage verification: coverage report generated successfully with overall line coverage 92.1%.
-- [x] Add app/domain chart `?ì„¸ë³´ê¸°` actions that select App Sessions and Web Sessions tabs.
+- [x] Add app/domain chart `?ê³¸ê½­è¹‚ë‹¿ë¦°` actions that select App Sessions and Web Sessions tabs.
 - [x] Add tests: `AppChartDetailsCommand_SelectsAppSessionsTab` and `DomainChartDetailsCommand_SelectsWebSessionsTab`.
 - [x] Chart details verification: `ShowAppFocusDetailsCommand_SelectsAppSessionsTab`, `ShowDomainFocusDetailsCommand_SelectsWebSessionsTab`, and `DashboardView_ChartDetailButtonsSelectExpectedDetailsTabs` passed.
 - [x] Chart details verification: full `.NET` tests passed (189 tests).
@@ -2119,7 +2119,7 @@ milestones below are finished.
 
 ## 2026-05-01 WPF domain chart title wrap follow-up
 
-- [x] Split the domain focus chart header so `µµ¸ÞÀÎº°` and `ÁýÁß ½Ã°£` render on separate lines while keeping the `»ó¼¼º¸±â` action button fixed on the right.
+- [x] Split the domain focus chart header so `ë„ë©”ì¸ë³„` and `ì§‘ì¤‘ ì‹œê°„` render on separate lines while keeping the `ìƒì„¸ë³´ê¸°` action button fixed on the right.
 - [x] Added WPF behavior coverage for the split title and retained details button placement.
 - [x] Ran focused WPF chart tests, full `dotnet test`, and full `dotnet build`.
 ## 2026-05-01 Android emulator README handoff
@@ -2153,7 +2153,7 @@ milestones below are finished.
 - [x] Added a real app Splash route before Dashboard/Permission routing and kept shell chrome hidden during Splash and permission onboarding.
 - [x] Reworked Android 12+ launch splash branding so the OS splash no longer shows the default Android icon; it now uses the Woong bar logo on a white surface.
 - [x] Reworked `fragment_splash.xml` toward the supplied app-loading reference: centered blue logo tile, `Woong Monitor`, `Android Focus Tracker`, and Korean loading text.
-- [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `?¤ì • ?´ê¸°` primary action.
+- [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `?ã…¼ì ™ ?ë‹¿ë¦°` primary action.
 - [x] Superseded historical behavior: Dashboard Current Focus once preferred the latest meaningful tracked external Room session such as `Chrome / com.android.chrome`. The 2026-05-02 foreground policy now prefers proven foreground truth, including Woong Monitor itself when it is foreground.
 - [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, and the current app panel reports foreground app truth when Android can prove it.
 - [x] Added/updated tests for cold-start Splash routing, permission routing, foreground Current Focus precedence, Android wireframe contracts, and Android 12 launch splash branding.
@@ -2162,7 +2162,7 @@ milestones below are finished.
   - `02-permission-late2.png`
   - `05-dashboard-final.png`
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
-- [ ] Remaining Android UI gap: Dashboard still needs a fuller visual pass against the supplied reference, including top-app list/card polish, chart rendering, report/detail completeness, and screenshot coverage for each bottom-tab flow.
+- [ ] Remaining Android UI gap: complete the latest seven-screen visual comparison against the supplied Android UI flow reference and close remaining visual-only gaps, including dense Dashboard chart labels.
 
 ## 2026-05-01 Android Sessions/App Detail/Report/Settings Parity Slice
 
@@ -2177,9 +2177,9 @@ milestones below are finished.
 - [x] Fixed Android Korean string mojibake and restored Korean screen titles for the reference screens.
 - [x] Captured emulator screenshots for dashboard, sessions, app detail, report, and settings under artifacts/android-check/latest/.
 - [x] Validation passed: Android Gradle unit/build, full solution tests, and full solution build.
-- [ ] Next Android UI TODO: populate App Detail hourly chart and Report trend chart with real Room-backed datasets.
-- [ ] Next Android UI TODO: tune bottom navigation/system-inset visual height on emulator screenshots.
-- [ ] Android parity note: Android cannot mirror WPF browser domain/window-title tracking through UsageStatsManager; keep Android app/package usage only unless a future explicit safe API scope is approved.
+- [x] Next Android UI TODO resolved: App Detail hourly chart and Report trend chart now use real Room-backed datasets.
+- [x] Next Android UI TODO resolved: bottom navigation/system-inset visual height was tightened in emulator screenshots.
+- [x] Android parity note documented: Android cannot mirror WPF browser domain/window-title tracking through UsageStatsManager; keep Android app/package usage only unless a future explicit safe API scope is approved.
 
 ## 2026-05-01 Android Current Focus External App Follow-Up
 
@@ -2199,8 +2199,8 @@ milestones below are finished.
 - [x] Added `-DeviceSerial` support to Android UI snapshot script for deterministic emulator targeting.
 - [x] Generated latest emulator screenshot evidence at `artifacts/android-ui-snapshots/20260501-191127/`.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, Android UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%, focused architecture tests.
-- [ ] Next Android TODO: wire Settings sync opt-in/manual sync UI to real sync settings and status.
-- [ ] Next Android TODO: implement actual Dashboard/Sessions/Report period-filter behavior.
+- [x] Next Android TODO resolved: Settings sync opt-in/manual sync UI now wires to real sync settings and status.
+- [x] Next Android TODO resolved: Dashboard/Sessions/Report period-filter behavior now reloads Room-backed ranges.
 ## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
 
 - [x] Settings Sync switch now persists opt-in/off state through SharedPreferences.
@@ -2209,8 +2209,8 @@ milestones below are finished.
 - [x] Added RED/GREEN tests for Settings sync behavior and Sessions period filtering.
 - [x] Generated latest emulator screenshot evidence at `artifacts/android-ui-snapshots/20260501-192752/`.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK and screenshot automation on `emulator-5554`.
-- [ ] Next Android TODO: implement Dashboard period buttons as real range reloads.
-- [ ] Next Android TODO: implement Report 30d/90d/custom range reloads.
+- [x] Next Android TODO resolved: Dashboard period buttons now perform real Room-backed range reloads.
+- [x] Next Android TODO resolved: Report 30d/90d/custom range reloads now use Room-backed ranges.
 - [x] Android Settings sync config now includes server URL/device ID fields before real manual sync enqueue.
 - [x] Full solution validation for Android Settings Sync Opt-In and Sessions Period Filters passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed for Android Settings Sync Opt-In and Sessions Period Filters: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
@@ -2224,8 +2224,8 @@ milestones below are finished.
 - [x] RED/GREEN tests added for Dashboard last-hour repository behavior and MainActivity period-button behavior.
 - [x] Latest Android screenshot evidence: `artifacts/android-ui-snapshots/20260501-195308/`.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
-- [ ] Next Android TODO: implement Report 30d/90d/custom filters with real Room ranges.
-- [ ] Next Android TODO: add UsageStats anchored-lookback collection so an app resumed before collection start is clipped into the requested window.
+- [x] Next Android TODO resolved: Report 30d/90d/custom filters now use real Room ranges.
+- [x] Next Android TODO resolved: UsageStats anchored-lookback collection now clips apps resumed before collection start into the requested window.
 
 ## 2026-05-01 Android UsageStats Anchored Lookback And Report Ranges
 
@@ -2238,7 +2238,7 @@ milestones below are finished.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
 - [x] Next Android TODO: implement Report custom date range UI.
 - [x] Next Android TODO: add no-wait emulator validation for anchored UsageStats current-focus behavior.
-- [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference.
+- [x] Next Android TODO resolved: Dashboard/Report/App Detail charts now share readable MPAndroidChart visual styling against the supplied reference; dense Dashboard label handling remains open separately.
 
 ## 2026-05-01 Android Report Custom Range And Current-Focus Evidence
 
@@ -2281,7 +2281,7 @@ milestones below are finished.
 - [x] Current-focus validation screenshot timing/retry follow-up is superseded by the 2026-05-02 foreground validation pass at `artifacts/android-usage-current-focus/20260502-012243/`.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
-- [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.
+- [x] Next Android TODO resolved: Dashboard chart/card density was tightened so ranked app content appears earlier and remains readable.
 
 ## 2026-05-02 Android Settings Sync Config
 
@@ -2348,8 +2348,25 @@ milestones below are finished.
 - [x] Sessions rows are visually compact while preserving readable app/package metadata.
 - [x] Settings now uses clearer Permissions, Collection, Sync, and Privacy visual grouping.
 - [x] Dashboard/Report top-app rows now render proportional usage bars with focused test `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
-- [ ] Next Android TODO: compare the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and close the largest remaining visual parity gaps.
+- [x] Compared the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and closed the largest remaining first-viewport visual gaps for Dashboard, App Detail, Report, and Settings.
+- [x] Latest seven-screen evidence: `artifacts/android-ui-snapshots/20260502-073133/` and `artifacts/android-ui-snapshots/latest/`, with all canonical Figma screenshots `PASS`.
+- [x] Legacy `DashboardActivity`, `SessionsActivity`, and `SettingsActivity` now host canonical fragments; obsolete standalone `activity_dashboard.xml`, `activity_sessions.xml`, and `activity_settings.xml` were removed.
+- [x] Android app-switch QA script now fails when Room assertions fail, classifies Woong process death/emulator stability cases, and retries blank Woong-owned screenshots without capturing Chrome UI.
 - [x] Chrome/app-switch QA PASS verified UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.
-- [x] App-switch QA evidence: `artifacts/android-app-switch-qa/20260502-052729/` and `artifacts/android-app-switch-qa/latest/`.
-- [x] `report.md` PASS and `room-assertions.json` PASS with `focusSessionChromeRows=4` and `syncOutboxChromeRows=4`.
+- [x] App-switch QA evidence refreshed: `artifacts/android-app-switch-qa/20260502-073336/` and `artifacts/android-app-switch-qa/latest/`.
+- [x] `report.md` PASS and `room-assertions.json` PASS with Chrome focus rows and pending sync outbox rows.
 - [x] Foreground-after-return shows `com.woong.monitorstack`; `dashboard-after-app-switch.png` and `sessions-after-app-switch.png` exist; no Chrome screenshots or Chrome UI dumps were captured.
+
+## 2026-05-02 Server CI And Raw Event Retention Hardening
+
+- [x] Added dedicated server CI workflow `.github/workflows/server-ci.yml`.
+- [x] Added local server CI validator `scripts/validate-server-ci-workflow.ps1`.
+- [x] Added architecture tests for the server CI workflow contract.
+- [x] Added `RawEventRetentionService` to delete old `raw_events` while preserving durable `focus_sessions` and `web_sessions`.
+- [x] Added `RawEventRetentionMaintenanceService` with configurable `Enabled`, `RetentionDays`, and `Interval` options.
+- [x] Added option-gated `RawEventRetentionBackgroundService` and disabled its hosted-service registration in the `Testing` WebApplicationFactory host.
+- [x] Added production/development config defaults for `RawEventRetention`.
+- [x] Added structured logging and hardening docs for raw-event retention runs.
+- [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
+- [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
+- [ ] Remaining server production hardening: device token issuance/enforcement, production migration deployment path, and environment-specific retention alerting values.

@@ -35,13 +35,13 @@
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="12dp">
 
                 <TextView
                     android:id="@+id/permissionsSectionHeading"
@@ -53,7 +53,7 @@
                 <TextView
                     android:id="@+id/usageAccessStatusRow"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:text="@string/usage_access_status_placeholder"
                     android:textColor="@color/wms_text_primary"
@@ -85,8 +85,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/openUsageAccessSettingsButton"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="14dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
                     android:text="@string/usage_access_settings"
                     app:cornerRadius="12dp" />
             </LinearLayout>
@@ -97,13 +97,13 @@
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="12dp">
 
                 <TextView
                     android:id="@+id/collectionSectionHeading"
@@ -115,7 +115,7 @@
                 <LinearLayout
                     android:id="@+id/backgroundCollectionRow"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="44dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -148,13 +148,13 @@
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="12dp">
 
                 <TextView
                     android:id="@+id/syncSectionHeading"
@@ -166,7 +166,7 @@
                 <LinearLayout
                     android:id="@+id/autoSyncRow"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="44dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -196,11 +196,14 @@
                 <EditText
                     android:id="@+id/syncServerUrlEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
                     android:autofillHints="url"
+                    android:background="@drawable/bg_report_date_input"
                     android:hint="@string/sync_server_url_hint"
                     android:inputType="textUri"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
                     android:singleLine="true"
                     android:textColor="@color/wms_text_primary"
                     android:textColorHint="@color/wms_text_secondary"
@@ -209,10 +212,13 @@
                 <EditText
                     android:id="@+id/syncDeviceIdEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="44dp"
                     android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_report_date_input"
                     android:hint="@string/sync_device_id_hint"
                     android:inputType="text"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
                     android:singleLine="true"
                     android:textColor="@color/wms_text_primary"
                     android:textColorHint="@color/wms_text_secondary"
@@ -245,14 +251,14 @@
                     android:id="@+id/manualSyncButton"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/manual_sync" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/requestNotificationPermissionButton"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="44dp"
                     android:layout_marginTop="8dp"
                     android:text="@string/request_notification_permission"
                     app:cornerRadius="12dp" />
@@ -264,13 +270,13 @@
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="8dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="12dp">
 
                 <TextView
                     style="@style/WmsSectionTitle"
@@ -304,8 +310,8 @@
                 <CheckBox
                     android:id="@+id/locationContextCheckBox"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/store_optional_location_context"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                     android:textColor="@color/wms_text_primary" />
@@ -313,7 +319,7 @@
                 <CheckBox
                     android:id="@+id/preciseLatitudeLongitudeCheckBox"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="44dp"
                     android:layout_marginTop="4dp"
                     android:text="@string/store_precise_latitude_longitude"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
@@ -322,7 +328,7 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/requestLocationPermissionButton"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="44dp"
                     android:layout_marginTop="8dp"
                     android:text="@string/request_location_permission"
                     app:cornerRadius="12dp" />
@@ -334,14 +340,14 @@
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="24dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="12dp">
 
                 <TextView
                     android:id="@+id/privacyStorageSectionHeading"

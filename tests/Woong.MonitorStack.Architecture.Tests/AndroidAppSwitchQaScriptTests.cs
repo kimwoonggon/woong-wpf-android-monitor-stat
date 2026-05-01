@@ -253,6 +253,327 @@ public sealed class AndroidAppSwitchQaScriptTests
     }
 
     [Fact]
+    public void AndroidAppSwitchQaScript_WhenRoomAssertionsFail_WritesFailReportAndStopsBeforeScreenshotAcceptance()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithFailingRoomAssertions(adbLog));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -ChromeForegroundSeconds 0")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The failing room-assertions scenario should finish quickly.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.NotEqual(0, process.ExitCode);
+            Assert.Contains("Room assertions failed", stdout + stderr);
+            Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            string roomAssertions = File.ReadAllText(Path.Combine(latest, "room-assertions.json"));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+
+            Assert.Equal("FAIL", manifest.RootElement.GetProperty("status").GetString());
+            Assert.Equal("room-assertions-failed", manifest.RootElement.GetProperty("classification").GetString());
+            Assert.Contains("syncOutboxChromeRows=0", manifest.RootElement.GetProperty("blockedReason").GetString());
+            Assert.Contains("BLOCKED/FAIL: Room assertions failed", report);
+            Assert.Contains("\"status\":\"FAIL\"", roomAssertions);
+
+            string commands = File.ReadAllText(adbLog);
+            Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/room-assertions.json", commands);
+            Assert.DoesNotContain("AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", commands);
+            Assert.DoesNotContain("dashboard-after-app-switch.png", commands);
+            Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("uiautomator", commands, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidAppSwitchQaScript_WhenWoongScreenshotPullIsBlank_RerunsSafeWoongCaptureAndRetriesPull()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        string blankPullMarker = Path.Combine(tempRoot, "blank-dashboard-pull-count.txt");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithBlankDashboardScreenshotOnce(adbLog, blankPullMarker));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -ChromeForegroundSeconds 0")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The blank screenshot retry scenario should finish quickly.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+            Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string dashboardScreenshot = Path.Combine(latest, "dashboard-after-app-switch.png");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+
+            Assert.Equal("PASS", manifest.RootElement.GetProperty("status").GetString());
+            Assert.True(new FileInfo(dashboardScreenshot).Length > 0, "Dashboard screenshot should be non-empty after retry.");
+            Assert.Contains("Blank screenshot pull detected for dashboard-after-app-switch.png", report);
+
+            string[] commandLines = File.ReadAllLines(adbLog);
+            int firstDashboardPull = Array.FindIndex(
+                commandLines,
+                line => line.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", StringComparison.Ordinal));
+            int retryCapture = Array.FindIndex(
+                commandLines,
+                firstDashboardPull + 1,
+                line => line.Contains("AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", StringComparison.Ordinal));
+            int secondDashboardPull = Array.FindIndex(
+                commandLines,
+                retryCapture + 1,
+                line => line.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", StringComparison.Ordinal));
+
+            Assert.True(firstDashboardPull >= 0, "Initial Dashboard screenshot pull should run.");
+            Assert.True(retryCapture > firstDashboardPull, "Blank screenshot retry should rerun only the Woong capture instrumentation.");
+            Assert.True(secondDashboardPull > retryCapture, "Dashboard screenshot should be pulled again after retry capture.");
+            Assert.DoesNotContain("screencap", File.ReadAllText(adbLog), StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("uiautomator", File.ReadAllText(adbLog), StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidAppSwitchQaScript_WhenWoongScreenshotPullIsPerceptuallyBlank_RerunsSafeWoongCaptureAndRetriesPull()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        string blankPullMarker = Path.Combine(tempRoot, "perceptual-blank-dashboard-pull-count.txt");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithPerceptuallyBlankDashboardScreenshotOnce(adbLog, blankPullMarker));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -ChromeForegroundSeconds 0")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The perceptual blank screenshot retry scenario should finish quickly.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+            Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string dashboardScreenshot = Path.Combine(latest, "dashboard-after-app-switch.png");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+
+            Assert.Equal("PASS", manifest.RootElement.GetProperty("status").GetString());
+            Assert.True(new FileInfo(dashboardScreenshot).Length > 0, "Dashboard screenshot should exist after retry.");
+            Assert.Contains("Perceptually blank screenshot detected for dashboard-after-app-switch.png", report);
+
+            string[] commandLines = File.ReadAllLines(adbLog);
+            int firstDashboardPull = Array.FindIndex(
+                commandLines,
+                line => line.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", StringComparison.Ordinal));
+            int retryCapture = Array.FindIndex(
+                commandLines,
+                firstDashboardPull + 1,
+                line => line.Contains("AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", StringComparison.Ordinal));
+            int secondDashboardPull = Array.FindIndex(
+                commandLines,
+                retryCapture + 1,
+                line => line.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", StringComparison.Ordinal));
+
+            Assert.True(firstDashboardPull >= 0, "Initial Dashboard screenshot pull should run.");
+            Assert.True(retryCapture > firstDashboardPull, "Perceptual blank retry should rerun only the Woong capture instrumentation.");
+            Assert.True(secondDashboardPull > retryCapture, "Dashboard screenshot should be pulled again after retry capture.");
+            Assert.DoesNotContain("screencap", File.ReadAllText(adbLog), StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("uiautomator", File.ReadAllText(adbLog), StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidAppSwitchQaScript_WhenWoongPidChangesAfterChromeReturn_ClassifiesEmulatorStabilityBlocked()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        string processMetadataCount = Path.Combine(tempRoot, "process-metadata-count.txt");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithWoongPidChangeAfterChromeReturn(adbLog, processMetadataCount, androidRuntimeCrash: false));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -ChromeForegroundSeconds 0")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The emulator-kill classification scenario should finish quickly.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+            Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+
+            Assert.Equal("BLOCKED", manifest.RootElement.GetProperty("status").GetString());
+            Assert.Equal("emulator-stability-process-death", manifest.RootElement.GetProperty("classification").GetString());
+            Assert.Contains("Woong process changed during Chrome app-switch", manifest.RootElement.GetProperty("blockedReason").GetString());
+            Assert.Contains("emulator stability", report, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("restart the emulator", report, StringComparison.OrdinalIgnoreCase);
+            Assert.True(File.Exists(Path.Combine(latest, "logcat-crash.txt")));
+            Assert.Contains("fake crash buffer without product crash", File.ReadAllText(Path.Combine(latest, "logcat-crash.txt")));
+
+            string commands = File.ReadAllText(adbLog);
+            Assert.Contains("process-before.txt", File.ReadAllText(Path.Combine(latest, "report.md")));
+            Assert.Contains("echo Woong pid:", commands);
+            Assert.Contains("logcat -d -b crash", commands);
+            Assert.DoesNotContain("AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox", commands);
+            Assert.DoesNotContain("AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", commands);
+            Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("uiautomator", commands, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidAppSwitchQaScript_WhenWoongPidChangesAndAndroidRuntimeCrashExists_ClassifiesProductFailure()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        string processMetadataCount = Path.Combine(tempRoot, "process-metadata-count.txt");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithWoongPidChangeAfterChromeReturn(adbLog, processMetadataCount, androidRuntimeCrash: true));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -ChromeForegroundSeconds 0")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The product-crash classification scenario should finish quickly.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+            Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
+
+            string latest = Path.Combine(tempRoot, "latest");
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+
+            Assert.Equal("FAIL", manifest.RootElement.GetProperty("status").GetString());
+            Assert.Equal("product-crash-process-death", manifest.RootElement.GetProperty("classification").GetString());
+            Assert.Contains("AndroidRuntime crash evidence was found", manifest.RootElement.GetProperty("blockedReason").GetString());
+            Assert.Contains("Inspect logcat-crash.txt", report);
+            Assert.Contains("AndroidRuntime", File.ReadAllText(Path.Combine(latest, "logcat-crash.txt")));
+
+            string commands = File.ReadAllText(adbLog);
+            Assert.DoesNotContain("AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox", commands);
+            Assert.DoesNotContain("AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", commands);
+            Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("uiautomator", commands, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void AndroidAppSwitchQaScript_WhenCoreEvidencePassedButWoongPidUnavailable_WarnsAndCapturesFallbackLogcat()
     {
         string repoRoot = FindRepositoryRoot();
@@ -540,6 +861,7 @@ public sealed class AndroidAppSwitchQaScriptTests
     private static string FakeAdbScript(string adbLog, bool serialAware)
     {
         string pullTarget = serialAware ? "%5" : "%3";
+        string pullRemoteFileName = serialAware ? "%~nx4" : "%~nx2";
         string shellPrefix = serialAware ? "%3" : "%1";
         string logcatPrefix = serialAware ? "%3" : "%1";
 
@@ -563,10 +885,18 @@ if "{{logcatPrefix}}"=="logcat" (
   exit /b 0
 )
 if "%1"=="pull" (
+  if "{{pullRemoteFileName}}"=="room-assertions.json" (
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
   echo fake artifact>"{{pullTarget}}"
   exit /b 0
 )
 if "%3"=="pull" (
+  if "{{pullRemoteFileName}}"=="room-assertions.json" (
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
   echo fake artifact>"{{pullTarget}}"
   exit /b 0
 )
@@ -615,6 +945,185 @@ if "%3"=="pull" (
     echo fake artifact>"%5"
   )
   exit /b 0
+)
+exit /b 0
+""";
+    }
+
+    private static string FakeAdbScriptWithFailingRoomAssertions(string adbLog)
+    {
+        return $$"""
+@echo off
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  exit /b 0
+)
+if "%1"=="shell" (
+  echo     topResumedActivity=ActivityRecord{stale u0 com.android.chrome/org.chromium.chrome.browser.ChromeTabbedActivity t1}
+  echo     topResumedActivity=ActivityRecord{fake u0 com.woong.monitorstack/.MainActivity t2}
+  echo   mCurrentFocus=Window{fake u0 com.woong.monitorstack/com.woong.monitorstack.MainActivity}
+  exit /b 0
+)
+if "%1"=="pull" (
+  if "%~nx3"=="room-assertions.json" (
+    echo {"status":"FAIL","privacy":"No Chrome screenshots, no Chrome UI hierarchy, no typed text, no form contents, no browser/page contents.","chromePackageName":"com.android.chrome","focusSessionChromeRows":1,"syncOutboxChromeRows":0}>"%3"
+  ) else (
+    echo screenshot acceptance should not run after room assertions fail 1>&2
+    exit /b 44
+  )
+  exit /b 0
+)
+if "%1"=="logcat" (
+  echo fake logcat for %*
+  exit /b 0
+)
+exit /b 0
+""";
+    }
+
+    private static string FakeAdbScriptWithBlankDashboardScreenshotOnce(string adbLog, string blankPullMarker)
+    {
+        return $$"""
+@echo off
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  exit /b 0
+)
+if "%1"=="shell" (
+  echo     topResumedActivity=ActivityRecord{stale u0 com.android.chrome/org.chromium.chrome.browser.ChromeTabbedActivity t1}
+  echo     topResumedActivity=ActivityRecord{fake u0 com.woong.monitorstack/.MainActivity t2}
+  echo   mCurrentFocus=Window{fake u0 com.woong.monitorstack/com.woong.monitorstack.MainActivity}
+  exit /b 0
+)
+if "%1"=="logcat" (
+  echo fake logcat for %*
+  exit /b 0
+)
+if "%1"=="pull" (
+  if "%~nx3"=="dashboard-after-app-switch.png" (
+    if not exist "{{blankPullMarker}}" (
+      >"{{blankPullMarker}}" echo 1
+      break > "%3"
+      exit /b 0
+    )
+  )
+  if "%~nx3"=="room-assertions.json" (
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else (
+    echo fake artifact>"%3"
+  )
+  exit /b 0
+)
+exit /b 0
+""";
+    }
+
+    private static string FakeAdbScriptWithPerceptuallyBlankDashboardScreenshotOnce(string adbLog, string blankPullMarker)
+    {
+        return $$"""
+@echo off
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  exit /b 0
+)
+if "%1"=="shell" (
+  echo     topResumedActivity=ActivityRecord{stale u0 com.android.chrome/org.chromium.chrome.browser.ChromeTabbedActivity t1}
+  echo     topResumedActivity=ActivityRecord{fake u0 com.woong.monitorstack/.MainActivity t2}
+  echo   mCurrentFocus=Window{fake u0 com.woong.monitorstack/com.woong.monitorstack.MainActivity}
+  exit /b 0
+)
+if "%1"=="logcat" (
+  echo fake logcat for %*
+  exit /b 0
+)
+if "%1"=="pull" (
+  if "%~nx3"=="dashboard-after-app-switch.png" (
+    if not exist "{{blankPullMarker}}" (
+      >"{{blankPullMarker}}" echo 1
+      powershell.exe -NoProfile -Command "Add-Type -AssemblyName System.Drawing; $bmp = [System.Drawing.Bitmap]::new(12, 12); $g = [System.Drawing.Graphics]::FromImage($bmp); $g.Clear([System.Drawing.Color]::White); $g.Dispose(); $bmp.Save('%3', [System.Drawing.Imaging.ImageFormat]::Png); $bmp.Dispose()"
+      exit /b 0
+    )
+    powershell.exe -NoProfile -Command "Add-Type -AssemblyName System.Drawing; $bmp = [System.Drawing.Bitmap]::new(12, 12); for ($x = 0; $x -lt 12; $x++) { for ($y = 0; $y -lt 12; $y++) { $bmp.SetPixel($x, $y, [System.Drawing.Color]::FromArgb((20 * $x) %% 255, (30 * $y) %% 255, 120)) } }; $bmp.Save('%3', [System.Drawing.Imaging.ImageFormat]::Png); $bmp.Dispose()"
+    exit /b 0
+  )
+  if "%~nx3"=="room-assertions.json" (
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else (
+    echo fake artifact>"%3"
+  )
+  exit /b 0
+)
+exit /b 0
+""";
+    }
+
+    private static string FakeAdbScriptWithWoongPidChangeAfterChromeReturn(
+        string adbLog,
+        string processMetadataCount,
+        bool androidRuntimeCrash)
+    {
+        string crashLine = androidRuntimeCrash
+            ? "AndroidRuntime FATAL EXCEPTION Process: com.woong.monitorstack"
+            : "fake crash buffer without product crash";
+
+        return $$"""
+@echo off
+setlocal EnableDelayedExpansion
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  exit /b 0
+)
+echo %* | findstr /C:"echo Woong pid:" >nul
+if not errorlevel 1 (
+  if not exist "{{processMetadataCount}}" >"{{processMetadataCount}}" echo 0
+  set /p count=<"{{processMetadataCount}}"
+  if "!count!"=="0" (
+    >"{{processMetadataCount}}" echo 1
+    echo Woong pid:
+    echo 111
+    echo Chrome pid:
+    echo Matching processes:
+    echo u0_a1 111 1 com.woong.monitorstack
+    exit /b 0
+  )
+  if "!count!"=="1" (
+    >"{{processMetadataCount}}" echo 2
+    echo Woong pid:
+    echo 111
+    echo Chrome pid:
+    echo 222
+    echo Matching processes:
+    echo u0_a1 111 1 com.woong.monitorstack
+    echo u0_a2 222 1 com.android.chrome
+    exit /b 0
+  )
+  echo Woong pid:
+  echo 333
+  echo Chrome pid:
+  echo Matching processes:
+  echo u0_a1 333 1 com.woong.monitorstack
+  exit /b 0
+)
+if "%1"=="shell" (
+  echo     topResumedActivity=ActivityRecord{fake u0 com.woong.monitorstack/.MainActivity t2}
+  echo   mCurrentFocus=Window{fake u0 com.woong.monitorstack/com.woong.monitorstack.MainActivity}
+  exit /b 0
+)
+if "%1"=="logcat" (
+  echo {{crashLine}}
+  exit /b 0
+)
+if "%1"=="pull" (
+  echo pull should not run after process-death classification 1>&2
+  exit /b 44
 )
 exit /b 0
 """;
@@ -714,7 +1223,11 @@ if "%3"=="shell" (
   exit /b 0
 )
 if "%3"=="pull" (
-  echo fake artifact>"%5"
+  if "%~nx4"=="room-assertions.json" (
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%5"
+  ) else (
+    echo fake artifact>"%5"
+  )
   exit /b 0
 )
 if "%3"=="logcat" (

@@ -6,37 +6,35 @@ public sealed class AndroidWireframeLayoutTests
     public void AndroidDashboardLayout_UsesWireframeCardAndNavigationStructure()
     {
         string repoRoot = FindRepositoryRoot();
-        string dashboard = ReadAndroidLayout(repoRoot, "activity_dashboard.xml");
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
 
         Assert.Contains("androidx.core.widget.NestedScrollView", dashboard);
         Assert.Contains("com.google.android.material.card.MaterialCardView", dashboard);
+        Assert.Contains("@+id/dashboardScrollRoot", dashboard);
         Assert.Contains("@+id/statusChipRow", dashboard);
         Assert.Contains("@+id/currentFocusCard", dashboard);
         Assert.Contains("@+id/summaryCardsGrid", dashboard);
         Assert.Contains("@+id/periodFilterRow", dashboard);
         Assert.Contains("@+id/hourlyFocusChartCard", dashboard);
         Assert.Contains("@+id/topAppsCard", dashboard);
+        Assert.Contains("@+id/topAppsRecyclerView", dashboard);
         Assert.Contains("@+id/recentSessionsCard", dashboard);
-        Assert.Contains("@+id/bottomNavigationRow", dashboard);
-        Assert.Contains("@+id/navDashboardText", dashboard);
-        Assert.Contains("@+id/navSessionsText", dashboard);
-        Assert.Contains("@+id/navReportText", dashboard);
-        Assert.Contains("@+id/navSettingsText", dashboard);
+        Assert.Contains("@+id/recentSessionsRecyclerView", dashboard);
     }
 
     [Fact]
     public void AndroidSettingsLayout_UsesScrollableGroupedSettingsCards()
     {
         string repoRoot = FindRepositoryRoot();
-        string settings = ReadAndroidLayout(repoRoot, "activity_settings.xml");
+        string settings = ReadAndroidLayout(repoRoot, "fragment_settings.xml");
 
         Assert.Contains("androidx.core.widget.NestedScrollView", settings);
         Assert.Contains("com.google.android.material.card.MaterialCardView", settings);
         Assert.Contains("@+id/permissionsSettingsCard", settings);
+        Assert.Contains("@+id/collectionSettingsCard", settings);
         Assert.Contains("@+id/syncSettingsCard", settings);
-        Assert.Contains("@+id/privacySettingsCard", settings);
         Assert.Contains("@+id/locationSettingsCard", settings);
-        Assert.Contains("@+id/storageSettingsCard", settings);
+        Assert.Contains("@+id/privacyStorageSettingsCard", settings);
         Assert.Contains("@+id/locationContextCheckBox", settings);
         Assert.Contains("@+id/preciseLatitudeLongitudeCheckBox", settings);
         Assert.Contains("@+id/requestLocationPermissionButton", settings);
@@ -109,13 +107,14 @@ public sealed class AndroidWireframeLayoutTests
     public void AndroidSessionsAndDailySummaryLayouts_UseProductCardScreens()
     {
         string repoRoot = FindRepositoryRoot();
-        string sessions = ReadAndroidLayout(repoRoot, "activity_sessions.xml");
+        string sessions = ReadAndroidLayout(repoRoot, "fragment_sessions.xml");
         string dailySummary = ReadAndroidLayout(repoRoot, "activity_daily_summary.xml");
 
         Assert.Contains("androidx.core.widget.NestedScrollView", sessions);
         Assert.Contains("com.google.android.material.card.MaterialCardView", sessions);
         Assert.Contains("@+id/sessionsFilterRow", sessions);
         Assert.Contains("@+id/sessionsListCard", sessions);
+        Assert.Contains("@+id/sessionsRecyclerView", sessions);
         Assert.Contains("androidx.core.widget.NestedScrollView", dailySummary);
         Assert.Contains("com.google.android.material.card.MaterialCardView", dailySummary);
         Assert.Contains("@+id/dailySummaryMetricGrid", dailySummary);
@@ -161,9 +160,7 @@ public sealed class AndroidWireframeLayoutTests
         string repoRoot = FindRepositoryRoot();
         string[] layouts =
         [
-            "activity_dashboard.xml",
-            "activity_sessions.xml",
-            "activity_settings.xml",
+            "activity_main.xml",
             "activity_daily_summary.xml"
         ];
 
@@ -178,15 +175,15 @@ public sealed class AndroidWireframeLayoutTests
     public void AndroidSummaryMetricCards_UseMaterialCardContainers()
     {
         string repoRoot = FindRepositoryRoot();
-        string dashboard = ReadAndroidLayout(repoRoot, "activity_dashboard.xml");
+        string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
         string dailySummary = ReadAndroidLayout(repoRoot, "activity_daily_summary.xml");
 
         string[] dashboardCards =
         [
-            "totalActiveCard",
+            "activeFocusCard",
             "screenOnCard",
-            "idleCard",
-            "webFocusCard"
+            "idleGapCard",
+            "syncedCard"
         ];
 
         foreach (string card in dashboardCards)
@@ -227,6 +224,26 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("@+id/navSessions", menu);
         Assert.Contains("@+id/navReport", menu);
         Assert.Contains("@+id/navSettings", menu);
+    }
+
+    [Fact]
+    public void AndroidObsoleteLegacyActivityLayouts_AreRemovedAfterFragmentShellMigration()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layoutRoot = Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout");
+        string[] obsoleteLayouts =
+        [
+            "activity_dashboard.xml",
+            "activity_sessions.xml",
+            "activity_settings.xml"
+        ];
+
+        foreach (string layout in obsoleteLayouts)
+        {
+            Assert.False(
+                File.Exists(Path.Combine(layoutRoot, layout)),
+                $"Legacy compatibility Activity must host canonical Fragment content instead of keeping stale {layout}.");
+        }
     }
 
     [Fact]

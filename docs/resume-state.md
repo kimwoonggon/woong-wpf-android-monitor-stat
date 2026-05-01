@@ -2,6 +2,59 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Multi-Agent Android/Server Integration Slice
+
+- Coordinated parallel subagent work while keeping the main thread as the
+  integration queue.
+- Android legacy `DashboardActivity`, `SessionsActivity`, and `SettingsActivity`
+  now host the canonical fragment shell instead of stale standalone layouts.
+  The obsolete `activity_dashboard.xml`, `activity_sessions.xml`, and
+  `activity_settings.xml` files were removed.
+- Android Dashboard, App Detail, Report, and Settings first-viewport density
+  were tightened against the supplied Android UI flow reference with focused
+  RED/GREEN layout tests.
+- Android app-switch QA now rejects false PASS evidence when Room assertions
+  fail, classifies process-death/emulator-stability cases, and retries blank
+  Woong-owned screenshots without capturing Chrome screens, Chrome UI trees,
+  page contents, typed text, or browser URLs.
+- Latest Android UI snapshot evidence:
+  `artifacts/android-ui-snapshots/20260502-073133/` and `latest/`; all seven
+  canonical Figma screenshots are `PASS`.
+- Latest Android app-switch QA evidence:
+  `artifacts/android-app-switch-qa/20260502-073336/` and `latest/`; `report.md`
+  and `room-assertions.json` are `PASS` with Chrome UsageStats rows and pending
+  outbox rows.
+- Added server CI workflow contract and local validator for the ASP.NET Core
+  server.
+- Added server raw-event retention hardening: retention service, configurable
+  maintenance path, option-gated background service, production/development
+  config defaults, and structured retention logging. The hosted retention
+  service is not registered in the `Testing` WebApplicationFactory host.
+- Added `docs/android-server-sync-hardening-plan.md` to document remaining
+  Android production sync work: device registration, auth/token hardening,
+  endpoint validation, retry/backoff, TLS/config expectations, and idempotency.
+
+Verified:
+
+- `android\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -ChromeForegroundSeconds 3` passed.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 530 passed, 6 skipped.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+
+## 2026-05-02 Android Checklist Reconciliation
+
+- Reconciled stale Android checklist items against later recorded evidence in
+  this file, `total_todolist.md`, and `docs/android-figma-7-screen-acceptance.md`.
+- Closed stale unchecked TODOs for App Detail/Report Room-backed charts,
+  Dashboard/Sessions/Report Room-backed period filters, UsageStats anchored
+  lookback, Settings sync wiring, app-switch QA PASS, and all seven canonical
+  screenshot evidence.
+- Left real server auth/device registration, real signing secrets/Play Store
+  publishing, optional connected/emulator workflow, legacy Activity
+  coexistence, app-switch diagnostic hardening, Dashboard dense chart labels,
+  and final visual parity comparison open.
+
 ## 2026-05-02 Android Settings Sync Config Slice
 
 - Added privacy-safe Settings sync configuration behavior: server base URL and
@@ -4003,6 +4056,9 @@ Verified:
   Screen On and Web Focus summary cards, top apps surface, and bottom nav labels.
 - Updated `activity_dashboard.xml` so the planned dashboard surface exists as
   XML/ViewBinding IDs while preserving the existing Room-backed dashboard IDs.
+- Superseded on 2026-05-02: `activity_dashboard.xml`,
+  `activity_sessions.xml`, and `activity_settings.xml` were removed after the
+  retained compatibility Activities began hosting canonical Fragment content.
 - Added missing string resources and lightweight built-in icon drawables for the
   summary labels and bottom navigation. No Compose migration or new telemetry
   scope was added.
