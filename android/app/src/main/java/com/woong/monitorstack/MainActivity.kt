@@ -141,7 +141,9 @@ class MainActivity : AppCompatActivity() {
         showScreen(SplashFragment())
         binding.mainFragmentContainer.postDelayed(
             {
-                showDashboardOrPermissionOnboarding()
+                if (!isFinishing && !isDestroyed && !supportFragmentManager.isDestroyed) {
+                    showDashboardOrPermissionOnboarding()
+                }
             },
             splashDelayMillis
         )

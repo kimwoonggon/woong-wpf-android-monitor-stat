@@ -2308,3 +2308,16 @@ milestones below are finished.
 - [x] Capture emulator evidence at `artifacts/android-manual-run/woong-monitor-current-focus-fixed-dashboard.png`.
 - [x] Validation passed: Android Gradle `testDebugUnitTest assembleDebug`, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Updated current-focus validation script passed on `emulator-5554`, writing artifacts to `artifacts/android-usage-current-focus/20260502-012243/`.
+
+## 2026-05-02 Android Figma 7-Screen Acceptance Evidence
+
+- [x] Reopened `android_check_todo.md` with the full Android Figma parity backlog covering Splash, Permission, Dashboard, Sessions, App Detail, Report, Settings, legacy Activity cleanup, Chrome/app-switch QA, and emulator evidence.
+- [x] Added `docs/android-figma-7-screen-acceptance.md` mapping all seven Figma screens to XML layout, runtime surface, behavior gate, and canonical screenshot artifact.
+- [x] Added RED/GREEN architecture coverage requiring canonical screenshot files `figma-01-splash.png` through `figma-07-settings.png`.
+- [x] Stabilized `SnapshotCaptureTest` with deterministic MainActivity Usage Access gates and Splash routing waits before shell tab/filter captures.
+- [x] Added RED/GREEN MainActivity regression coverage for delayed Splash routing after Activity destruction.
+- [x] Added RED/GREEN snapshot-script coverage and implementation that clears external browser/system dialog interference before instrumentation capture.
+- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-040753/`.
+- [ ] Next Android TODO: add per-screen PASS/FAIL/WARN rows to Android UI snapshot `report.md`.
+- [ ] Next Android TODO: compare the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and close the largest remaining visual parity gaps.
+- [ ] Next Android TODO: implement Chrome/app-switch QA script that verifies UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.

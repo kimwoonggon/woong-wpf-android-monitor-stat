@@ -1,6 +1,39 @@
 ﻿# Resume State
 
-Updated: 2026-04-30
+Updated: 2026-05-02
+
+## 2026-05-02 Android 7-Screen Acceptance Evidence Slice
+
+- Reopened the Android Figma parity backlog in `android_check_todo.md` and
+  added `docs/android-figma-7-screen-acceptance.md` as the concrete screen map
+  for Splash, Permission, Dashboard, Sessions, App Detail, Report, and Settings.
+- Added architecture coverage requiring the Android screenshot script and
+  `SnapshotCaptureTest` to include `figma-01-splash.png` through
+  `figma-07-settings.png`.
+- Added deterministic MainActivity test gates in `SnapshotCaptureTest` so
+  Usage Access, collection scheduling, and Splash delay are controlled while
+  capturing canonical shell screens.
+- Fixed `MainActivity` delayed Splash routing so it does not commit fragments
+  after the Activity/FragmentManager is destroyed; added Robolectric regression
+  coverage for destroying the Activity before delayed route execution.
+- Fixed local screenshot automation pollution from external browser/system
+  dialogs by force-stopping known Chrome packages and broadcasting
+  `CLOSE_SYSTEM_DIALOGS` before instrumentation captures.
+- Latest clean emulator evidence:
+  `artifacts/android-ui-snapshots/20260502-040753/` and
+  `artifacts/android-ui-snapshots/latest/`.
+
+Verified:
+
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript_CapturesCanonicalFigmaSevenScreenSet|AndroidFigmaAcceptanceInventory" -maxcpucount:1 -v minimal` passed.
+- `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "AndroidUiSnapshotScript_ClearsExternalSystemDialogsBeforeCapture|AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens|AndroidUiSnapshotScript_DeviceSerialPinsInstallInstrumentationAndPullCommands" -maxcpucount:1 -v minimal` passed.
+- `android\gradlew.bat testDebugUnitTest --tests com.woong.monitorstack.MainActivityTest.launcherSplashDelayedRouteDoesNotRunAfterActivityDestroy --no-daemon --stacktrace` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554` passed and produced the latest clean screenshot set.
+- `android\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 501 tests with 6 PostgreSQL/Testcontainers tests skipped.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- `powershell -ExecutionPolicy Bypass -File scripts\test-coverage.ps1` passed; latest report shows 88.1% line coverage and 70.2% branch coverage.
+
 ## 2026-04-30 Android Emulator Completion Baseline
 
 - Reclassified physical Android device resource measurement as optional future hardening because a real Android device is not available in this workspace.

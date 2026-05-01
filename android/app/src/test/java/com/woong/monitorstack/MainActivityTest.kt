@@ -88,6 +88,26 @@ class MainActivityTest {
     }
 
     @Test
+    fun launcherSplashDelayedRouteDoesNotRunAfterActivityDestroy() {
+        MainActivity.splashDelayMillis = 500L
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val activity = controller.get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            SplashFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+
+        controller.destroy()
+        shadowOf(Looper.getMainLooper()).idleFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+
+        assertTrue(activity.isDestroyed)
+    }
+
+    @Test
     fun launcherShowsMainShellWithoutRedirectingToAnotherActivity() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)

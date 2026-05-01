@@ -83,6 +83,68 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotScript_CapturesCanonicalFigmaSevenScreenSet()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+        string captureTestPath = Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "androidTest",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "snapshots",
+            "SnapshotCaptureTest.kt");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        Assert.True(File.Exists(captureTestPath), "Android screenshot capture instrumentation must exist.");
+        string script = File.ReadAllText(scriptPath);
+        string captureTest = File.ReadAllText(captureTestPath);
+
+        string[] canonicalFigmaScreens =
+        [
+            "figma-01-splash.png",
+            "figma-02-permission.png",
+            "figma-03-dashboard.png",
+            "figma-04-sessions.png",
+            "figma-05-app-detail.png",
+            "figma-06-report.png",
+            "figma-07-settings.png"
+        ];
+
+        foreach (string screen in canonicalFigmaScreens)
+        {
+            Assert.Contains(screen, script);
+            Assert.Contains(screen, captureTest);
+        }
+
+        Assert.Contains("Figma 7-screen parity", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("captureCanonicalFigmaScreens", captureTest, StringComparison.Ordinal);
+        Assert.Contains("MainActivity.usageAccessGateFactory", captureTest, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AndroidUiSnapshotScript_ClearsExternalSystemDialogsBeforeCapture()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("Clear-AndroidSnapshotInterference", script, StringComparison.Ordinal);
+        Assert.Contains("am", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("force-stop", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("com.android.chrome", script, StringComparison.Ordinal);
+        Assert.Contains("CLOSE_SYSTEM_DIALOGS", script, StringComparison.Ordinal);
+        Assert.Contains("before launching screenshot instrumentation", script, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void AndroidSnapshotCapture_UsesNestedScrollViewDescendantCoordinates()
     {
         string repoRoot = FindRepositoryRoot();
@@ -284,6 +346,8 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/12-main-shell-report.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/13-permission-onboarding.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/14-app-detail.png", commands);
+            Assert.Contains("shell am force-stop com.android.chrome", commands);
+            Assert.Contains("shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
         }

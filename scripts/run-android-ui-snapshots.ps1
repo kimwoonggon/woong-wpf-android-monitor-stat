@@ -28,6 +28,13 @@ New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
 $expectedScreens = @("dashboard", "settings", "sessions", "daily summary")
 $featureScreens = @(
+    "Figma 7-screen parity: Splash",
+    "Figma 7-screen parity: Permission",
+    "Figma 7-screen parity: Dashboard",
+    "Figma 7-screen parity: Sessions",
+    "Figma 7-screen parity: App Detail",
+    "Figma 7-screen parity: Report",
+    "Figma 7-screen parity: Settings",
     "main shell",
     "main shell sessions",
     "dashboard overview",
@@ -55,6 +62,41 @@ $blockedReason = ""
 $screenshots = @()
 $notes = New-Object System.Collections.Generic.List[string]
 $screenTargets = @(
+    [ordered]@{
+        Name = "Figma Splash"
+        FileName = "figma-01-splash.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma Permission"
+        FileName = "figma-02-permission.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma Dashboard"
+        FileName = "figma-03-dashboard.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma Sessions"
+        FileName = "figma-04-sessions.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma App Detail"
+        FileName = "figma-05-app-detail.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma Report"
+        FileName = "figma-06-report.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "Figma Settings"
+        FileName = "figma-07-settings.png"
+        Capture = "SnapshotCaptureTest"
+    },
     [ordered]@{
         Name = "dashboard"
         FileName = "dashboard.png"
@@ -181,6 +223,55 @@ function Invoke-AdbChecked {
     }
 }
 
+function Invoke-AdbBestEffort {
+    param(
+        [string[]]$Arguments,
+        [string]$Description
+    )
+
+    $effectiveArguments = @()
+    if (-not [string]::IsNullOrWhiteSpace($DeviceSerial)) {
+        $effectiveArguments += "-s"
+        $effectiveArguments += $DeviceSerial
+    }
+    $effectiveArguments += $Arguments
+
+    try {
+        & $AdbPath @effectiveArguments | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $notes.Add("Warning: $Description returned adb exit code $LASTEXITCODE; continuing.")
+        }
+    }
+    catch {
+        $notes.Add("Warning: $Description failed: $($_.Exception.Message); continuing.")
+    }
+}
+
+function Clear-AndroidSnapshotInterference {
+    $notes.Add("Clearing external Android system dialogs before launching screenshot instrumentation.")
+
+    $externalBrowserPackages = @(
+        "com.android.chrome",
+        "com.google.android.apps.chrome",
+        "com.chrome.beta",
+        "com.chrome.dev"
+    )
+
+    foreach ($packageName in $externalBrowserPackages) {
+        Invoke-AdbBestEffort `
+            -Arguments @("shell", "am", "force-stop", $packageName) `
+            -Description "Force-stop external browser package $packageName"
+    }
+
+    Invoke-AdbBestEffort `
+        -Arguments @("shell", "am", "broadcast", "-a", "android.intent.action.CLOSE_SYSTEM_DIALOGS") `
+        -Description "Broadcast CLOSE_SYSTEM_DIALOGS before Android UI snapshots"
+
+    Invoke-AdbBestEffort `
+        -Arguments @("shell", "input", "keyevent", "4") `
+        -Description "Dismiss any remaining system dialog with BACK before Android UI snapshots"
+}
+
 function Write-AndroidSnapshotArtifacts {
     param(
         [string]$Status,
@@ -268,6 +359,7 @@ function Write-AndroidSnapshotArtifacts {
         "# Android UI Visual Review Prompt",
         "",
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
+        "Start with the canonical Figma 7-screen parity captures: figma-01-splash.png through figma-07-settings.png.",
         "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Main shell screenshots include Dashboard, Sessions, Report, and Settings tab states.",
         "Screenshots 16 and 17 show selected-period states after changing Dashboard to 1h and Sessions to 6h.",
@@ -347,8 +439,10 @@ try {
     $seedTestClass = "com.woong.monitorstack.snapshots.SnapshotSeedTest"
     $captureTestClass = "com.woong.monitorstack.snapshots.SnapshotCaptureTest"
     $testRunner = "com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner"
+    Clear-AndroidSnapshotInterference
     $notes.Add("Seeding deterministic sample sessions and location context with $seedTestClass.")
     Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $seedTestClass, $testRunner) -Description "Seed Android snapshot sample data"
+    Clear-AndroidSnapshotInterference
     $notes.Add("Capturing screenshots through instrumentation with $captureTestClass so non-exported activities stay private.")
     Invoke-AdbChecked -Arguments @("shell", "am", "instrument", "-w", "-e", "class", $captureTestClass, $testRunner) -Description "Capture Android snapshot screens"
 

@@ -1,6 +1,6 @@
 # Android Check TODO
 
-Updated: 2026-04-30
+Updated: 2026-05-02
 
 This checklist is the Android feature verification map for Woong Monitor Stack.
 The Android app measures metadata only: which apps were foreground for how long,
@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260501-203803/
+artifacts/android-ui-snapshots/20260502-040753/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -80,19 +80,41 @@ Product boundary reminder:
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
 
+### 2026-05-02 Android 7-Screen Acceptance Evidence Slice
+
+- [x] Added `docs/android-figma-7-screen-acceptance.md` mapping Splash,
+  Permission, Dashboard, Sessions, App Detail, Report, and Settings to concrete
+  XML layouts, runtime surfaces, behavior gates, and canonical screenshot names.
+- [x] Extended Android screenshot automation with canonical Figma evidence files:
+  `figma-01-splash.png` through `figma-07-settings.png`.
+- [x] Stabilized `SnapshotCaptureTest` so MainActivity shell screenshots use
+  deterministic Usage Access gates and wait for Splash routing before selecting
+  tabs or filters.
+- [x] Fixed MainActivity delayed Splash routing so it does not enqueue a
+  Fragment transaction after the Activity/FragmentManager has been destroyed.
+- [x] Added Android snapshot script cleanup for external browser/system dialog
+  interference before instrumentation captures, including Chrome force-stop and
+  `CLOSE_SYSTEM_DIALOGS`.
+- [x] Latest clean emulator evidence:
+  `artifacts/android-ui-snapshots/20260502-040753/`.
+- [x] Crash buffer was cleared before the latest run and remained empty after
+  the successful screenshot capture.
+- [x] Validated focused architecture/Robolectric tests and the emulator
+  screenshot script on `emulator-5554`.
+
 ### A. Acceptance Inventory And Evidence
 
-- [ ] Create/update an Android 7-screen acceptance inventory that maps every
+- [x] Create/update an Android 7-screen acceptance inventory that maps every
   Figma screen to one concrete layout, Fragment/Activity, ViewModel/repository
   path, test class, and screenshot artifact.
-- [ ] Confirm the seven required user-facing screens are explicitly covered:
+- [x] Confirm the seven required user-facing screens are explicitly covered:
   Splash, Permission, Dashboard, Sessions, App Detail, Report, Settings.
-- [ ] Mark legacy standalone Activity screens as either temporary compatibility
+- [x] Mark legacy standalone Activity screens as either temporary compatibility
   surfaces or cleanup targets.
 - [ ] Add a `report.md` section that states PASS/FAIL/WARN for each screen.
-- [ ] Capture fresh emulator screenshots for all seven screens after each major
+- [x] Capture fresh emulator screenshots for all seven screens after each major
   Android parity slice.
-- [ ] Store the latest full-screen evidence under
+- [x] Store the latest full-screen evidence under
   `artifacts/android-ui-snapshots/latest/`.
 - [ ] Store manual app-switch/performance evidence under
   `artifacts/android-manual-run/latest/` or a dated run folder.

@@ -19,9 +19,11 @@ import com.woong.monitorstack.sessions.AppDetailFragment
 import com.woong.monitorstack.sessions.SessionsActivity
 import com.woong.monitorstack.settings.SettingsActivity
 import com.woong.monitorstack.summary.DailySummaryActivity
+import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
+import com.woong.monitorstack.usage.UsageCollectionScheduleResult
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,17 +41,27 @@ class SnapshotCaptureTest {
         }
         outputDir.mkdirs()
 
+        captureCanonicalFigmaScreens(
+            device = device,
+            outputDir = outputDir
+        )
         captureActivity<DashboardActivity>(
             device = device,
             output = File(outputDir, "dashboard.png")
         )
-        captureActivity<MainActivity>(
+        captureMainActivityWithUsageGate(
             device = device,
-            output = File(outputDir, "09-main-shell.png")
+            output = File(outputDir, "09-main-shell.png"),
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
         )
-        captureActivity<MainActivity>(
+        captureMainActivityWithUsageGate(
             device = device,
-            output = File(outputDir, "13-permission-onboarding.png")
+            output = File(outputDir, "13-permission-onboarding.png"),
+            hasUsageAccess = false,
+            scheduleResult = UsageCollectionScheduleResult.UsageAccessMissing,
+            splashDelayMillis = 0L
         )
         captureMainShellSessions(
             device = device,
@@ -119,6 +131,52 @@ class SnapshotCaptureTest {
         )
     }
 
+    private fun captureCanonicalFigmaScreens(
+        device: UiDevice,
+        outputDir: File
+    ) {
+        captureMainActivityWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-01-splash.png"),
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 10_000L
+        )
+        captureMainActivityWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-02-permission.png"),
+            hasUsageAccess = false,
+            scheduleResult = UsageCollectionScheduleResult.UsageAccessMissing,
+            splashDelayMillis = 0L
+        )
+        captureMainActivityWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-03-dashboard.png"),
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        )
+        captureMainShellTabWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-04-sessions.png"),
+            selectedItemId = R.id.navSessions
+        )
+        captureMainShellAppDetail(
+            device = device,
+            output = File(outputDir, "figma-05-app-detail.png")
+        )
+        captureMainShellTabWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-06-report.png"),
+            selectedItemId = R.id.navReport
+        )
+        captureMainShellTabWithUsageGate(
+            device = device,
+            output = File(outputDir, "figma-07-settings.png"),
+            selectedItemId = R.id.navSettings
+        )
+    }
+
     private inline fun <reified T : Activity> captureActivity(
         device: UiDevice,
         output: File
@@ -127,6 +185,97 @@ class SnapshotCaptureTest {
             waitForScreen(device)
             assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
             assertTrue("Expected screenshot file to exist: $output", output.isFile)
+        }
+    }
+
+    private fun captureMainActivityWithUsageGate(
+        device: UiDevice,
+        output: File,
+        hasUsageAccess: Boolean,
+        scheduleResult: UsageCollectionScheduleResult,
+        splashDelayMillis: Long
+    ) {
+        withMainActivityTestGates(
+            hasUsageAccess = hasUsageAccess,
+            scheduleResult = scheduleResult,
+            splashDelayMillis = splashDelayMillis
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use {
+                waitForScreen(device)
+                captureScreen(device, output)
+            }
+        }
+    }
+
+    private fun captureMainShellTabWithUsageGate(
+        device: UiDevice,
+        output: File,
+        selectedItemId: Int
+    ) {
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, selectedItemId)
+                waitForScreen(device)
+                captureScreen(device, output)
+            }
+        }
+    }
+
+    private fun selectMainShellTab(
+        scenario: ActivityScenario<MainActivity>,
+        selectedItemId: Int
+    ) {
+        scenario.onActivity { activity ->
+            activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            ).selectedItemId = selectedItemId
+            activity.supportFragmentManager.executePendingTransactions()
+        }
+    }
+
+    private fun withMainActivityTestGates(
+        hasUsageAccess: Boolean,
+        scheduleResult: UsageCollectionScheduleResult,
+        splashDelayMillis: Long,
+        block: () -> Unit
+    ) {
+        val originalUsageAccessGateFactory = MainActivity.usageAccessGateFactory
+        val originalUsageCollectionReconcilerFactory = MainActivity.usageCollectionReconcilerFactory
+        val originalUsageImmediateCollectorFactory = MainActivity.usageImmediateCollectorFactory
+        val originalSplashDelayMillis = MainActivity.splashDelayMillis
+
+        MainActivity.usageAccessGateFactory = {
+            object : MainActivity.UsageAccessGate {
+                override fun hasUsageAccess(packageName: String): Boolean = hasUsageAccess
+            }
+        }
+        MainActivity.usageCollectionReconcilerFactory = {
+            object : MainActivity.UsageCollectionReconciler {
+                override fun reconcile(packageName: String): UsageCollectionScheduleResult =
+                    scheduleResult
+            }
+        }
+        MainActivity.usageImmediateCollectorFactory = {
+            object : AndroidRecentUsageCollector {
+                override fun collectRecentUsage(): Int = 0
+            }
+        }
+        MainActivity.splashDelayMillis = splashDelayMillis
+
+        try {
+            block()
+        } finally {
+            MainActivity.usageAccessGateFactory = originalUsageAccessGateFactory
+            MainActivity.usageCollectionReconcilerFactory =
+                originalUsageCollectionReconcilerFactory
+            MainActivity.usageImmediateCollectorFactory =
+                originalUsageImmediateCollectorFactory
+            MainActivity.splashDelayMillis = originalSplashDelayMillis
         }
     }
 
@@ -166,14 +315,17 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                    R.id.bottomNavigation
-                ).selectedItemId = R.id.navSessions
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navSessions)
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -181,13 +333,19 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            waitForScreen(device)
-            scenario.onActivity { activity ->
-                activity.findViewById<View>(R.id.oneHourFilterButton).performClick()
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    activity.findViewById<View>(R.id.oneHourFilterButton).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -195,18 +353,22 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                    R.id.bottomNavigation
-                ).selectedItemId = R.id.navSessions
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navSessions)
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    activity.supportFragmentManager.executePendingTransactions()
+                    activity.findViewById<View>(R.id.sessionsSixHourButton).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            scenario.onActivity { activity ->
-                activity.findViewById<View>(R.id.sessionsSixHourButton).performClick()
-            }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -214,14 +376,17 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                    R.id.bottomNavigation
-                ).selectedItemId = R.id.navSettings
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navSettings)
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -229,14 +394,17 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                    R.id.bottomNavigation
-                ).selectedItemId = R.id.navReport
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navReport)
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -244,22 +412,26 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
-                    R.id.bottomNavigation
-                ).selectedItemId = R.id.navReport
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navReport)
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    val today = LocalDate.now(ZoneId.systemDefault()).toString()
+                    activity.supportFragmentManager.executePendingTransactions()
+                    activity.findViewById<View>(R.id.reportCustomButton).performClick()
+                    activity.findViewById<EditText>(R.id.reportCustomStartDateEditText).setText(today)
+                    activity.findViewById<EditText>(R.id.reportCustomEndDateEditText).setText(today)
+                    activity.findViewById<View>(R.id.reportApplyCustomRangeButton).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            scenario.onActivity { activity ->
-                val today = LocalDate.now(ZoneId.systemDefault()).toString()
-                activity.findViewById<View>(R.id.reportCustomButton).performClick()
-                activity.findViewById<EditText>(R.id.reportCustomStartDateEditText).setText(today)
-                activity.findViewById<EditText>(R.id.reportCustomEndDateEditText).setText(today)
-                activity.findViewById<View>(R.id.reportApplyCustomRangeButton).performClick()
-            }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
@@ -267,21 +439,27 @@ class SnapshotCaptureTest {
         device: UiDevice,
         output: File
     ) {
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            waitForScreen(device)
-            scenario.onActivity { activity ->
-                activity.findViewById<View>(R.id.topAppBar).visibility = View.VISIBLE
-                activity.findViewById<View>(R.id.bottomNavigation).visibility = View.VISIBLE
-                activity.supportFragmentManager
-                    .beginTransaction()
-                    .replace(
-                        R.id.mainFragmentContainer,
-                        AppDetailFragment.newInstance("com.android.chrome")
-                    )
-                    .commitNow()
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    activity.findViewById<View>(R.id.topAppBar).visibility = View.VISIBLE
+                    activity.findViewById<View>(R.id.bottomNavigation).visibility = View.VISIBLE
+                    activity.supportFragmentManager
+                        .beginTransaction()
+                        .replace(
+                            R.id.mainFragmentContainer,
+                            AppDetailFragment.newInstance("com.android.chrome")
+                        )
+                        .commitNow()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
             }
-            waitForScreen(device)
-            captureScreen(device, output)
         }
     }
 
