@@ -2162,7 +2162,7 @@ milestones below are finished.
   - `02-permission-late2.png`
   - `05-dashboard-final.png`
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
-- [ ] Remaining Android UI gap: complete the latest seven-screen visual comparison against the supplied Android UI flow reference and close remaining visual-only gaps, including dense Dashboard chart labels.
+- [x] Remaining Android UI gap resolved: latest seven-screen visual comparison completed and the largest first-viewport gaps, including dense Dashboard chart/card labels, were tightened.
 
 ## 2026-05-01 Android Sessions/App Detail/Report/Settings Parity Slice
 
