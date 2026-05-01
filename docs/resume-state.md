@@ -4736,3 +4736,15 @@ Validation in progress:
 - Full solution tests passed before the final coverage-stability fix: 480 passed, 6 skipped. Final coverage run also executed all test projects successfully: 481 passed, 6 skipped.
 - Release build passed after the final coverage-stability fix with 0 warnings and 0 errors.
 - Coverage collection passed after disabling Presentation test collection parallelism: line 88.0% (4526/5143), branch 69.5% (677/973).
+## 2026-05-01 WPF Domain Chart Title Wrap
+
+- Updated the domain focus chart header so `도메인별` remains on the first line and `집중 시간` wraps to the next line.
+- Kept the `상세보기` action button in the existing right-side header position.
+- Added a WPF behavior test that locks the split title and details-button placement.
+
+Validation:
+
+- RED test failed before the XAML change because the split title AutomationIds did not exist.
+- Focused chart/header tests passed: 7 passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 482 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.

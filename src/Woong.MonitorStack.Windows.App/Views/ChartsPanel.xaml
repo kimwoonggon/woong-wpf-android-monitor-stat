@@ -138,10 +138,16 @@
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center" />
                     </Border>
-                    <TextBlock Grid.Column="1"
-                               Text="도메인별 집중 시간"
-                               Style="{StaticResource SectionTitleTextStyle}"
-                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1"
+                                AutomationProperties.AutomationId="DomainUsageChartTitleBlock"
+                                VerticalAlignment="Center">
+                        <TextBlock AutomationProperties.AutomationId="DomainUsageChartTitleFirstLine"
+                                   Text="도메인별"
+                                   Style="{StaticResource SectionTitleTextStyle}" />
+                        <TextBlock AutomationProperties.AutomationId="DomainUsageChartTitleSecondLine"
+                                   Text="집중 시간"
+                                   Style="{StaticResource SectionTitleTextStyle}" />
+                    </StackPanel>
                     <Button Grid.Column="2"
                             AutomationProperties.AutomationId="DomainChartDetailsButton"
                             AutomationProperties.Name="Show domain focus details"

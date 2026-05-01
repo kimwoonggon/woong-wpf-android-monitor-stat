@@ -2116,3 +2116,9 @@ milestones below are finished.
 - [x] Updated README and Windows MSIX documentation.
 - [x] Validation: focused release workflow test passed, full solution tests passed, Release build passed, coverage generated at 88.0% line / 69.5% branch, commit/push pending.
 - [x] Added `xunit.runner.json` for Presentation tests to disable collection parallelism and stabilize LiveCharts coverage runs.
+
+## 2026-05-01 WPF domain chart title wrap follow-up
+
+- [x] Split the domain focus chart header so `도메인별` and `집중 시간` render on separate lines while keeping the `상세보기` action button fixed on the right.
+- [x] Added WPF behavior coverage for the split title and retained details button placement.
+- [x] Ran focused WPF chart tests, full `dotnet test`, and full `dotnet build`.

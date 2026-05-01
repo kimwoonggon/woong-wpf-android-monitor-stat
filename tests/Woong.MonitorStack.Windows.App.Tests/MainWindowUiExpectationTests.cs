@@ -725,7 +725,8 @@ public sealed class MainWindowUiExpectationTests
 
                 Assert.Contains("시간대별 Active Focus", panelText);
                 Assert.Contains("앱별 집중 시간", panelText);
-                Assert.Contains("도메인별 집중 시간", panelText);
+                Assert.Contains("도메인별", panelText);
+                Assert.Contains("집중 시간", panelText);
                 Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(panel, "AppUsageChart"));
                 Assert.IsType<CartesianChart>(FindByAutomationId<FrameworkElement>(panel, "DomainUsageChart"));
@@ -804,7 +805,8 @@ public sealed class MainWindowUiExpectationTests
 
                 AssertSectionTitleStyle(FindTextBlock(panel, "시간대별 Active Focus"));
                 AssertSectionTitleStyle(FindTextBlock(panel, "앱별 집중 시간"));
-                AssertSectionTitleStyle(FindTextBlock(panel, "도메인별 집중 시간"));
+                AssertSectionTitleStyle(FindByAutomationId<TextBlock>(panel, "DomainUsageChartTitleFirstLine"));
+                AssertSectionTitleStyle(FindByAutomationId<TextBlock>(panel, "DomainUsageChartTitleSecondLine"));
             }
             finally
             {
@@ -1327,7 +1329,8 @@ public sealed class MainWindowUiExpectationTests
                 ChartsPanel chartsPanel = FindByAutomationId<ChartsPanel>(window, "ChartArea");
                 Assert.Contains("시간대별 Active Focus", CollectText(chartsPanel));
                 Assert.Contains("앱별 집중 시간", CollectText(chartsPanel));
-                Assert.Contains("도메인별 집중 시간", CollectText(chartsPanel));
+                Assert.Contains("도메인별", CollectText(chartsPanel));
+                Assert.Contains("집중 시간", CollectText(chartsPanel));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "HourlyActivityChart"));
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "AppUsageChart"));
                 Assert.IsType<CartesianChart>(FindByAutomationId<FrameworkElement>(window, "DomainUsageChart"));
