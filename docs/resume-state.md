@@ -5122,3 +5122,24 @@ Validation completed:
 - Coverage collection passed: line 88.1% (4604/5223), branch 70.2% (713/1015), report at `artifacts/coverage/SummaryGithub.md`.
 - Local MSIX packaging passed with `scripts\package-windows-msix.ps1 -Configuration Release -SkipPublish -CreateTestCertificate`, producing `WoongMonitorStack.Windows.msix`, matching public `.cer`, README, install script, and `Install-WoongMonitorStack.Windows.cmd`.
 - MSIX install script WhatIf passed with the bundled package/certificate pair and LocalMachine TrustedPeople trust target.
+
+## 2026-05-02 Android Current Foreground App Correction And WPF Chart Detail Regression
+
+- Corrected the Android Dashboard Current Focus policy: when Woong Monitor is the foreground app, the Current Focus card now shows `Woong Monitor / com.woong.monitorstack` instead of keeping the previous external app such as Chrome.
+- Added RED/GREEN Robolectric coverage for returning from Chrome to Woong and for Woong being shown ahead of launcher/SystemUI noise.
+- Updated the Android current-focus validation script/docs so the local emulator check expects the actual foreground Woong app, not stale Chrome, and retries screenshots instead of accepting blank evidence.
+- Captured emulator evidence at `artifacts/android-manual-run/woong-monitor-current-focus-fixed-dashboard.png`, showing Current Focus as `Woong Monitor / com.woong.monitorstack`.
+- Fixed the WPF chart details regression where duplicate app/domain labels could render as multiple horizontal bars. Details charts now group duplicate labels case-insensitively and sum durations before rendering.
+
+Validation completed:
+
+- RED Android focused current-focus tests failed with `expected Woong Monitor but was Chrome` before the fix.
+- Focused Android current-focus tests passed after the fix.
+- Android Gradle `testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 498 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Updated current-focus validation script passed on `emulator-5554`, writing artifacts to `artifacts/android-usage-current-focus/20260502-012243/`.
+
+Remaining priorities:
+
+- Continue Android UI parity work for Sessions/Report/Settings and reduce dashboard padding/clipping against the supplied wireframes.

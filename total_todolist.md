@@ -2292,3 +2292,19 @@ milestones below are finished.
 - [x] Coverage refreshed for Windows WebSession/MSIX recovery: line 88.1%, branch 70.2%, report at `artifacts/coverage/SummaryGithub.md`.
 - [x] Local MSIX packaging validation passed with generated test certificate, bundled README/install script, and `Install-WoongMonitorStack.Windows.cmd`.
 - [x] MSIX install script `-WhatIf` validation passed with the same-artifact package/certificate pair and LocalMachine TrustedPeople target.
+
+## 2026-05-02 WPF Chart Detail Single-Bar Regression
+
+- [x] Add RED WPF chart detail coverage proving duplicate app/domain labels render as one horizontal bar with aligned total values.
+- [x] Fix the chart detail mapping/presenter path with the smallest scoped change.
+- [x] Run focused WPF chart detail tests and focused WPF App test build.
+
+## 2026-05-02 Android Current Foreground App Correction
+
+- [x] Add RED Android coverage proving Current Focus shows `Woong Monitor / com.woong.monitorstack` when the Woong app itself is foreground after returning from Chrome.
+- [x] Keep launcher/SystemUI packages as noise while no longer treating Woong Monitor as noise.
+- [x] Supersedes older current-focus TODO wording that kept the latest external app visible after returning to Woong.
+- [x] Update current-focus validation script/docs to expect the actual foreground Woong app and retry blank screenshots.
+- [x] Capture emulator evidence at `artifacts/android-manual-run/woong-monitor-current-focus-fixed-dashboard.png`.
+- [x] Validation passed: Android Gradle `testDebugUnitTest assembleDebug`, full solution `dotnet test`, and full solution `dotnet build`.
+- [x] Updated current-focus validation script passed on `emulator-5554`, writing artifacts to `artifacts/android-usage-current-focus/20260502-012243/`.

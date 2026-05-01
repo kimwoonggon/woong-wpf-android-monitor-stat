@@ -6,6 +6,7 @@ param(
     [string]$PackageName = "com.woong.monitorstack",
     [string]$ChromePackageName = "com.android.chrome",
     [int]$ChromeForegroundSeconds = 3,
+    [int]$AdbCommandTimeoutSeconds = 45,
     [switch]$SkipBuild,
     [switch]$DryRun
 )
@@ -60,12 +61,40 @@ function Invoke-AdbChecked {
         return @()
     }
 
-    $output = & $AdbPath @effectiveArguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Description failed with adb exit code $LASTEXITCODE."
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $AdbPath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.Arguments = ($effectiveArguments | ForEach-Object {
+        if ($_ -match '[\s"]') {
+            '"' + ($_ -replace '"', '\"') + '"'
+        } else {
+            $_
+        }
     }
+    ) -join " "
 
-    return $output
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    try {
+        if (-not $process.WaitForExit($AdbCommandTimeoutSeconds * 1000)) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            throw "$Description timed out after $AdbCommandTimeoutSeconds seconds. adb $($effectiveArguments -join ' ')"
+        }
+
+        $output = @($process.StandardOutput.ReadToEnd() -split "`r?`n" | Where-Object { $_ -ne "" })
+        $errorOutput = @($process.StandardError.ReadToEnd() -split "`r?`n" | Where-Object { $_ -ne "" })
+
+        $exitCode = $process.ExitCode
+        if ($exitCode -ne 0) {
+            throw "$Description failed with adb exit code $exitCode. $($errorOutput -join ' ')"
+        }
+
+        return $output
+    }
+    finally {
+        $process.Dispose()
+    }
 }
 
 function Add-Artifact {
@@ -92,6 +121,87 @@ function Save-TextArtifact {
     $localPath = Join-Path $runRoot $FileName
     $Lines | Set-Content -Path $localPath -Encoding UTF8
     Add-Artifact -Name $Name -FileName $FileName -Path $localPath
+}
+
+function Test-ScreenshotHasVisibleContent {
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        return $false
+    }
+
+    Add-Type -AssemblyName System.Drawing
+    $bitmap = [System.Drawing.Bitmap]::new($Path)
+    try {
+        $sampledNonWhitePixels = 0
+        $startY = [Math]::Min(160, $bitmap.Height - 1)
+        $endY = [Math]::Max($startY, $bitmap.Height - 320)
+        $stepX = [Math]::Max(1, [int]($bitmap.Width / 24))
+        $stepY = [Math]::Max(1, [int](($endY - $startY) / 36))
+
+        for ($y = $startY; $y -lt $endY; $y += $stepY) {
+            for ($x = 0; $x -lt $bitmap.Width; $x += $stepX) {
+                $pixel = $bitmap.GetPixel($x, $y)
+                if ($pixel.R -lt 245 -or $pixel.G -lt 245 -or $pixel.B -lt 245) {
+                    $sampledNonWhitePixels += 1
+                }
+            }
+        }
+
+        return $sampledNonWhitePixels -ge 10
+    }
+    finally {
+        $bitmap.Dispose()
+    }
+}
+
+function Capture-VisibleScreenshot {
+    param(
+        [string]$RemotePath,
+        [string]$LocalPath
+    )
+
+    if ($DryRun) {
+        Invoke-AdbChecked -Arguments @("shell", "screencap", "-p", $RemotePath) -Description "Capture Woong screenshot dry run" | Out-Null
+        Invoke-AdbChecked -Arguments @("pull", $RemotePath, $LocalPath) -Description "Pull Woong screenshot dry run" | Out-Null
+        $notes.Add("DRY RUN screenshot visibility check skipped.")
+        return $true
+    }
+
+    $maxAttempts = 5
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt += 1) {
+        Invoke-AdbChecked -Arguments @("shell", "screencap", "-p", $RemotePath) -Description "Capture Woong screenshot attempt $attempt" | Out-Null
+        Invoke-AdbChecked -Arguments @("pull", $RemotePath, $LocalPath) -Description "Pull Woong screenshot attempt $attempt" | Out-Null
+
+        if (Test-ScreenshotHasVisibleContent -Path $LocalPath) {
+            $notes.Add("Woong screenshot captured visible content on attempt $attempt.")
+            return $true
+        }
+
+        $notes.Add("Woong screenshot attempt $attempt looked blank; retrying after UI settle delay.")
+        Start-Sleep -Seconds 2
+    }
+
+    return $false
+}
+
+function Start-WoongApp {
+    $activity = "$PackageName/.MainActivity"
+    Invoke-AdbChecked -Arguments @(
+        "shell",
+        "sh",
+        "-c",
+        "am start -n $activity >/dev/null 2>&1 &"
+    ) -Description "Launch Woong" | Out-Null
+}
+
+function Start-ChromeAboutBlank {
+    Invoke-AdbChecked -Arguments @(
+        "shell",
+        "sh",
+        "-c",
+        "am start -a android.intent.action.VIEW -d about:blank -p $ChromePackageName >/dev/null 2>&1 &"
+    ) -Description "Launch Chrome about:blank" | Out-Null
 }
 
 function Write-ValidationArtifacts {
@@ -185,10 +295,12 @@ function Write-ValidationArtifacts {
 }
 
 function Get-ForegroundPackage {
-    $windowOutput = Invoke-AdbChecked -Arguments @("shell", "dumpsys", "window") -Description "Read foreground window"
-    $focusLines = @($windowOutput | Where-Object {
-        $_ -match "mCurrentFocus|mFocusedApp|topResumedActivity|mResumedActivity"
-    })
+    $focusLines = @(Invoke-AdbChecked -Arguments @(
+        "shell",
+        "sh",
+        "-c",
+        "dumpsys activity activities 2>/dev/null | grep -E 'mCurrentFocus|mFocusedApp|topResumedActivity|mResumedActivity' || true"
+    ) -Description "Read foreground activity")
     Save-TextArtifact -Name "Foreground window dump" -FileName "foreground-window.txt" -Lines $focusLines
 
     $joined = $focusLines -join "`n"
@@ -260,31 +372,26 @@ try {
         $notes.Add("Install skipped by -SkipBuild; assuming the debug APK is already installed.")
     }
 
-    Invoke-AdbChecked -Arguments @("shell", "appops", "set", $PackageName, "GET_USAGE_STATS", "allow") -Description "Grant Usage Access app-op" | Out-Null
-    $notes.Add("Granted Usage Access app-op to $PackageName when supported by the emulator.")
-
-    Invoke-AdbChecked -Arguments @("shell", "monkey", "-p", $PackageName, "-c", "android.intent.category.LAUNCHER", "1") -Description "Launch Woong" | Out-Null
-    Start-Sleep -Seconds 1
-
     Invoke-AdbChecked -Arguments @(
         "shell",
-        "am",
-        "start",
-        "-a",
-        "android.intent.action.VIEW",
-        "-d",
-        "about:blank",
-        "-p",
-        $ChromePackageName
-    ) -Description "Launch Chrome about:blank" | Out-Null
+        "sh",
+        "-c",
+        "appops set $PackageName GET_USAGE_STATS allow >/dev/null 2>&1 || true"
+    ) -Description "Grant Usage Access app-op" | Out-Null
+    $notes.Add("Granted Usage Access app-op to $PackageName when supported by the emulator.")
+
+    Start-WoongApp
+    Start-Sleep -Seconds 2
+
+    Start-ChromeAboutBlank
     $notes.Add("Launched Chrome with about:blank. No Chrome screenshot is taken.")
 
     if ($ChromeForegroundSeconds -gt 0) {
         Start-Sleep -Seconds $ChromeForegroundSeconds
     }
 
-    Invoke-AdbChecked -Arguments @("shell", "monkey", "-p", $PackageName, "-c", "android.intent.category.LAUNCHER", "1") -Description "Return to Woong" | Out-Null
-    Start-Sleep -Seconds 3
+    Start-WoongApp
+    Start-Sleep -Seconds 5
 
     $foregroundPackage = Get-ForegroundPackage
     $notes.Add("Foreground package before screenshot: $foregroundPackage")
@@ -309,18 +416,20 @@ try {
 
     if (-not $DryRun -and (Test-Path $localUiDump)) {
         $uiText = Get-Content -Raw $localUiDump
-        if ($uiText -match "Chrome" -and $uiText -match [regex]::Escape($ChromePackageName)) {
-            $notes.Add("Woong UI hierarchy includes Chrome and $ChromePackageName.")
+        if ($uiText -match "Woong Monitor" -and $uiText -match [regex]::Escape($PackageName)) {
+            $notes.Add("Woong UI hierarchy shows Woong Monitor and $PackageName as the current foreground app.")
         } else {
             $status = "FAIL"
-            $blockedReason = "Woong UI hierarchy did not include both 'Chrome' and '$ChromePackageName'. Review the screenshot and app logs."
+            $blockedReason = "Woong UI hierarchy did not show Woong Monitor and '$PackageName' as the current foreground app. Review the screenshot and app logs."
         }
     }
 
     if ($status -ne "FAIL") {
         Start-Sleep -Seconds 1
-        Invoke-AdbChecked -Arguments @("shell", "screencap", "-p", $remoteScreenshot) -Description "Capture Woong screenshot" | Out-Null
-        Invoke-AdbChecked -Arguments @("pull", $remoteScreenshot, $localScreenshot) -Description "Pull Woong screenshot" | Out-Null
+        if (-not (Capture-VisibleScreenshot -RemotePath $remoteScreenshot -LocalPath $localScreenshot)) {
+            $status = "FAIL"
+            $blockedReason = "Woong screenshot stayed blank after retries even though foreground package and UI hierarchy were valid."
+        }
     }
 
     if (-not $DryRun) {

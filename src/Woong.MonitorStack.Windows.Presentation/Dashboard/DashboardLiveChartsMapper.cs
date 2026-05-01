@@ -35,15 +35,19 @@ public static class DashboardLiveChartsMapper
     {
         ArgumentNullException.ThrowIfNull(points);
 
-        List<DashboardChartPoint> pointList = points.ToList();
+        List<DashboardChartPoint> pointList = points
+            .Select(point => new DashboardChartPoint(
+                CompactCategoryLabel(point.Label, maxCategoryLabelLength),
+                point.ValueMs))
+            .GroupBy(point => point.Label, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new DashboardChartPoint(group.First().Label, group.Sum(point => point.ValueMs)))
+            .ToList();
         var series = new RowSeries<long>
         {
             Name = seriesName,
             Values = pointList.Select(point => point.ValueMs).ToArray()
         };
-        string[] labels = pointList
-            .Select(point => CompactCategoryLabel(point.Label, maxCategoryLabelLength))
-            .ToArray();
+        string[] labels = pointList.Select(point => point.Label).ToArray();
 
         return new DashboardLiveChartsData(
             [series],

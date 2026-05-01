@@ -112,4 +112,46 @@ public sealed class DashboardLiveChartsMapperTests
         Assert.Equal(["Woong.MonitorStack.Windows.App.exe"], chart.Labels);
         Assert.Equal(["Woong.MonitorStack.Windows.App.exe"], Assert.Single(chart.YAxes).Labels);
     }
+
+    [Fact]
+    public void BuildHorizontalBarChart_ForDetailsGroupsDuplicateAppLabelsIntoOneSummedBar()
+    {
+        var points = new[]
+        {
+            new DashboardChartPoint("Chrome", 600_000),
+            new DashboardChartPoint("Code.exe", 300_000),
+            new DashboardChartPoint("Chrome", 900_000)
+        };
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart(
+            "Apps",
+            points,
+            maxCategoryLabelLength: null);
+
+        Assert.Equal(["Chrome", "Code.exe"], chart.Labels);
+        Assert.Equal(["Chrome", "Code.exe"], Assert.Single(chart.YAxes).Labels);
+        var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(chart.Series));
+        Assert.Equal([1_500_000, 300_000], rowSeries.Values);
+    }
+
+    [Fact]
+    public void BuildHorizontalBarChart_ForDetailsGroupsDuplicateDomainLabelsIntoOneSummedBar()
+    {
+        var points = new[]
+        {
+            new DashboardChartPoint("chatgpt.com", 120_000),
+            new DashboardChartPoint("github.com", 300_000),
+            new DashboardChartPoint("chatgpt.com", 480_000)
+        };
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart(
+            "Domains",
+            points,
+            maxCategoryLabelLength: null);
+
+        Assert.Equal(["chatgpt.com", "github.com"], chart.Labels);
+        Assert.Equal(["chatgpt.com", "github.com"], Assert.Single(chart.YAxes).Labels);
+        var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(chart.Series));
+        Assert.Equal([600_000, 300_000], rowSeries.Values);
+    }
 }

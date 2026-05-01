@@ -1,9 +1,11 @@
 # Android UsageStats Current Focus Validation
 
-Updated: 2026-05-01
+Updated: 2026-05-02
 
-This local emulator check validates that returning from Chrome can refresh the
-Woong Dashboard Current Focus card without capturing Chrome page contents.
+This local emulator check validates that returning from Chrome refreshes the
+Woong Dashboard Current Focus card to the app that is actually foreground:
+Woong Monitor itself. Chrome can still be persisted as prior app-usage history,
+but it must not be shown as the current focus while the Woong app is open.
 
 It is not product telemetry.
 
@@ -15,7 +17,8 @@ The validation script:
 - does not screenshot Chrome or any external app;
 - returns to Woong Monitor Stack before taking any screenshot;
 - captures only Woong UI after confirming Woong is foreground;
-- optionally inspects Woong's own UI hierarchy after returning;
+- optionally inspects Woong's own UI hierarchy after returning, expecting
+  `Woong Monitor / com.woong.monitorstack` as current focus;
 - does not collect typed text, form input, passwords, messages, clipboard data,
   touch coordinates, or external app page contents.
 
@@ -59,8 +62,8 @@ artifacts/android-usage-current-focus/latest/
 ## Limitations
 
 This is a no-wait emulator smoke check. It verifies that launching Chrome and
-returning to Woong can update the Dashboard Current Focus card quickly, while
-capturing only Woong UI.
+returning to Woong can update the Dashboard Current Focus card quickly to the
+actual foreground app, while capturing only Woong UI.
 
 It does not by itself prove the exact resume-before-collection-start boundary,
 because ADB cannot force Android `UsageEvents` timestamps or WorkManager input

@@ -242,7 +242,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun dashboardCurrentFocusShowsLatestTrackedExternalAppAfterReturningFromChrome() {
+    fun dashboardCurrentFocusShowsMonitorAppWhenMonitorIsForegroundAfterReturningFromChrome() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         clearMonitorDatabase(context)
@@ -257,11 +257,11 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals(
-            "Chrome",
+            "Woong Monitor",
             activity.findViewById<TextView>(R.id.currentAppText).text.toString()
         )
         assertEquals(
-            "com.android.chrome",
+            "com.woong.monitorstack",
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
         )
         assertEquals(
@@ -271,7 +271,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun dashboardCurrentFocusIgnoresAospLauncherAndSystemUiNoiseAfterReturningFromChrome() {
+    fun dashboardCurrentFocusShowsMonitorAppAheadOfLauncherAndSystemUiNoise() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         clearMonitorDatabase(context)
@@ -286,15 +286,15 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals(
-            "Chrome",
+            "Woong Monitor",
             activity.findViewById<TextView>(R.id.currentAppText).text.toString()
         )
         assertEquals(
-            "com.android.chrome",
+            "com.woong.monitorstack",
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
         )
         assertEquals(
-            "00:07:00",
+            "00:02:00",
             activity.findViewById<TextView>(R.id.currentSessionDurationText).text.toString()
         )
     }

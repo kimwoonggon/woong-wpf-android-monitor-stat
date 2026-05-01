@@ -197,7 +197,6 @@ class DashboardFragment : Fragment() {
         monitorPackageName: String
     ): DashboardSessionRow? {
         val noisyPackages = setOf(
-            monitorPackageName,
             "com.google.android.apps.nexuslauncher",
             "com.android.launcher",
             "com.android.launcher2",
