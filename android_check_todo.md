@@ -64,6 +64,233 @@ Each checked feature should have:
 - an `after-*.png` image showing the passing state or resulting UI;
 - a note in `report.md` when the feature is not directly visual.
 
+## 2026-05-02 Reopened Android Figma 7-Screen Parity Backlog
+
+This is the active Android backlog for restoring the user-provided Figma/SVG
+intent across all major Android surfaces. The app is not considered Android UI
+complete until this section is checked off with tests, emulator evidence, and
+fresh screenshots.
+
+Product boundary reminder:
+
+- Android measures app-usage metadata through `UsageStatsManager`.
+- Android stores local data in Room only.
+- Sync is opt-in and off by default.
+- Location context is opt-in and permission-gated.
+- Do not collect typed text, passwords, form contents, clipboard contents,
+  browser/page contents, other-app screenshots, or global touch coordinates.
+
+### A. Acceptance Inventory And Evidence
+
+- [ ] Create/update an Android 7-screen acceptance inventory that maps every
+  Figma screen to one concrete layout, Fragment/Activity, ViewModel/repository
+  path, test class, and screenshot artifact.
+- [ ] Confirm the seven required user-facing screens are explicitly covered:
+  Splash, Permission, Dashboard, Sessions, App Detail, Report, Settings.
+- [ ] Mark legacy standalone Activity screens as either temporary compatibility
+  surfaces or cleanup targets.
+- [ ] Add a `report.md` section that states PASS/FAIL/WARN for each screen.
+- [ ] Capture fresh emulator screenshots for all seven screens after each major
+  Android parity slice.
+- [ ] Store the latest full-screen evidence under
+  `artifacts/android-ui-snapshots/latest/`.
+- [ ] Store manual app-switch/performance evidence under
+  `artifacts/android-manual-run/latest/` or a dated run folder.
+- [ ] Add visual review notes comparing the latest screenshots to
+  `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg`.
+
+### B. Splash Screen Parity
+
+- [ ] Add/verify tests that cold start shows Splash before routing.
+- [ ] Match the Figma Splash hierarchy: phone-safe top spacing, Woong logo
+  mark, `Woong Monitor`, `Android Focus Tracker`, loading indicator, loading
+  copy.
+- [ ] Keep shell toolbar and bottom navigation hidden on Splash.
+- [ ] Keep Android 12+ system splash branding consistent with the in-app Splash.
+- [ ] Capture `01-splash-before.png` and `01-splash-after.png`.
+- [ ] Ensure Splash does not delay normal relaunch longer than necessary after
+  process death.
+
+### C. Permission Onboarding Parity
+
+- [ ] Add/verify tests that missing Usage Access routes to Permission, not
+  Dashboard.
+- [ ] Match the Figma Permission screen: back affordance, shield/lock visual,
+  title, explanation, principles card, and primary Settings button.
+- [ ] Explain exactly what is collected: app name, package name, start/end time,
+  duration.
+- [ ] Explain exactly what is not collected: keyboard input, screen contents,
+  passwords, touch coordinates.
+- [ ] Open Android Usage Access settings from the permission button.
+- [ ] Re-check permission after returning from Settings.
+- [ ] Capture permission missing, settings handoff, and post-return screenshots.
+
+### D. Dashboard Parity And Runtime Truth
+
+- [ ] Add/verify tests that Dashboard Current Focus is Room/UsageStats-backed
+  and not fake in production paths.
+- [ ] Current Focus must show the currently foreground or most recent meaningful
+  external app according to the Android UsageStats constraints.
+- [ ] If Woong Monitor itself is foreground immediately after return, Dashboard
+  must make that state explicit and not incorrectly show stale Chrome as if it
+  is still active.
+- [ ] Add a clear copy distinction between `current foreground app`, `latest
+  collected external app`, and `last collection time` if Android cannot provide
+  true live foreground state while Woong is open.
+- [ ] Match Figma status chips: Usage OK, Sync Off, Privacy Safe.
+- [ ] Match Figma Current Focus card: app icon placeholder, app label, package,
+  session duration, last collected time.
+- [ ] Summary cards must show Active Focus, Screen On/Foreground, Idle/Gap, and
+  local sync state.
+- [ ] Period buttons Today/1h/6h/24h/7d must reload Room-backed data and visibly
+  show selected state.
+- [ ] Hourly chart must show meaningful labels and non-broken empty state.
+- [ ] Top apps list must show readable ranked app rows with proportional bars or
+  an equivalent visual cue.
+- [ ] Recent sessions must be visible without bottom navigation clipping.
+- [ ] Optional location card must appear only when enabled or as a clear safe
+  disabled state.
+- [ ] Capture dashboard top, chart, recent sessions, and scrolled states.
+
+### E. Sessions Screen Parity
+
+- [ ] Add/verify tests for Sessions period filters: Today, 1h, 6h, 24h, 7d.
+- [ ] Match Figma Sessions layout: title/subtitle, filter row, total count,
+  scrollable session list, bottom navigation reachable.
+- [ ] Rows must show app label, package, local time range, duration, and
+  active/idle state without clipping.
+- [ ] Tapping a session row must open the selected app detail screen.
+- [ ] Add empty-state copy for no sessions in the selected period.
+- [ ] Capture Sessions default, filtered, empty-state if possible, and row-tap
+  screenshots.
+
+### F. App Detail Screen Parity
+
+- [ ] Add/verify tests that App Detail loads only the selected package from Room.
+- [ ] Match Figma App Detail layout: back button, app icon, app name, package,
+  total usage, session count, hourly chart, session list.
+- [ ] Hourly chart must use real selected-app Room data.
+- [ ] Session list must show selected package only.
+- [ ] Back returns to Sessions without losing selected tab state.
+- [ ] Capture App Detail for a seeded Chrome row and another seeded app row.
+
+### G. Report Screen Parity
+
+- [ ] Add/verify tests for 7d, 30d, 90d, and Custom report ranges.
+- [ ] Match Figma Report layout: title, period filters, date range, total usage,
+  daily average, trend chart, top apps.
+- [ ] Custom range must support valid date input, invalid/reversed error state,
+  and a visible selected state after apply.
+- [ ] Trend chart must use Room-backed aggregate data and readable day labels.
+- [ ] Top apps list must show ranked apps with readable labels/durations.
+- [ ] Capture Report 7d, 30d/90d, Custom valid, and Custom invalid states.
+
+### H. Settings Screen Parity
+
+- [ ] Add/verify tests that Settings shows permissions, collection, sync,
+  privacy, location, and storage sections.
+- [ ] Match Figma Settings card grouping and spacing.
+- [ ] Usage Access permission status must be visible.
+- [ ] Background/periodic collection setting must be visible and explain
+  WorkManager-based collection.
+- [ ] Sync enabled must default off and show local-only status.
+- [ ] Manual sync must skip upload while sync is off and show a clear result.
+- [ ] Privacy defaults must be safe.
+- [ ] Location context must default off, with precise coordinates requiring
+  separate opt-in.
+- [ ] Storage/local data controls must be visible or explicitly disabled with
+  reason.
+- [ ] Capture Settings top, collection/sync, privacy/location, and storage
+  scrolled states.
+
+### I. Legacy Activity Cleanup
+
+- [ ] Inventory legacy `DashboardActivity`, `SessionsActivity`,
+  `DailySummaryActivity`, and `SettingsActivity`.
+- [ ] Decide which legacy Activities remain as deep-link/dev compatibility and
+  which should be removed.
+- [ ] If removed, update AndroidManifest, tests, screenshots, and docs.
+- [ ] If retained, document why they coexist with the MainActivity Fragment
+  shell.
+- [ ] Ensure no duplicate screen path shows stale UI that differs from the
+  Figma shell.
+
+### J. Chrome/App-Switch UsageStats Regression QA
+
+- [ ] Use `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
+  -Restart` for repeatable emulator launch.
+- [ ] Add an app-switch QA script that performs:
+  Woong launch -> Chrome launch -> wait -> Woong return -> collection refresh.
+- [ ] Capture before Chrome, Chrome foreground proof, after return, Dashboard,
+  and Sessions screenshots.
+- [ ] Assert Room `focus_session` includes Chrome after returning.
+- [ ] Assert `sync_outbox` rows are created for collected sessions.
+- [ ] Assert Dashboard summary and Sessions list refresh from Room after return.
+- [ ] Record process ids before/during/after Chrome to detect emulator process
+  death/relaunch.
+- [ ] Capture logcat crash buffer, app logcat, `dumpsys meminfo`, and
+  `dumpsys gfxinfo`.
+- [ ] If emulator low-memory kills the app, classify as emulator stability issue
+  unless `AndroidRuntime` crash evidence exists.
+- [ ] Add retry/timing logic when screenshot capture is blank.
+
+### K. Test Plan To Add Before Implementation
+
+- [ ] `MainActivity_ColdStart_ShowsSplashThenRoutes`
+- [ ] `MainActivity_WhenUsageAccessMissing_ShowsPermissionOnboarding`
+- [ ] `PermissionOnboarding_OpenSettingsButton_UsesUsageAccessIntent`
+- [ ] `Dashboard_CurrentFocus_SeparatesCurrentMonitorFromLatestExternalApp`
+- [ ] `Dashboard_PeriodButtons_ReloadRoomBackedSummary`
+- [ ] `Dashboard_TopApps_ShowRankedRowsWithDurations`
+- [ ] `Sessions_PeriodButtons_FilterRoomRows`
+- [ ] `Sessions_RowClick_OpensAppDetailForSelectedPackage`
+- [ ] `AppDetail_LoadsOnlySelectedPackageSessions`
+- [ ] `Report_PeriodButtons_ReloadRoomBackedRanges`
+- [ ] `Report_CustomRange_ValidatesAndAppliesDateRange`
+- [ ] `Settings_DefaultsArePrivacySafeAndSyncOff`
+- [ ] `Settings_ManualSyncWhenOff_ShowsLocalOnlySkipped`
+- [ ] `AndroidUiSnapshots_CapturesAllSevenFigmaScreens`
+- [ ] `AndroidAppSwitch_ChromeReturn_PersistsRoomSessionAndRefreshesDashboard`
+
+### L. Verification Commands For This Backlog
+
+Run from `android/`:
+
+```powershell
+.\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace
+```
+
+Run from repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart
+powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554
+powershell -ExecutionPolicy Bypass -File scripts\run-android-usage-current-focus-validation.ps1 -DeviceSerial emulator-5554
+powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1
+```
+
+Full repository safety checks:
+
+```powershell
+dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
+dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
+```
+
+### M. Definition Of Done For Android Figma Parity
+
+- [ ] All seven Figma screens have current emulator PNG evidence.
+- [ ] Each screen has at least one behavior test or screenshot automation gate.
+- [ ] Dashboard and Sessions are Room-backed and refresh after collection.
+- [ ] Chrome/app-switch QA proves collected UsageStats sessions persist to Room
+  and update Dashboard/Sessions after returning to Woong.
+- [ ] Report and App Detail charts use real Room-backed data.
+- [ ] Settings exposes safe privacy/sync/location defaults.
+- [ ] Legacy Activity coexistence is resolved or documented.
+- [ ] Android Gradle tests/build pass.
+- [ ] Full solution test/build pass.
+- [ ] Docs and this checklist are updated.
+- [ ] Commit and push are completed.
+
 ## Feature Checklist
 
 | ID | Feature | Primary verification | PNG evidence |
