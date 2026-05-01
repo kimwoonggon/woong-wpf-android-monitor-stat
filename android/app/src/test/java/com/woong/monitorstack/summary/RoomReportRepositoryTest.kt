@@ -97,6 +97,35 @@ class RoomReportRepositoryTest {
         )
     }
 
+    @Test
+    fun loadCustomRangeAggregatesOnlySessionsInsideRequestedDates() {
+        val dao = database.focusSessionDao()
+        dao.insert(session("before-range", "com.android.chrome", "2026-04-10T09:00:00", 60, false))
+        dao.insert(session("inside-youtube", "com.google.android.youtube", "2026-04-20T09:00:00", 40, false))
+        dao.insert(session("inside-chrome", "com.android.chrome", "2026-04-25T09:00:00", 15, false))
+        dao.insert(session("after-range", "com.slack", "2026-04-26T09:00:00", 90, false))
+        val repository = RoomReportRepository(
+            dao = dao,
+            todayProvider = { LocalDate.of(2026, 4, 30) }
+        )
+
+        val snapshot = repository.load(
+            ReportPeriod.Custom(
+                from = LocalDate.of(2026, 4, 15),
+                to = LocalDate.of(2026, 4, 25)
+            )
+        )
+
+        assertEquals(55 * 60_000L, snapshot.totalActiveMs)
+        assertEquals(11, snapshot.dayCount)
+        assertEquals("2026-04-15 - 2026-04-25", snapshot.dateRangeText)
+        assertEquals("YouTube", snapshot.topAppName)
+        assertEquals(
+            listOf("2026-04-20", "2026-04-25"),
+            snapshot.dailyActivity.map { it.localDate }
+        )
+    }
+
     private fun session(
         id: String,
         packageName: String,

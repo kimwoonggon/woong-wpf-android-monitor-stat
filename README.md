@@ -399,8 +399,17 @@ powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -D
 ```
 
 The screenshot script uses instrumentation to seed Room data and capture
-Dashboard, Sessions, App Detail, Report, Settings, and permission screens from
+Dashboard, Sessions, App Detail, Report, Report custom range, Settings, and permission screens from
 inside the app. It does not use blind coordinate taps or screenshot other apps.
+
+Current-focus emulator smoke after opening Chrome and returning to Woong:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-android-usage-current-focus-validation.ps1 -DeviceSerial emulator-5554
+```
+
+That script captures only Woong Monitor UI after confirming Woong is foreground.
+It does not screenshot Chrome or inspect Chrome page contents.
 
 Package-scoped resource measurement:
 
@@ -429,6 +438,7 @@ hardware variability.
 Android artifacts are written under ignored folders:
 
 - `artifacts/android-ui-snapshots/`
+- `artifacts/android-usage-current-focus/`
 - `artifacts/android-resource-measurements/`
 - `artifacts/android-check/`
 

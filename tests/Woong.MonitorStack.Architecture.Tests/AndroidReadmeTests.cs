@@ -25,7 +25,9 @@ public sealed class AndroidReadmeTests
         Assert.Contains("Raw `exec-out screencap -p >", readme, StringComparison.Ordinal);
         Assert.Contains("scripts\\run-android-ui-snapshots.ps1", readme, StringComparison.Ordinal);
         Assert.Contains("scripts\\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554", readme, StringComparison.Ordinal);
-        Assert.Contains("Dashboard, Sessions, App Detail, Report, Settings", readme, StringComparison.Ordinal);
+        Assert.Contains("Dashboard, Sessions, App Detail, Report, Report custom range, Settings", readme, StringComparison.Ordinal);
+        Assert.Contains("scripts\\run-android-usage-current-focus-validation.ps1 -DeviceSerial emulator-5554", readme, StringComparison.Ordinal);
+        Assert.Contains("It does not screenshot Chrome or inspect Chrome page contents.", readme, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

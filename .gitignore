@@ -23,6 +23,7 @@ artifacts/windows-app/
 artifacts/windows-msix/
 artifacts/android-ui-snapshots/
 artifacts/android-resource-measurements/
+artifacts/android-usage-current-focus/
 artifacts/android-check/
 artifacts/chrome-native-acceptance/
 artifacts/external-blockers/

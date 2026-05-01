@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.view.View
+import android.widget.EditText
 import androidx.core.widget.NestedScrollView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -19,6 +20,8 @@ import com.woong.monitorstack.sessions.SessionsActivity
 import com.woong.monitorstack.settings.SettingsActivity
 import com.woong.monitorstack.summary.DailySummaryActivity
 import java.io.File
+import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +58,10 @@ class SnapshotCaptureTest {
         captureMainShellReport(
             device = device,
             output = File(outputDir, "12-main-shell-report.png")
+        )
+        captureMainShellReportCustomRange(
+            device = device,
+            output = File(outputDir, "15-report-custom-range.png")
         )
         captureMainShellSettings(
             device = device,
@@ -186,6 +193,29 @@ class SnapshotCaptureTest {
                 activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                     R.id.bottomNavigation
                 ).selectedItemId = R.id.navReport
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
+    private fun captureMainShellReportCustomRange(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                ).selectedItemId = R.id.navReport
+            }
+            waitForScreen(device)
+            scenario.onActivity { activity ->
+                val today = LocalDate.now(ZoneId.systemDefault()).toString()
+                activity.findViewById<View>(R.id.reportCustomButton).performClick()
+                activity.findViewById<EditText>(R.id.reportCustomStartDateEditText).setText(today)
+                activity.findViewById<EditText>(R.id.reportCustomEndDateEditText).setText(today)
+                activity.findViewById<View>(R.id.reportApplyCustomRangeButton).performClick()
             }
             waitForScreen(device)
             captureScreen(device, output)

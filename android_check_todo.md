@@ -25,7 +25,13 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260501-192752/
+artifacts/android-ui-snapshots/20260501-203803/
+```
+
+Latest Android UsageStats current-focus evidence:
+
+```text
+artifacts/android-usage-current-focus/20260501-205619/
 ```
 
 Latest location opt-in emulator evidence:
@@ -89,6 +95,8 @@ Generated evidence:
 - `artifacts/android-check/latest/report.md`
 - `artifacts/android-check/latest/manifest.json`
 - `artifacts/android-check/latest/visual-review-prompt.md`
+- `artifacts/android-ui-snapshots/latest/15-report-custom-range.png`
+- `artifacts/android-usage-current-focus/latest/report.md`
 - `artifacts/android-resource-measurements/20260430-174552/manifest.json`
 - before/after PNG evidence for A01-A17
 
@@ -135,6 +143,7 @@ Run from repository root with an emulator or device connected:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 powershell -ExecutionPolicy Bypass -File scripts\run-android-resource-measurement.ps1
+powershell -ExecutionPolicy Bypass -File scripts\run-android-usage-current-focus-validation.ps1 -DeviceSerial emulator-5554
 ```
 
 ## Current Acceptance Baseline
@@ -328,6 +337,9 @@ workspace.
 - [x] UsageSessionizer now clamps sessions to `collectionStartUtcMillis`/`collectionEndUtcMillis`.
 - [x] AndroidUsageCollectionRunner now queries an anchored lookback window and persists only the requested clipped interval.
 - [x] This keeps current-focus collection robust when Chrome/another app was already foreground before the normal collection start.
+- [x] Added `scripts/run-android-usage-current-focus-validation.ps1` as a no-wait emulator smoke for Chrome -> Woong Current Focus validation.
+- [x] The validation script launches Chrome `about:blank`, returns to Woong, refuses to screenshot unless Woong is foreground, and captures only Woong UI artifacts.
+- [x] Documented the script and its limitation in `docs/android-usage-current-focus-validation.md`: the exact anchored-boundary proof remains a JVM/test-hook responsibility.
 - [x] Report 7d/30d/90d periods now aggregate from Room through a report-specific repository.
 - [x] Report tab 7d/30d/90d buttons now reload total focus, daily average, date range, trend chart, and top apps.
 - [x] Latest screenshot evidence after installing the new APK: `artifacts/android-ui-snapshots/20260501-201248/`.
@@ -335,6 +347,10 @@ workspace.
 - [x] Android UI snapshot automation passed on `emulator-5554`.
 - [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
-- [ ] Remaining Android gap: Report custom range UI is not implemented yet.
-- [ ] Remaining Android gap: add a no-wait emulator validation hook/script for the anchored UsageStats edge case.
+- [x] Report custom range UI now exposes start/end `yyyy-MM-dd` inputs and applies an inclusive Room-backed date range.
+- [x] Report custom range rejects invalid/reversed dates with a visible error and keeps the current summary.
+- [x] Android UI screenshot automation now captures `15-report-custom-range.png`.
+- [x] Latest custom-range screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/15-report-custom-range.png`.
+- [x] Current-focus emulator validation passed: `artifacts/android-usage-current-focus/20260501-205619/`.
+- [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
 - [ ] Remaining Android visual gap: polish Dashboard and Report chart styling against the supplied reference.

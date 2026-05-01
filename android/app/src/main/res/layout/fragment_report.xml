@@ -74,6 +74,86 @@
             android:textColor="@color/wms_text_secondary"
             android:textSize="13sp" />
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/reportCustomRangePanel"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/report_custom_range_title" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/reportCustomStartDateEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:autofillHints=""
+                        android:background="@drawable/bg_report_date_input"
+                        android:hint="@string/report_custom_start_hint"
+                        android:inputType="date"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:singleLine="true"
+                        android:textColor="@color/wms_text_primary"
+                        android:textColorHint="@color/wms_text_muted"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/reportCustomEndDateEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:autofillHints=""
+                        android:background="@drawable/bg_report_date_input"
+                        android:hint="@string/report_custom_end_hint"
+                        android:inputType="date"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:singleLine="true"
+                        android:textColor="@color/wms_text_primary"
+                        android:textColorHint="@color/wms_text_muted"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/reportCustomRangeErrorText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/report_custom_range_error"
+                    android:textColor="@color/wms_danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/reportApplyCustomRangeButton"
+                    style="@style/WmsPeriodButton.Selected"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/report_apply_custom_range" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <GridLayout
             android:id="@+id/reportMetricGrid"
             android:layout_width="match_parent"

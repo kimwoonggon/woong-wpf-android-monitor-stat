@@ -5,6 +5,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.TextView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
@@ -579,6 +580,140 @@ class MainActivityTest {
         )
         assertTrue(dateRangeText.text.toString().contains(today.minusDays(89).toString()))
         assertEquals(3, trendChart.data.getDataSetByIndex(0).entryCount)
+    }
+
+    @Test
+    fun reportTabCustomRangeReloadsRoomBackedSummary() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        val database = MonitorDatabase.getInstance(context)
+        val timezoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(timezoneId)
+        val customDate = today.minusDays(20)
+        Thread {
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-custom-today-chrome",
+                    packageName = "com.android.chrome",
+                    localDate = today,
+                    durationMs = 10 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-custom-youtube",
+                    packageName = "com.google.android.youtube",
+                    localDate = customDate,
+                    durationMs = 20 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-custom-too-old-slack",
+                    packageName = "com.slack",
+                    localDate = today.minusDays(80),
+                    durationMs = 40 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navReport
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        activity.findViewById<Button>(R.id.reportCustomButton).performClick()
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.reportCustomRangePanel).visibility)
+        activity.findViewById<EditText>(R.id.reportCustomStartDateEditText)
+            .setText(customDate.toString())
+        activity.findViewById<EditText>(R.id.reportCustomEndDateEditText)
+            .setText(customDate.toString())
+        activity.findViewById<Button>(R.id.reportApplyCustomRangeButton).performClick()
+        waitForMainThreadWork()
+
+        val totalCard = activity.findViewById<View>(R.id.reportTotalFocusCard)
+        val averageCard = activity.findViewById<View>(R.id.reportAverageCard)
+        val topAppCard = activity.findViewById<View>(R.id.reportTopAppCard)
+        val trendChart = activity.findViewById<LineChart>(R.id.sevenDayTrendChart)
+        val dateRangeText = activity.findViewById<TextView>(R.id.reportDateRangeText)
+
+        assertEquals(
+            "20m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals(
+            "20m",
+            averageCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals(
+            "YouTube",
+            topAppCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals("${customDate} - ${customDate}", dateRangeText.text.toString())
+        assertEquals(1, trendChart.data.getDataSetByIndex(0).entryCount)
+    }
+
+    @Test
+    fun reportTabCustomRangeRejectsEndBeforeStartAndKeepsCurrentSummary() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        val database = MonitorDatabase.getInstance(context)
+        val timezoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(timezoneId)
+        Thread {
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-invalid-range-chrome",
+                    packageName = "com.android.chrome",
+                    localDate = today,
+                    durationMs = 10 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navReport
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val totalCard = activity.findViewById<View>(R.id.reportTotalFocusCard)
+        assertEquals(
+            "10m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+
+        activity.findViewById<Button>(R.id.reportCustomButton).performClick()
+        activity.findViewById<EditText>(R.id.reportCustomStartDateEditText)
+            .setText(today.toString())
+        activity.findViewById<EditText>(R.id.reportCustomEndDateEditText)
+            .setText(today.minusDays(1).toString())
+        activity.findViewById<Button>(R.id.reportApplyCustomRangeButton).performClick()
+        waitForMainThreadWork()
+
+        assertEquals(
+            View.VISIBLE,
+            activity.findViewById<View>(R.id.reportCustomRangeErrorText).visibility
+        )
+        assertEquals(
+            "10m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
     }
 
     @Test

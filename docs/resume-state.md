@@ -4956,3 +4956,29 @@ Remaining Android priorities:
 - Report custom date range UI is still not implemented.
 - Add a no-wait emulator validation hook or script for anchored UsageStats collection; current unit tests prove the edge case, while emulator screenshots remain app-UI evidence only.
 - Dashboard/report visual polish remains needed against the supplied Android reference.
+
+## 2026-05-01 Android Report Custom Range And Current-Focus Evidence
+
+- Added inclusive Report custom range support through `ReportPeriod.Custom(from, to)` and `RoomReportRepository`.
+- Added Report tab UI for start/end `yyyy-MM-dd` custom range input and `Apply range`.
+- Invalid/reversed custom dates now show a visible error and keep the current summary.
+- Extended Android UI snapshot automation to capture `15-report-custom-range.png`.
+- Added safe current-focus emulator validation at `scripts/run-android-usage-current-focus-validation.ps1`.
+- The current-focus validation launches Chrome `about:blank`, returns to Woong, confirms Woong is foreground, then captures only Woong UI evidence.
+- Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/`.
+- Latest current-focus evidence: `artifacts/android-usage-current-focus/20260501-205619/`.
+
+Validation completed:
+
+- Focused Report custom range tests passed.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed on `emulator-5554`.
+- Android UsageStats current-focus validation passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973), report at `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Polish Dashboard/Report chart visuals and selected-period states against the supplied reference.
+- Add a future debug hook only if explicit from/to emulator UsageStats validation becomes necessary beyond the current JVM tests and safe emulator smoke evidence.

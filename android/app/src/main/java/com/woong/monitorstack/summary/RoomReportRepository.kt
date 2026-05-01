@@ -11,18 +11,27 @@ class RoomReportRepository(
 ) {
     fun load(period: ReportPeriod): ReportSnapshot {
         val today = todayProvider()
-        val from = today.minusDays((period.dayCount - 1).toLong())
-        val sessions = dao.queryByLocalDateRange(from.toString(), today.toString())
+        val (from, to) = period.dateRange(today)
+        val sessions = dao.queryByLocalDateRange(from.toString(), to.toString())
             .filterNot { it.isIdle }
 
         return ReportSnapshot(
             totalActiveMs = sessions.sumOf { it.durationMs },
             dayCount = period.dayCount,
-            dateRangeText = "${from} - ${today}",
+            dateRangeText = "${from} - ${to}",
             topAppName = sessions.topAppName(),
             dailyActivity = sessions.dailyActivity(),
             topApps = sessions.topApps()
         )
+    }
+
+    private fun ReportPeriod.dateRange(today: LocalDate): Pair<LocalDate, LocalDate> {
+        return when (this) {
+            ReportPeriod.Last7Days -> today.minusDays(6) to today
+            ReportPeriod.Last30Days -> today.minusDays(29) to today
+            ReportPeriod.Last90Days -> today.minusDays(89) to today
+            is ReportPeriod.Custom -> from to to
+        }
     }
 
     private fun List<FocusSessionEntity>.topAppName(): String? {

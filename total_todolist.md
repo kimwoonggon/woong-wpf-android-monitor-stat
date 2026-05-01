@@ -2235,6 +2235,21 @@ milestones below are finished.
 - [x] RED/GREEN tests added for UsageStats clamping, runner anchored lookback, Report 30d/90d aggregation, and Report tab button reloads.
 - [x] Latest Android screenshot evidence: `artifacts/android-ui-snapshots/20260501-201248/`.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
-- [ ] Next Android TODO: implement Report custom date range UI.
-- [ ] Next Android TODO: add no-wait emulator validation for anchored UsageStats current-focus behavior.
+- [x] Next Android TODO: implement Report custom date range UI.
+- [x] Next Android TODO: add no-wait emulator validation for anchored UsageStats current-focus behavior.
 - [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference.
+
+## 2026-05-01 Android Report Custom Range And Current-Focus Evidence
+
+- [x] Added RED/GREEN Room repository coverage for inclusive custom report ranges.
+- [x] Reworked `ReportPeriod` to support `Custom(from, to)` while preserving 7d/30d/90d behavior.
+- [x] Added RED/GREEN MainActivity coverage for Report custom range apply flow.
+- [x] Added invalid custom range coverage: reversed dates show a visible error and preserve the current summary.
+- [x] Added Report custom range UI with start/end `yyyy-MM-dd` inputs and `Apply range`.
+- [x] Extended Android UI screenshot automation with `15-report-custom-range.png`.
+- [x] Added `scripts/run-android-usage-current-focus-validation.ps1` and `docs/android-usage-current-focus-validation.md` for safe Chrome -> Woong UsageStats current-focus emulator evidence.
+- [x] Ignored `artifacts/android-usage-current-focus/` generated outputs.
+- [x] Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/`.
+- [x] Latest Android current-focus evidence: `artifacts/android-usage-current-focus/20260501-205619/`.
+- [x] Validation passed: Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, Android UI snapshots on `emulator-5554`, current-focus validation on `emulator-5554`, full solution `dotnet test`/`dotnet build`, and coverage line 88.0% / branch 69.5%.
+- [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference, especially selected period state and Material styling.

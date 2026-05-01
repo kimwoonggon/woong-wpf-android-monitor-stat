@@ -15,6 +15,8 @@ import com.woong.monitorstack.dashboard.DashboardChartConfigurator
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentReportBinding
 import com.woong.monitorstack.databinding.ItemAppUsageBinding
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 class ReportFragment : Fragment() {
     private lateinit var binding: FragmentReportBinding
@@ -47,8 +49,31 @@ class ReportFragment : Fragment() {
         binding.reportNinetyDayButton.setOnClickListener {
             loadReport(ReportPeriod.Last90Days)
         }
+        binding.reportCustomButton.setOnClickListener {
+            binding.reportCustomRangePanel.visibility = View.VISIBLE
+            binding.reportCustomRangeErrorText.visibility = View.GONE
+        }
+        binding.reportApplyCustomRangeButton.setOnClickListener {
+            applyCustomRange()
+        }
 
         loadReport(ReportPeriod.Last7Days)
+    }
+
+    private fun applyCustomRange() {
+        val startText = binding.reportCustomStartDateEditText.text.toString().trim()
+        val endText = binding.reportCustomEndDateEditText.text.toString().trim()
+
+        try {
+            val from = LocalDate.parse(startText)
+            val to = LocalDate.parse(endText)
+            binding.reportCustomRangeErrorText.visibility = View.GONE
+            loadReport(ReportPeriod.Custom(from = from, to = to))
+        } catch (_: DateTimeParseException) {
+            binding.reportCustomRangeErrorText.visibility = View.VISIBLE
+        } catch (_: IllegalArgumentException) {
+            binding.reportCustomRangeErrorText.visibility = View.VISIBLE
+        }
     }
 
     private fun loadReport(period: ReportPeriod) {
