@@ -490,6 +490,98 @@ class MainActivityTest {
     }
 
     @Test
+    fun reportTabThirtyAndNinetyDayButtonsReloadRoomBackedSummary() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        val database = MonitorDatabase.getInstance(context)
+        val timezoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(timezoneId)
+        Thread {
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-today-chrome",
+                    packageName = "com.android.chrome",
+                    localDate = today,
+                    durationMs = 10 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-day-20-youtube",
+                    packageName = "com.google.android.youtube",
+                    localDate = today.minusDays(20),
+                    durationMs = 20 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                reportSession(
+                    clientSessionId = "report-day-80-slack",
+                    packageName = "com.slack",
+                    localDate = today.minusDays(80),
+                    durationMs = 40 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navReport
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val totalCard = activity.findViewById<View>(R.id.reportTotalFocusCard)
+        val averageCard = activity.findViewById<View>(R.id.reportAverageCard)
+        val topAppCard = activity.findViewById<View>(R.id.reportTopAppCard)
+        val trendChart = activity.findViewById<LineChart>(R.id.sevenDayTrendChart)
+        val dateRangeText = activity.findViewById<TextView>(R.id.reportDateRangeText)
+
+        assertEquals(
+            "10m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+
+        activity.findViewById<Button>(R.id.reportThirtyDayButton).performClick()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "30m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals(
+            "1m",
+            averageCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals(
+            "YouTube",
+            topAppCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertTrue(dateRangeText.text.toString().contains(today.minusDays(29).toString()))
+        assertEquals(2, trendChart.data.getDataSetByIndex(0).entryCount)
+
+        activity.findViewById<Button>(R.id.reportNinetyDayButton).performClick()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "1h 10m",
+            totalCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertEquals(
+            "Slack",
+            topAppCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
+        )
+        assertTrue(dateRangeText.text.toString().contains(today.minusDays(89).toString()))
+        assertEquals(3, trendChart.data.getDataSetByIndex(0).entryCount)
+    }
+
+    @Test
     fun appDetailLoadsRoomBackedHourlyChartForSelectedApp() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -686,5 +778,30 @@ class MainActivityTest {
                 source = "fake_immediate_usage"
             )
         }
+    }
+
+    private fun reportSession(
+        clientSessionId: String,
+        packageName: String,
+        localDate: LocalDate,
+        durationMs: Long,
+        timezoneId: ZoneId
+    ): FocusSessionEntity {
+        val startedAtUtcMillis = localDate.atTime(9, 0)
+            .atZone(timezoneId)
+            .toInstant()
+            .toEpochMilli()
+
+        return FocusSessionEntity(
+            clientSessionId = clientSessionId,
+            packageName = packageName,
+            startedAtUtcMillis = startedAtUtcMillis,
+            endedAtUtcMillis = startedAtUtcMillis + durationMs,
+            durationMs = durationMs,
+            localDate = localDate.toString(),
+            timezoneId = timezoneId.id,
+            isIdle = false,
+            source = "report_test"
+        )
     }
 }

@@ -9,6 +9,7 @@ class UsageSessionizer(
 
     fun sessionize(
         events: List<UsageEventSnapshot>,
+        collectionStartUtcMillis: Long? = null,
         collectionEndUtcMillis: Long? = null
     ): List<UsageAppSession> {
         val sessions = mutableListOf<UsageAppSession>()
@@ -25,12 +26,12 @@ class UsageSessionizer(
                         packageName != event.packageName &&
                         startedAtUtcMillis != null
                     ) {
-                        sessions.add(
-                            UsageAppSession(
-                                packageName,
-                                startedAtUtcMillis,
-                                event.occurredAtUtcMillis
-                            )
+                        sessions.addClampedSession(
+                            packageName = packageName,
+                            startedAtUtcMillis = startedAtUtcMillis,
+                            endedAtUtcMillis = event.occurredAtUtcMillis,
+                            collectionStartUtcMillis = collectionStartUtcMillis,
+                            collectionEndUtcMillis = collectionEndUtcMillis
                         )
                     }
                     activePackageName = event.packageName
@@ -41,12 +42,12 @@ class UsageSessionizer(
                     val packageName = activePackageName
                     val startedAtUtcMillis = activeStartedAtUtcMillis
                     if (packageName == event.packageName && startedAtUtcMillis != null) {
-                        sessions.add(
-                            UsageAppSession(
-                                packageName,
-                                startedAtUtcMillis,
-                                event.occurredAtUtcMillis
-                            )
+                        sessions.addClampedSession(
+                            packageName = packageName,
+                            startedAtUtcMillis = startedAtUtcMillis,
+                            endedAtUtcMillis = event.occurredAtUtcMillis,
+                            collectionStartUtcMillis = collectionStartUtcMillis,
+                            collectionEndUtcMillis = collectionEndUtcMillis
                         )
                         activePackageName = null
                         activeStartedAtUtcMillis = null
@@ -60,19 +61,39 @@ class UsageSessionizer(
         if (
             collectionEndUtcMillis != null &&
             packageName != null &&
-            startedAtUtcMillis != null &&
-            collectionEndUtcMillis >= startedAtUtcMillis
+            startedAtUtcMillis != null
         ) {
-            sessions.add(
-                UsageAppSession(
-                    packageName,
-                    startedAtUtcMillis,
-                    collectionEndUtcMillis
-                )
+            sessions.addClampedSession(
+                packageName = packageName,
+                startedAtUtcMillis = startedAtUtcMillis,
+                endedAtUtcMillis = collectionEndUtcMillis,
+                collectionStartUtcMillis = collectionStartUtcMillis,
+                collectionEndUtcMillis = collectionEndUtcMillis
             )
         }
 
         return mergeCloseSameAppSessions(sessions)
+    }
+
+    private fun MutableList<UsageAppSession>.addClampedSession(
+        packageName: String,
+        startedAtUtcMillis: Long,
+        endedAtUtcMillis: Long,
+        collectionStartUtcMillis: Long?,
+        collectionEndUtcMillis: Long?
+    ) {
+        val clampedStart = maxOf(startedAtUtcMillis, collectionStartUtcMillis ?: startedAtUtcMillis)
+        val clampedEnd = minOf(endedAtUtcMillis, collectionEndUtcMillis ?: endedAtUtcMillis)
+
+        if (clampedEnd > clampedStart) {
+            add(
+                UsageAppSession(
+                    packageName,
+                    clampedStart,
+                    clampedEnd
+                )
+            )
+        }
     }
 
     private fun mergeCloseSameAppSessions(sessions: List<UsageAppSession>): List<UsageAppSession> {

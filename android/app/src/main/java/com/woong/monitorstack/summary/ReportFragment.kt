@@ -12,18 +12,13 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardChartConfigurator
-import com.woong.monitorstack.dashboard.DashboardDailyActivityBucket
-import com.woong.monitorstack.dashboard.DashboardPeriod
-import com.woong.monitorstack.dashboard.DashboardUsageSlice
-import com.woong.monitorstack.dashboard.DashboardViewModel
-import com.woong.monitorstack.dashboard.RoomDashboardRepository
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentReportBinding
 import com.woong.monitorstack.databinding.ItemAppUsageBinding
 
 class ReportFragment : Fragment() {
     private lateinit var binding: FragmentReportBinding
-    private lateinit var viewModel: DashboardViewModel
+    private lateinit var repository: RoomReportRepository
     private val chartConfigurator = DashboardChartConfigurator()
     private val topAppsAdapter = TopAppsAdapter()
 
@@ -38,52 +33,58 @@ class ReportFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val database = MonitorDatabase.getInstance(requireContext())
-        viewModel = DashboardViewModel(
-            RoomDashboardRepository(
-                dao = database.focusSessionDao(),
-                locationDao = database.locationContextSnapshotDao()
-            )
-        )
+        repository = RoomReportRepository(database.focusSessionDao())
 
         binding.reportTopAppsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.reportTopAppsRecyclerView.adapter = topAppsAdapter
         chartConfigurator.configureDailyTrendChart(binding.sevenDayTrendChart, emptyList())
-        loadSevenDayReport()
+        binding.reportSevenDayButton.setOnClickListener {
+            loadReport(ReportPeriod.Last7Days)
+        }
+        binding.reportThirtyDayButton.setOnClickListener {
+            loadReport(ReportPeriod.Last30Days)
+        }
+        binding.reportNinetyDayButton.setOnClickListener {
+            loadReport(ReportPeriod.Last90Days)
+        }
+
+        loadReport(ReportPeriod.Last7Days)
     }
 
-    private fun loadSevenDayReport() {
+    private fun loadReport(period: ReportPeriod) {
         Thread {
-            viewModel.selectPeriod(DashboardPeriod.Recent7Days)
+            val snapshot = repository.load(period)
             activity?.runOnUiThread {
                 if (isAdded) {
-                    renderReport()
+                    renderReport(snapshot)
                 }
             }
         }.start()
     }
 
-    private fun renderReport() {
-        val state = viewModel.state
-        val appUsage = state.chartData.appUsage
-        val topApp = state.topAppName ?: "No app"
+    private fun renderReport(snapshot: ReportSnapshot) {
+        val topApp = snapshot.topAppName ?: "No app"
 
         binding.reportTotalFocusCard.summaryTitleText.text = "Active Focus"
-        binding.reportTotalFocusCard.summaryValueText.text = formatDuration(state.totalActiveMs)
-        binding.reportTotalFocusCard.summarySubtitleText.text = "Recent 7 days"
+        binding.reportTotalFocusCard.summaryValueText.text = formatDuration(snapshot.totalActiveMs)
+        binding.reportTotalFocusCard.summarySubtitleText.text = "${snapshot.dayCount} days"
 
         binding.reportAverageCard.summaryTitleText.text = "Daily Avg"
-        binding.reportAverageCard.summaryValueText.text = formatDuration(state.totalActiveMs / 7)
+        binding.reportAverageCard.summaryValueText.text = formatDuration(
+            snapshot.totalActiveMs / snapshot.dayCount
+        )
         binding.reportAverageCard.summarySubtitleText.text = "Average focus time"
 
         binding.reportTopAppCard.summaryTitleText.text = "Top App"
         binding.reportTopAppCard.summaryValueText.text = topApp
         binding.reportTopAppCard.summarySubtitleText.text = "Most used app"
+        binding.reportDateRangeText.text = snapshot.dateRangeText
 
-        topAppsAdapter.submit(appUsage)
-        renderTrendChart(state.chartData.dailyActivity)
+        topAppsAdapter.submit(snapshot.topApps)
+        renderTrendChart(snapshot.dailyActivity)
     }
 
-    private fun renderTrendChart(dailyActivity: List<DashboardDailyActivityBucket>) {
+    private fun renderTrendChart(dailyActivity: List<ReportDailyActivity>) {
         val labels = dailyActivity.map { bucket -> bucket.localDate.toShortDateLabel() }
         val entries = dailyActivity.mapIndexed { index, bucket ->
             Entry(index.toFloat(), bucket.durationMs / 60_000f)
@@ -123,9 +124,9 @@ class ReportFragment : Fragment() {
     }
 
     private class TopAppsAdapter : RecyclerView.Adapter<TopAppViewHolder>() {
-        private val rows = mutableListOf<DashboardUsageSlice>()
+        private val rows = mutableListOf<ReportTopApp>()
 
-        fun submit(items: List<DashboardUsageSlice>) {
+        fun submit(items: List<ReportTopApp>) {
             rows.clear()
             rows.addAll(items)
             notifyDataSetChanged()
@@ -151,12 +152,12 @@ class ReportFragment : Fragment() {
     private class TopAppViewHolder(
         private val binding: ItemAppUsageBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(row: DashboardUsageSlice) {
-            binding.appIconPlaceholder.text = row.label.firstOrNull()
+        fun bind(row: ReportTopApp) {
+            binding.appIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
                 ?: "A"
-            binding.appNameText.text = row.label
+            binding.appNameText.text = row.appName
             binding.packageNameText.text = "Focus time"
             binding.appDurationText.text = formatDuration(row.durationMs)
             binding.appDetailText.text = ""

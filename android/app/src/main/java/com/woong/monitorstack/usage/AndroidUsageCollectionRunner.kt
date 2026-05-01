@@ -11,11 +11,18 @@ class AndroidUsageCollectionRunner(
     private val sessionizer: UsageSessionizer,
     private val store: UsageSessionStore,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
-    private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer
+    private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer,
+    private val anchorLookbackMs: Long = DefaultAnchorLookbackMs
 ) : UsageCollectionRunner {
+    init {
+        require(anchorLookbackMs >= 0) { "anchorLookbackMs must not be negative." }
+    }
+
     override suspend fun collect(fromUtcMillis: Long, toUtcMillis: Long): Int {
+        val anchoredFromUtcMillis = (fromUtcMillis - anchorLookbackMs).coerceAtLeast(0L)
         val sessions = sessionizer.sessionize(
-            events = collector.collect(fromUtcMillis, toUtcMillis),
+            events = collector.collect(anchoredFromUtcMillis, toUtcMillis),
+            collectionStartUtcMillis = fromUtcMillis,
             collectionEndUtcMillis = toUtcMillis
         )
         val entities = sessions.map { it.toFocusSessionEntity(timezoneId) }
@@ -44,6 +51,7 @@ class AndroidUsageCollectionRunner(
 
     companion object {
         private const val SOURCE_USAGE_STATS = "android_usage_stats"
+        private const val DefaultAnchorLookbackMs = 24 * 60 * 60 * 1_000L
 
         fun create(context: Context): AndroidUsageCollectionRunner {
             val appContext = context.applicationContext

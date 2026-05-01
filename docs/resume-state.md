@@ -4929,3 +4929,30 @@ Remaining Android priorities:
 - Report 30d/90d/custom filters still need real range behavior.
 - UsageStats collection should support an anchored lookback so an app resumed before the collection window can still be clipped into the requested window.
 - Dashboard chart visual polish remains needed; current chart is functional and Room-backed but not yet fully aligned with the supplied Android reference.
+
+## 2026-05-01 Android UsageStats Anchored Lookback And Report Ranges
+
+- `UsageSessionizer` now accepts `collectionStartUtcMillis` and clamps sessions to the requested collection window.
+- `AndroidUsageCollectionRunner` now reads an anchored lookback window, then persists only the clipped requested interval.
+- This specifically addresses the Android case where Chrome or another app was already foreground before the collection window started and only paused after returning to Woong Monitor.
+- Added `RoomReportRepository` and `ReportPeriod` for Room-backed 7d/30d/90d report aggregation.
+- Report tab 7d/30d/90d buttons now reload the Room-backed summary, date range, trend chart, and top apps.
+- Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260501-201248/`.
+
+Validation completed:
+
+- RED `UsageSessionizer` test failed before `collectionStartUtcMillis` existed.
+- RED `AndroidUsageCollectionRunner` test failed before `anchorLookbackMs` existed.
+- Report repository tests passed for 30d/90d range aggregation and idle exclusion.
+- Focused UsageStats and Report tests passed.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot script passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Report custom date range UI is still not implemented.
+- Add a no-wait emulator validation hook or script for anchored UsageStats collection; current unit tests prove the edge case, while emulator screenshots remain app-UI evidence only.
+- Dashboard/report visual polish remains needed against the supplied Android reference.

@@ -2225,3 +2225,16 @@ milestones below are finished.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
 - [ ] Next Android TODO: implement Report 30d/90d/custom filters with real Room ranges.
 - [ ] Next Android TODO: add UsageStats anchored-lookback collection so an app resumed before collection start is clipped into the requested window.
+
+## 2026-05-01 Android UsageStats Anchored Lookback And Report Ranges
+
+- [x] UsageSessionizer clamps sessions to the requested collection start/end so pre-window resumes are not lost.
+- [x] AndroidUsageCollectionRunner reads an anchored lookback window and persists only the requested clipped interval.
+- [x] Report 7d/30d/90d aggregation now uses a report-specific Room repository instead of piggybacking on Dashboard periods.
+- [x] Report 7d/30d/90d buttons reload total focus, daily average, date range, trend chart, and top apps.
+- [x] RED/GREEN tests added for UsageStats clamping, runner anchored lookback, Report 30d/90d aggregation, and Report tab button reloads.
+- [x] Latest Android screenshot evidence: `artifacts/android-ui-snapshots/20260501-201248/`.
+- [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [ ] Next Android TODO: implement Report custom date range UI.
+- [ ] Next Android TODO: add no-wait emulator validation for anchored UsageStats current-focus behavior.
+- [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference.

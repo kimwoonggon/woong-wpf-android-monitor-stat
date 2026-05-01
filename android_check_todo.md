@@ -322,3 +322,19 @@ workspace.
 - [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
 - [ ] Remaining Android gap: UsageStats collection needs anchored lookback/clamping for apps resumed before the collection start.
 - [ ] Remaining Android visual gap: Dashboard chart styling is functional but still needs polish against the supplied reference.
+
+## 2026-05-01 Android UsageStats Anchored Lookback And Report Ranges
+
+- [x] UsageSessionizer now clamps sessions to `collectionStartUtcMillis`/`collectionEndUtcMillis`.
+- [x] AndroidUsageCollectionRunner now queries an anchored lookback window and persists only the requested clipped interval.
+- [x] This keeps current-focus collection robust when Chrome/another app was already foreground before the normal collection start.
+- [x] Report 7d/30d/90d periods now aggregate from Room through a report-specific repository.
+- [x] Report tab 7d/30d/90d buttons now reload total focus, daily average, date range, trend chart, and top apps.
+- [x] Latest screenshot evidence after installing the new APK: `artifacts/android-ui-snapshots/20260501-201248/`.
+- [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Android UI snapshot automation passed on `emulator-5554`.
+- [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- [ ] Remaining Android gap: Report custom range UI is not implemented yet.
+- [ ] Remaining Android gap: add a no-wait emulator validation hook/script for the anchored UsageStats edge case.
+- [ ] Remaining Android visual gap: polish Dashboard and Report chart styling against the supplied reference.

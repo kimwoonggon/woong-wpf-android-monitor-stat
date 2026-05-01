@@ -42,10 +42,54 @@ class AndroidUsageCollectionRunnerTest {
         assertEquals("android_usage_stats", outbox.sessions.single().source)
     }
 
+    @Test
+    fun collectReadsAnchoredLookbackAndStoresOnlyRequestedWindow() = runBlocking {
+        val store = FakeUsageSessionStore()
+        val reader = FakeUsageEventsReader(
+            listOf(
+                UsageEventSnapshot(
+                    packageName = "com.android.chrome",
+                    eventType = UsageEventType.ACTIVITY_RESUMED,
+                    occurredAtUtcMillis = 1_000L
+                ),
+                UsageEventSnapshot(
+                    packageName = "com.android.chrome",
+                    eventType = UsageEventType.ACTIVITY_PAUSED,
+                    occurredAtUtcMillis = 20_000L
+                )
+            )
+        )
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(reader),
+            sessionizer = UsageSessionizer(),
+            store = store,
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            anchorLookbackMs = 9_000L
+        )
+
+        val collectedCount = runner.collect(10_000L, 30_000L)
+
+        assertEquals(1, collectedCount)
+        assertEquals(1_000L, reader.fromUtcMillis)
+        assertEquals(30_000L, reader.toUtcMillis)
+        val session = store.sessions.single()
+        assertEquals("com.android.chrome", session.packageName)
+        assertEquals(10_000L, session.startedAtUtcMillis)
+        assertEquals(20_000L, session.endedAtUtcMillis)
+        assertEquals(10_000L, session.durationMs)
+    }
+
     private class FakeUsageEventsReader(
         private val events: List<UsageEventSnapshot>
     ) : UsageEventsReader {
+        var fromUtcMillis: Long? = null
+            private set
+        var toUtcMillis: Long? = null
+            private set
+
         override fun readEvents(fromUtcMillis: Long, toUtcMillis: Long): List<UsageEventSnapshot> {
+            this.fromUtcMillis = fromUtcMillis
+            this.toUtcMillis = toUtcMillis
             return events
         }
     }
