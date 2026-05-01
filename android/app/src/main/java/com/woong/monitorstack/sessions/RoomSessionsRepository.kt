@@ -15,6 +15,23 @@ class RoomSessionsRepository(
             .map { it.toSessionRow() }
     }
 
+    fun loadAppDetail(
+        packageName: String,
+        limit: Int = DefaultLimit
+    ): AppDetailState {
+        val sessions = focusSessionDao.queryByPackage(packageName, limit)
+        val appName = AppDisplayNameFormatter.format(packageName)
+        val totalDurationMs = sessions.sumOf { it.durationMs }
+
+        return AppDetailState(
+            appName = appName,
+            packageName = packageName,
+            totalDurationText = formatDuration(totalDurationMs),
+            sessionCountText = "${sessions.size} ${if (sessions.size == 1) "session" else "sessions"}",
+            sessions = sessions.map { it.toSessionRow() }
+        )
+    }
+
     private fun FocusSessionEntity.toSessionRow(): SessionRow {
         return SessionRow(
             appName = AppDisplayNameFormatter.format(packageName),
@@ -58,4 +75,12 @@ data class SessionRow(
     val durationText: String,
     val timeRangeText: String,
     val stateText: String
+)
+
+data class AppDetailState(
+    val appName: String,
+    val packageName: String,
+    val totalDurationText: String,
+    val sessionCountText: String,
+    val sessions: List<SessionRow>
 )

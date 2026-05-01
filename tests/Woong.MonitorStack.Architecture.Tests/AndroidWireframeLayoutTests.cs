@@ -542,6 +542,67 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("submitRows", fragment);
     }
 
+    [Fact]
+    public void AndroidSessionsFragment_UsesReferenceListAndFilterStructure()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layout = ReadAndroidLayout(repoRoot, "fragment_sessions.xml");
+
+        Assert.Contains("@+id/sessionsSubtitle", layout);
+        Assert.Contains("@+id/sessionsFilterRow", layout);
+        Assert.Contains("@+id/sessionsFilterButton", layout);
+        Assert.Contains("@+id/sessionsTotalCountText", layout);
+        Assert.Contains("@+id/sessionsListCard", layout);
+        Assert.Contains("@+id/sessionsRecyclerView", layout);
+    }
+
+    [Fact]
+    public void AndroidAppDetailFragment_UsesReferenceAnalysisStructure()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layout = ReadAndroidLayout(repoRoot, "fragment_app_detail.xml");
+
+        Assert.Contains("@+id/appDetailBackButton", layout);
+        Assert.Contains("@+id/appDetailIdentityRow", layout);
+        Assert.Contains("@+id/appDetailIconPlaceholder", layout);
+        Assert.Contains("@+id/appTotalDurationCard", layout);
+        Assert.Contains("@+id/appSessionCountCard", layout);
+        Assert.Contains("@+id/appHourlyChartCard", layout);
+        Assert.Contains("@+id/appHourlyChart", layout);
+        Assert.Contains("@+id/appDetailSessionsCard", layout);
+        Assert.Contains("@+id/appDetailSessionsRecyclerView", layout);
+    }
+
+    [Fact]
+    public void AndroidReportFragment_UsesReferenceTrendReportStructure()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layout = ReadAndroidLayout(repoRoot, "fragment_report.xml");
+
+        Assert.Contains("@+id/reportSubtitle", layout);
+        Assert.Contains("@+id/reportPeriodRow", layout);
+        Assert.Contains("@+id/reportCustomButton", layout);
+        Assert.Contains("@+id/reportDateRangeText", layout);
+        Assert.Contains("@+id/reportTrendChartCard", layout);
+        Assert.Contains("@+id/sevenDayTrendChart", layout);
+        Assert.Contains("@+id/reportTopAppsCard", layout);
+    }
+
+    [Fact]
+    public void AndroidSettingsFragment_UsesReferenceGroupedRuntimeSettings()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string layout = ReadAndroidLayout(repoRoot, "fragment_settings.xml");
+
+        Assert.Contains("@+id/usageAccessStatusRow", layout);
+        Assert.Contains("@+id/collectionSettingsCard", layout);
+        Assert.Contains("@+id/backgroundCollectionSwitch", layout);
+        Assert.Contains("@+id/collectionIntervalText", layout);
+        Assert.Contains("@+id/autoSyncSwitch", layout);
+        Assert.Contains("@+id/manualSyncButton", layout);
+        Assert.Contains("@+id/privacyStorageSettingsCard", layout);
+    }
+
     private static string ReadAndroidLayout(string repoRoot, string fileName)
     {
         return File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "layout", fileName));

@@ -21,12 +21,21 @@
             android:layout_height="wrap_content"
             android:text="@string/settings_title" />
 
+        <TextView
+            android:id="@+id/settingsSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/settings_subtitle"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="14sp" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/permissionsSettingsCard"
             style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp">
+            android:layout_marginTop="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -38,13 +47,22 @@
                     style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Permissions" />
+                    android:text="@string/permissions_title" />
+
+                <TextView
+                    android:id="@+id/usageAccessStatusRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/usage_access_status_placeholder"
+                    android:textColor="@color/wms_text_primary"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/collectionVisibleText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="4dp"
                     android:text="@string/collection_visible_default"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                     android:textColor="@color/wms_text_primary" />
@@ -74,6 +92,55 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/collectionSettingsCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/collection_title" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/background_collection"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/backgroundCollectionSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/collectionIntervalText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/collection_interval_value" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/syncSettingsCard"
             style="@style/WmsCard"
             android:layout_width="match_parent"
@@ -90,13 +157,33 @@
                     style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Sync" />
+                    android:text="@string/sync_title" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/auto_sync"
+                        android:textColor="@color/wms_text_primary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/autoSyncSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/syncOptInText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
                     android:text="@string/sync_opt_in_default"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                     android:textColor="@color/wms_text_primary" />
@@ -116,10 +203,19 @@
                     android:text="@string/notification_permission_guidance" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/manualSyncButton"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:enabled="false"
+                    android:text="@string/manual_sync" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/requestNotificationPermissionButton"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/request_notification_permission"
                     app:cornerRadius="12dp" />
             </LinearLayout>
@@ -142,7 +238,7 @@
                     style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Privacy boundaries" />
+                    android:text="@string/privacy_boundaries_title" />
 
                 <TextView
                     style="@style/WmsKeyValueText"
@@ -169,7 +265,7 @@
                     style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Location context" />
+                    android:text="@string/location_context_label" />
 
                 <TextView
                     android:id="@+id/locationContextDefaultText"
@@ -223,6 +319,33 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/privacyStorageSettingsCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/privacy_storage_title" />
+
+                <TextView
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/android_storage_boundary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/storageSettingsCard"
             style="@style/WmsCard"
             android:layout_width="match_parent"
@@ -240,13 +363,13 @@
                     style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Storage" />
+                    android:text="@string/storage_title" />
 
                 <TextView
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Room keeps Android-only local usage data. Server sync is off until explicitly enabled." />
+                    android:text="@string/android_room_storage_status" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

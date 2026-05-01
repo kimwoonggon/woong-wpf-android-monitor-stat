@@ -247,3 +247,23 @@ workspace.
   - `artifacts/android-check/latest/02-permission-late2.png`
   - `artifacts/android-check/latest/05-dashboard-final.png`
 - [ ] Continue UI parity pass: dashboard top-app/chart/report/detail visuals still need work against the provided Figma/SVG reference.
+
+## 2026-05-01 Android Sessions, App Detail, Report, And Settings Parity Slice
+
+- [x] Added RED architecture checks for reference-style Sessions, App Detail, Report, and Settings fragment structures.
+- [x] Added RED Room repository behavior for selected-package app detail aggregation.
+- [x] Sessions now use a scrollable reference-style list surface with subtitle, period filters, filter action, total count, and Room rows.
+- [x] Tapping a session row opens an App Detail screen for that package.
+- [x] App Detail now aggregates the selected package from Room and shows app identity, total usage, session count, chart container, and package-specific session rows.
+- [x] Report now exposes reference-style period filters, date-range label, summary cards, trend chart container, and top apps list.
+- [x] Settings now exposes grouped Permissions, Collection, Sync, Privacy, Location, Privacy/Storage, and Storage sections while keeping sync opt-in/off by default.
+- [x] Fixed corrupted Korean Android strings for Splash/Permission and added Korean screen titles for Sessions, App Detail, Report, and Settings.
+- [x] Emulator screenshots captured under `artifacts/android-check/latest/`:
+  - `android-01-dashboard.png`
+  - `android-02-sessions.png`
+  - `android-03-app-detail.png`
+  - `android-04-report.png`
+  - `android-05-settings.png`
+- [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+- [ ] Remaining Android UI gap: wire real chart entries for App Detail hourly usage and Report trend instead of chart containers/no-data states.
+- [ ] Remaining Android parity gap: WPF browser domain/window-title tracking is not available through Android UsageStatsManager; Android should show app/package usage only unless a future explicit, safe Android API scope is approved.

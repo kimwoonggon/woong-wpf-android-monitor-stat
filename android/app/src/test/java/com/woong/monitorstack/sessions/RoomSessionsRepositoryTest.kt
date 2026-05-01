@@ -61,6 +61,44 @@ class RoomSessionsRepositoryTest {
         assertEquals("Active", rows.first().stateText)
     }
 
+    @Test
+    fun loadAppDetailAggregatesSelectedPackageSessions() {
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "chrome-1",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = 1_000,
+                durationMs = 60_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "chrome-2",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = 120_000,
+                durationMs = 120_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "slack-1",
+                packageName = "com.slack",
+                startedAtUtcMillis = 300_000,
+                durationMs = 300_000
+            )
+        )
+        val repository = RoomSessionsRepository(database.focusSessionDao())
+
+        val detail = repository.loadAppDetail("com.android.chrome")
+
+        assertEquals("Chrome", detail.appName)
+        assertEquals("com.android.chrome", detail.packageName)
+        assertEquals("3m", detail.totalDurationText)
+        assertEquals("2 sessions", detail.sessionCountText)
+        assertEquals(listOf("2m", "1m"), detail.sessions.map { it.durationText })
+        assertEquals(listOf("com.android.chrome", "com.android.chrome"), detail.sessions.map { it.packageName })
+    }
+
     private fun focusSession(
         clientSessionId: String,
         packageName: String,

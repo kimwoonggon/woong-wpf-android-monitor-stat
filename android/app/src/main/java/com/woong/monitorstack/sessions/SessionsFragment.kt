@@ -7,13 +7,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentSessionsBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 
 class SessionsFragment : Fragment() {
     private lateinit var binding: FragmentSessionsBinding
-    private val adapter = SessionsAdapter()
+    private val adapter = SessionsAdapter { row -> openAppDetail(row.packageName) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +40,10 @@ class SessionsFragment : Fragment() {
             activity?.runOnUiThread {
                 if (isAdded) {
                     adapter.submitRows(rows)
+                    binding.sessionsTotalCountText.text = getString(
+                        R.string.sessions_total_count,
+                        rows.size
+                    )
                     binding.emptySessionsText.visibility = if (rows.isEmpty()) {
                         View.VISIBLE
                     } else {
@@ -49,7 +54,17 @@ class SessionsFragment : Fragment() {
         }.start()
     }
 
-    private class SessionsAdapter : RecyclerView.Adapter<SessionViewHolder>() {
+    private fun openAppDetail(packageName: String) {
+        parentFragmentManager
+            .beginTransaction()
+            .replace(R.id.mainFragmentContainer, AppDetailFragment.newInstance(packageName))
+            .addToBackStack("app-detail")
+            .commit()
+    }
+
+    private class SessionsAdapter(
+        private val onRowClicked: (SessionRow) -> Unit
+    ) : RecyclerView.Adapter<SessionViewHolder>() {
         private var rows: List<SessionRow> = emptyList()
 
         fun submitRows(rows: List<SessionRow>) {
@@ -68,7 +83,7 @@ class SessionsFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
-            holder.bind(rows[position])
+            holder.bind(rows[position], onRowClicked)
         }
 
         override fun getItemCount(): Int = rows.size
@@ -77,7 +92,7 @@ class SessionsFragment : Fragment() {
     private class SessionViewHolder(
         private val binding: ItemFocusSessionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(row: SessionRow) {
+        fun bind(row: SessionRow, onRowClicked: (SessionRow) -> Unit) {
             binding.sessionAppIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
@@ -87,6 +102,7 @@ class SessionsFragment : Fragment() {
             binding.sessionTimeRangeText.text = row.timeRangeText
             binding.sessionDurationText.text = row.durationText
             binding.sessionStateText.text = row.stateText
+            binding.root.setOnClickListener { onRowClicked(row) }
         }
     }
 }

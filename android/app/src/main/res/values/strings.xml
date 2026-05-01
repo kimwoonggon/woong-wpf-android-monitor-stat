@@ -3,6 +3,7 @@
     <string name="app_name">Woong Monitor</string>
     <string name="android_focus_tracker">Android Focus Tracker</string>
     <string name="loading_korean">로딩 중...</string>
+
     <string name="permission_screen_title">권한 안내</string>
     <string name="permission_headline">사용 시간 데이터를 수집하려면\nUsage Access 권한이 필요합니다.</string>
     <string name="permission_body">이 권한은 앱 사용 시간 측정에만 사용되며,\n아래 원칙을 준수합니다.</string>
@@ -11,6 +12,7 @@
     <string name="permission_principle_no_external_sync">✓  개인 정보는 외부로 전송되지 않습니다</string>
     <string name="permission_principle_no_hidden_sync">✓  사용자 동의 없이 동기화하지 않습니다</string>
     <string name="permission_principle_can_revoke">✓  언제든지 권한을 취소할 수 있습니다</string>
+
     <string name="usage_access_settings">Open Usage Access settings</string>
     <string name="usage_access_guidance">Usage Access is needed to calculate app usage statistics.</string>
     <string name="usage_collection_paused_until_permission">Collection paused until Usage Access is granted.</string>
@@ -19,6 +21,7 @@
     <string name="sensitive_data_boundary">This app does not collect messages, passwords, form input, or global touch coordinates.</string>
     <string name="sync_local_only_status">Sync is off. Data stays on this Android device.</string>
     <string name="sync_failure_status">Sync failed for %1$d queued items: %2$s. Data remains local and will retry.</string>
+
     <string name="dashboard_title">Dashboard</string>
     <string name="status_usage_ok">Usage OK</string>
     <string name="status_sync_off">Sync Off</string>
@@ -28,6 +31,10 @@
     <string name="filter_6h">6h</string>
     <string name="filter_24h">24h</string>
     <string name="filter_7d">7d</string>
+    <string name="filter_30d">30d</string>
+    <string name="filter_90d">90d</string>
+    <string name="filter_custom">Custom</string>
+    <string name="filter_button">Filter</string>
     <string name="filter_yesterday">Yesterday</string>
     <string name="filter_recent_7_days">7 days</string>
     <string name="current_focus">Current Focus</string>
@@ -49,17 +56,57 @@
     <string name="hourly_focus_chart_title">Hourly focus</string>
     <string name="app_usage_chart_title">App usage</string>
     <string name="recent_sessions">Recent sessions</string>
+
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_sessions">Sessions</string>
     <string name="nav_report">Report</string>
     <string name="nav_settings">Settings</string>
+
     <string name="daily_summary_title">Previous day summary</string>
-    <string name="sessions_title">Sessions</string>
-    <string name="settings_title">Settings</string>
+    <string name="sessions_title">세션</string>
+    <string name="sessions_subtitle">세션 히스토리 확인 및 필터링</string>
+    <string name="sessions_total_count">%1$d sessions</string>
+    <string name="sessions_total_count_empty">0 sessions</string>
+    <string name="settings_title">설정</string>
+    <string name="settings_subtitle">권한, 수집, 동기화, 개인정보, 저장소 관리</string>
+
+    <string name="app_detail_title">앱 상세</string>
+    <string name="app_detail_subtitle">선택한 앱의 상세 사용 분석</string>
+    <string name="back">Back</string>
+    <string name="total_usage_time">Total usage</string>
+    <string name="selected_app_usage">Selected app usage</string>
+    <string name="session_count">Sessions</string>
+    <string name="selected_app_sessions">Selected app sessions</string>
+    <string name="hourly_usage_today">Hourly usage today</string>
+    <string name="session_list">Session list</string>
+    <string name="no_sessions_yet">No sessions yet</string>
+
+    <string name="report_title">리포트</string>
+    <string name="report_subtitle">기간별 트렌드 및 요약 리포트</string>
+    <string name="report_date_range_placeholder">Recent 7 days</string>
+    <string name="daily_average">Daily average</string>
+    <string name="daily_usage_trend">Daily usage trend</string>
+    <string name="top_apps_7_days">Top apps</string>
+
+    <string name="permissions_title">Permissions</string>
+    <string name="usage_access_status_placeholder">Usage Access permission    Check in Android Settings</string>
+    <string name="collection_title">Collection</string>
+    <string name="background_collection">Background collection</string>
+    <string name="collection_interval_value">Inactive gap detection    15 minutes</string>
+    <string name="sync_title">Sync</string>
+    <string name="auto_sync">Auto sync</string>
+    <string name="manual_sync">Manual sync</string>
+    <string name="privacy_boundaries_title">Privacy boundaries</string>
+    <string name="privacy_storage_title">Privacy / Storage</string>
+    <string name="storage_title">Storage</string>
+    <string name="android_storage_boundary">Room keeps Android-only local app usage data. Windows data is never read directly from Android.</string>
+    <string name="android_room_storage_status">Local Room database stores Android sessions only. Server sync remains opt-in.</string>
+
     <string name="collection_visible_default">Collection is visible while tracking.</string>
     <string name="sync_opt_in_default">Sync is opt-in and off by default.</string>
     <string name="notification_permission_guidance">Morning summary notifications require notification permission on Android 13+.</string>
     <string name="request_notification_permission">Allow notifications</string>
+
     <string name="location_context_default">Location context is off by default.</string>
     <string name="location_coordinate_boundary">Latitude/longitude are not stored unless location context is enabled.</string>
     <string name="precise_location_opt_in">Precise latitude/longitude requires a separate explicit opt-in.</string>
@@ -76,6 +123,7 @@
     <string name="location_longitude_value">Longitude   %1$s</string>
     <string name="location_accuracy_value">Accuracy   %1$s</string>
     <string name="location_captured_at_value">Captured   %1$s</string>
+
     <string name="empty_sessions">No sessions yet</string>
     <string name="zero_duration">0m</string>
     <string name="zero_clock_duration">00:00:00</string>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/appDetailScrollRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,74 +19,152 @@
             style="@style/WmsScreenTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="App detail" />
+            android:text="@string/app_detail_title" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/appSummaryCard"
-            style="@style/WmsCard"
+        <TextView
+            android:id="@+id/appDetailSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="4dp"
+            android:text="@string/app_detail_subtitle"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:id="@+id/appDetailIdentityRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/appDetailBackButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="@color/wms_text_primary" />
+
+            <TextView
+                android:id="@+id/appDetailIconPlaceholder"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_rounded_icon_placeholder"
+                android:gravity="center"
+                android:text="A"
+                android:textColor="@color/wms_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/detailAppNameText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Chrome"
+                    android:text="@string/no_top_app"
                     android:textColor="@color/wms_text_primary"
-                    android:textSize="20sp"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/detailPackageNameText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="com.android.chrome"
-                    android:textColor="@color/wms_text_secondary" />
-
-                <LinearLayout
-                    android:id="@+id/appDetailStatsRow"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:orientation="horizontal">
-
-                    <include
-                        android:id="@+id/appTotalDurationCard"
-                        layout="@layout/item_summary_card"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1" />
-
-                    <include
-                        android:id="@+id/appSessionCountCard"
-                        layout="@layout/item_summary_card"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1" />
-                </LinearLayout>
+                    android:layout_marginTop="2dp"
+                    android:text="@string/no_package"
+                    android:textColor="@color/wms_text_secondary"
+                    android:textSize="13sp" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/appDetailSessionsTitle"
-            style="@style/WmsSectionTitle"
+        <LinearLayout
+            android:id="@+id/appDetailStatsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="Session list" />
+            android:orientation="horizontal">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/appDetailSessionsRecyclerView"
+            <include
+                android:id="@+id/appTotalDurationCard"
+                layout="@layout/item_summary_card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/appSessionCountCard"
+                layout="@layout/item_summary_card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/appHourlyChartCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hourly_usage_today" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/appHourlyChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/appDetailSessionsCard"
+            style="@style/WmsCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/appDetailSessionsTitle"
+                    style="@style/WmsSectionTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/session_list" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/appDetailSessionsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

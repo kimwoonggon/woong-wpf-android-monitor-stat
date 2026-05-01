@@ -2163,3 +2163,20 @@ milestones below are finished.
   - `05-dashboard-final.png`
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
 - [ ] Remaining Android UI gap: Dashboard still needs a fuller visual pass against the supplied reference, including top-app list/card polish, chart rendering, report/detail completeness, and screenshot coverage for each bottom-tab flow.
+
+## 2026-05-01 Android Sessions/App Detail/Report/Settings Parity Slice
+
+- [x] Added failing architecture tests for the reference-style Sessions, App Detail, Report, and Settings structures.
+- [x] Added failing Room repository test for selected-package app detail aggregation.
+- [x] Implemented FocusSessionDao.queryByPackage and RoomSessionsRepository.loadAppDetail.
+- [x] Added AppDetailFragment and Sessions row navigation into package-specific detail.
+- [x] Reworked Sessions XML with subtitle, period filters, filter action, total count, card list, and empty state.
+- [x] Reworked App Detail XML with selected app identity, total usage, session count, chart container, and package session list.
+- [x] Reworked Report XML with period filters, date-range label, summary cards, trend chart container, and top apps card.
+- [x] Reworked Settings XML with grouped Permissions, Collection, Sync, Privacy, Location, Privacy/Storage, and Storage sections.
+- [x] Fixed Android Korean string mojibake and restored Korean screen titles for the reference screens.
+- [x] Captured emulator screenshots for dashboard, sessions, app detail, report, and settings under artifacts/android-check/latest/.
+- [x] Validation passed: Android Gradle unit/build, full solution tests, and full solution build.
+- [ ] Next Android UI TODO: populate App Detail hourly chart and Report trend chart with real Room-backed datasets.
+- [ ] Next Android UI TODO: tune bottom navigation/system-inset visual height on emulator screenshots.
+- [ ] Android parity note: Android cannot mirror WPF browser domain/window-title tracking through UsageStatsManager; keep Android app/package usage only unless a future explicit safe API scope is approved.

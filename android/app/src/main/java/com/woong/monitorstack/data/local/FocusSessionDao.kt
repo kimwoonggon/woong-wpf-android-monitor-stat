@@ -35,4 +35,18 @@ interface FocusSessionDao {
         """
     )
     fun queryRecent(limit: Int): List<FocusSessionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM focus_sessions
+        WHERE packageName = :packageName
+        ORDER BY startedAtUtcMillis DESC
+        LIMIT :limit
+        """
+    )
+    fun queryByPackage(
+        packageName: String,
+        limit: Int
+    ): List<FocusSessionEntity>
 }

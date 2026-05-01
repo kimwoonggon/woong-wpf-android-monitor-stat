@@ -1,73 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/sessionsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/wms_background"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/sessionsTitle"
-        style="@style/WmsScreenTitle"
+    <LinearLayout
+        android:id="@+id/sessionsContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sessions_title" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <HorizontalScrollView
-        android:id="@+id/sessionsFilterScroll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:id="@+id/sessionsFilterRow"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/sessionsTitle"
+            style="@style/WmsScreenTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="@string/sessions_title" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sessionsTodayButton"
-                style="@style/WmsPeriodButton.Selected"
-                android:text="@string/filter_today" />
+        <TextView
+            android:id="@+id/sessionsSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/sessions_subtitle"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="14sp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sessionsOneHourButton"
-                style="@style/WmsPeriodButton"
-                android:text="@string/filter_1h" />
+        <HorizontalScrollView
+            android:id="@+id/sessionsFilterScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:scrollbars="none">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sessionsSixHourButton"
-                style="@style/WmsPeriodButton"
-                android:text="@string/filter_6h" />
+            <LinearLayout
+                android:id="@+id/sessionsFilterRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sessionsTwentyFourHourButton"
-                style="@style/WmsPeriodButton"
-                android:text="@string/filter_24h" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsTodayButton"
+                    style="@style/WmsPeriodButton.Selected"
+                    android:text="@string/filter_today" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sessionsSevenDayButton"
-                style="@style/WmsPeriodButton"
-                android:text="@string/filter_7d" />
-        </LinearLayout>
-    </HorizontalScrollView>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsOneHourButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_1h" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/sessionsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsSixHourButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_6h" />
 
-    <TextView
-        android:id="@+id/emptySessionsText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:minHeight="64dp"
-        android:text="@string/empty_sessions"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-        android:textColor="@color/wms_text_secondary" />
-</LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsTwentyFourHourButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_24h" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsSevenDayButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_7d" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sessionsFilterButton"
+                    style="@style/WmsPeriodButton"
+                    android:text="@string/filter_button"
+                    app:icon="@android:drawable/ic_menu_sort_by_size"
+                    app:iconGravity="textStart" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/sessionsTotalCountText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/sessions_total_count_empty"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="13sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/sessionsListCard"
+            style="@style/WmsCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/sessionsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+                <TextView
+                    android:id="@+id/emptySessionsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:minHeight="96dp"
+                    android:text="@string/empty_sessions"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                    android:textColor="@color/wms_text_secondary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

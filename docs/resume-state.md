@@ -4811,3 +4811,37 @@ Remaining Android UI gaps:
 
 - Dashboard visual still needs a fuller pass against the supplied reference.
 - Top-app list/card, chart rendering, report/detail screens, and screenshot coverage for each bottom-tab flow remain open.
+
+## 2026-05-01 Android Sessions/App Detail/Report/Settings Parity Slice
+
+- Added reference-structure architecture tests for Android Sessions, App Detail, Report, and Settings fragments.
+- Added Room-backed selected-package app detail aggregation and a unit test for it.
+- Reworked `fragment_sessions.xml` into a reference-style scrollable session history surface with subtitle, period filters, filter action, total count, card list, and empty state.
+- Added `AppDetailFragment` and row navigation from Sessions to App Detail.
+- Reworked App Detail to show selected app identity, package name, total usage, session count, chart container, and package-specific session rows.
+- Reworked Report to show period filters, date-range label, summary cards, trend chart container, and top-app rows.
+- Reworked Settings into grouped Permissions, Collection, Sync, Privacy, Location, Privacy/Storage, and Storage sections.
+- Fixed corrupted Korean Android strings and restored Korean titles for the reference screens.
+- Android limitation recorded: UsageStatsManager supports app/package foreground intervals, not browser domains, Android window titles, typed text, screen contents, or global touch coordinates.
+
+Validation:
+
+- RED architecture tests failed before XML changes for missing reference IDs.
+- RED Room test failed before `loadAppDetail`.
+- Focused XML structure tests passed: 4 passed.
+- Focused Room app-detail test passed.
+- Android Gradle `testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- dotnet test `Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 486 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build `Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Emulator screenshots captured:
+  - `artifacts/android-check/latest/android-01-dashboard.png`
+  - `artifacts/android-check/latest/android-02-sessions.png`
+  - `artifacts/android-check/latest/android-03-app-detail.png`
+  - `artifacts/android-check/latest/android-04-report.png`
+  - `artifacts/android-check/latest/android-05-settings.png`
+
+Remaining Android UI gaps:
+
+- App Detail and Report chart containers exist but still need real chart datasets.
+- Bottom navigation/system-inset sizing should be visually reviewed again on the user's emulator because screenshots still show a large white navigation region.
+- Settings text is structurally correct but should be polished for Korean copy consistency.
