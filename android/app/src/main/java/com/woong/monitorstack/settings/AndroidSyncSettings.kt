@@ -1,6 +1,7 @@
 package com.woong.monitorstack.settings
 
 import android.content.Context
+import java.util.UUID
 
 interface AndroidSyncSettings {
     fun isSyncEnabled(): Boolean
@@ -39,6 +40,17 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
         preferences.edit().putString(KeyDeviceId, deviceId.trim()).apply()
     }
 
+    fun deviceKey(): String {
+        val existingDeviceKey = preferences.getString(KeyDeviceKey, "").orEmpty()
+        if (existingDeviceKey.isNotBlank()) {
+            return existingDeviceKey
+        }
+
+        val generatedDeviceKey = "android-${UUID.randomUUID()}"
+        preferences.edit().putString(KeyDeviceKey, generatedDeviceKey).apply()
+        return generatedDeviceKey
+    }
+
     override fun deviceToken(): String {
         return preferences.getString(KeyDeviceToken, "").orEmpty()
     }
@@ -67,6 +79,7 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
         private const val KeySyncEnabled = "sync_enabled"
         private const val KeyServerBaseUrl = "server_base_url"
         private const val KeyDeviceId = "device_id"
+        private const val KeyDeviceKey = "device_key"
         private const val KeyDeviceToken = "device_token"
     }
 }

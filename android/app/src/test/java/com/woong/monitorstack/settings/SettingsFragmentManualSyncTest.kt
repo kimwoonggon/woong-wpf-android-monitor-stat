@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config
 class SettingsFragmentManualSyncTest {
     private lateinit var context: Context
     private lateinit var launcher: RecordingManualSyncLauncher
+    private lateinit var registrationLauncher: RecordingDeviceRegistrationLauncher
 
     @Before
     fun setUp() {
@@ -32,12 +33,16 @@ class SettingsFragmentManualSyncTest {
             Context.MODE_PRIVATE
         ).edit().clear().commit()
         launcher = RecordingManualSyncLauncher()
+        registrationLauncher = RecordingDeviceRegistrationLauncher()
         SettingsFragment.manualSyncLauncherFactory = { launcher }
+        SettingsFragment.deviceRegistrationLauncherFactory = { registrationLauncher }
     }
 
     @After
     fun tearDown() {
         SettingsFragment.manualSyncLauncherFactory = SettingsFragment.defaultManualSyncLauncherFactory()
+        SettingsFragment.deviceRegistrationLauncherFactory =
+            SettingsFragment.defaultDeviceRegistrationLauncherFactory()
     }
 
     @Test
@@ -123,9 +128,64 @@ class SettingsFragmentManualSyncTest {
     }
 
     @Test
+    fun manualSyncWhenSyncOnWithoutRegisteredDeviceShowsRegistrationRequiredWithoutLaunch() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("https://server.example")
+        activity.findViewById<Button>(R.id.manualSyncButton).performClick()
+
+        assertEquals(
+            "Manual sync needs device registration before upload can run.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun registerRepairWhenSyncOnPersistsDeviceTokenWithoutLaunchingManualSync() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        registrationLauncher.response = DeviceRegistrationResult(
+            deviceId = "server-device-id",
+            deviceToken = "device-token-secret"
+        )
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("  https://server.example  ")
+        findButtonByText(activity, "Register / repair device").performClick()
+
+        val request = registrationLauncher.requests.single()
+        assertEquals("https://server.example", request.baseUrl)
+        assertEquals("local-android-user", request.userId)
+        assertEquals(2, request.platform)
+        assertTrue(request.deviceKey.isNotBlank())
+        assertTrue(request.deviceName.isNotBlank())
+        assertTrue(request.timezoneId.isNotBlank())
+        assertEquals("server-device-id", SharedPreferencesAndroidSyncSettings(context).deviceId())
+        assertEquals("device-token-secret", SharedPreferencesAndroidSyncSettings(context).deviceToken())
+        assertEquals(
+            "server-device-id",
+            activity.findViewById<EditText>(R.id.syncDeviceIdEditText).text.toString()
+        )
+        assertEquals(
+            "Device registered. Manual sync can now run.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
     fun manualSyncWhenSyncOnWithValidConfigurationLaunchesWorkerWithStoredValues() {
         val settings = SharedPreferencesAndroidSyncSettings(context)
         settings.setSyncEnabled(true)
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
         val activity = launchSettingsFragment()
 
         activity.findViewById<EditText>(R.id.syncServerUrlEditText)
@@ -154,6 +214,10 @@ class SettingsFragmentManualSyncTest {
     fun manualSyncWhenSyncOnWithLoopbackHttpLaunchesWorkerForLocalDevelopment() {
         val settings = SharedPreferencesAndroidSyncSettings(context)
         settings.setSyncEnabled(true)
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
         val activity = launchSettingsFragment()
 
         activity.findViewById<EditText>(R.id.syncServerUrlEditText)
@@ -192,6 +256,32 @@ class SettingsFragmentManualSyncTest {
         return activity
     }
 
+    private fun findButtonByText(
+        activity: AppCompatActivity,
+        text: String
+    ): Button {
+        return findButtonByText(activity.window.decorView, text)
+            ?: throw AssertionError("Button with text '$text' was not found.")
+    }
+
+    private fun findButtonByText(
+        view: android.view.View,
+        text: String
+    ): Button? {
+        if (view is Button && view.text.toString() == text) {
+            return view
+        }
+        if (view is android.view.ViewGroup) {
+            for (index in 0 until view.childCount) {
+                val match = findButtonByText(view.getChildAt(index), text)
+                if (match != null) {
+                    return match
+                }
+            }
+        }
+        return null
+    }
+
     private class RecordingManualSyncLauncher : SettingsFragment.ManualSyncLauncher {
         val requests = mutableListOf<ManualSyncLaunchRequest>()
 
@@ -209,6 +299,22 @@ class SettingsFragmentManualSyncTest {
         val deviceId: String,
         val pendingLimit: Int
     )
+
+    private class RecordingDeviceRegistrationLauncher : SettingsFragment.DeviceRegistrationLauncher {
+        val requests = mutableListOf<SettingsFragment.DeviceRegistrationRequest>()
+        var response = DeviceRegistrationResult(
+            deviceId = "server-device-id",
+            deviceToken = "device-token-secret"
+        )
+
+        override fun register(
+            request: SettingsFragment.DeviceRegistrationRequest,
+            callback: (Result<DeviceRegistrationResult>) -> Unit
+        ) {
+            requests += request
+            callback(Result.success(response))
+        }
+    }
 
     companion object {
         private const val ViewId = 42_001

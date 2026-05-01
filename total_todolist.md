@@ -2294,7 +2294,9 @@ milestones below are finished.
 - [x] Validation passed: Android Gradle test/build/androidTest APK, UI snapshots, dotnet test, and dotnet build.
 - [x] Settings now rejects invalid sync server URLs before enqueueing Manual Sync work: production URLs require HTTPS, loopback HTTP is allowed for local development, and embedded credentials are rejected.
 - [x] Android upload calls now attach the persisted server-issued `X-Device-Token` header and classify missing-token/auth-required failures explicitly.
-- [ ] Remaining Android sync hardening: secure production token storage, visible registration/repair UI, token refresh/re-registration behavior, and production endpoint policy stay open before release use.
+- [x] Settings now includes a visible Register/Repair device flow; Manual Sync with sync on but no registered device/token shows registration required and does not enqueue work.
+- [ ] Remaining Android sync hardening: secure production token storage, token refresh/re-registration behavior, auth-required repair prompting, and production endpoint policy stay open before release use.
+- [ ] Release blockers before public Android/server sync: move device tokens out of SharedPreferences to secure Android storage, define token rotation/revocation, decide registration policy/user auth requirements, document production endpoint discovery/policy, and decide Android Play signing/publishing requirements.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
@@ -2372,4 +2374,4 @@ milestones below are finished.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
-- [ ] Remaining server production hardening: device token issuance/enforcement is active/partial pending integration validation, Android upload auth headers remain open, and environment-specific retention alerting values still need release policy.
+- [ ] Remaining server production hardening: device token issuance/enforcement is active pending integration validation, token rotation/revocation and registration policy/user auth remain open, and environment-specific retention alerting values still need release policy.

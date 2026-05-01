@@ -25,8 +25,8 @@ Existing Android sync names and responsibilities:
   marks item-level `Error` or missing results as failed.
 - `AndroidSyncClient` can register a device through `/api/devices/register`
   and posts focus sessions to `/api/focus-sessions/upload` and location
-  contexts to `/api/location-contexts/upload`. Upload requests do not yet send
-  the device-token auth header from Android.
+  contexts to `/api/location-contexts/upload`. Upload requests send the
+  device-token auth header from Android.
 - `SyncContracts.kt` maps Android UsageStats sessions to the shared
   focus-session upload contract and includes Android device-registration DTOs.
 
@@ -63,16 +63,31 @@ sync consent.
 
 ## Remaining Hardening Requirements
 
+### Release Blocker Snapshot
+
+Before public Android/server sync release, these items remain blockers:
+
+- Secure Android token storage; SharedPreferences-backed token persistence is
+  not release-complete.
+- Token rotation/revocation and invalid-token recovery behavior.
+- Registration policy/user auth decision for first registration and
+  re-registration.
+- Visible Android registration/repair UI now exists in Settings; production
+  polish, real identity policy, and automatic auth repair still remain.
+- Production endpoint discovery/policy, including production copy/configuration
+  and local developer labeling.
+- Android Play signing and publishing requirements if distribution moves beyond
+  internal CI artifacts.
+
 ### Device Registration
 
 Before production upload, Android needs a release-complete explicit device
-registration flow. The client/server contract is partially started: Android has
-registration DTO/client support and settings persistence can store a
-server-issued device ID/token pair. Remaining requirements:
+registration flow. The MVP Settings flow can register or repair a device and
+persist the server-issued device ID/token pair. Remaining requirements:
 
 - Define how Android obtains or creates a stable local `deviceKey`.
-- Wire registration through visible Settings UI or another explicit
-  user-approved configuration step.
+- Improve the visible Settings registration state/copy and handle repair after
+  auth-required worker results.
 - Make registration idempotent by stable user/platform/device key, matching
   existing server idempotency policy.
 - Expose registration state in Settings without implying sync is enabled.
@@ -83,7 +98,7 @@ server-issued device ID/token pair. Remaining requirements:
 Production sync must not rely only on user-entered `deviceId`. Server-side
 token issuance/enforcement is active, and Android can persist the server-issued
 token and attach it to upload requests. This is still not release-complete until
-registration UI, secure token storage, token refresh/re-registration, and
+secure token storage, token refresh/re-registration, auth repair prompting, and
 production endpoint policy are finished.
 
 - Define whether Android uses a device token, user auth token, or both.
@@ -214,9 +229,9 @@ Future implementation should proceed by vertical TDD slices.
 - [ ] Local developer mode allows only explicit loopback HTTP endpoints; visible
   nonproduction labeling in Settings remains open.
 - [x] Manual Sync with sync off remains local-only and enqueues no worker.
-- [ ] Manual Sync with sync on but no registered device shows registration
+- [x] Manual Sync with sync on but no registered device shows registration
   required and enqueues no worker.
-- [ ] Successful visible device registration persists a server-issued device ID
+- [x] Successful visible device registration persists a server-issued device ID
   and token without uploading existing outbox rows until sync is enabled.
 - [x] `AndroidSyncWorker` sends auth/device token headers through
   `AndroidSyncClient` after registration.

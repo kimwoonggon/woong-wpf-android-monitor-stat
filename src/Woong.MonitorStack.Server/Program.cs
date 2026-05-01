@@ -58,10 +58,10 @@ app.MapPost("/api/focus-sessions/upload", async (
     DeviceTokenAuthenticationService deviceTokens,
     FocusSessionUploadService uploads) =>
 {
-    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
-    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
+    if (unauthorized is not null)
     {
-        return Results.Unauthorized();
+        return unauthorized;
     }
 
     UploadBatchResult response = await uploads.UploadAsync(request);
@@ -75,10 +75,10 @@ app.MapPost("/api/web-sessions/upload", async (
     DeviceTokenAuthenticationService deviceTokens,
     WebSessionUploadService uploads) =>
 {
-    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
-    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
+    if (unauthorized is not null)
     {
-        return Results.Unauthorized();
+        return unauthorized;
     }
 
     UploadBatchResult response = await uploads.UploadAsync(request);
@@ -92,10 +92,10 @@ app.MapPost("/api/raw-events/upload", async (
     DeviceTokenAuthenticationService deviceTokens,
     RawEventUploadService uploads) =>
 {
-    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
-    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
+    if (unauthorized is not null)
     {
-        return Results.Unauthorized();
+        return unauthorized;
     }
 
     UploadBatchResult response = await uploads.UploadAsync(request);
@@ -109,10 +109,10 @@ app.MapPost("/api/location-contexts/upload", async (
     DeviceTokenAuthenticationService deviceTokens,
     LocationContextUploadService uploads) =>
 {
-    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
-    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
+    if (unauthorized is not null)
     {
-        return Results.Unauthorized();
+        return unauthorized;
     }
 
     UploadBatchResult response = await uploads.UploadAsync(request);
@@ -178,6 +178,18 @@ static bool IsSupportedTimeZoneId(string timezoneId)
 
 static IResult BadRequest(string message)
     => Results.BadRequest(new { error = message });
+
+static async Task<IResult?> RejectUnauthorizedDeviceTokenAsync(
+    HttpRequest httpRequest,
+    string deviceId,
+    DeviceTokenAuthenticationService deviceTokens)
+{
+    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+
+    return await deviceTokens.IsAuthorizedAsync(deviceId, deviceToken)
+        ? null
+        : Results.Unauthorized();
+}
 
 app.MapGet("/api/statistics/range", async (
     string userId,

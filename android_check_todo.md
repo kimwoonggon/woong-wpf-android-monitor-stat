@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-063728/
+artifacts/android-ui-snapshots/20260502-083810/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -92,6 +92,23 @@ Product boundary reminder:
 - Location context is opt-in and permission-gated.
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
+
+### 2026-05-02 Android Settings Sync Snapshot Evidence
+
+- [x] Emulator available: `emulator-5554`.
+- [x] Ran Woong-only snapshot automation:
+  `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
+- [x] Snapshot report status: `PASS`.
+- [x] Evidence paths:
+  - `artifacts/android-ui-snapshots/20260502-083810/`
+  - `artifacts/android-ui-snapshots/latest/`
+  - `artifacts/android-ui-snapshots/20260502-083810/figma-07-settings.png`
+  - `artifacts/android-ui-snapshots/20260502-083810/05-settings-privacy-sync.png`
+  - `artifacts/android-ui-snapshots/20260502-083810/06-settings-location-permission.png`
+- [x] Privacy boundary repeated: screenshots are local developer artifacts only,
+  captured inside Woong Monitor UI; no other-app content, typed text,
+  passwords, form contents, clipboard contents, browser/page contents, or
+  global touch coordinates were captured as product telemetry.
 
 ### 2026-05-02 Android 7-Screen Acceptance Evidence Slice
 
@@ -679,9 +696,17 @@ workspace.
 - [x] Android upload calls now send the persisted server-issued
   `X-Device-Token` header, missing-token sync fails clearly, and HTTP 401/403
   is classified as auth required instead of a generic retry.
+- [x] Settings now includes a visible Register/Repair device action; Manual
+  Sync with sync on but no registered device/token shows registration required
+  and does not enqueue work.
 - [ ] Remaining Android sync hardening: secure production token storage,
-  visible registration/repair UI, token refresh/re-registration behavior, and
+  token refresh/re-registration behavior, auth-required repair prompting, and
   production endpoint policy remain open before release use.
+- [ ] Release blockers before public Android/server sync: secure Android token
+  storage instead of SharedPreferences, token rotation/revocation, registration
+  policy/user auth decision, production endpoint discovery/policy, and Android
+  Play signing/publishing requirements if distribution moves beyond internal
+  artifacts.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
 

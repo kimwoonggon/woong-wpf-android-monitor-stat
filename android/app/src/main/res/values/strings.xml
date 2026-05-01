@@ -27,6 +27,12 @@
     <string name="sync_configuration_help">Used only when sync is explicitly enabled. No passwords, tokens, messages, or typed text are collected.</string>
     <string name="sync_missing_configuration_status">Manual sync needs a server URL and device ID before upload can run.</string>
     <string name="sync_invalid_server_url_status">Manual sync requires an HTTPS server URL, or HTTP localhost for local development.</string>
+    <string name="sync_registration_required_status">Manual sync needs device registration before upload can run.</string>
+    <string name="sync_registration_skipped_status">Turn sync on before registering this device.</string>
+    <string name="sync_registration_in_progress_status">Registering this Android device for sync.</string>
+    <string name="sync_registration_success_status">Device registered. Manual sync can now run.</string>
+    <string name="sync_registration_failed_status">Device registration failed. Data remains local.</string>
+    <string name="sync_register_repair_device">Register / repair device</string>
     <string name="sync_manual_queued_status">Manual sync queued for configured server.</string>
     <string name="sync_failure_status">Sync failed for %1$d queued items: %2$s. Data remains local and will retry.</string>
 
