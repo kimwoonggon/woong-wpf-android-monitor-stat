@@ -36,7 +36,10 @@ It runs on `windows-latest` and performs:
 - Release build
 - Release test
 - WPF app publish
-- signed MSIX packaging with a per-run test certificate
+- signed MSIX packaging with a stable release signing certificate when
+  repository secrets are configured
+- signed MSIX packaging with an ephemeral test certificate when release signing
+  secrets are not configured
 - artifact upload
 
 Artifacts:
@@ -52,6 +55,24 @@ The `woong-monitor-windows-msix` artifact contains:
 - `README.md`
 
 The CI artifact does not include the private `.pfx` key.
+
+## Release Signing Secrets
+
+For installable release artifacts, configure these GitHub repository secrets:
+
+```text
+WINDOWS_MSIX_CERTIFICATE_BASE64
+WINDOWS_MSIX_CERTIFICATE_PASSWORD
+```
+
+`WINDOWS_MSIX_CERTIFICATE_BASE64` is a base64-encoded `.pfx` file. The workflow
+decodes it only into `$env:RUNNER_TEMP\woong-monitor-msix-signing.pfx`, signs
+the MSIX, exports only the public `.cer` into the artifact, and never uploads
+the private `.pfx`.
+
+If either secret is missing, CI falls back to an ephemeral test certificate so
+pull requests and routine main builds still produce a locally testable signed
+MSIX. That fallback certificate is not a stable release signing identity.
 
 ## Download From GitHub Actions
 
@@ -141,6 +162,10 @@ powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 `
   -CertificatePath D:\path\to\woong-monitor.pfx `
   -CertificatePassword "<password>"
 ```
+
+The script exports `artifacts\windows-msix\certificates\WoongMonitorStack.Windows.Signing.cer`
+from a provided stable release signing certificate so the install artifact still
+contains the public certificate required for sideload trust.
 
 Do not commit private signing certificates or passwords.
 

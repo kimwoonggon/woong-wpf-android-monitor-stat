@@ -140,6 +140,39 @@ function New-TestSigningCertificate {
     }
 }
 
+function Export-PublicCertificateFromPfx {
+    param(
+        [string]$PfxPath,
+        [string]$Password,
+        [string]$OutputDirectory
+    )
+
+    New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+
+    $cerPath = Join-Path $OutputDirectory "WoongMonitorStack.Windows.Signing.cer"
+    $storageFlags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+    if ([string]::IsNullOrEmpty($Password)) {
+        $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($PfxPath)
+    }
+    else {
+        $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            $PfxPath,
+            $Password,
+            $storageFlags)
+    }
+
+    try {
+        [System.IO.File]::WriteAllBytes(
+            $cerPath,
+            $certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+    }
+    finally {
+        $certificate.Dispose()
+    }
+
+    return $cerPath
+}
+
 function Write-InstallReadme {
     param(
         [string]$Path,
@@ -149,7 +182,7 @@ function Write-InstallReadme {
     $content = @"
 # Woong Monitor Stack signed MSIX artifact
 
-This artifact contains a signed MSIX package for local Windows testing:
+This artifact contains a signed MSIX package:
 
 - `WoongMonitorStack.Windows.msix`
 - `certificates\$CertificateFileName`
@@ -162,7 +195,7 @@ powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 -PackagePath
 ~~~
 
 The installer script trusts the public certificate in `Cert:\LocalMachine\TrustedPeople`.
-That machine-wide store is required for reliable MSIX/App Installer validation of this self-signed test certificate.
+That machine-wide store is required for reliable MSIX/App Installer validation of self-signed or private release certificates.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
@@ -233,6 +266,14 @@ if ($Sign) {
     Write-Host "Signing MSIX with $signTool"
     & $signTool @signArgs
     Assert-NativeCommandSucceeded -Operation "SignTool.exe sign"
+
+    if ([string]::IsNullOrWhiteSpace($generatedCerPath) -and [string]::IsNullOrWhiteSpace($InstallCertificatePath)) {
+        $generatedCerPath = Export-PublicCertificateFromPfx `
+            -PfxPath $CertificatePath `
+            -Password $CertificatePassword `
+            -OutputDirectory $certificateOutputDir
+        $InstallCertificatePath = $generatedCerPath
+    }
 }
 
 if ($Install) {

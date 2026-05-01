@@ -1954,7 +1954,7 @@ milestones below are finished.
 - [x] MSIX install trust stays explicit and CurrentUser-scoped; no LocalMachine certificate store is used.
 - [x] Fixed MSIX packaging script to copy published app files into the package layout and fail when native tools fail.
 - [x] Generated local unsigned MSIX at `artifacts/windows-msix/WoongMonitorStack.Windows.msix`.
-- [ ] Future: add real release signing certificate/secrets strategy before distributing signed installer artifacts.
+- [x] Added real release signing certificate/secrets strategy for CI MSIX artifacts; CI falls back to ephemeral test certificate only when secrets are absent.
 
 ### Validation Update
 
@@ -1990,7 +1990,7 @@ milestones below are finished.
 
 ### Remaining Windows Release Work
 
-- [ ] Replace per-run test certificate with a stable release signing certificate/secrets strategy before public distribution.
+- [x] Replace per-run test certificate with a stable release signing certificate/secrets strategy before public distribution.
 - [ ] Add a tag-based release workflow after signing policy is finalized.
 
 ## 2026-05-01 Windows MSIX 0x800B010A Certificate Trust Fix
@@ -2100,3 +2100,11 @@ milestones below are finished.
 - [x] dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 475 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - [x] dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
 - [x] Coverage collection passed: line 88.2% (4511/5112), branch 69.7% (673/965). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 Windows Stable MSIX Signing Secrets
+
+- [x] Added CI secret path for stable release signing: `WINDOWS_MSIX_CERTIFICATE_BASE64` and `WINDOWS_MSIX_CERTIFICATE_PASSWORD`.
+- [x] Kept ephemeral test certificate fallback when release signing secrets are absent.
+- [x] Updated MSIX packaging script to export public `WoongMonitorStack.Windows.Signing.cer` from a provided PFX without uploading private keys.
+- [x] Updated README and Windows MSIX documentation.
+- [x] Validation: full solution tests passed (479 passed, 6 skipped), Release build passed, coverage generated at 88.0% line / 69.5% branch; commit/push pending.

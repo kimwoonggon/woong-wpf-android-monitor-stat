@@ -60,6 +60,28 @@ public sealed class WindowsReleasePackagingTests
     }
 
     [Fact]
+    public void WindowsCiWorkflow_UsesStableSigningSecretWhenAvailableAndFallsBackToTestCertificate()
+    {
+        string workflowPath = Path.Combine(RepositoryRoot, ".github", "workflows", "windows-wpf-ci.yml");
+
+        Assert.True(File.Exists(workflowPath), "Windows GitHub Actions workflow must exist.");
+        string workflow = File.ReadAllText(workflowPath);
+
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_BASE64", workflow, StringComparison.Ordinal);
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_PASSWORD", workflow, StringComparison.Ordinal);
+        Assert.Contains("HAS_WINDOWS_MSIX_RELEASE_CERTIFICATE", workflow, StringComparison.Ordinal);
+        Assert.Contains("Decode release MSIX signing certificate", workflow, StringComparison.Ordinal);
+        Assert.Contains("[Convert]::FromBase64String($env:WINDOWS_MSIX_CERTIFICATE_BASE64)", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Sign", workflow, StringComparison.Ordinal);
+        Assert.Contains("-CertificatePath $env:RUNNER_TEMP\\woong-monitor-msix-signing.pfx", workflow, StringComparison.Ordinal);
+        Assert.Contains("-CertificatePassword $env:WINDOWS_MSIX_CERTIFICATE_PASSWORD", workflow, StringComparison.Ordinal);
+        Assert.Contains("Package signed MSIX with release certificate", workflow, StringComparison.Ordinal);
+        Assert.Contains("Package signed MSIX with ephemeral test certificate", workflow, StringComparison.Ordinal);
+        Assert.Contains("if: env.HAS_WINDOWS_MSIX_RELEASE_CERTIFICATE == 'true'", workflow, StringComparison.Ordinal);
+        Assert.Contains("if: env.HAS_WINDOWS_MSIX_RELEASE_CERTIFICATE != 'true'", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WindowsMsixManifest_DeclaresFullTrustDesktopAppAndCorrectExecutable()
     {
         string manifestPath = Path.Combine(RepositoryRoot, "packaging", "windows-msix", "AppxManifest.xml");
@@ -102,6 +124,8 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("Export-Certificate", packageScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("WoongMonitorStack.Windows.TestSigning.cer", packageScript, StringComparison.Ordinal);
         Assert.Contains("WoongMonitorStack.Windows.TestSigning.pfx", packageScript, StringComparison.Ordinal);
+        Assert.Contains("Export-PublicCertificateFromPfx", packageScript, StringComparison.Ordinal);
+        Assert.Contains("WoongMonitorStack.Windows.Signing.cer", packageScript, StringComparison.Ordinal);
         Assert.Contains("install-windows-msix.ps1", packageScript, StringComparison.Ordinal);
         Assert.Contains("README.md", packageScript, StringComparison.Ordinal);
         Assert.Contains("Add-AppxPackage", installScript, StringComparison.OrdinalIgnoreCase);
@@ -137,6 +161,10 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("signed MSIX", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Download the artifact named `woong-monitor-windows-msix`", doc, StringComparison.Ordinal);
         Assert.Contains("CurrentUser", doc, StringComparison.Ordinal);
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_BASE64", doc, StringComparison.Ordinal);
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_PASSWORD", doc, StringComparison.Ordinal);
+        Assert.Contains("stable release signing certificate", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ephemeral test certificate", doc, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string? GetXamlAttribute(XElement element, string attributeName)

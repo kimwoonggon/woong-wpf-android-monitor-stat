@@ -238,8 +238,11 @@ GitHub Actions workflow:
 .github/workflows/windows-wpf-ci.yml
 ```
 
-It restores, builds, tests, publishes the Windows app, packages a signed test
-MSIX, and uploads installable artifacts.
+It restores, builds, tests, publishes the Windows app, packages a signed MSIX,
+and uploads installable artifacts. If `WINDOWS_MSIX_CERTIFICATE_BASE64` and
+`WINDOWS_MSIX_CERTIFICATE_PASSWORD` repository secrets are configured, CI signs
+with that stable release signing certificate. If either secret is missing, CI
+falls back to an ephemeral test certificate for local verification artifacts.
 
 Local MSIX packaging:
 
@@ -256,7 +259,9 @@ powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -Creat
 GitHub Actions uploads `woong-monitor-windows-msix` with:
 
 - `WoongMonitorStack.Windows.msix`
-- `certificates\WoongMonitorStack.Windows.TestSigning.cer`
+- `certificates\WoongMonitorStack.Windows.Signing.cer` for release-secret builds,
+  or `certificates\WoongMonitorStack.Windows.TestSigning.cer` for fallback test
+  certificate builds
 - `install-windows-msix.ps1`
 - `README.md`
 

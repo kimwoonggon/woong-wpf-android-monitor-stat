@@ -4708,3 +4708,18 @@ Validation:
 - dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
 - WPF UI acceptance passed at artifacts/wpf-ui-acceptance/20260501-150730; the root report includes a Runtime Log Excerpt section.
 - Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 Windows Stable MSIX Signing Secrets
+
+- Updated Windows WPF CI so release signing secrets `WINDOWS_MSIX_CERTIFICATE_BASE64` and `WINDOWS_MSIX_CERTIFICATE_PASSWORD` produce a signed MSIX with a stable certificate.
+- CI now falls back to `-CreateTestCertificate` only when the release signing secrets are absent, keeping PR/main artifacts locally testable.
+- `scripts/package-windows-msix.ps1` now exports a public `WoongMonitorStack.Windows.Signing.cer` from a provided PFX so install artifacts never include the private key.
+- Updated README and Windows MSIX docs with the stable release signing secret path and fallback behavior.
+
+Validation in progress:
+
+- Focused Windows release packaging architecture tests passed: 7 passed.
+- PowerShell package script parsed successfully.
+- Full solution tests passed after this note: 479 passed, 6 skipped.
+- Release build passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973).
