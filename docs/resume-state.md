@@ -4682,7 +4682,7 @@ Validation:
 - Split the old combined `Last DB write / Sync state` visual label into clearer separate rows.
 - No tracking, browser capture, SQLite, sync, or privacy behavior changed.
 
-Validation in progress:
+Validation:
 
 - Focused badge RED/GREEN tests passed.
 - Focused Current Focus icon RED/GREEN tests passed.
