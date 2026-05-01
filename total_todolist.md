@@ -2128,3 +2128,10 @@ milestones below are finished.
 - [x] Documented Android Gradle unit test/build, APK install, launcher start, Usage Access settings handoff, and manual screenshot capture commands.
 - [x] Added architecture coverage that keeps the Android emulator/build/install/launch/screenshot README flow documented.
 - [x] Ran Android Gradle `testDebugUnitTest assembleDebug`, full `dotnet test`, and full `dotnet build`.
+## 2026-05-01 Android emulator manual launch follow-up
+
+- [x] Started the `Medium_Phone` emulator and confirmed `sys.boot_completed=1` on `emulator-5554`.
+- [x] Installed and launched the Android debug APK on the emulator.
+- [x] Captured a manual Android screenshot at `artifacts/android-check/manual/dashboard.png`.
+- [x] Corrected README screenshot guidance to use `adb shell screencap` plus `adb pull` instead of PowerShell raw `exec-out` redirection.
+- [x] Re-ran focused README architecture test, full `dotnet test`, and full `dotnet build`.

@@ -4761,3 +4761,16 @@ Validation:
 - Android Gradle `testDebugUnitTest assembleDebug` passed.
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 483 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.
+
+## 2026-05-01 Android Emulator Manual Launch Note
+
+- Started the `Medium_Phone` emulator and verified `sys.boot_completed=1` on `emulator-5554`.
+- Installed `android/app/build/outputs/apk/debug/app-debug.apk` and launched `com.woong.monitorstack/.MainActivity`.
+- Captured the current app screen at `artifacts/android-check/manual/dashboard.png`; the app opened on the Sessions tab with sample session rows visible.
+- Corrected README screenshot guidance to use `adb shell screencap` plus `adb pull` because PowerShell redirection can corrupt raw `exec-out screencap` PNG bytes.
+
+Validation:
+
+- Focused Android README architecture test passed after the screenshot command correction.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 483 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.

@@ -362,8 +362,14 @@ Take a quick manual screenshot after launch:
 
 ```powershell
 New-Item -ItemType Directory -Force artifacts\android-check\manual
-& "$env:ANDROID_HOME\platform-tools\adb.exe" exec-out screencap -p > artifacts\android-check\manual\dashboard.png
+& "$env:ANDROID_HOME\platform-tools\adb.exe" shell screencap -p /sdcard/woong-dashboard.png
+& "$env:ANDROID_HOME\platform-tools\adb.exe" pull /sdcard/woong-dashboard.png artifacts\android-check\manual\dashboard.png
+& "$env:ANDROID_HOME\platform-tools\adb.exe" shell rm /sdcard/woong-dashboard.png
 ```
+
+Use the `screencap` + `pull` flow on PowerShell. Raw `exec-out screencap -p >
+file.png` can corrupt PNG bytes when PowerShell treats redirected output as
+text.
 
 If the app needs Usage Access permission, open the Android settings handoff:
 

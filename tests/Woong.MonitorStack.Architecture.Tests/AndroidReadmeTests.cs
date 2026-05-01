@@ -20,7 +20,9 @@ public sealed class AndroidReadmeTests
         Assert.Contains(".\\gradlew.bat assembleDebug --no-daemon --stacktrace", readme, StringComparison.Ordinal);
         Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" install -r app\\build\\outputs\\apk\\debug\\app-debug.apk", readme, StringComparison.Ordinal);
         Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" shell monkey -p com.woong.monitorstack -c android.intent.category.LAUNCHER 1", readme, StringComparison.Ordinal);
-        Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" exec-out screencap -p > artifacts\\android-check\\manual\\dashboard.png", readme, StringComparison.Ordinal);
+        Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" shell screencap -p /sdcard/woong-dashboard.png", readme, StringComparison.Ordinal);
+        Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" pull /sdcard/woong-dashboard.png artifacts\\android-check\\manual\\dashboard.png", readme, StringComparison.Ordinal);
+        Assert.Contains("Raw `exec-out screencap -p >", readme, StringComparison.Ordinal);
         Assert.Contains("scripts\\run-android-ui-snapshots.ps1", readme, StringComparison.Ordinal);
     }
 
