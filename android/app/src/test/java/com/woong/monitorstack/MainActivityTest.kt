@@ -717,6 +717,50 @@ class MainActivityTest {
     }
 
     @Test
+    fun reportTabPeriodButtonsReflectSelectedRange() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navReport
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val sevenDayButton = activity.findViewById<Button>(R.id.reportSevenDayButton)
+        val thirtyDayButton = activity.findViewById<Button>(R.id.reportThirtyDayButton)
+        val customButton = activity.findViewById<Button>(R.id.reportCustomButton)
+
+        assertTrue(sevenDayButton.isSelected)
+        assertFalse(thirtyDayButton.isSelected)
+        assertFalse(customButton.isSelected)
+
+        thirtyDayButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(sevenDayButton.isSelected)
+        assertTrue(thirtyDayButton.isSelected)
+        assertFalse(customButton.isSelected)
+
+        customButton.performClick()
+        activity.findViewById<EditText>(R.id.reportCustomStartDateEditText)
+            .setText(LocalDate.now().toString())
+        activity.findViewById<EditText>(R.id.reportCustomEndDateEditText)
+            .setText(LocalDate.now().toString())
+        activity.findViewById<Button>(R.id.reportApplyCustomRangeButton).performClick()
+        waitForMainThreadWork()
+
+        assertFalse(sevenDayButton.isSelected)
+        assertFalse(thirtyDayButton.isSelected)
+        assertTrue(customButton.isSelected)
+    }
+
+    @Test
     fun appDetailLoadsRoomBackedHourlyChartForSelectedApp() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()

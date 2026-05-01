@@ -1,15 +1,18 @@
 package com.woong.monitorstack.summary
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardChartConfigurator
 import com.woong.monitorstack.data.local.MonitorDatabase
@@ -41,13 +44,13 @@ class ReportFragment : Fragment() {
         binding.reportTopAppsRecyclerView.adapter = topAppsAdapter
         chartConfigurator.configureDailyTrendChart(binding.sevenDayTrendChart, emptyList())
         binding.reportSevenDayButton.setOnClickListener {
-            loadReport(ReportPeriod.Last7Days)
+            loadPresetReport(binding.reportSevenDayButton, ReportPeriod.Last7Days)
         }
         binding.reportThirtyDayButton.setOnClickListener {
-            loadReport(ReportPeriod.Last30Days)
+            loadPresetReport(binding.reportThirtyDayButton, ReportPeriod.Last30Days)
         }
         binding.reportNinetyDayButton.setOnClickListener {
-            loadReport(ReportPeriod.Last90Days)
+            loadPresetReport(binding.reportNinetyDayButton, ReportPeriod.Last90Days)
         }
         binding.reportCustomButton.setOnClickListener {
             binding.reportCustomRangePanel.visibility = View.VISIBLE
@@ -57,7 +60,14 @@ class ReportFragment : Fragment() {
             applyCustomRange()
         }
 
+        selectPeriodButton(binding.reportSevenDayButton)
         loadReport(ReportPeriod.Last7Days)
+    }
+
+    private fun loadPresetReport(button: MaterialButton, period: ReportPeriod) {
+        binding.reportCustomRangePanel.visibility = View.GONE
+        selectPeriodButton(button)
+        loadReport(period)
     }
 
     private fun applyCustomRange() {
@@ -68,12 +78,48 @@ class ReportFragment : Fragment() {
             val from = LocalDate.parse(startText)
             val to = LocalDate.parse(endText)
             binding.reportCustomRangeErrorText.visibility = View.GONE
+            selectPeriodButton(binding.reportCustomButton)
             loadReport(ReportPeriod.Custom(from = from, to = to))
         } catch (_: DateTimeParseException) {
             binding.reportCustomRangeErrorText.visibility = View.VISIBLE
         } catch (_: IllegalArgumentException) {
             binding.reportCustomRangeErrorText.visibility = View.VISIBLE
         }
+    }
+
+    private fun selectPeriodButton(selectedButton: MaterialButton) {
+        val buttons = listOf(
+            binding.reportSevenDayButton,
+            binding.reportThirtyDayButton,
+            binding.reportNinetyDayButton,
+            binding.reportCustomButton
+        )
+
+        buttons.forEach { button ->
+            val isSelected = button == selectedButton
+            button.isSelected = isSelected
+            applyPeriodButtonStyle(button, isSelected)
+        }
+    }
+
+    private fun applyPeriodButtonStyle(button: MaterialButton, isSelected: Boolean) {
+        val context = button.context
+        val backgroundColor = ContextCompat.getColor(
+            context,
+            if (isSelected) R.color.wms_primary else R.color.wms_surface
+        )
+        val textColor = ContextCompat.getColor(
+            context,
+            if (isSelected) android.R.color.white else R.color.wms_primary
+        )
+        val strokeColor = ContextCompat.getColor(
+            context,
+            if (isSelected) R.color.wms_primary else R.color.wms_border
+        )
+
+        button.backgroundTintList = ColorStateList.valueOf(backgroundColor)
+        button.setTextColor(textColor)
+        button.strokeColor = ColorStateList.valueOf(strokeColor)
     }
 
     private fun loadReport(period: ReportPeriod) {

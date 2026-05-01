@@ -2252,4 +2252,8 @@ milestones below are finished.
 - [x] Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/`.
 - [x] Latest Android current-focus evidence: `artifacts/android-usage-current-focus/20260501-205619/`.
 - [x] Validation passed: Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, Android UI snapshots on `emulator-5554`, current-focus validation on `emulator-5554`, full solution `dotnet test`/`dotnet build`, and coverage line 88.0% / branch 69.5%.
+- [x] Report period buttons now show selected state for 7d, 30d, 90d, and valid Custom ranges.
+- [x] Latest selected Custom range screenshot evidence: `artifacts/android-ui-snapshots/20260501-210345/15-report-custom-range.png`.
+- [x] Validation passed for Report selected-state polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
 - [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference, especially selected period state and Material styling.
+- [ ] Next Android TODO: apply selected-period styling consistency to Dashboard and Sessions controls.

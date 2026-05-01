@@ -4982,3 +4982,24 @@ Remaining Android priorities:
 
 - Polish Dashboard/Report chart visuals and selected-period states against the supplied reference.
 - Add a future debug hook only if explicit from/to emulator UsageStats validation becomes necessary beyond the current JVM tests and safe emulator smoke evidence.
+
+## 2026-05-01 Android Report Period Selection Polish
+
+- Report period buttons now visually reflect the selected range for 7d, 30d, 90d, and valid Custom ranges.
+- Custom range remains unselected until a valid start/end date is applied, so opening the custom panel alone does not misrepresent the loaded report.
+- Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-210345/`, especially `15-report-custom-range.png`.
+
+Validation completed:
+
+- RED `reportTabPeriodButtonsReflectSelectedRange` failed before Report period buttons tracked selected state.
+- Focused Report selected-range test passed after implementation.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973), report at `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Polish Dashboard period selected state to match Report.
+- Polish Dashboard/Report chart visuals against the supplied reference.
