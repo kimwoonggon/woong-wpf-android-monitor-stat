@@ -2211,7 +2211,8 @@ milestones below are finished.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK and screenshot automation on `emulator-5554`.
 - [ ] Next Android TODO: implement Dashboard period buttons as real range reloads.
 - [ ] Next Android TODO: implement Report 30d/90d/custom range reloads.
-- [ ] Next Android TODO: add server endpoint/device configuration before enabling real manual sync upload.- [x] Full solution validation for Android Settings Sync Opt-In and Sessions Period Filters passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Android Settings sync config now includes server URL/device ID fields before real manual sync enqueue.
+- [x] Full solution validation for Android Settings Sync Opt-In and Sessions Period Filters passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed for Android Settings Sync Opt-In and Sessions Period Filters: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
@@ -2281,6 +2282,18 @@ milestones below are finished.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.
+
+## 2026-05-02 Android Settings Sync Config
+
+- [x] SharedPreferences sync server base URL/device ID now default blank, persist trimmed values, and keep sync opt-in off by default.
+- [x] Settings UI exposes server URL and device ID fields beside Sync controls.
+- [x] Manual Sync stays local-only/no-worker while sync is off; sync-on missing config shows configuration required and does not enqueue work.
+- [x] Manual Sync with valid config enqueues AndroidSyncWorker with KEY_BASE_URL, KEY_DEVICE_ID, and pending limit.
+- [x] AndroidSyncWorker missing config returns a clear failure status without calling the sync runner.
+- [x] Latest Android UI snapshot evidence: artifacts/android-ui-snapshots/20260502-063728/ PASS; crash buffer empty.
+- [x] Validation passed: Android Gradle test/build/androidTest APK, UI snapshots, dotnet test, and dotnet build.
+- [ ] Remaining Android sync hardening: real server auth, device registration, and production endpoint requirements stay open before release use.
+
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
 - [x] Fixed WPF runtime tracking bug: leaving a browser foreground focus now flushes the open WebSession before the coordinator starts tracking the next app.
@@ -2325,11 +2338,11 @@ milestones below are finished.
 - [x] Stabilized `SnapshotCaptureTest` with deterministic MainActivity Usage Access gates and Splash routing waits before shell tab/filter captures.
 - [x] Added RED/GREEN MainActivity regression coverage for delayed Splash routing after Activity destruction.
 - [x] Added RED/GREEN snapshot-script coverage and implementation that clears external browser/system dialog interference before instrumentation capture.
-- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-055751/`.
+- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-063728/`.
 - [x] Added per-screen PASS/WARN rows to Android UI snapshot `report.md`.
 - [x] Fixed hidden-shell screenshot margins so Splash/Permission captures stay aligned without showing toolbar or bottom navigation.
 - [x] Crash buffer was cleared before the latest run and remained empty after screenshot capture.
-- [x] Android UI snapshot rerun `report.md` status PASS with all seven canonical Figma screenshots PASS; latest points to `artifacts/android-ui-snapshots/20260502-055751/`.
+- [x] Android UI snapshot rerun `report.md` status PASS with all seven canonical Figma screenshots PASS; latest points to `artifacts/android-ui-snapshots/20260502-063728/`.
 - [x] Dashboard first viewport now shows Hourly focus immediately after filters, with Top apps next below.
 - [x] Report `figma-06-report.png` now shows a seeded multi-day, multi-point trend.
 - [x] Sessions rows are visually compact while preserving readable app/package metadata.

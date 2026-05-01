@@ -2,6 +2,35 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Android Settings Sync Config Slice
+
+- Added privacy-safe Settings sync configuration behavior: server base URL and
+  device ID default blank, persist through SharedPreferences, and trim entered
+  values.
+- Settings UI now exposes server URL and device ID fields next to sync controls.
+- Manual sync remains local-only while sync is off and does not enqueue
+  `AndroidSyncWorker`.
+- When sync is on but configuration is missing, Manual Sync shows a
+  configuration-required result and does not enqueue work.
+- With valid configuration, Manual Sync enqueues `AndroidSyncWorker` with
+  `KEY_BASE_URL`, `KEY_DEVICE_ID`, and the pending outbox limit.
+- `AndroidSyncWorker` now returns a clear missing-configuration failure status
+  without calling the sync runner.
+- Latest Android UI snapshot evidence:
+  `artifacts/android-ui-snapshots/20260502-063728/` and
+  `artifacts/android-ui-snapshots/latest/`; `report.md` status is `PASS`, all
+  seven canonical Figma screenshots are `PASS`, and the crash buffer remained
+  empty.
+- Real server auth, device registration, and production endpoint hardening
+  remain open future work.
+
+Verified:
+
+- `android\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554` passed and produced `artifacts/android-ui-snapshots/20260502-063728/`.
+- `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+- `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+
 ## 2026-05-02 Android 7-Screen Acceptance Evidence Slice
 
 - Reopened the Android Figma parity backlog in `android_check_todo.md` and
@@ -25,7 +54,7 @@ Updated: 2026-05-02
 - The crash buffer was cleared before the latest run and remained empty after
   the successful screenshot capture.
 - Latest Android UI snapshot rerun passed at
-  `artifacts/android-ui-snapshots/20260502-055751/`; `latest` points there.
+  `artifacts/android-ui-snapshots/20260502-063728/`; `latest` points there.
 - Snapshot `report.md` status is `PASS`, all seven canonical Figma screenshots
   are `PASS`, and the crash buffer remained empty.
 - Dashboard first viewport now shows Hourly focus immediately after the period
@@ -34,7 +63,7 @@ Updated: 2026-05-02
   trend.
 - Sessions rows are compact while preserving readable app/package metadata.
 - Settings now has clearer Permissions, Collection, Sync, and Privacy visual
-  grouping.
+  grouping, including sync server URL/device ID configuration fields.
 - Dashboard and Report top-app rows now render proportional usage bars with
   reduced row dead space.
 - Focused Android visual coverage:
@@ -56,7 +85,7 @@ Updated: 2026-05-02
   are never captured; external foreground proof must use package/process/window
   metadata plus Room rows and Woong Monitor UI after return.
 - Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-055751/` and
+  `artifacts/android-ui-snapshots/20260502-063728/` and
   `artifacts/android-ui-snapshots/latest/`.
 
 Verified:

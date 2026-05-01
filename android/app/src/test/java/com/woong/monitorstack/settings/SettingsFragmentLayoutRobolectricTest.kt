@@ -1,10 +1,12 @@
 package com.woong.monitorstack.settings
 
 import android.content.Context
+import android.text.InputType
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -81,6 +83,34 @@ class SettingsFragmentLayoutRobolectricTest {
             primaryColor = primaryColor
         )
         assertEquals(primaryColor, binding.syncStatusText.currentTextColor)
+        assertNotNull(binding.syncServerUrlEditText)
+        assertNotNull(binding.syncDeviceIdEditText)
+        assertEquals(
+            context.getString(R.string.sync_server_url_hint),
+            binding.syncServerUrlEditText.hint.toString()
+        )
+        assertEquals(
+            context.getString(R.string.sync_device_id_hint),
+            binding.syncDeviceIdEditText.hint.toString()
+        )
+        assertEquals(
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
+            binding.syncServerUrlEditText.inputType
+        )
+        assertEquals(
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_NORMAL,
+            binding.syncDeviceIdEditText.inputType
+        )
+        val syncInputMetadata = binding.syncSettingsCard.descendantEditTexts()
+            .map { editText ->
+                val name = context.resources.getResourceEntryName(editText.id)
+                "$name ${editText.hint}"
+            }
+            .joinToString(" ")
+            .lowercase()
+        assertTrue("Sync settings must not expose secret input fields.", "password" !in syncInputMetadata)
+        assertTrue("Sync settings must not expose token input fields.", "token" !in syncInputMetadata)
+        assertTrue("Sync settings must not expose secret input fields.", "secret" !in syncInputMetadata)
 
         assertTextColor(
             binding.usageAccessGuidanceText,
@@ -182,6 +212,17 @@ class SettingsFragmentLayoutRobolectricTest {
         if (this@descendantTextViews is ViewGroup) {
             for (index in 0 until childCount) {
                 yieldAll(getChildAt(index).descendantTextViews())
+            }
+        }
+    }
+
+    private fun View.descendantEditTexts(): Sequence<EditText> = sequence {
+        if (this@descendantEditTexts is EditText) {
+            yield(this@descendantEditTexts)
+        }
+        if (this@descendantEditTexts is ViewGroup) {
+            for (index in 0 until childCount) {
+                yieldAll(getChildAt(index).descendantEditTexts())
             }
         }
     }

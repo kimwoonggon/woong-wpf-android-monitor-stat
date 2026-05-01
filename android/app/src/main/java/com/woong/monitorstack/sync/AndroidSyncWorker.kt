@@ -32,6 +32,18 @@ class AndroidSyncWorker @JvmOverloads constructor(
             )
         }
 
+        val missingConfigurationMessage = missingConfigurationMessage()
+        if (missingConfigurationMessage != null) {
+            return Result.failure(
+                workDataOf(
+                    KEY_SYNCED_COUNT to 0,
+                    KEY_FAILED_COUNT to 0,
+                    KEY_SYNC_STATUS to STATUS_MISSING_CONFIGURATION,
+                    KEY_SYNC_MESSAGE to missingConfigurationMessage
+                )
+            )
+        }
+
         return try {
             val result = runner.syncPending(limit)
             if (result.failedCount > 0) {
@@ -49,6 +61,22 @@ class AndroidSyncWorker @JvmOverloads constructor(
         }
     }
 
+    private fun missingConfigurationMessage(): String? {
+        val missingKeys = mutableListOf<String>()
+        if (inputData.getString(KEY_DEVICE_ID).isNullOrBlank()) {
+            missingKeys += "KEY_DEVICE_ID"
+        }
+        if (inputData.getString(KEY_BASE_URL).isNullOrBlank()) {
+            missingKeys += "KEY_BASE_URL"
+        }
+
+        return if (missingKeys.isEmpty()) {
+            null
+        } else {
+            "Android sync is not configured. Missing worker input: ${missingKeys.joinToString(", ")}."
+        }
+    }
+
     companion object {
         const val KEY_DEVICE_ID = "deviceId"
         const val KEY_BASE_URL = "baseUrl"
@@ -56,6 +84,9 @@ class AndroidSyncWorker @JvmOverloads constructor(
         const val KEY_SYNCED_COUNT = "syncedCount"
         const val KEY_FAILED_COUNT = "failedCount"
         const val KEY_SYNC_SKIPPED = "syncSkipped"
+        const val KEY_SYNC_STATUS = "syncStatus"
+        const val KEY_SYNC_MESSAGE = "syncMessage"
+        const val STATUS_MISSING_CONFIGURATION = "missing_configuration"
         const val DEFAULT_PENDING_LIMIT = 50
     }
 }

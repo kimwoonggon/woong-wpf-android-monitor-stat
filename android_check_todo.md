@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-055751/
+artifacts/android-ui-snapshots/20260502-063728/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -103,7 +103,7 @@ Product boundary reminder:
   interference before instrumentation captures, including Chrome force-stop and
   `CLOSE_SYSTEM_DIALOGS`.
 - [x] Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-055751/`.
+  `artifacts/android-ui-snapshots/20260502-063728/`.
 - [x] Latest snapshot `report.md` status is `PASS`; all seven canonical Figma
   screenshots are `PASS`.
 - [x] Latest snapshot crash buffer remained empty.
@@ -115,14 +115,22 @@ Product boundary reminder:
   metadata.
 - [x] Settings now uses clearer Permissions, Collection, Sync, and Privacy
   grouping.
+- [x] Settings Sync configuration now persists trimmed server URL/device ID
+  values with blank privacy-safe defaults.
+- [x] Manual sync remains local-only while sync is off; sync-on without required
+  configuration shows a configuration-required result and does not enqueue work.
+- [x] Manual sync with valid configuration enqueues `AndroidSyncWorker` with
+  `KEY_BASE_URL`, `KEY_DEVICE_ID`, and the pending outbox limit.
+- [x] `AndroidSyncWorker` returns a clear missing-configuration failure status
+  without calling the sync runner.
 - [x] Snapshot report now includes per-screen PASS/WARN rows for the seven
   canonical Figma screenshots.
 - [x] Hidden-shell captures now keep Splash/Permission margins aligned without
   leaking the main toolbar or bottom navigation into those screens.
 - [x] Crash buffer was cleared before the latest run and remained empty after
   the successful screenshot capture.
-- [x] Validated focused architecture/Robolectric tests and the emulator
-  screenshot script on `emulator-5554`.
+- [x] Validated Android `testDebugUnitTest assembleDebug
+  assembleDebugAndroidTest`, latest UI snapshots, and full dotnet test/build.
 
 ### A. Acceptance Inventory And Evidence
 
@@ -235,12 +243,18 @@ Product boundary reminder:
 
 - [ ] Add/verify tests that Settings shows permissions, collection, sync,
   privacy, location, and storage sections.
-- [ ] Match Figma Settings card grouping and spacing.
+- [x] Match Figma Settings card grouping and spacing.
 - [ ] Usage Access permission status must be visible.
 - [ ] Background/periodic collection setting must be visible and explain
   WorkManager-based collection.
-- [ ] Sync enabled must default off and show local-only status.
-- [ ] Manual sync must skip upload while sync is off and show a clear result.
+- [x] Sync enabled must default off and show local-only status.
+- [x] Manual sync must skip upload while sync is off and show a clear result.
+- [x] Sync server URL/device ID fields must persist trimmed values and default
+  blank until the user opts in and configures sync.
+- [x] Sync-on manual sync without server URL/device ID must show configuration
+  required and must not enqueue a worker.
+- [x] Sync-on manual sync with valid configuration must enqueue
+  `AndroidSyncWorker` with explicit base URL/device ID input data.
 - [ ] Privacy defaults must be safe.
 - [ ] Location context must default off, with precise coordinates requiring
   separate opt-in.
@@ -589,7 +603,9 @@ workspace.
 - [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
 - [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
-- [ ] Remaining Android gap: wire Settings sync controls to real opt-in state and a local-only/manual sync result.
+- [x] Remaining Android gap resolved: Settings sync controls now wire to real
+  opt-in state, local-only sync-off status, required configuration checks, and
+  configured manual worker enqueue.
 - [ ] Remaining Android gap: add period-filter behavior for Dashboard/Sessions/Report buttons beyond the current default views.
 
 ## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
@@ -605,7 +621,10 @@ workspace.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 - [ ] Remaining Android gap: Dashboard period buttons still need full period reload behavior.
 - [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
-- [ ] Remaining Android gap: manual sync-on should eventually enqueue a configured server sync once endpoint/device configuration UI exists.
+- [x] Manual sync-on now enqueues a configured `AndroidSyncWorker` once server
+  URL/device ID fields are present and valid.
+- [ ] Remaining Android sync hardening: real server auth, device registration,
+  and production endpoint requirements remain open before release use.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
 

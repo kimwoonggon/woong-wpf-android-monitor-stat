@@ -4,6 +4,8 @@ import android.content.Context
 
 interface AndroidSyncSettings {
     fun isSyncEnabled(): Boolean
+    fun serverBaseUrl(): String = ""
+    fun deviceId(): String = ""
 }
 
 class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettings {
@@ -20,8 +22,26 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
         preferences.edit().putBoolean(KeySyncEnabled, enabled).apply()
     }
 
+    override fun serverBaseUrl(): String {
+        return preferences.getString(KeyServerBaseUrl, "").orEmpty()
+    }
+
+    fun setServerBaseUrl(serverBaseUrl: String) {
+        preferences.edit().putString(KeyServerBaseUrl, serverBaseUrl.trim()).apply()
+    }
+
+    override fun deviceId(): String {
+        return preferences.getString(KeyDeviceId, "").orEmpty()
+    }
+
+    fun setDeviceId(deviceId: String) {
+        preferences.edit().putString(KeyDeviceId, deviceId.trim()).apply()
+    }
+
     companion object {
         const val PreferenceName = "woong_monitor_settings"
         private const val KeySyncEnabled = "sync_enabled"
+        private const val KeyServerBaseUrl = "server_base_url"
+        private const val KeyDeviceId = "device_id"
     }
 }

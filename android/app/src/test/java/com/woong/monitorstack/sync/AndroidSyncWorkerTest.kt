@@ -2,6 +2,7 @@ package com.woong.monitorstack.sync
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.Data
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
@@ -17,6 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -32,9 +34,7 @@ class AndroidSyncWorkerTest {
         )
         val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
             .setInputData(
-                workDataOf(
-                    AndroidSyncWorker.KEY_PENDING_LIMIT to 25
-                )
+                syncInputData(pendingLimit = 25)
             )
             .setWorkerFactory(FakeWorkerFactory(runner))
             .build()
@@ -63,11 +63,27 @@ class AndroidSyncWorkerTest {
             )
         )
         val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
             .setWorkerFactory(FakeWorkerFactory(runner))
             .build()
 
         val result = worker.startWork().get()
 
+        assertEquals(ListenableWorker.Result.retry(), result)
+    }
+
+    @Test
+    fun doWorkRetriesWhenRunnerReportsRealUploadIOException() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = ThrowingAndroidSyncRunner(IOException("network unavailable"))
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
+            .setWorkerFactory(FakeWorkerFactory(runner))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(AndroidSyncWorker.DEFAULT_PENDING_LIMIT, runner.limit)
         assertEquals(ListenableWorker.Result.retry(), result)
     }
 
@@ -93,6 +109,37 @@ class AndroidSyncWorkerTest {
                     AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
                     AndroidSyncWorker.KEY_FAILED_COUNT to 0,
                     AndroidSyncWorker.KEY_SYNC_SKIPPED to true
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkFailsWithClearStatusAndDoesNotRunSyncWhenWorkerConfigIsMissing() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeAndroidSyncRunner(
+            result = AndroidOutboxSyncResult(
+                syncedCount = 1,
+                failedCount = 0
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(null, runner.limit)
+        assertEquals(
+            ListenableWorker.Result.failure(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_STATUS to
+                        AndroidSyncWorker.STATUS_MISSING_CONFIGURATION,
+                    AndroidSyncWorker.KEY_SYNC_MESSAGE to
+                        "Android sync is not configured. Missing worker input: KEY_DEVICE_ID, KEY_BASE_URL."
                 )
             ),
             result
@@ -174,6 +221,7 @@ class AndroidSyncWorkerTest {
             )
         )
         val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
             .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
             .build()
 
@@ -224,6 +272,7 @@ class AndroidSyncWorkerTest {
             )
         )
         val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
             .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
             .build()
 
@@ -237,6 +286,24 @@ class AndroidSyncWorkerTest {
         )
     }
 
+    private fun syncInputData(
+        deviceId: String? = "device-1",
+        baseUrl: String? = "https://sync.example",
+        pendingLimit: Int? = null
+    ): Data {
+        val values = mutableListOf<Pair<String, Any?>>()
+        if (deviceId != null) {
+            values += AndroidSyncWorker.KEY_DEVICE_ID to deviceId
+        }
+        if (baseUrl != null) {
+            values += AndroidSyncWorker.KEY_BASE_URL to baseUrl
+        }
+        if (pendingLimit != null) {
+            values += AndroidSyncWorker.KEY_PENDING_LIMIT to pendingLimit
+        }
+        return workDataOf(*values.toTypedArray())
+    }
+
     private class FakeAndroidSyncRunner(
         private val result: AndroidOutboxSyncResult
     ) : AndroidSyncRunner {
@@ -246,6 +313,18 @@ class AndroidSyncWorkerTest {
         override suspend fun syncPending(limit: Int): AndroidOutboxSyncResult {
             this.limit = limit
             return result
+        }
+    }
+
+    private class ThrowingAndroidSyncRunner(
+        private val exception: IOException
+    ) : AndroidSyncRunner {
+        var limit: Int? = null
+            private set
+
+        override suspend fun syncPending(limit: Int): AndroidOutboxSyncResult {
+            this.limit = limit
+            throw exception
         }
     }
 

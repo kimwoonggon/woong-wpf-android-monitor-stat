@@ -9,7 +9,7 @@ artifacts. It is the working acceptance map for `android_check_todo.md`.
 Latest clean emulator evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-055751/
+artifacts/android-ui-snapshots/20260502-063728/
 artifacts/android-ui-snapshots/latest/
 ```
 
@@ -18,7 +18,8 @@ Figma screenshots are `PASS`, and the crash buffer remained empty. The
 Dashboard first viewport now shows Hourly focus immediately after the period
 filters, with Top apps next below. The latest `figma-06-report.png` shows a
 seeded multi-day, multi-point trend; Sessions rows are compact; Settings is
-grouped by Permissions, Collection, Sync, and Privacy.
+grouped by Permissions, Collection, Sync, and Privacy, including sync server URL
+and device ID configuration fields.
 
 The Android app remains UsageStatsManager metadata only. It measures which apps
 were foreground for how long, local Room persistence, sync state, optional
@@ -39,6 +40,14 @@ Privacy shorthand for this acceptance run: no typed text, passwords, form conten
 | App Detail | `fragment_app_detail.xml` | `AppDetailFragment` | `RoomSessionsRepositoryTest` | `figma-05-app-detail.png` |
 | Report | `fragment_report.xml` | `ReportFragment` | `MainActivityTest.reportTabLoadsRoomBackedSevenDaySummary` | `figma-06-report.png` |
 | Settings | `fragment_settings.xml` | `SettingsFragment` | `MainActivityTest.settingsTabShowsRuntimePrivacySyncAndLocationControls` | `figma-07-settings.png` |
+
+Settings sync-config behavior is now part of the Settings acceptance surface:
+server base URL and device ID default blank, persisted values are trimmed, sync
+off keeps Manual Sync local-only, sync on with missing configuration shows a
+configuration-required result without enqueueing work, and sync on with valid
+configuration enqueues `AndroidSyncWorker` with explicit base URL/device ID
+input data. Real server auth, device registration, and production endpoint
+hardening remain future release work.
 
 ## Screenshot Contract
 
