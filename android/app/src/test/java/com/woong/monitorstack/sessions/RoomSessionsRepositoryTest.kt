@@ -4,6 +4,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
+import java.time.Instant
+import java.time.ZoneId
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -59,6 +61,38 @@ class RoomSessionsRepositoryTest {
         assertEquals("2m 5s", rows.first().durationText)
         assertEquals("09:00 - 09:02", rows.first().timeRangeText)
         assertEquals("Active", rows.first().stateText)
+    }
+
+    @Test
+    fun loadSessionsForSelectedPeriodReturnsOnlyRowsInThatRange() {
+        val zoneId = ZoneId.of("Asia/Seoul")
+        val now = Instant.parse("2026-04-29T12:00:00Z")
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "session-recent",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = now.minusSeconds(30 * 60).toEpochMilli(),
+                durationMs = 60_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "session-older",
+                packageName = "com.slack",
+                startedAtUtcMillis = now.minusSeconds(2 * 60 * 60).toEpochMilli(),
+                durationMs = 60_000
+            )
+        )
+        val repository = RoomSessionsRepository(
+            focusSessionDao = database.focusSessionDao(),
+            timezoneId = zoneId,
+            nowProvider = { now }
+        )
+
+        val rows = repository.loadSessions(SessionsPeriod.LastHour)
+
+        assertEquals(listOf("Chrome"), rows.map { it.appName })
+        assertEquals(listOf("com.android.chrome"), rows.map { it.packageName })
     }
 
     @Test

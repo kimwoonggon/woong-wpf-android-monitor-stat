@@ -2201,3 +2201,15 @@ milestones below are finished.
 - [x] Validation passed: Android Gradle unit/build/androidTest APK, Android UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%, focused architecture tests.
 - [ ] Next Android TODO: wire Settings sync opt-in/manual sync UI to real sync settings and status.
 - [ ] Next Android TODO: implement actual Dashboard/Sessions/Report period-filter behavior.
+## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
+
+- [x] Settings Sync switch now persists opt-in/off state through SharedPreferences.
+- [x] Manual Sync shows a local-only skipped status when sync is off and does not upload.
+- [x] Sessions Today/1h/6h/24h/7d controls now reload Room-backed rows by selected period.
+- [x] Added RED/GREEN tests for Settings sync behavior and Sessions period filtering.
+- [x] Generated latest emulator screenshot evidence at `artifacts/android-ui-snapshots/20260501-192752/`.
+- [x] Validation passed: Android Gradle unit/build/androidTest APK and screenshot automation on `emulator-5554`.
+- [ ] Next Android TODO: implement Dashboard period buttons as real range reloads.
+- [ ] Next Android TODO: implement Report 30d/90d/custom range reloads.
+- [ ] Next Android TODO: add server endpoint/device configuration before enabling real manual sync upload.- [x] Full solution validation for Android Settings Sync Opt-In and Sessions Period Filters passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed for Android Settings Sync Opt-In and Sessions Period Filters: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.

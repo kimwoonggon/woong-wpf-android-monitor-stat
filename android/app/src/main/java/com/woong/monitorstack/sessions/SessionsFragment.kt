@@ -28,15 +28,22 @@ class SessionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.sessionsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.sessionsRecyclerView.adapter = adapter
-        loadRecentSessions()
+        binding.sessionsTodayButton.setOnClickListener { loadSessions(SessionsPeriod.Today) }
+        binding.sessionsOneHourButton.setOnClickListener { loadSessions(SessionsPeriod.LastHour) }
+        binding.sessionsSixHourButton.setOnClickListener { loadSessions(SessionsPeriod.LastSixHours) }
+        binding.sessionsTwentyFourHourButton.setOnClickListener {
+            loadSessions(SessionsPeriod.LastTwentyFourHours)
+        }
+        binding.sessionsSevenDayButton.setOnClickListener { loadSessions(SessionsPeriod.LastSevenDays) }
+        loadSessions(SessionsPeriod.Today)
     }
 
-    private fun loadRecentSessions() {
+    private fun loadSessions(period: SessionsPeriod) {
         Thread {
             val repository = RoomSessionsRepository(
                 MonitorDatabase.getInstance(requireContext().applicationContext).focusSessionDao()
             )
-            val rows = repository.loadRecentSessions()
+            val rows = repository.loadSessions(period)
             activity?.runOnUiThread {
                 if (isAdded) {
                     adapter.submitRows(rows)

@@ -4879,3 +4879,27 @@ Remaining Android priorities:
 - Wire Settings sync controls to actual opt-in state and local-only/manual sync behavior.
 - Implement real period-filter behavior for Dashboard/Sessions/Report buttons.
 - Polish chart colors/labels against the supplied Android flow image after functional gaps are closed.
+
+## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
+
+- Settings Sync switch now reads/writes `SharedPreferencesAndroidSyncSettings`; sync remains off by default.
+- Manual Sync is enabled as a visible command, but when sync is off it only updates the status to a local-only skipped message and does not upload.
+- Sessions Today/1h/6h/24h/7d buttons now reload Room-backed rows for the selected time range.
+- Added behavior tests for Settings sync opt-in/manual skipped behavior and Sessions period filtering.
+- Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260501-192752/`.
+
+Validation completed:
+
+- Focused Settings sync test passed.
+- Focused Sessions period-filter repository tests passed.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot script passed on `emulator-5554`; latest evidence is `artifacts/android-ui-snapshots/20260501-192752/`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Dashboard period buttons still need true range reload behavior.
+- Report 30d/90d/custom period buttons still need true range reload behavior.
+- Sync-on manual run should enqueue a server sync only after endpoint/device configuration is available.

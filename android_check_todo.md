@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260501-191127/
+artifacts/android-ui-snapshots/20260501-192752/
 ```
 
 Latest location opt-in emulator evidence:
@@ -291,3 +291,18 @@ workspace.
 - [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 - [ ] Remaining Android gap: wire Settings sync controls to real opt-in state and a local-only/manual sync result.
 - [ ] Remaining Android gap: add period-filter behavior for Dashboard/Sessions/Report buttons beyond the current default views.
+
+## 2026-05-01 Android Settings Sync Opt-In And Sessions Period Filters
+
+- [x] Settings Sync switch now reads and writes `SharedPreferencesAndroidSyncSettings`; sync remains off by default.
+- [x] Manual Sync remains local-only when sync is off and shows a clear skipped status instead of uploading.
+- [x] Sessions screen Today/1h/6h/24h/7d buttons now reload persisted Room sessions for the selected range.
+- [x] Added RED/GREEN tests for Settings sync opt-in/manual skipped behavior and Room-backed session period filtering.
+- [x] Latest screenshot evidence after installing the new APK: `artifacts/android-ui-snapshots/20260501-192752/`.
+- [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Android UI snapshot automation passed on `emulator-5554`.
+- [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- [ ] Remaining Android gap: Dashboard period buttons still need full period reload behavior.
+- [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
+- [ ] Remaining Android gap: manual sync-on should eventually enqueue a configured server sync once endpoint/device configuration UI exists.

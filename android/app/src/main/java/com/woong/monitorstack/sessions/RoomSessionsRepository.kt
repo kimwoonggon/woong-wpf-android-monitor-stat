@@ -9,11 +9,31 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class RoomSessionsRepository(
-    private val focusSessionDao: FocusSessionDao
+    private val focusSessionDao: FocusSessionDao,
+    private val timezoneId: ZoneId = ZoneId.systemDefault(),
+    private val nowProvider: () -> Instant = { Instant.now() }
 ) {
     fun loadRecentSessions(limit: Int = DefaultLimit): List<SessionRow> {
         return focusSessionDao.queryRecent(limit)
             .map { it.toSessionRow() }
+    }
+
+    fun loadSessions(
+        period: SessionsPeriod,
+        limit: Int = DefaultLimit
+    ): List<SessionRow> {
+        val now = nowProvider()
+        val range = period.toUtcRange(now, timezoneId)
+        val fromLocalDate = range.from.atZone(timezoneId).toLocalDate().toString()
+        val toLocalDate = range.to.atZone(timezoneId).toLocalDate().toString()
+
+        return focusSessionDao.queryByLocalDateRange(fromLocalDate, toLocalDate)
+            .asSequence()
+            .filter { it.overlaps(range) }
+            .sortedByDescending { it.startedAtUtcMillis }
+            .take(limit)
+            .map { it.toSessionRow() }
+            .toList()
     }
 
     fun loadAppDetail(
@@ -61,6 +81,29 @@ class RoomSessionsRepository(
         private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 
+    private fun SessionsPeriod.toUtcRange(
+        now: Instant,
+        zoneId: ZoneId
+    ): UtcRange {
+        val from = when (this) {
+            SessionsPeriod.Today -> now.atZone(zoneId)
+                .toLocalDate()
+                .atStartOfDay(zoneId)
+                .toInstant()
+            SessionsPeriod.LastHour -> now.minusSeconds(60 * 60)
+            SessionsPeriod.LastSixHours -> now.minusSeconds(6 * 60 * 60)
+            SessionsPeriod.LastTwentyFourHours -> now.minusSeconds(24 * 60 * 60)
+            SessionsPeriod.LastSevenDays -> now.minusSeconds(7 * 24 * 60 * 60)
+        }
+
+        return UtcRange(from = from, to = now)
+    }
+
+    private fun FocusSessionEntity.overlaps(range: UtcRange): Boolean {
+        return endedAtUtcMillis > range.from.toEpochMilli() &&
+            startedAtUtcMillis < range.to.toEpochMilli()
+    }
+
     private fun formatTimeRange(entity: FocusSessionEntity): String {
         val zoneId = runCatching { ZoneId.of(entity.timezoneId) }
             .getOrDefault(ZoneId.systemDefault())
@@ -88,6 +131,19 @@ class RoomSessionsRepository(
             .sortedBy { it.hourOfDay }
     }
 }
+
+enum class SessionsPeriod {
+    Today,
+    LastHour,
+    LastSixHours,
+    LastTwentyFourHours,
+    LastSevenDays
+}
+
+private data class UtcRange(
+    val from: Instant,
+    val to: Instant
+)
 
 data class SessionRow(
     val appName: String,

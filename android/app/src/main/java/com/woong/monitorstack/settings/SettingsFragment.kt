@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.woong.monitorstack.R
 import com.woong.monitorstack.databinding.FragmentSettingsBinding
 import com.woong.monitorstack.summary.NotificationPermissionController
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
@@ -39,6 +40,10 @@ class SettingsFragment : Fragment() {
         renderLocationSettings(
             fragmentBinding,
             SharedPreferencesAndroidLocationSettings(requireContext())
+        )
+        renderSyncSettings(
+            fragmentBinding,
+            SharedPreferencesAndroidSyncSettings(requireContext())
         )
     }
 
@@ -74,6 +79,36 @@ class SettingsFragment : Fragment() {
         }
         binding.preciseLatitudeLongitudeCheckBox.setOnCheckedChangeListener { _, isChecked ->
             settings.setPreciseLatitudeLongitudeEnabled(isChecked)
+        }
+    }
+
+    private fun renderSyncSettings(
+        binding: FragmentSettingsBinding,
+        settings: SharedPreferencesAndroidSyncSettings
+    ) {
+        fun renderStatus(enabled: Boolean) {
+            binding.syncStatusText.text = if (enabled) {
+                getString(R.string.sync_enabled_status)
+            } else {
+                getString(R.string.sync_local_only_status)
+            }
+        }
+
+        binding.autoSyncSwitch.isChecked = settings.isSyncEnabled()
+        binding.manualSyncButton.isEnabled = true
+        renderStatus(binding.autoSyncSwitch.isChecked)
+
+        binding.autoSyncSwitch.setOnCheckedChangeListener { _, isChecked ->
+            settings.setSyncEnabled(isChecked)
+            renderStatus(isChecked)
+        }
+
+        binding.manualSyncButton.setOnClickListener {
+            if (settings.isSyncEnabled()) {
+                binding.syncStatusText.text = getString(R.string.sync_enabled_status)
+            } else {
+                binding.syncStatusText.text = getString(R.string.sync_manual_skipped_status)
+            }
         }
     }
 }

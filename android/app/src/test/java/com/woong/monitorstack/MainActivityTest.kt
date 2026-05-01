@@ -15,6 +15,7 @@ import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.DashboardFragment
 import com.woong.monitorstack.sessions.AppDetailFragment
 import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
+import com.woong.monitorstack.settings.SharedPreferencesAndroidSyncSettings
 import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
 import com.woong.monitorstack.usage.UsageCollectionScheduleResult
@@ -338,6 +339,49 @@ class MainActivityTest {
         assertEquals(false, locationContext.isChecked)
         assertEquals(false, preciseLatitudeLongitude.isChecked)
         assertEquals(false, preciseLatitudeLongitude.isEnabled)
+    }
+
+    @Test
+    fun settingsTabPersistsSyncOptInAndShowsManualSyncSkippedWhenOff() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navSettings
+        activity.supportFragmentManager.executePendingTransactions()
+
+        val autoSyncSwitch =
+            activity.findViewById<com.google.android.material.switchmaterial.SwitchMaterial>(
+                R.id.autoSyncSwitch
+            )
+        val manualSyncButton = activity.findViewById<Button>(R.id.manualSyncButton)
+        val syncStatusText = activity.findViewById<TextView>(R.id.syncStatusText)
+
+        assertFalse(autoSyncSwitch.isChecked)
+        assertTrue(manualSyncButton.isEnabled)
+
+        manualSyncButton.performClick()
+
+        assertEquals(
+            "Manual sync skipped because sync is off. Local only.",
+            syncStatusText.text.toString()
+        )
+
+        autoSyncSwitch.performClick()
+
+        assertTrue(SharedPreferencesAndroidSyncSettings(context).isSyncEnabled())
+        assertEquals(
+            "Sync is on. Manual sync will use configured server settings.",
+            syncStatusText.text.toString()
+        )
     }
 
     @Test
