@@ -826,6 +826,29 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void OpenRuntimeLogFolderCommand_DelegatesToRuntimeLogSinkAndShowsResult()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var runtimeLogSink = new FakeRuntimeLogSink
+        {
+            OpenLogFolderResult = new DashboardRuntimeLogFolderOpenResult(
+                true,
+                "D:\\logs",
+                "Opened runtime log folder.")
+        };
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            runtimeLogSink: runtimeLogSink);
+
+        viewModel.OpenRuntimeLogFolderCommand.Execute(null);
+
+        Assert.Equal(1, runtimeLogSink.OpenLogFolderCallCount);
+        Assert.Equal("Opened runtime log folder.", viewModel.Settings.RuntimeLogStatusLabel);
+    }
+
+    [Fact]
     public void PollTrackingCommand_WhenCoordinatorThrows_KeepsTrackingRunningAndWritesRuntimeLogEvent()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -979,11 +1002,22 @@ public sealed class DashboardViewModelTests
 
         public List<(string Operation, Exception Exception)> Exceptions { get; } = [];
 
+        public int OpenLogFolderCallCount { get; private set; }
+
+        public DashboardRuntimeLogFolderOpenResult OpenLogFolderResult { get; init; } =
+            new(true, "D:\\logs", "Opened runtime log folder.");
+
         public void WriteEvent(DashboardRuntimeLogEvent logEvent)
             => Events.Add(logEvent);
 
         public void WriteException(string operation, Exception exception)
             => Exceptions.Add((operation, exception));
+
+        public DashboardRuntimeLogFolderOpenResult OpenLogFolder()
+        {
+            OpenLogFolderCallCount++;
+            return OpenLogFolderResult;
+        }
     }
 
     private sealed class ThrowingPollTrackingCoordinator : IDashboardTrackingCoordinator

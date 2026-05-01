@@ -330,3 +330,10 @@ root. The current acceptance uses extension/native messaging to write
 `github.example` and `chatgpt.example` domain-only web sessions plus outbox
 rows into temp SQLite, proving the browser metadata path without Chrome
 address-bar scraping.
+
+The WPF Settings tab exposes the runtime log path and an `Open log folder`
+command. Presentation only requests the action through the runtime-log port;
+the WPF App adapter creates the log directory and launches the folder through
+Windows shell integration. WPF acceptance artifacts include the tail of
+`windows-runtime.log` so Start/Poll/Stop/Sync failures can be reviewed beside
+SQLite and screenshot evidence without using the user's production database.

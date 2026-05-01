@@ -4692,3 +4692,19 @@ Validation:
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 475 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
 - Coverage collection passed: line 88.2% (4511/5112), branch 69.7% (673/965). Report: artifacts/coverage/SummaryGithub.md.
+
+## 2026-05-01 WPF Runtime Log Folder Command And Acceptance Excerpt
+
+- Added a Settings `Open log folder` command that delegates through the Presentation runtime-log port and keeps filesystem/process launching in the WPF App adapter.
+- Settings now shows a visible runtime-log status label, so users can tell whether the log folder was opened or why it could not be opened.
+- The WPF UI acceptance root report and manifest now include the latest `logs/windows-runtime.log` excerpt from the temp acceptance run folder.
+- Added RED/GREEN behavior tests for the command result, runtime-log folder launch adapter, Settings AutomationIds, and acceptance report/manifest contract.
+
+Validation:
+
+- Focused Windows Presentation tests passed: 76 passed.
+- Focused Windows App tests passed: 160 passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 478 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal passed with 0 warnings and 0 errors.
+- WPF UI acceptance passed at artifacts/wpf-ui-acceptance/20260501-150730; the root report includes a Runtime Log Excerpt section.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: artifacts/coverage/SummaryGithub.md.

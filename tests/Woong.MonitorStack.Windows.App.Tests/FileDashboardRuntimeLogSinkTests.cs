@@ -45,6 +45,22 @@ public sealed class FileDashboardRuntimeLogSinkTests : IDisposable
         Assert.Contains("SQLite write failed.", logText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void OpenLogFolder_CreatesLogDirectoryAndLaunchesIt()
+    {
+        var openedFolders = new List<string>();
+        var sink = new FileDashboardRuntimeLogSink(_logPath, openedFolders.Add);
+
+        DashboardRuntimeLogFolderOpenResult result = sink.OpenLogFolder();
+
+        string expectedDirectory = Path.GetDirectoryName(_logPath)!;
+        Assert.True(result.Succeeded);
+        Assert.Equal(expectedDirectory, result.FolderPath);
+        Assert.Equal([expectedDirectory], openedFolders);
+        Assert.True(Directory.Exists(expectedDirectory));
+        Assert.Contains("Opened runtime log folder", result.StatusMessage, StringComparison.Ordinal);
+    }
+
     public void Dispose()
     {
         string? directory = Path.GetDirectoryName(_logPath);

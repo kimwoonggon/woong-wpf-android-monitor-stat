@@ -13,6 +13,7 @@ $runRoot = Join-Path $outputRoot $timestamp
 $latestRoot = Join-Path $outputRoot "latest"
 $dbPath = Join-Path $runRoot "acceptance.db"
 $trackingPipelineDbPath = Join-Path $runRoot "tracking-pipeline.db"
+$runtimeLogPath = Join-Path $runRoot "logs/windows-runtime.log"
 $snapshotRoot = Join-Path $runRoot "ui-snapshots"
 $reportPath = Join-Path $runRoot "report.md"
 $rootManifest = Join-Path $runRoot "manifest.json"
@@ -72,6 +73,14 @@ try {
     $visualReviewPrompt = Join-Path $snapshotRoot "latest/visual-review-prompt.md"
     $realStartReport = Join-Path $runRoot "real-start-report.md"
     $realStartManifest = Join-Path $runRoot "real-start-manifest.json"
+    $runtimeLogExcerpt = @()
+    if (Test-Path $runtimeLogPath) {
+        $runtimeLogExcerpt = @(Get-Content -Tail 40 -Path $runtimeLogPath | ForEach-Object { $_.ToString() })
+    }
+    else {
+        $runtimeLogExcerpt = @("Runtime log not found at acceptance report time.")
+    }
+
     $lines = @(
         "# WPF UI Acceptance Report",
         "",
@@ -109,6 +118,14 @@ try {
         "- Latest snapshot report: ``$snapshotReport``",
         "- Latest snapshot manifest: ``$snapshotManifest``",
         "- Latest visual review prompt: ``$visualReviewPrompt``",
+        "",
+        "## Runtime Log Excerpt",
+        "",
+        "Path: ``$runtimeLogPath``",
+        "",
+        "````text"
+    ) + $runtimeLogExcerpt + @(
+        "````",
         "",
         "## Privacy Boundary",
         "",
@@ -150,6 +167,10 @@ try {
             realStartReport = $realStartReport
             realStartManifest = $realStartManifest
             realStartEvidence = @("realStartEvidence", "realStartSafetyEvidence")
+        }
+        runtimeLog = [ordered]@{
+            path = $runtimeLogPath
+            excerpt = $runtimeLogExcerpt
         }
         trackingPipeline = [ordered]@{
             databasePath = $trackingPipelineDbPath

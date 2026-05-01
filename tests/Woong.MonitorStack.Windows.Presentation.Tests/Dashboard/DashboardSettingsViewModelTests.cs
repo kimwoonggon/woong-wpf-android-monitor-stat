@@ -20,6 +20,7 @@ public sealed class DashboardSettingsViewModelTests
         Assert.Equal("No local database configured", viewModel.CurrentDatabasePathText);
         Assert.Equal("Local database ready.", viewModel.DatabaseStatusLabel);
         Assert.Equal("No runtime log configured", viewModel.RuntimeLogPathText);
+        Assert.Equal("Runtime log ready.", viewModel.RuntimeLogStatusLabel);
     }
 
     [Fact]

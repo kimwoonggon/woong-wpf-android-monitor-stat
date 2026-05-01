@@ -104,6 +104,17 @@
                        Style="{StaticResource SettingsMutedTextStyle}"
                        TextWrapping="Wrap"
                        Margin="0,0,0,8" />
+            <TextBlock AutomationProperties.AutomationId="RuntimeLogStatusLabel"
+                       AutomationProperties.Name="Runtime log status"
+                       Text="{Binding Settings.RuntimeLogStatusLabel}"
+                       Style="{StaticResource SettingsWarningTextStyle}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8" />
+            <Button Content="Open log folder"
+                    AutomationProperties.AutomationId="OpenRuntimeLogFolderButton"
+                    AutomationProperties.Name="Open runtime log folder"
+                    Command="{Binding OpenRuntimeLogFolderCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" />
             <TextBlock Text="Local SQLite DB"
                        Style="{StaticResource SettingsSectionTitleTextStyle}"
                        Margin="0,12,0,4" />

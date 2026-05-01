@@ -315,6 +315,10 @@ public sealed partial class DashboardViewModel : ObservableObject
         => ApplyDatabaseActionResult(_databaseController.DeleteCurrentDatabase());
 
     [RelayCommand]
+    private void OpenRuntimeLogFolder()
+        => ApplyRuntimeLogFolderOpenResult(_runtimeLogSink.OpenLogFolder());
+
+    [RelayCommand]
     private void ExitApplication()
         => _applicationLifetime.RequestExit();
 
@@ -525,6 +529,11 @@ public sealed partial class DashboardViewModel : ObservableObject
         {
             RefreshSummary(ResolveRange(SelectedPeriod));
         }
+    }
+
+    private void ApplyRuntimeLogFolderOpenResult(DashboardRuntimeLogFolderOpenResult result)
+    {
+        Settings.RuntimeLogStatusLabel = result.StatusMessage;
     }
 
     private void RefreshSummary(TimeRange range)

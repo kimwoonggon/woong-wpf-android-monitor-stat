@@ -558,3 +558,10 @@ Latest verification:
   - `dotnet run --configuration Release --project src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj`
 - Local MSIX package command:
   - `powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1`
+
+## Runtime Log Evidence
+
+- Settings exposes `RuntimeLogPathText`, `RuntimeLogStatusLabel`, and `OpenRuntimeLogFolderButton`.
+- The Open log folder command must open the directory containing `windows-runtime.log` without putting filesystem logic in Presentation.
+- `scripts/run-wpf-ui-acceptance.ps1` writes a `## Runtime Log Excerpt` section into the root report and stores the same excerpt in the root manifest.
+- The acceptance runtime log is artifact-local, typically `artifacts/wpf-ui-acceptance/<timestamp>/logs/windows-runtime.log`, and is not the user's production log unless explicitly configured.

@@ -1929,7 +1929,9 @@ milestones below are finished.
 - [x] Add WPF runtime log sink and Settings runtime log path display.
 - [x] Catch dashboard Start/Stop/Poll/Sync command exceptions and surface `Runtime error` live-event rows instead of terminating the app.
 - [x] Add WPF tick regression coverage proving poll errors keep the window open.
-- [ ] Next: add a Settings command to open the runtime log folder and include the latest log excerpt in WPF acceptance artifacts.
+- [x] Added a Settings command to open the runtime log folder and include the latest log excerpt in WPF acceptance artifacts.
+- [x] Added behavior tests for the runtime log folder command, Settings AutomationIds, and root WPF acceptance report/manifest runtime-log evidence.
+- [x] Validation: full `.NET` tests passed (478 passed, 6 skipped), Release build passed, WPF UI acceptance passed at `artifacts/wpf-ui-acceptance/20260501-150730`, and coverage generated at 88.0% line / 69.5% branch.
 
 ### Validation Update
 

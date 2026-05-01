@@ -1182,6 +1182,9 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
 
         public void WriteException(string operation, Exception exception)
             => Exceptions.Add((operation, exception));
+
+        public DashboardRuntimeLogFolderOpenResult OpenLogFolder()
+            => new(true, "D:\\logs", "Opened runtime log folder.");
     }
 
     private sealed class ThrowingPollTrackingCoordinator : IDashboardTrackingCoordinator

@@ -156,6 +156,23 @@ public sealed class WpfUiAcceptanceScriptTests
     }
 
     [Fact]
+    public void UiAcceptanceScript_RootReportAndManifestIncludeRuntimeLogExcerpt()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-ui-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("$runtimeLogPath = Join-Path $runRoot \"logs/windows-runtime.log\"", script);
+        Assert.Contains("$runtimeLogExcerpt", script);
+        Assert.Contains("Get-Content -Tail", script);
+        Assert.Contains("## Runtime Log Excerpt", script);
+        Assert.Contains("runtimeLog = [ordered]@", script);
+        Assert.Contains("excerpt = $runtimeLogExcerpt", script);
+    }
+
+    [Fact]
     public void WpfCheckPackageScript_WritesPointerOnlyManifestAndReportWithoutCopyingPngArtifacts()
     {
         string repoRoot = FindRepositoryRoot();

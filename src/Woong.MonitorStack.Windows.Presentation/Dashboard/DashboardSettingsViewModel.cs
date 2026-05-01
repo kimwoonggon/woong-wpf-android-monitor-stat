@@ -39,6 +39,9 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     private string _runtimeLogPathText = "No runtime log configured";
 
     [ObservableProperty]
+    private string _runtimeLogStatusLabel = "Runtime log ready.";
+
+    [ObservableProperty]
     private bool _hasSyncFailure;
 
     [ObservableProperty]

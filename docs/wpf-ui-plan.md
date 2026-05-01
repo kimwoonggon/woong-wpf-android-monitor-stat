@@ -776,6 +776,14 @@ Do not:
 - Mark UI work complete if grids are still clipped or charts still show
   meaningless axes.
 
+## Runtime Support Controls
+
+Settings owns local runtime support controls: current SQLite path, create/load/
+delete database commands, runtime log path, runtime log status, and Open log
+folder. The Open log folder command is bound through MVVM and implemented by
+the WPF App adapter so Presentation never launches shell processes or touches
+the filesystem directly.
+
 ## Definition Of Done
 
 This WPF UI slice is complete only when:
