@@ -7,9 +7,11 @@ UI. It is based on the provided UI goal image and the product requirement that
 the UI prove the real runtime tracking pipeline, not just render a polished
 shell.
 
-The reference image was provided in the Codex conversation on 2026-04-29. This
-repository stores the textual implementation target here so future agents can
-continue without relying on transient chat context.
+The reference image was provided in the Codex conversation on 2026-04-29.
+Durable design-reference assets are preserved in
+`docs/wpf-design-reference.md`, including the reference PNG and a
+Figma-importable SVG board. These assets are UI design references only, not
+product telemetry screenshots or captures of user activity.
 
 ## Product Metric
 
