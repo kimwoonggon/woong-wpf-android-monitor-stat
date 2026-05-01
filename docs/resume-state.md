@@ -5075,3 +5075,23 @@ Remaining Android priorities:
 - Fix current-focus validation screenshot reliability so PNG evidence matches the XML hierarchy evidence.
 - Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
 - Continue checking UsageStats overlap/idempotency so repeated collection windows do not inflate totals.
+
+## 2026-05-01 Android GitHub Actions CI/CD
+
+- Added `.github/workflows/android-ci.yml`.
+- The Android workflow runs on Android-related pushes, pull requests, and manual dispatch.
+- CI sets up Java 17, Android SDK components, Gradle, then runs `./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
+- CI uploads debug APK, release APK, Android test APK, and unit test reports as GitHub Actions artifacts.
+- Added `scripts/validate-android-ci.ps1` to make the workflow contract locally testable.
+- Updated `README.md` with Android CI/CD artifact names and the local-equivalent Gradle command.
+
+Validation completed:
+
+- RED `scripts/validate-android-ci.ps1` failed before `.github/workflows/android-ci.yml` existed.
+- `scripts/validate-android-ci.ps1` passed after adding the workflow.
+- Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed locally.
+
+Remaining Android CI/CD priorities:
+
+- Add a separate manual emulator workflow for `connectedDebugAndroidTest` once runner cost/reliability is acceptable.
+- Add Android release signing secrets and store publishing only after explicit release requirements are defined.

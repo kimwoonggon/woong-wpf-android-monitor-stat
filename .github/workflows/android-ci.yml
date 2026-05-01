@@ -1,0 +1,81 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "android/**"
+      - ".github/workflows/android-ci.yml"
+      - "scripts/validate-android-ci.ps1"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "android/**"
+      - ".github/workflows/android-ci.yml"
+      - "scripts/validate-android-ci.ps1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Build, test, and package Android app
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: sdkmanager "platforms;android-36.1" "build-tools;36.0.0" "platform-tools"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+        working-directory: android
+
+      - name: Build and test Android
+        run: ./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace
+        working-directory: android
+
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Upload Android release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
+
+      - name: Upload Android test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-test-apk
+          path: android/app/build/outputs/apk/androidTest/debug/*.apk
+
+      - name: Upload Android unit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-unit-test-report
+          path: |
+            android/app/build/reports/tests/testDebugUnitTest/**
+            android/app/build/test-results/testDebugUnitTest/**

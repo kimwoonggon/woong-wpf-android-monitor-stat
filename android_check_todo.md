@@ -369,6 +369,11 @@ workspace.
 - [x] Added RED/GREEN test `dashboardCurrentFocusIgnoresAospLauncherAndSystemUiNoiseAfterReturningFromChrome`.
 - [x] Latest current-focus UI snapshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
 - [x] Current-focus XML evidence includes Chrome/com.android.chrome: `artifacts/android-usage-current-focus/20260501-225045/`.
+- [x] Added Android GitHub Actions workflow `.github/workflows/android-ci.yml`.
+- [x] Android CI runs unit tests, debug APK build, release APK build, and Android test APK build.
+- [x] Android CI uploads debug/release/test APKs and unit test reports as GitHub Actions artifacts.
+- [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
+- [x] Local equivalent CI command passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
 - [ ] Remaining Android validation gap: current-focus validation PNG was blank while XML contained the expected UI; fix screenshot timing/retry.
 - [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
 - [ ] Remaining Android visual gap: reduce top-app row dead space and add proportional usage bars for ranked app lists.

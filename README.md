@@ -288,6 +288,33 @@ Push a `v*` tag after configuring `WINDOWS_MSIX_CERTIFICATE_BASE64` and
 `WINDOWS_MSIX_CERTIFICATE_PASSWORD`; the release workflow signs with that stable
 certificate and attaches the zipped MSIX bundle to the GitHub Release.
 
+### Android CI/CD And APK Artifacts
+
+GitHub Actions workflow:
+
+```text
+.github/workflows/android-ci.yml
+```
+
+It runs on pushes and pull requests that touch Android files, plus manual
+`workflow_dispatch`. The workflow sets up Java 17, Android SDK components,
+Gradle, then runs:
+
+```bash
+./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace
+```
+
+GitHub Actions uploads:
+
+- `woong-monitor-android-debug-apk`
+- `woong-monitor-android-release-apk`
+- `woong-monitor-android-test-apk`
+- `woong-monitor-android-unit-test-report`
+
+The release APK artifact is not a Play Store release. It is a CI-built package
+artifact for local verification until Android release signing and store
+publishing are explicitly configured.
+
 ## Android App
 
 The Android MVP is Kotlin + XML/View based. Do not migrate it to Compose for

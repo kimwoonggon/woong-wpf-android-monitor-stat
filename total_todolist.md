@@ -2267,6 +2267,9 @@ milestones below are finished.
 - [x] Current Focus ignores AOSP launcher/SystemUI noise after returning from Chrome and keeps the latest meaningful external app visible.
 - [x] Current Focus session duration now uses the selected session duration instead of the whole selected-period total.
 - [x] Added RED/GREEN current-focus noise test and refreshed Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
-- [ ] Next Android TODO: fix current-focus validation screenshot timing/retry; XML evidence currently includes Chrome/com.android.chrome but PNG was blank.
+- [x] Added Android GitHub Actions CI/CD workflow for unit tests, debug/release APK builds, Android test APK build, and artifact uploads.
+- [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
+- [x] Local equivalent Android CI command passed: `android\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.- [ ] Next Android TODO: fix current-focus validation screenshot timing/retry; XML evidence currently includes Chrome/com.android.chrome but PNG was blank.
 - [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
 - [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.
