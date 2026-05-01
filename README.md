@@ -312,6 +312,7 @@ GitHub Actions workflow:
 
 ```text
 .github/workflows/android-ci.yml
+.github/workflows/android-release.yml
 ```
 
 It runs on pushes and pull requests that touch Android files, plus manual
@@ -332,6 +333,21 @@ GitHub Actions uploads:
 The release APK artifact is not a Play Store release. It is a CI-built package
 artifact for local verification until Android release signing and store
 publishing are explicitly configured.
+
+The Android release workflow runs from `android/` and uses the checked-in
+Gradle wrapper. It builds and uploads APK/test artifacts without requiring
+connected emulator/device tests in that workflow. A signed release APK is
+created only when `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` repository secrets are
+configured. Unsigned release artifacts are CI/testing outputs only and must not
+be treated as Play Store-ready packages.
+
+Local release workflow contract validation:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\validate-android-release-workflow.ps1
+dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidReleaseWorkflow" -maxcpucount:1 -v minimal
+```
 
 ## Android App
 

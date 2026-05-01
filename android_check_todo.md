@@ -665,6 +665,19 @@ workspace.
 - [x] Android CI uploads debug/release/test APKs and unit test reports as GitHub Actions artifacts.
 - [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
 - [x] Local equivalent CI command passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Added Android release workflow `.github/workflows/android-release.yml`.
+- [x] Added release workflow validator `scripts/validate-android-release-workflow.ps1`.
+- [x] Added focused architecture coverage `AndroidReleaseWorkflowTests.cs`.
+- [x] Android release workflow runs from `android/`, uses the Gradle wrapper,
+  and uploads APK/test artifacts.
+- [x] Signed release APK creation requires `ANDROID_KEYSTORE_*` secrets;
+  unsigned release artifacts are CI/testing only.
+- [x] Connected/emulator tests are not required in the Android release workflow.
+- [x] Validation passed: local release workflow validator, focused Android
+  release workflow architecture tests, and Android Gradle
+  `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`.
+- [ ] Future Android release hardening: configure real signing secrets and Play
+  Store publishing only after explicit release requirements are defined.
 - [x] Current-focus validation screenshot timing/retry gap was resolved by the 2026-05-02 foreground validation pass.
 - [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.

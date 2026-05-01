@@ -5149,22 +5149,33 @@ Remaining Android priorities:
 ## 2026-05-01 Android GitHub Actions CI/CD
 
 - Added `.github/workflows/android-ci.yml`.
+- Added `.github/workflows/android-release.yml`.
 - The Android workflow runs on Android-related pushes, pull requests, and manual dispatch.
 - CI sets up Java 17, Android SDK components, Gradle, then runs `./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
 - CI uploads debug APK, release APK, Android test APK, and unit test reports as GitHub Actions artifacts.
 - Added `scripts/validate-android-ci.ps1` to make the workflow contract locally testable.
+- Added `scripts/validate-android-release-workflow.ps1` for the Android release workflow contract.
+- Added focused architecture coverage in `AndroidReleaseWorkflowTests.cs`.
+- The Android release workflow runs from `android/`, uses the Gradle wrapper,
+  uploads APK/test artifacts, and does not require connected/emulator tests.
+- Signed release APK output requires `ANDROID_KEYSTORE_BASE64`,
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and
+  `ANDROID_KEY_PASSWORD`; unsigned release artifacts remain CI/testing-only.
 - Updated `README.md` with Android CI/CD artifact names and the local-equivalent Gradle command.
 
 Validation completed:
 
 - RED `scripts/validate-android-ci.ps1` failed before `.github/workflows/android-ci.yml` existed.
 - `scripts/validate-android-ci.ps1` passed after adding the workflow.
+- `scripts/validate-android-release-workflow.ps1` passed.
+- Focused Android release workflow architecture tests passed.
 - Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed locally.
 
 Remaining Android CI/CD priorities:
 
 - Add a separate manual emulator workflow for `connectedDebugAndroidTest` once runner cost/reliability is acceptable.
-- Add Android release signing secrets and store publishing only after explicit release requirements are defined.
+- Configure real Android release signing secrets and Play Store publishing only
+  after explicit release requirements are defined.
 
 ## 2026-05-01 Windows WebSession Focus-Leave Flush And MSIX Artifact Installer
 

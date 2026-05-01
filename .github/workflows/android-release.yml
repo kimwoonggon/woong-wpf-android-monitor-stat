@@ -1,0 +1,145 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "android-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android-release:
+    name: Build, test, sign, and publish Android release
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: sdkmanager "platforms;android-36.1" "build-tools;36.0.0" "platform-tools"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate Android release workflow contract
+        shell: pwsh
+        run: scripts/validate-android-release-workflow.ps1 -WorkflowPath .github/workflows/android-release.yml
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+        working-directory: android
+
+      - name: Build and test Android release candidates
+        run: ./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace
+        working-directory: android
+
+      - name: Stage Android APK artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/android-release | Out-Null
+          Copy-Item android/app/build/outputs/apk/debug/*.apk artifacts/android-release/woong-monitor-android-debug.apk
+          Copy-Item android/app/build/outputs/apk/androidTest/debug/*.apk artifacts/android-release/woong-monitor-android-test.apk
+          Copy-Item android/app/build/outputs/apk/release/app-release-unsigned.apk artifacts/android-release/woong-monitor-android-release-unsigned.apk
+
+      - name: Detect Android release signing secrets
+        id: signing
+        shell: pwsh
+        run: |
+          $enabled = -not [string]::IsNullOrWhiteSpace($env:ANDROID_KEYSTORE_BASE64) -and
+            -not [string]::IsNullOrWhiteSpace($env:ANDROID_KEYSTORE_PASSWORD) -and
+            -not [string]::IsNullOrWhiteSpace($env:ANDROID_KEY_ALIAS) -and
+            -not [string]::IsNullOrWhiteSpace($env:ANDROID_KEY_PASSWORD)
+
+          if ($enabled) {
+            "enabled=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "enabled=false" >> $env:GITHUB_OUTPUT
+            Write-Warning "Android signing secrets are missing. The release workflow will publish the installable debug APK and unsigned release APK only."
+          }
+
+      - name: Decode Android signing keystore
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: |
+          [IO.File]::WriteAllBytes(
+            "$env:RUNNER_TEMP/android-release-keystore.jks",
+            [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+
+      - name: Sign Android release APK
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: |
+          $buildTools = Join-Path $env:ANDROID_HOME "build-tools/36.0.0"
+          $zipalign = Join-Path $buildTools "zipalign"
+          $apksigner = Join-Path $buildTools "apksigner"
+          $unsigned = "android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          $aligned = "artifacts/android-release/woong-monitor-android-release-aligned.apk"
+          $signed = "artifacts/android-release/woong-monitor-android-release-signed.apk"
+
+          & $zipalign -f -p 4 $unsigned $aligned
+          & $apksigner sign `
+            --ks "$env:RUNNER_TEMP/android-release-keystore.jks" `
+            --ks-pass "pass:$env:ANDROID_KEYSTORE_PASSWORD" `
+            --ks-key-alias "$env:ANDROID_KEY_ALIAS" `
+            --key-pass "pass:$env:ANDROID_KEY_PASSWORD" `
+            --out $signed `
+            $aligned
+          & $apksigner verify --verbose $signed
+
+      - name: Upload Android APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-apks-${{ github.ref_name }}
+          path: artifacts/android-release/*.apk
+          if-no-files-found: error
+
+      - name: Archive Android release artifacts
+        shell: pwsh
+        run: |
+          $archivePath = "artifacts/woong-monitor-android-${{ github.ref_name }}.zip"
+          if (Test-Path -LiteralPath $archivePath) {
+            Remove-Item -LiteralPath $archivePath -Force
+          }
+
+          Compress-Archive -Path artifacts/android-release/* -DestinationPath $archivePath
+          Write-Host "Release archive: $archivePath"
+
+      - name: Upload Android release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-release-${{ github.ref_name }}
+          path: artifacts/woong-monitor-android-${{ github.ref_name }}.zip
+
+      - name: Upload Android unit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-release-unit-test-report-${{ github.ref_name }}
+          path: |
+            android/app/build/reports/tests/testDebugUnitTest/**
+            android/app/build/test-results/testDebugUnitTest/**
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/woong-monitor-android-${{ github.ref_name }}.zip

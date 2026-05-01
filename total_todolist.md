@@ -2270,7 +2270,13 @@ milestones below are finished.
 - [x] Added Android GitHub Actions CI/CD workflow for unit tests, debug/release APK builds, Android test APK build, and artifact uploads.
 - [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
 - [x] Local equivalent Android CI command passed: `android\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Added Android release workflow `.github/workflows/android-release.yml`.
+- [x] Added release workflow validator `scripts/validate-android-release-workflow.ps1` and focused architecture coverage `AndroidReleaseWorkflowTests.cs`.
+- [x] Android release workflow runs from `android/`, uses the Gradle wrapper, uploads APK/test artifacts, and does not require connected/emulator tests.
+- [x] Signed release APK creation requires `ANDROID_KEYSTORE_*` secrets; unsigned release artifacts are CI/testing only.
+- [x] Validation passed: local release workflow validator, focused architecture tests, and Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`.
 - [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.
+- [ ] Next Android release TODO: configure real `ANDROID_KEYSTORE_*` signing secrets and Play Store publishing only after explicit release requirements are defined.
 - [x] Current-focus validation screenshot timing/retry follow-up is superseded by the 2026-05-02 foreground validation pass at `artifacts/android-usage-current-focus/20260502-012243/`.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
