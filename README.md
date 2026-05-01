@@ -295,22 +295,44 @@ MVP work.
 
 ### Start An Emulator
 
-From PowerShell:
+From PowerShell, first point commands at the Android SDK:
 
 ```powershell
 $env:ANDROID_HOME="$env:LOCALAPPDATA\Android\Sdk"
 $env:ANDROID_SDK_ROOT="$env:LOCALAPPDATA\Android\Sdk"
+```
 
+List existing Android Virtual Devices:
+
+```powershell
 & "$env:ANDROID_HOME\emulator\emulator.exe" -list-avds
+```
+
+This workspace currently uses `Medium_Phone`. If that AVD does not exist on a
+fresh machine, install a system image and create it:
+
+```powershell
+& "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" "platform-tools" "emulator" "platforms;android-36" "system-images;android-36;google_apis;x86_64"
+& "$env:ANDROID_HOME\cmdline-tools\latest\bin\avdmanager.bat" create avd -n Medium_Phone -k "system-images;android-36;google_apis;x86_64" -d "pixel_5"
+```
+
+Start the emulator in its own terminal and leave that terminal open:
+
+```powershell
 & "$env:ANDROID_HOME\emulator\emulator.exe" -avd Medium_Phone
 ```
 
-In a second terminal, wait for the device:
+In a second terminal, wait for the device and confirm Android has finished
+booting:
 
 ```powershell
 & "$env:ANDROID_HOME\platform-tools\adb.exe" devices -l
 & "$env:ANDROID_HOME\platform-tools\adb.exe" wait-for-device
+& "$env:ANDROID_HOME\platform-tools\adb.exe" shell getprop sys.boot_completed
 ```
+
+`sys.boot_completed` should print `1`. If it prints nothing, wait a little and
+run the same command again.
 
 ### Build, Install, And Launch
 
@@ -334,6 +356,19 @@ The launcher activity is:
 
 ```text
 com.woong.monitorstack/.MainActivity
+```
+
+Take a quick manual screenshot after launch:
+
+```powershell
+New-Item -ItemType Directory -Force artifacts\android-check\manual
+& "$env:ANDROID_HOME\platform-tools\adb.exe" exec-out screencap -p > artifacts\android-check\manual\dashboard.png
+```
+
+If the app needs Usage Access permission, open the Android settings handoff:
+
+```powershell
+& "$env:ANDROID_HOME\platform-tools\adb.exe" shell am start -a android.settings.USAGE_ACCESS_SETTINGS
 ```
 
 ### Android Instrumentation And Emulator QA

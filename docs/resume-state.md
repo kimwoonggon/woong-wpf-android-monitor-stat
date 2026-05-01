@@ -4748,3 +4748,16 @@ Validation:
 - Focused chart/header tests passed: 7 passed.
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 482 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.
+## 2026-05-01 Android Emulator README Handoff
+
+- Added README guidance for Android emulator startup from PowerShell, including SDK env vars, AVD listing, `Medium_Phone` launch, boot-complete check, Gradle unit/build commands, install/launch commands, Usage Access settings handoff, and manual screenshot capture.
+- Added an architecture test that keeps the Android emulator/build/install/launch/screenshot README flow documented.
+- Verified the local SDK has a `Medium_Phone` AVD available.
+
+Validation:
+
+- RED README architecture test failed before the new emulator creation/boot/screenshot commands were documented.
+- Focused README architecture test passed: 1 passed.
+- Android Gradle `testDebugUnitTest assembleDebug` passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 483 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.

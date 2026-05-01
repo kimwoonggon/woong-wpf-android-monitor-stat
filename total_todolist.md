@@ -2122,3 +2122,9 @@ milestones below are finished.
 - [x] Split the domain focus chart header so `도메인별` and `집중 시간` render on separate lines while keeping the `상세보기` action button fixed on the right.
 - [x] Added WPF behavior coverage for the split title and retained details button placement.
 - [x] Ran focused WPF chart tests, full `dotnet test`, and full `dotnet build`.
+## 2026-05-01 Android emulator README handoff
+
+- [x] Documented Android SDK environment variables, AVD listing, `Medium_Phone` startup, and boot-complete check in README.
+- [x] Documented Android Gradle unit test/build, APK install, launcher start, Usage Access settings handoff, and manual screenshot capture commands.
+- [x] Added architecture coverage that keeps the Android emulator/build/install/launch/screenshot README flow documented.
+- [x] Ran Android Gradle `testDebugUnitTest assembleDebug`, full `dotnet test`, and full `dotnet build`.
