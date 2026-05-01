@@ -119,7 +119,8 @@ class RoomDashboardRepository(
                     startedAtLocalText = Instant.ofEpochMilli(session.startedAtUtcMillis)
                         .atZone(timezoneId)
                         .format(TimeFormatter),
-                    durationText = formatDuration(filteredSession.durationMs)
+                    durationText = formatDuration(filteredSession.durationMs),
+                    durationMs = filteredSession.durationMs
                 )
             }
     }

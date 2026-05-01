@@ -271,6 +271,35 @@ class MainActivityTest {
     }
 
     @Test
+    fun dashboardCurrentFocusIgnoresAospLauncherAndSystemUiNoiseAfterReturningFromChrome() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        MainActivity.usageImmediateCollectorFactory = {
+            FakeAospLauncherNoiseImmediateCollector(context)
+        }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "Chrome",
+            activity.findViewById<TextView>(R.id.currentAppText).text.toString()
+        )
+        assertEquals(
+            "com.android.chrome",
+            activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+        )
+        assertEquals(
+            "00:07:00",
+            activity.findViewById<TextView>(R.id.currentSessionDurationText).text.toString()
+        )
+    }
+
+    @Test
     fun dashboardLatestPersistedSessionsStillRenderInRecentSessions() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -1013,6 +1042,73 @@ class MainActivityTest {
         }
 
         private fun mixedFocusSession(
+            clientSessionId: String,
+            packageName: String,
+            startedAtUtcMillis: Long,
+            endedAtUtcMillis: Long,
+            timezoneId: ZoneId
+        ): FocusSessionEntity {
+            return FocusSessionEntity(
+                clientSessionId = clientSessionId,
+                packageName = packageName,
+                startedAtUtcMillis = startedAtUtcMillis,
+                endedAtUtcMillis = endedAtUtcMillis,
+                durationMs = endedAtUtcMillis - startedAtUtcMillis,
+                localDate = LocalDate.now(timezoneId).toString(),
+                timezoneId = timezoneId.id,
+                isIdle = false,
+                source = "fake_immediate_usage"
+            )
+        }
+    }
+
+    private class FakeAospLauncherNoiseImmediateCollector(
+        private val context: Context
+    ) : AndroidRecentUsageCollector {
+        override fun collectRecentUsage(): Int {
+            val timezoneId = ZoneId.systemDefault()
+            val now = System.currentTimeMillis()
+            val dao = MonitorDatabase.getInstance(context).focusSessionDao()
+            dao.insert(
+                noiseFocusSession(
+                    clientSessionId = "fake-aosp-chrome",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = now - 900_000L,
+                    endedAtUtcMillis = now - 480_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            dao.insert(
+                noiseFocusSession(
+                    clientSessionId = "fake-aosp-launcher",
+                    packageName = "com.android.launcher3",
+                    startedAtUtcMillis = now - 420_000L,
+                    endedAtUtcMillis = now - 300_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            dao.insert(
+                noiseFocusSession(
+                    clientSessionId = "fake-aosp-systemui",
+                    packageName = "com.android.systemui",
+                    startedAtUtcMillis = now - 240_000L,
+                    endedAtUtcMillis = now - 180_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            dao.insert(
+                noiseFocusSession(
+                    clientSessionId = "fake-aosp-monitor-latest",
+                    packageName = "com.woong.monitorstack",
+                    startedAtUtcMillis = now - 120_000L,
+                    endedAtUtcMillis = now,
+                    timezoneId = timezoneId
+                )
+            )
+            return 4
+        }
+
+        private fun noiseFocusSession(
             clientSessionId: String,
             packageName: String,
             startedAtUtcMillis: Long,

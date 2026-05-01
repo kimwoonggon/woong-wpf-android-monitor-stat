@@ -4,7 +4,8 @@ data class DashboardSessionRow(
     val appName: String,
     val packageName: String,
     val startedAtLocalText: String,
-    val durationText: String
+    val durationText: String,
+    val durationMs: Long = 0L
 )
 
 data class DashboardSnapshot(

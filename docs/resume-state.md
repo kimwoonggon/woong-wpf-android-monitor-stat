@@ -5051,3 +5051,27 @@ Remaining Android priorities:
 - Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
 - Improve Dashboard chart density so the top-app chart does not crowd labels when many apps appear.
 - Continue runtime tracking validation for current app collection through UsageStats and Room refresh.
+
+## 2026-05-01 Android Current Focus Noise Filtering
+
+- Added RED/GREEN coverage for the case where Chrome usage is followed by AOSP launcher, SystemUI, and Woong app sessions after returning to the dashboard.
+- Current Focus now ignores common launcher/SystemUI packages and shows the latest meaningful external app instead of launcher noise.
+- `DashboardSessionRow` now carries `durationMs`, so Current Focus duration shows the selected focus session duration instead of the whole selected-period total.
+- Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
+- Current-focus emulator validation generated XML evidence with Chrome/com.android.chrome at `artifacts/android-usage-current-focus/20260501-225045/`, but the PNG was blank on this run; keep screenshot reliability as a separate follow-up.
+
+Validation completed:
+
+- RED `dashboardCurrentFocusIgnoresAospLauncherAndSystemUiNoiseAfterReturningFromChrome` failed with `Systemui` before the fix.
+- Focused test passed after implementation.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973), report at `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Fix current-focus validation screenshot reliability so PNG evidence matches the XML hierarchy evidence.
+- Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
+- Continue checking UsageStats overlap/idempotency so repeated collection windows do not inflate totals.

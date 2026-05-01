@@ -364,6 +364,12 @@ workspace.
 - [x] Added RED/GREEN tests for muted chart axes/grids, disabled legends/highlights, branded bar/line datasets, and hidden raw value labels.
 - [x] Latest chart screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`.
 - [x] Validation passed for chart visual polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [x] Current Focus now ignores common launcher/SystemUI noise after returning from Chrome and shows the latest meaningful external app.
+- [x] Current Focus session duration now uses the selected focus session duration instead of the selected-period total.
+- [x] Added RED/GREEN test `dashboardCurrentFocusIgnoresAospLauncherAndSystemUiNoiseAfterReturningFromChrome`.
+- [x] Latest current-focus UI snapshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
+- [x] Current-focus XML evidence includes Chrome/com.android.chrome: `artifacts/android-usage-current-focus/20260501-225045/`.
+- [ ] Remaining Android validation gap: current-focus validation PNG was blank while XML contained the expected UI; fix screenshot timing/retry.
 - [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
 - [ ] Remaining Android visual gap: reduce top-app row dead space and add proportional usage bars for ranked app lists.
 - [ ] Remaining Android visual gap: improve Dashboard chart density so app labels remain readable when many apps exist.

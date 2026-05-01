@@ -2264,5 +2264,9 @@ milestones below are finished.
 - [x] Added RED/GREEN tests for chart visual contract, hidden raw value labels, and branded bar/line datasets.
 - [x] Latest chart screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`.
 - [x] Validation passed for Android chart visual polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [x] Current Focus ignores AOSP launcher/SystemUI noise after returning from Chrome and keeps the latest meaningful external app visible.
+- [x] Current Focus session duration now uses the selected session duration instead of the whole selected-period total.
+- [x] Added RED/GREEN current-focus noise test and refreshed Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
+- [ ] Next Android TODO: fix current-focus validation screenshot timing/retry; XML evidence currently includes Chrome/com.android.chrome but PNG was blank.
 - [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
 - [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.

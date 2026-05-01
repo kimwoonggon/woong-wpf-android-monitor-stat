@@ -116,7 +116,9 @@ class DashboardFragment : Fragment() {
             ?: "A"
         binding.currentAppText.text = currentAppName
         binding.currentPackageText.text = currentPackageName
-        binding.currentSessionDurationText.text = formatClockDuration(state.totalActiveMs)
+        binding.currentSessionDurationText.text = formatClockDuration(
+            latestSession?.durationMs?.takeIf { it > 0L } ?: state.totalActiveMs
+        )
         binding.lastCollectedText.text = getString(
             R.string.last_collected_compact_value,
             latestSession?.startedAtLocalText ?: getString(R.string.no_poll_yet)
@@ -196,7 +198,12 @@ class DashboardFragment : Fragment() {
     ): DashboardSessionRow? {
         val noisyPackages = setOf(
             monitorPackageName,
-            "com.google.android.apps.nexuslauncher"
+            "com.google.android.apps.nexuslauncher",
+            "com.android.launcher",
+            "com.android.launcher2",
+            "com.android.launcher3",
+            "com.android.systemui",
+            "com.google.android.googlequicksearchbox"
         )
 
         return recentSessions.firstOrNull { session -> session.packageName !in noisyPackages }
