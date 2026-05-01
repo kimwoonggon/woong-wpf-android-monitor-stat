@@ -12,25 +12,27 @@ namespace Woong.MonitorStack.Server.Tests.Summaries;
 
 public sealed class DailySummaryRuntimeFlowTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
     [Fact]
     public async Task DailySummaryApi_WhenWindowsAndAndroidClientsUploadSessions_ReturnsIntegratedSummary()
     {
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        string windowsDeviceId = await RegisterDeviceAsync(
+        DeviceRegistration windowsDevice = await RegisterDeviceAsync(
             client,
             Platform.Windows,
             "windows-runtime-key",
             "Windows Workstation",
             userId: "user-1");
-        string androidDeviceId = await RegisterDeviceAsync(
+        DeviceRegistration androidDevice = await RegisterDeviceAsync(
             client,
             Platform.Android,
             "android-runtime-key",
             "Android Phone",
             userId: "user-1");
-        string otherUserDeviceId = await RegisterDeviceAsync(
+        DeviceRegistration otherUserDevice = await RegisterDeviceAsync(
             client,
             Platform.Windows,
             "other-runtime-key",
@@ -39,23 +41,23 @@ public sealed class DailySummaryRuntimeFlowTests
 
         await UploadFocusSessionAsync(
             client,
-            windowsDeviceId,
+            windowsDevice,
             Focus("windows-active", "chrome.exe", 600_000, isIdle: false));
         await UploadFocusSessionAsync(
             client,
-            androidDeviceId,
+            androidDevice,
             Focus("android-active", "com.android.chrome", 300_000, isIdle: false));
         await UploadFocusSessionAsync(
             client,
-            windowsDeviceId,
+            windowsDevice,
             Focus("windows-idle", "chrome.exe", 120_000, isIdle: true));
         await UploadFocusSessionAsync(
             client,
-            otherUserDeviceId,
+            otherUserDevice,
             Focus("other-user-active", "chrome.exe", 999_000, isIdle: false));
         await UploadWebSessionAsync(
             client,
-            windowsDeviceId,
+            windowsDevice,
             Web("windows-web", "windows-active", "example.com", 240_000));
 
         HttpResponseMessage response = await client.GetAsync(
@@ -82,7 +84,7 @@ public sealed class DailySummaryRuntimeFlowTests
         Assert.Null(webSession.PageTitle);
     }
 
-    private static async Task<string> RegisterDeviceAsync(
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(
         HttpClient client,
         Platform platform,
         string deviceKey,
@@ -100,17 +102,23 @@ public sealed class DailySummaryRuntimeFlowTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        return json.RootElement.GetProperty("deviceId").GetString()!;
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
     }
 
     private static async Task UploadFocusSessionAsync(
         HttpClient client,
-        string deviceId,
+        DeviceRegistration registration,
         FocusSessionUploadItem session)
     {
-        HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/api/focus-sessions/upload",
-            new UploadFocusSessionsRequest(deviceId, [session]));
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/focus-sessions/upload")
+        {
+            Content = JsonContent.Create(new UploadFocusSessionsRequest(registration.DeviceId, [session]))
+        };
+        request.Headers.Add(DeviceTokenHeaderName, registration.DeviceToken);
+
+        HttpResponseMessage response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -119,12 +127,16 @@ public sealed class DailySummaryRuntimeFlowTests
 
     private static async Task UploadWebSessionAsync(
         HttpClient client,
-        string deviceId,
+        DeviceRegistration registration,
         WebSessionUploadItem session)
     {
-        HttpResponseMessage response = await client.PostAsJsonAsync(
-            "/api/web-sessions/upload",
-            new UploadWebSessionsRequest(deviceId, [session]));
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/web-sessions/upload")
+        {
+            Content = JsonContent.Create(new UploadWebSessionsRequest(registration.DeviceId, [session]))
+        };
+        request.Headers.Add(DeviceTokenHeaderName, registration.DeviceToken);
+
+        HttpResponseMessage response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -176,4 +188,5 @@ public sealed class DailySummaryRuntimeFlowTests
             isPrivateOrUnknown: false);
     }
 
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 }

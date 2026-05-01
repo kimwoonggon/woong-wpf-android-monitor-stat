@@ -12,6 +12,8 @@ namespace Woong.MonitorStack.Server.Tests.Sessions;
 
 public sealed class FocusSessionUploadApiRelationalTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
     [Fact]
     public async Task UploadFocusSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows()
     {
@@ -23,14 +25,10 @@ public sealed class FocusSessionUploadApiRelationalTests
             unknownDeviceId,
             [Focus("orphan-focus-session")]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, "not-a-valid-device-token");
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/focus-sessions/upload", request);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        JsonElement item = json.RootElement.GetProperty("items")[0];
-        Assert.Equal("orphan-focus-session", item.GetProperty("clientId").GetString());
-        Assert.Equal((int)UploadItemStatus.Error, item.GetProperty("status").GetInt32());
-        Assert.Contains("device", item.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
@@ -43,16 +41,17 @@ public sealed class FocusSessionUploadApiRelationalTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = Guid.NewGuid();
-        await SeedDeviceAndExistingFocusSessionAsync(factory, deviceId);
+        DeviceRegistration registration = await RegisterDeviceAsync(client);
+        await SeedExistingFocusSessionAsync(factory, Guid.ParseExact(registration.DeviceId, "N"));
         var request = new UploadFocusSessionsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [
                 Focus("existing-focus-session"),
                 Focus("new-focus-session"),
                 Focus("new-focus-session")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/focus-sessions/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -73,21 +72,10 @@ public sealed class FocusSessionUploadApiRelationalTests
         Assert.Equal(["existing-focus-session", "new-focus-session"], persisted.Select(session => session.ClientSessionId));
     }
 
-    private static async Task SeedDeviceAndExistingFocusSessionAsync(RelationalServerFactory factory, Guid deviceId)
+    private static async Task SeedExistingFocusSessionAsync(RelationalServerFactory factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = "windows-focus-batch-key",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
         FocusSessionUploadItem existing = Focus("existing-focus-session");
         dbContext.FocusSessions.Add(new FocusSessionEntity
         {
@@ -109,6 +97,26 @@ public sealed class FocusSessionUploadApiRelationalTests
         });
         await dbContext.SaveChangesAsync();
     }
+
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(HttpClient client)
+    {
+        var registrationRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Windows,
+            deviceKey: "windows-focus-batch-key",
+            deviceName: "Windows Workstation",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
+    }
+
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 
     private static FocusSessionUploadItem Focus(string clientSessionId)
     {

@@ -32,6 +32,65 @@ multi-day, multi-point trend; Sessions rows are compact; Settings is grouped by
 Permissions, Collection, Sync, and Privacy, including sync server URL and device
 ID configuration fields.
 
+## 2026-05-02 Seven-Screen Visual Review
+
+Reference compared:
+
+```text
+docs/assets/android/android-ui-flow-reference.png
+```
+
+Latest local evidence compared:
+
+```text
+artifacts/android-ui-snapshots/20260502-073133/
+artifacts/android-ui-snapshots/latest/
+artifacts/android-ui-snapshots/latest/figma-01-splash.png
+artifacts/android-ui-snapshots/latest/figma-02-permission.png
+artifacts/android-ui-snapshots/latest/figma-03-dashboard.png
+artifacts/android-ui-snapshots/latest/figma-04-sessions.png
+artifacts/android-ui-snapshots/latest/figma-05-app-detail.png
+artifacts/android-ui-snapshots/latest/figma-06-report.png
+artifacts/android-ui-snapshots/latest/figma-07-settings.png
+```
+
+Aligned now:
+
+- Splash keeps the shell hidden and presents the logo, product name, subtitle,
+  and loading state as a clean first-run screen.
+- Permission keeps the back affordance, shield visual, Usage Access purpose,
+  privacy principles, and primary Settings action visible.
+- Dashboard now matches the intended information order: status chips, current
+  focus, summary cards, period filters, compact chart, and an App usage hint in
+  the first viewport.
+- Sessions now shows the title, filters, count, and readable compact rows with
+  app name, package, time range, duration, and state.
+- App Detail now brings the selected app identity, total/session cards, compact
+  hourly chart, and session rows into a reference-like first viewport.
+- Report now uses two summary cards, a compact trend chart, and ranked Top apps
+  rows with proportional bars visible earlier.
+- Settings now groups Permissions, Collection, Sync, and privacy-oriented
+  controls clearly while keeping Usage Access, sync-off, server/device fields,
+  and local-only/privacy copy visible.
+
+Future polish:
+
+- Copy density differs from the compact Figma reference because the runtime UI
+  uses larger accessible text and a mix of Korean and English strings.
+- Dashboard status chips and period filters are wider than the reference on
+  narrow phone screenshots.
+- Placeholder app icons are functional initials rather than real package icons.
+- Settings has extra production-safe configuration copy and sync fields that
+  are intentionally more explicit than the reference.
+- Bottom navigation and Android status bar proportions remain emulator/device
+  dependent and should be checked in future visual sweeps.
+
+Privacy boundary: these screenshots are local developer evidence only. They are
+not product telemetry and must not be used as monitored-user screenshots. The
+product must continue to avoid typed text, passwords, form contents, clipboard
+contents, browser/page contents, other-app screenshots, and global touch
+coordinates.
+
 The Android app remains UsageStatsManager metadata only. It measures which apps
 were foreground for how long, local Room persistence, sync state, optional
 permission-gated location context, and daily summaries. It must collect no typed

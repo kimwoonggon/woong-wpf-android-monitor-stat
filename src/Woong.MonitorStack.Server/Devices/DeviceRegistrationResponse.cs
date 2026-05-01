@@ -7,6 +7,7 @@ public sealed record DeviceRegistrationResponse(
     string DeviceKey,
     string DeviceName,
     string TimezoneId,
+    string DeviceToken,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset LastSeenAtUtc,
     bool IsNew);

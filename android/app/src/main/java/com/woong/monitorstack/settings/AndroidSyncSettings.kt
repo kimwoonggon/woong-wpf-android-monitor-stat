@@ -6,6 +6,7 @@ interface AndroidSyncSettings {
     fun isSyncEnabled(): Boolean
     fun serverBaseUrl(): String = ""
     fun deviceId(): String = ""
+    fun deviceToken(): String = ""
 }
 
 class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettings {
@@ -38,10 +39,34 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
         preferences.edit().putString(KeyDeviceId, deviceId.trim()).apply()
     }
 
+    override fun deviceToken(): String {
+        return preferences.getString(KeyDeviceToken, "").orEmpty()
+    }
+
+    fun persistRegisteredDevice(
+        deviceId: String,
+        deviceToken: String
+    ) {
+        preferences.edit()
+            .putString(KeyDeviceId, deviceId.trim())
+            .putString(KeyDeviceToken, deviceToken.trim())
+            .apply()
+    }
+
+    fun clearSyncConfiguration() {
+        preferences.edit()
+            .putBoolean(KeySyncEnabled, false)
+            .remove(KeyServerBaseUrl)
+            .remove(KeyDeviceId)
+            .remove(KeyDeviceToken)
+            .apply()
+    }
+
     companion object {
         const val PreferenceName = "woong_monitor_settings"
         private const val KeySyncEnabled = "sync_enabled"
         private const val KeyServerBaseUrl = "server_base_url"
         private const val KeyDeviceId = "device_id"
+        private const val KeyDeviceToken = "device_token"
     }
 }

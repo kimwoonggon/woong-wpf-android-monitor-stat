@@ -154,8 +154,21 @@ Product boundary reminder:
   `artifacts/android-ui-snapshots/latest/`.
 - [ ] Store manual app-switch/performance evidence under
   `artifacts/android-manual-run/latest/` or a dated run folder.
-- [ ] Add visual review notes comparing the latest screenshots to
-  `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg`.
+- [x] Add visual review notes comparing the latest screenshots to
+  `docs/assets/android/android-ui-flow-reference.png`.
+  - Latest reviewed artifacts: `artifacts/android-ui-snapshots/20260502-073133/`
+    and `artifacts/android-ui-snapshots/latest/figma-01-splash.png` through
+    `figma-07-settings.png`.
+  - Aligned now: Splash/Permission shell isolation, Sessions compact rows,
+    Dashboard/App Detail/Report first-viewport density, Settings grouping, and
+    visible safe defaults.
+  - Future polish: copy density, wide chips/filters on narrow phones,
+    placeholder app icons, Settings config copy beyond the reference, and
+    emulator-dependent status/bottom navigation proportions.
+  - Privacy boundary repeated: screenshots are local developer evidence only,
+    not product telemetry or monitored-user screenshots; do not capture typed
+    text, passwords, form contents, clipboard contents, browser/page contents,
+    other-app screenshots, or global touch coordinates.
 
 ### B. Splash Screen Parity
 
@@ -259,6 +272,9 @@ Product boundary reminder:
   blank until the user opts in and configures sync.
 - [x] Sync-on manual sync without server URL/device ID must show configuration
   required and must not enqueue a worker.
+- [x] Sync-on manual sync rejects invalid server URLs before enqueueing a
+  worker: production URLs require HTTPS, local developer HTTP is limited to
+  loopback endpoints, and embedded credentials are rejected.
 - [x] Sync-on manual sync with valid configuration must enqueue
   `AndroidSyncWorker` with explicit base URL/device ID input data.
 - [ ] Privacy defaults must be safe.
@@ -657,8 +673,15 @@ workspace.
   real Room-backed range behavior.
 - [x] Manual sync-on now enqueues a configured `AndroidSyncWorker` once server
   URL/device ID fields are present and valid.
-- [ ] Remaining Android sync hardening: real server auth, device registration,
-  and production endpoint requirements remain open before release use.
+- [x] Sync server URL validation now blocks invalid Manual Sync enqueue:
+  HTTPS is required outside loopback local development and embedded credentials
+  are rejected.
+- [x] Android upload calls now send the persisted server-issued
+  `X-Device-Token` header, missing-token sync fails clearly, and HTTP 401/403
+  is classified as auth required instead of a generic retry.
+- [ ] Remaining Android sync hardening: secure production token storage,
+  visible registration/repair UI, token refresh/re-registration behavior, and
+  production endpoint policy remain open before release use.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
 

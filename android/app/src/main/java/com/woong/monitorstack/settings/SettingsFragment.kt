@@ -130,6 +130,10 @@ class SettingsFragment : Fragment() {
                     binding.syncStatusText.text = getString(R.string.sync_missing_configuration_status)
                     return@setOnClickListener
                 }
+                if (!AndroidSyncServerUrlValidator.isValid(serverBaseUrl)) {
+                    binding.syncStatusText.text = getString(R.string.sync_invalid_server_url_status)
+                    return@setOnClickListener
+                }
 
                 manualSyncLauncher.enqueue(
                     baseUrl = serverBaseUrl,

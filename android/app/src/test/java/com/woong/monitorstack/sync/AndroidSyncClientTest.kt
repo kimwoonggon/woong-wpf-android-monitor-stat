@@ -7,10 +7,95 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AndroidSyncClientTest {
+    @Test
+    fun registerDevicePostsServerContractPayloadAndParsesDeviceToken() {
+        val interceptor = CapturingInterceptor(
+            responseJson = """
+                {
+                  "deviceId":"android-device-id",
+                  "userId":"user-1",
+                  "platform":"android",
+                  "deviceKey":"android-device-key",
+                  "deviceName":"Pixel",
+                  "timezoneId":"Asia/Seoul",
+                  "deviceToken":"device-token-secret",
+                  "createdAtUtc":"2026-05-01T00:00:00Z",
+                  "lastSeenAtUtc":"2026-05-01T00:00:00Z",
+                  "isNew":true
+                }
+            """.trimIndent()
+        )
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient
+        )
+
+        val result = syncClient.registerDevice(
+            SyncDeviceRegistrationRequest(
+                userId = "user-1",
+                platform = 2,
+                deviceKey = "android-device-key",
+                deviceName = "Pixel",
+                timezoneId = "Asia/Seoul"
+            )
+        )
+
+        assertEquals("/api/devices/register", interceptor.path)
+        assertTrue(interceptor.body.contains(""""userId":"user-1""""))
+        assertTrue(interceptor.body.contains(""""platform":2"""))
+        assertTrue(interceptor.body.contains(""""deviceKey":"android-device-key""""))
+        assertTrue(interceptor.body.contains(""""deviceName":"Pixel""""))
+        assertTrue(interceptor.body.contains(""""timezoneId":"Asia/Seoul""""))
+        assertEquals("android-device-id", result.deviceId)
+        assertEquals("device-token-secret", result.deviceToken)
+    }
+
+    @Test
+    fun uploadFocusSessionsClassifiesUnauthorizedAsAuthenticationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 401)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "expired-token"
+        )
+
+        val exception = assertThrows(AndroidSyncAuthenticationException::class.java) {
+            syncClient.uploadFocusSessions(focusSessionUploadRequest())
+        }
+
+        assertEquals(401, exception.statusCode)
+    }
+
+    @Test
+    fun uploadLocationContextsClassifiesForbiddenAsAuthenticationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 403)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "forbidden-token"
+        )
+
+        val exception = assertThrows(AndroidSyncAuthenticationException::class.java) {
+            syncClient.uploadLocationContexts(locationContextUploadRequest())
+        }
+
+        assertEquals(403, exception.statusCode)
+    }
+
     @Test
     fun uploadFocusSessionsPostsContractPayloadAndParsesBatchResult() {
         val interceptor = CapturingInterceptor(
@@ -21,29 +106,14 @@ class AndroidSyncClientTest {
             .build()
         val syncClient = AndroidSyncClient(
             baseUrl = "https://server.example",
-            httpClient = httpClient
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
         )
 
-        val result = syncClient.uploadFocusSessions(
-            SyncFocusSessionUploadRequest(
-                deviceId = "device-1",
-                sessions = listOf(
-                    SyncFocusSessionUploadItem(
-                        clientSessionId = "session-1",
-                        platformAppKey = "com.android.chrome",
-                        startedAtUtc = "2026-04-28T00:00:00Z",
-                        endedAtUtc = "2026-04-28T00:15:00Z",
-                        durationMs = 900_000,
-                        localDate = "2026-04-28",
-                        timezoneId = "Asia/Seoul",
-                        isIdle = false,
-                        source = "usage_stats"
-                    )
-                )
-            )
-        )
+        val result = syncClient.uploadFocusSessions(focusSessionUploadRequest())
 
         assertEquals("/api/focus-sessions/upload", interceptor.path)
+        assertEquals("device-token-secret", interceptor.deviceTokenHeader)
         assertTrue(interceptor.body.contains(""""deviceId":"device-1""""))
         assertTrue(interceptor.body.contains(""""clientSessionId":"session-1""""))
         assertEquals("session-1", result.items.single().clientId)
@@ -60,30 +130,14 @@ class AndroidSyncClientTest {
             .build()
         val syncClient = AndroidSyncClient(
             baseUrl = "https://server.example",
-            httpClient = httpClient
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
         )
 
-        val result = syncClient.uploadLocationContexts(
-            SyncLocationContextUploadRequest(
-                deviceId = "android-device-1",
-                contexts = listOf(
-                    SyncLocationContextUploadItem(
-                        clientContextId = "location-1",
-                        capturedAtUtc = "2026-04-28T00:00:00Z",
-                        localDate = "2026-04-28",
-                        timezoneId = "Asia/Seoul",
-                        latitude = 37.5665,
-                        longitude = 126.9780,
-                        accuracyMeters = 35.5f,
-                        captureMode = "AppUsageContext",
-                        permissionState = "GrantedApproximate",
-                        source = "android_location_context"
-                    )
-                )
-            )
-        )
+        val result = syncClient.uploadLocationContexts(locationContextUploadRequest())
 
         assertEquals("/api/location-contexts/upload", interceptor.path)
+        assertEquals("device-token-secret", interceptor.deviceTokenHeader)
         assertTrue(interceptor.body.contains(""""deviceId":"android-device-1""""))
         assertTrue(interceptor.body.contains(""""contexts":["""))
         assertTrue(interceptor.body.contains(""""clientContextId":"location-1""""))
@@ -101,12 +155,16 @@ class AndroidSyncClientTest {
     }
 
     private class CapturingInterceptor(
-        private val responseJson: String
+        private val responseJson: String,
+        private val responseCode: Int = 200
     ) : Interceptor {
         var path: String? = null
             private set
 
         var body: String = ""
+            private set
+
+        var deviceTokenHeader: String? = null
             private set
 
         override fun intercept(chain: Interceptor.Chain): Response {
@@ -115,14 +173,54 @@ class AndroidSyncClientTest {
             request.body?.writeTo(buffer)
             path = request.url.encodedPath
             body = buffer.readUtf8()
+            deviceTokenHeader = request.header("X-Device-Token")
 
             return Response.Builder()
                 .request(request)
                 .protocol(okhttp3.Protocol.HTTP_1_1)
-                .code(200)
+                .code(responseCode)
                 .message("OK")
                 .body(responseJson.toResponseBody("application/json".toMediaType()))
                 .build()
         }
+    }
+
+    private fun focusSessionUploadRequest(): SyncFocusSessionUploadRequest {
+        return SyncFocusSessionUploadRequest(
+            deviceId = "device-1",
+            sessions = listOf(
+                SyncFocusSessionUploadItem(
+                    clientSessionId = "session-1",
+                    platformAppKey = "com.android.chrome",
+                    startedAtUtc = "2026-04-28T00:00:00Z",
+                    endedAtUtc = "2026-04-28T00:15:00Z",
+                    durationMs = 900_000,
+                    localDate = "2026-04-28",
+                    timezoneId = "Asia/Seoul",
+                    isIdle = false,
+                    source = "usage_stats"
+                )
+            )
+        )
+    }
+
+    private fun locationContextUploadRequest(): SyncLocationContextUploadRequest {
+        return SyncLocationContextUploadRequest(
+            deviceId = "android-device-1",
+            contexts = listOf(
+                SyncLocationContextUploadItem(
+                    clientContextId = "location-1",
+                    capturedAtUtc = "2026-04-28T00:00:00Z",
+                    localDate = "2026-04-28",
+                    timezoneId = "Asia/Seoul",
+                    latitude = 37.5665,
+                    longitude = 126.9780,
+                    accuracyMeters = 35.5f,
+                    captureMode = "AppUsageContext",
+                    permissionState = "GrantedApproximate",
+                    source = "android_location_context"
+                )
+            )
+        )
     }
 }

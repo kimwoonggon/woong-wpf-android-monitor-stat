@@ -2276,7 +2276,7 @@ milestones below are finished.
 - [x] Android release workflow runs from `android/`, uses the Gradle wrapper, uploads APK/test artifacts, and does not require connected/emulator tests.
 - [x] Signed release APK creation requires `ANDROID_KEYSTORE_*` secrets; unsigned release artifacts are CI/testing only.
 - [x] Validation passed: local release workflow validator, focused architecture tests, and Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`.
-- [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.
+- [x] Android manual emulator workflow added for optional `connectedDebugAndroidTest` evidence; it stays manual/opt-in rather than a required release gate.
 - [ ] Next Android release TODO: configure real `ANDROID_KEYSTORE_*` signing secrets and Play Store publishing only after explicit release requirements are defined.
 - [x] Current-focus validation screenshot timing/retry follow-up is superseded by the 2026-05-02 foreground validation pass at `artifacts/android-usage-current-focus/20260502-012243/`.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
@@ -2292,7 +2292,9 @@ milestones below are finished.
 - [x] AndroidSyncWorker missing config returns a clear failure status without calling the sync runner.
 - [x] Latest Android UI snapshot evidence: artifacts/android-ui-snapshots/20260502-063728/ PASS; crash buffer empty.
 - [x] Validation passed: Android Gradle test/build/androidTest APK, UI snapshots, dotnet test, and dotnet build.
-- [ ] Remaining Android sync hardening: real server auth, device registration, and production endpoint requirements stay open before release use.
+- [x] Settings now rejects invalid sync server URLs before enqueueing Manual Sync work: production URLs require HTTPS, loopback HTTP is allowed for local development, and embedded credentials are rejected.
+- [x] Android upload calls now attach the persisted server-issued `X-Device-Token` header and classify missing-token/auth-required failures explicitly.
+- [ ] Remaining Android sync hardening: secure production token storage, visible registration/repair UI, token refresh/re-registration behavior, and production endpoint policy stay open before release use.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
@@ -2369,4 +2371,5 @@ milestones below are finished.
 - [x] Added structured logging and hardening docs for raw-event retention runs.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
-- [ ] Remaining server production hardening: device token issuance/enforcement, production migration deployment path, and environment-specific retention alerting values.
+- [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
+- [ ] Remaining server production hardening: device token issuance/enforcement is active/partial pending integration validation, Android upload auth headers remain open, and environment-specific retention alerting values still need release policy.

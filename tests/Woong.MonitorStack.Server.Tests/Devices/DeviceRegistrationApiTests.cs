@@ -16,6 +16,38 @@ namespace Woong.MonitorStack.Server.Tests.Devices;
 public sealed class DeviceRegistrationApiTests
 {
     [Fact]
+    public async Task RegisterDevice_ReturnsDeviceTokenAndPreservesItForIdempotentRegistration()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        var request = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Android,
+            deviceKey: "android-token-device-key",
+            deviceName: "Phone",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/devices/register", request);
+        HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/devices/register", request);
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+        DeviceRegistrationResponse firstBody = (await firstResponse.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+        DeviceRegistrationResponse secondBody = (await secondResponse.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+
+        Assert.False(string.IsNullOrWhiteSpace(firstBody.DeviceToken));
+        Assert.Equal(firstBody.DeviceId, secondBody.DeviceId);
+        Assert.Equal(firstBody.DeviceToken, secondBody.DeviceToken);
+        Assert.NotEqual(firstBody.DeviceToken, firstBody.DeviceId);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        DeviceEntity device = Assert.Single(await dbContext.Devices.ToListAsync());
+        Assert.False(string.IsNullOrWhiteSpace(device.DeviceTokenHash));
+        Assert.DoesNotContain(firstBody.DeviceToken, device.DeviceTokenHash, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RegisterDevice_ReturnsStableDeviceIdForSameDeviceKey()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();

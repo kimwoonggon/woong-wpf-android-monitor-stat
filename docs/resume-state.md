@@ -2,6 +2,26 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Release Docs Consistency Patch
+
+- Reconciled TODO/docs wording with the current dirty integration state without
+  touching production code.
+- Android manual emulator CI now exists as an optional/manual workflow for
+  `connectedDebugAndroidTest`; it is not a required release gate.
+- Android sync URL validation is implemented at Settings enqueue time: HTTPS is
+  required outside loopback local development, embedded credentials are
+  rejected, and invalid URLs do not enqueue Manual Sync work.
+- Android device-token persistence/client registration contracts are in place,
+  and Android upload calls attach `X-Device-Token`; secure production token
+  storage, registration UI, token repair, and production endpoint policy remain
+  open.
+- Server production migration deployment docs and migration-bundle helper are
+  in place; migration bundles are built explicitly and are not applied
+  automatically.
+- Server token issuance/enforcement work is active and now matches the Android
+  upload header contract; it still needs production hardening before release
+  use.
+
 ## 2026-05-02 Multi-Agent Android/Server Integration Slice
 
 - Coordinated parallel subagent work while keeping the main thread as the
@@ -74,8 +94,9 @@ Verified:
   `artifacts/android-ui-snapshots/latest/`; `report.md` status is `PASS`, all
   seven canonical Figma screenshots are `PASS`, and the crash buffer remained
   empty.
-- Real server auth, device registration, and production endpoint hardening
-  remain open future work.
+- Server auth/device registration is now paired with Android upload token
+  headers; secure token storage, registration UI, token repair, and production
+  endpoint policy remain open before release use.
 
 Verified:
 
@@ -5258,7 +5279,8 @@ Validation completed:
 
 Remaining Android CI/CD priorities:
 
-- Add a separate manual emulator workflow for `connectedDebugAndroidTest` once runner cost/reliability is acceptable.
+- Keep the manual emulator workflow for `connectedDebugAndroidTest` optional
+  unless release requirements explicitly promote it to a required gate.
 - Configure real Android release signing secrets and Play Store publishing only
   after explicit release requirements are defined.
 

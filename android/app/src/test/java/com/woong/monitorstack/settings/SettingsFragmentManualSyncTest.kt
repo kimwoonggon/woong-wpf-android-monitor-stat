@@ -95,6 +95,34 @@ class SettingsFragmentManualSyncTest {
     }
 
     @Test
+    fun manualSyncWhenSyncOnWithInvalidServerUrlShowsUrlMessageWithoutLaunch() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("http://server.example")
+        activity.findViewById<EditText>(R.id.syncDeviceIdEditText).setText("android-device-1")
+        activity.findViewById<Button>(R.id.manualSyncButton).performClick()
+
+        assertEquals(
+            "Manual sync requires an HTTPS server URL, or HTTP localhost for local development.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("https://user:pass@server.example")
+        activity.findViewById<Button>(R.id.manualSyncButton).performClick()
+
+        assertEquals(
+            "Manual sync requires an HTTPS server URL, or HTTP localhost for local development.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
     fun manualSyncWhenSyncOnWithValidConfigurationLaunchesWorkerWithStoredValues() {
         val settings = SharedPreferencesAndroidSyncSettings(context)
         settings.setSyncEnabled(true)
@@ -110,6 +138,34 @@ class SettingsFragmentManualSyncTest {
             listOf(
                 ManualSyncLaunchRequest(
                     baseUrl = "https://server.example",
+                    deviceId = "android-device-1",
+                    pendingLimit = 50
+                )
+            ),
+            launcher.requests
+        )
+        assertEquals(
+            "Manual sync queued for configured server.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+    }
+
+    @Test
+    fun manualSyncWhenSyncOnWithLoopbackHttpLaunchesWorkerForLocalDevelopment() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("  http://localhost:5080  ")
+        activity.findViewById<EditText>(R.id.syncDeviceIdEditText)
+            .setText(" android-device-1 ")
+        activity.findViewById<Button>(R.id.manualSyncButton).performClick()
+
+        assertEquals(
+            listOf(
+                ManualSyncLaunchRequest(
+                    baseUrl = "http://localhost:5080",
                     deviceId = "android-device-1",
                     pendingLimit = 50
                 )

@@ -12,6 +12,8 @@ namespace Woong.MonitorStack.Server.Tests.Sessions;
 
 public sealed class WebSessionUploadApiRelationalTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
     [Fact]
     public async Task UploadWebSessions_WhenDeviceIsNotRegistered_ReturnsControlledErrorAndDoesNotPersistRows()
     {
@@ -23,14 +25,10 @@ public sealed class WebSessionUploadApiRelationalTests
             unknownDeviceId,
             [Web("unknown-device-web-session", "missing-focus-session")]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, "not-a-valid-device-token");
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        JsonElement item = json.RootElement.GetProperty("items")[0];
-        Assert.Equal("unknown-device-web-session", item.GetProperty("clientId").GetString());
-        Assert.Equal((int)UploadItemStatus.Error, item.GetProperty("status").GetInt32());
-        Assert.Contains("device", item.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
@@ -43,11 +41,12 @@ public sealed class WebSessionUploadApiRelationalTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = await SeedRegisteredDeviceAsync(factory);
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-web-relational-key");
         var request = new UploadWebSessionsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [Web("orphan-web-session", "missing-focus-session")]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -68,10 +67,10 @@ public sealed class WebSessionUploadApiRelationalTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = Guid.NewGuid();
-        await SeedDeviceFocusAndExistingWebSessionAsync(factory, deviceId);
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-web-batch-key");
+        await SeedFocusAndExistingWebSessionAsync(factory, Guid.ParseExact(registration.DeviceId, "N"));
         var request = new UploadWebSessionsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [
                 Web("existing-web-session", "focus-parent-session"),
                 Web("new-web-session", "focus-parent-session"),
@@ -79,6 +78,7 @@ public sealed class WebSessionUploadApiRelationalTests
                 Web("orphan-web-session", "missing-focus-parent")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -102,42 +102,10 @@ public sealed class WebSessionUploadApiRelationalTests
         Assert.Equal(["existing-web-session", "new-web-session"], persisted.Select(session => session.ClientSessionId));
     }
 
-    private static async Task<Guid> SeedRegisteredDeviceAsync(RelationalServerFactory factory)
+    private static async Task SeedFocusAndExistingWebSessionAsync(RelationalServerFactory factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        Guid deviceId = Guid.NewGuid();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = "windows-web-relational-key",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
-        await dbContext.SaveChangesAsync();
-
-        return deviceId;
-    }
-
-    private static async Task SeedDeviceFocusAndExistingWebSessionAsync(RelationalServerFactory factory, Guid deviceId)
-    {
-        using IServiceScope scope = factory.Services.CreateScope();
-        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = "windows-web-batch-key",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
         dbContext.FocusSessions.Add(new FocusSessionEntity
         {
             DeviceId = deviceId,
@@ -170,6 +138,26 @@ public sealed class WebSessionUploadApiRelationalTests
         });
         await dbContext.SaveChangesAsync();
     }
+
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(HttpClient client, string deviceKey)
+    {
+        var registrationRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Windows,
+            deviceKey,
+            deviceName: "Windows Workstation",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
+    }
+
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 
     private static WebSessionUploadItem Web(string clientSessionId, string focusSessionId)
     {

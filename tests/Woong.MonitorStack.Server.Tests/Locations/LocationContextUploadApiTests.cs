@@ -15,13 +15,32 @@ namespace Woong.MonitorStack.Server.Tests.Locations;
 
 public sealed class LocationContextUploadApiTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
+    [Fact]
+    public async Task UploadLocationContexts_WhenDeviceTokenHeaderIsMissing_ReturnsUnauthorizedAndPersistsNoRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "android-location-missing-token-key");
+        var request = new UploadLocationContextsRequest(
+            registration.DeviceId,
+            [Location("missing-token-location-context")]);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Empty(await dbContext.LocationContexts.ToListAsync());
+    }
+
     [Fact]
     public async Task UploadLocationContexts_PersistsNullableCoordinatesAndMarksDuplicate()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
-        string deviceId = Guid.NewGuid().ToString("N");
-        await SeedDeviceAsync(factory, Guid.Parse(deviceId));
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "android-location-key");
         var item = new LocationContextUploadItem(
             clientContextId: "location-context-1",
             capturedAtUtc: new DateTimeOffset(2026, 4, 28, 1, 2, 3, TimeSpan.Zero),
@@ -33,8 +52,9 @@ public sealed class LocationContextUploadApiTests
             captureMode: "precise_opt_in",
             permissionState: "granted_precise",
             source: "android_location_context");
-        var request = new UploadLocationContextsRequest(deviceId, [item]);
+        var request = new UploadLocationContextsRequest(registration.DeviceId, [item]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
         HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
 
@@ -48,7 +68,7 @@ public sealed class LocationContextUploadApiTests
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         LocationContextEntity persisted = Assert.Single(await dbContext.LocationContexts.ToListAsync());
-        Assert.Equal(Guid.Parse(deviceId), persisted.DeviceId);
+        Assert.Equal(Guid.ParseExact(registration.DeviceId, "N"), persisted.DeviceId);
         Assert.Equal("location-context-1", persisted.ClientContextId);
         Assert.Equal(new DateTimeOffset(2026, 4, 28, 1, 2, 3, TimeSpan.Zero), persisted.CapturedAtUtc);
         Assert.Equal(new DateOnly(2026, 4, 28), persisted.LocalDate);
@@ -66,8 +86,7 @@ public sealed class LocationContextUploadApiTests
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
-        string deviceId = Guid.NewGuid().ToString("N");
-        await SeedDeviceAsync(factory, Guid.Parse(deviceId));
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "android-location-unavailable-key");
         var item = new LocationContextUploadItem(
             clientContextId: "location-context-unavailable",
             capturedAtUtc: new DateTimeOffset(2026, 4, 28, 2, 0, 0, TimeSpan.Zero),
@@ -79,8 +98,9 @@ public sealed class LocationContextUploadApiTests
             captureMode: "location_unavailable",
             permissionState: "denied",
             source: "android_location_context");
-        var request = new UploadLocationContextsRequest(deviceId, [item]);
+        var request = new UploadLocationContextsRequest(registration.DeviceId, [item]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -100,16 +120,17 @@ public sealed class LocationContextUploadApiTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = Guid.NewGuid();
-        await SeedDeviceAndExistingLocationContextAsync(factory, deviceId);
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "android-location-batch-key");
+        await SeedExistingLocationContextAsync(factory, Guid.ParseExact(registration.DeviceId, "N"));
         var request = new UploadLocationContextsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [
                 Location("existing-location-context"),
                 Location("new-location-context"),
                 Location("new-location-context")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -143,53 +164,20 @@ public sealed class LocationContextUploadApiTests
             unknownDeviceId,
             [Location("orphan-location-context")]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, "not-a-valid-device-token");
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/location-contexts/upload", request);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        JsonElement item = json.RootElement.GetProperty("items")[0];
-        Assert.Equal("orphan-location-context", item.GetProperty("clientId").GetString());
-        Assert.Equal((int)UploadItemStatus.Error, item.GetProperty("status").GetInt32());
-        Assert.Contains("device", item.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         Assert.Empty(await dbContext.LocationContexts.ToListAsync());
     }
 
-    private static async Task SeedDeviceAsync(WebApplicationFactory<Program> factory, Guid deviceId)
+    private static async Task SeedExistingLocationContextAsync(WebApplicationFactory<Program> factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Android,
-            DeviceKey = "android-location-key",
-            DeviceName = "Android Phone",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
-        await dbContext.SaveChangesAsync();
-    }
-
-    private static async Task SeedDeviceAndExistingLocationContextAsync(WebApplicationFactory<Program> factory, Guid deviceId)
-    {
-        using IServiceScope scope = factory.Services.CreateScope();
-        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Android,
-            DeviceKey = "android-location-batch-key",
-            DeviceName = "Android Phone",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
         LocationContextUploadItem existing = Location("existing-location-context");
         dbContext.LocationContexts.Add(new LocationContextEntity
         {
@@ -221,6 +209,26 @@ public sealed class LocationContextUploadApiTests
             captureMode: "precise_opt_in",
             permissionState: "granted_precise",
             source: "android_location_context");
+
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(HttpClient client, string deviceKey)
+    {
+        var registrationRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Android,
+            deviceKey,
+            deviceName: "Android Phone",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
+    }
+
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()
         => new WebApplicationFactory<Program>()

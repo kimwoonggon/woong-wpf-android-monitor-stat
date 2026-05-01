@@ -23,6 +23,19 @@ public sealed class ServerDbContextModelTests
     }
 
     [Fact]
+    public void DeviceEntity_HasDeviceTokenVerifierColumns()
+    {
+        using var dbContext = CreateModelContext();
+
+        var entityType = dbContext.Model.FindEntityType(typeof(DeviceEntity));
+
+        Assert.Equal(128, entityType!.FindProperty(nameof(DeviceEntity.DeviceTokenSalt))!.GetMaxLength());
+        Assert.False(entityType.FindProperty(nameof(DeviceEntity.DeviceTokenSalt))!.IsNullable);
+        Assert.Equal(128, entityType.FindProperty(nameof(DeviceEntity.DeviceTokenHash))!.GetMaxLength());
+        Assert.False(entityType.FindProperty(nameof(DeviceEntity.DeviceTokenHash))!.IsNullable);
+    }
+
+    [Fact]
     public void FocusSessionEntity_HasProcessWindowMetadataColumns()
     {
         var options = new DbContextOptionsBuilder<MonitorDbContext>()

@@ -11,8 +11,11 @@ not an implementation change.
 Existing Android sync names and responsibilities:
 
 - `SharedPreferencesAndroidSyncSettings` stores sync opt-in, server base URL,
-  and device ID. Sync remains off by default.
-- `SettingsFragment` exposes server URL/device ID fields and Manual Sync.
+  device ID, and the current device-token value. Sync remains off by default.
+  It can persist a registered device ID/token pair and clear sync
+  configuration.
+- `SettingsFragment` exposes server URL/device ID fields and Manual Sync, and
+  rejects invalid server URLs before enqueueing sync work.
 - `AndroidSyncWorker` gates sync by opt-in and requires `KEY_BASE_URL`,
   `KEY_DEVICE_ID`, and a positive pending limit.
 - `AndroidSyncRunnerFactory` creates `AndroidRoomSyncRunner` only when worker
@@ -20,11 +23,12 @@ Existing Android sync names and responsibilities:
 - `AndroidOutboxSyncProcessor` uploads pending `focus_session` rows and
   opt-in location-context rows, marks `Accepted` and `Duplicate` as synced, and
   marks item-level `Error` or missing results as failed.
-- `AndroidSyncClient` posts focus sessions to
-  `/api/focus-sessions/upload` and location contexts to
-  `/api/location-contexts/upload`.
+- `AndroidSyncClient` can register a device through `/api/devices/register`
+  and posts focus sessions to `/api/focus-sessions/upload` and location
+  contexts to `/api/location-contexts/upload`. Upload requests do not yet send
+  the device-token auth header from Android.
 - `SyncContracts.kt` maps Android UsageStats sessions to the shared
-  focus-session upload contract.
+  focus-session upload contract and includes Android device-registration DTOs.
 
 The shared contract decision remains: Android UsageStats app intervals sync as
 `FocusSession` uploads, with `source = android_usage_stats`, Android package
@@ -61,11 +65,13 @@ sync consent.
 
 ### Device Registration
 
-Before production upload, Android needs an explicit device registration flow:
+Before production upload, Android needs a release-complete explicit device
+registration flow. The client/server contract is partially started: Android has
+registration DTO/client support and settings persistence can store a
+server-issued device ID/token pair. Remaining requirements:
 
 - Define how Android obtains or creates a stable local `deviceKey`.
-- Register the Android device through the server device-registration endpoint.
-- Persist the server-issued `deviceId` only after a successful registration or
+- Wire registration through visible Settings UI or another explicit
   user-approved configuration step.
 - Make registration idempotent by stable user/platform/device key, matching
   existing server idempotency policy.
@@ -74,28 +80,80 @@ Before production upload, Android needs an explicit device registration flow:
 
 ### Auth And Token Policy
 
-Production sync must not rely only on user-entered `deviceId`.
+Production sync must not rely only on user-entered `deviceId`. Server-side
+token issuance/enforcement is active, and Android can persist the server-issued
+token and attach it to upload requests. This is still not release-complete until
+registration UI, secure token storage, token refresh/re-registration, and
+production endpoint policy are finished.
 
 - Define whether Android uses a device token, user auth token, or both.
-- Treat current blank token behavior as a placeholder only.
-- Store tokens in an Android-appropriate secure store before production use.
-- Send auth material through headers, not payload fields.
+- Use the server-issued device token as the current upload authorization
+  contract. Upload requests send it as `X-Device-Token`; payloads must not carry
+  auth material.
+- Store tokens in an Android-appropriate secure store before production use;
+  SharedPreferences token persistence is not release-complete secure storage.
+- Send auth material through headers, not payload fields. Android focus and
+  location upload calls now send `X-Device-Token`; future upload types must
+  follow the same contract.
 - Do not log tokens, full auth headers, or complete configured base URLs with
   secrets.
 - Define token rotation, invalid-token handling, and sign-out/disconnect
   behavior.
 
+### Server Auth Follow-Up Plan
+
+The current server shape issues a device token during registration and enforces
+`X-Device-Token` on focus-session, web-session, raw-event, and location-context
+uploads. Remaining server-side hardening should be split into small slices:
+
+1. Token rotation and revocation:
+   - Add an explicit server operation to rotate a device token.
+   - Persist enough verifier metadata to invalidate old tokens without storing
+     plaintext tokens.
+   - Add tests proving old tokens fail, the new token works, and no existing
+     focus/web/raw/location rows are deleted or rewritten.
+
+2. Registration policy and user auth:
+   - Decide whether registration is allowed with device credentials only or
+     must require a user auth/session token.
+   - Keep first registration explicit and visible to the client user.
+   - Add tests for unauthenticated registration rejection once user auth exists,
+     while preserving idempotent registration for the same user/platform/device
+     key.
+
+3. Endpoint filter cleanup:
+   - Replace repeated minimal-API auth checks with a shared endpoint filter or
+     helper only after current endpoint behavior is covered.
+   - Preserve public behavior: missing, invalid, and mismatched tokens return
+     `401 Unauthorized` and persist no rows.
+   - Keep registration and read-only summary endpoints out of upload token
+     enforcement unless a later auth policy explicitly changes them.
+
+4. PostgreSQL validation:
+   - Run the token-verifier migration and upload auth tests against
+     PostgreSQL/Testcontainers when Docker is available.
+   - Verify `DeviceTokenSalt` and `DeviceTokenHash` are present on migrated
+     `devices` rows and that upload foreign-key/idempotency behavior still
+     matches SQLite/InMemory test expectations.
+   - Treat skipped PostgreSQL tests as an open production-readiness check, not
+     as proof of provider-specific behavior.
+
 ### Server Base URL Validation
 
-Current settings trim server base URL. Production sync needs stricter checks:
+Settings now performs server URL validation before Manual Sync can enqueue
+work:
 
 - Reject blank values before worker enqueue.
-- Require `https://` for production builds unless an explicit local developer
-  mode allows HTTP loopback.
+- Require `https://` outside explicit local loopback development endpoints.
 - Reject URLs with embedded credentials.
-- Normalize trailing slashes consistently.
 - Surface a user-readable validation error in Settings.
 - Keep the current missing-config worker failure for defensive safety.
+
+Remaining URL hardening:
+
+- Normalize trailing slashes consistently.
+- Document production endpoint discovery/configuration and local developer
+  labeling.
 
 ### Retry And Backoff
 
@@ -136,11 +194,12 @@ Production sync expectations:
 
 This hardening slice does not implement:
 
-- Real server auth/device registration from Android.
-- Token storage or token rotation.
+- Release-complete server auth/device registration from Android.
+- Secure token storage or token rotation.
 - Production endpoint discovery.
 - Play Store release signing or publishing.
-- A connected/emulator CI workflow for `connectedDebugAndroidTest`.
+- Required connected/emulator CI for `connectedDebugAndroidTest`; the current
+  workflow is manual/optional evidence.
 - New Android browser domain tracking.
 - Any collection of page content, typed text, screenshots, or other-app UI.
 
@@ -148,20 +207,20 @@ This hardening slice does not implement:
 
 Future implementation should proceed by vertical TDD slices.
 
-- [ ] `SharedPreferencesAndroidSyncSettings` or successor keeps sync off by
+- [x] `SharedPreferencesAndroidSyncSettings` or successor keeps sync off by
   default and stores no auth token until registration/auth succeeds.
-- [ ] Settings rejects invalid production base URLs before enqueueing
+- [x] Settings rejects invalid production base URLs before enqueueing
   `AndroidSyncWorker`.
-- [ ] Local developer mode, if added, allows only explicit loopback HTTP
-  endpoints and is visibly labeled nonproduction.
-- [ ] Manual Sync with sync off remains local-only and enqueues no worker.
+- [ ] Local developer mode allows only explicit loopback HTTP endpoints; visible
+  nonproduction labeling in Settings remains open.
+- [x] Manual Sync with sync off remains local-only and enqueues no worker.
 - [ ] Manual Sync with sync on but no registered device shows registration
   required and enqueues no worker.
-- [ ] Successful device registration persists a server-issued device ID and
-  token without uploading existing outbox rows until sync is enabled.
-- [ ] `AndroidSyncWorker` sends auth/device token headers through
+- [ ] Successful visible device registration persists a server-issued device ID
+  and token without uploading existing outbox rows until sync is enabled.
+- [x] `AndroidSyncWorker` sends auth/device token headers through
   `AndroidSyncClient` after registration.
-- [ ] Auth failure marks sync as configuration/auth required, not as a generic
+- [x] Auth failure marks sync as configuration/auth required, not as a generic
   retry loop.
 - [ ] Retryable network failures return WorkManager retry and preserve pending
   outbox rows.

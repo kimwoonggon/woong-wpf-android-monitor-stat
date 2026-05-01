@@ -88,6 +88,37 @@ class AndroidSyncWorkerTest {
     }
 
     @Test
+    fun doWorkFailsWithAuthRequiredStatusWhenUploadIsUnauthorized() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = ThrowingAndroidSyncRunner(
+            AndroidSyncAuthenticationException(
+                statusCode = 401,
+                message = "Focus session upload failed with HTTP 401."
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
+            .setWorkerFactory(FakeWorkerFactory(runner))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(AndroidSyncWorker.DEFAULT_PENDING_LIMIT, runner.limit)
+        assertEquals(
+            ListenableWorker.Result.failure(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_STATUS to AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+                    AndroidSyncWorker.KEY_SYNC_MESSAGE to
+                        "Android sync authorization failed. Register this device again."
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
     fun doWorkSkipsSyncWhenSyncOptInIsDisabled() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val runner = FakeAndroidSyncRunner(
@@ -140,6 +171,42 @@ class AndroidSyncWorkerTest {
                         AndroidSyncWorker.STATUS_MISSING_CONFIGURATION,
                     AndroidSyncWorker.KEY_SYNC_MESSAGE to
                         "Android sync is not configured. Missing worker input: KEY_DEVICE_ID, KEY_BASE_URL."
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkFailsWithClearStatusAndDoesNotRunSyncWhenDeviceTokenIsMissing() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeAndroidSyncRunner(
+            result = AndroidOutboxSyncResult(
+                syncedCount = 1,
+                failedCount = 0
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
+            .setWorkerFactory(
+                FakeWorkerFactory(
+                    runner,
+                    FakeAndroidSyncSettings(isEnabled = true, deviceToken = "")
+                )
+            )
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(null, runner.limit)
+        assertEquals(
+            ListenableWorker.Result.failure(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_STATUS to AndroidSyncWorker.STATUS_MISSING_TOKEN,
+                    AndroidSyncWorker.KEY_SYNC_MESSAGE to
+                        "Android sync is not registered. Missing persisted device token."
                 )
             ),
             result
@@ -346,9 +413,11 @@ class AndroidSyncWorkerTest {
     }
 
     private class FakeAndroidSyncSettings(
-        private val isEnabled: Boolean
+        private val isEnabled: Boolean,
+        private val deviceToken: String = "device-token-secret"
     ) : AndroidSyncSettings {
         override fun isSyncEnabled(): Boolean = isEnabled
+        override fun deviceToken(): String = deviceToken
     }
 
     private class ProcessorBackedAndroidSyncRunner(

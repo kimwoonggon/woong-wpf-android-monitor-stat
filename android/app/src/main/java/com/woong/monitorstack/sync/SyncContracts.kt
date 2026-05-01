@@ -3,6 +3,19 @@ package com.woong.monitorstack.sync
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
+data class SyncDeviceRegistrationRequest(
+    val userId: String,
+    val platform: Int,
+    val deviceKey: String,
+    val deviceName: String,
+    val timezoneId: String
+)
+
+data class SyncDeviceRegistrationResponse(
+    val deviceId: String,
+    val deviceToken: String
+)
+
 data class SyncFocusSessionUploadRequest(
     val deviceId: String,
     val sessions: List<SyncFocusSessionUploadItem>

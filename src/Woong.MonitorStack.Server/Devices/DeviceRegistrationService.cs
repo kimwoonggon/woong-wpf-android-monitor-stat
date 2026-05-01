@@ -35,6 +35,7 @@ public sealed class DeviceRegistrationService
                 DeviceKey = request.DeviceKey,
                 DeviceName = request.DeviceName,
                 TimezoneId = request.TimezoneId,
+                DeviceTokenSalt = DeviceTokenFactory.CreateSalt(),
                 CreatedAtUtc = seenAtUtcNormalized,
                 LastSeenAtUtc = seenAtUtcNormalized
             };
@@ -45,6 +46,16 @@ public sealed class DeviceRegistrationService
             device.DeviceName = request.DeviceName;
             device.TimezoneId = request.TimezoneId;
             device.LastSeenAtUtc = seenAtUtcNormalized;
+            if (string.IsNullOrWhiteSpace(device.DeviceTokenSalt))
+            {
+                device.DeviceTokenSalt = DeviceTokenFactory.CreateSalt();
+            }
+        }
+
+        string deviceToken = DeviceTokenFactory.CreateToken(device);
+        if (string.IsNullOrWhiteSpace(device.DeviceTokenHash))
+        {
+            device.DeviceTokenHash = DeviceTokenFactory.HashToken(deviceToken);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -56,6 +67,7 @@ public sealed class DeviceRegistrationService
             device.DeviceKey,
             device.DeviceName,
             device.TimezoneId,
+            deviceToken,
             device.CreatedAtUtc,
             device.LastSeenAtUtc,
             isNew);

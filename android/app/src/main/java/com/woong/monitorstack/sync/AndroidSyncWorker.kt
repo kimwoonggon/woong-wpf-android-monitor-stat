@@ -43,6 +43,16 @@ class AndroidSyncWorker @JvmOverloads constructor(
                 )
             )
         }
+        if (syncSettings.deviceToken().isBlank()) {
+            return Result.failure(
+                workDataOf(
+                    KEY_SYNCED_COUNT to 0,
+                    KEY_FAILED_COUNT to 0,
+                    KEY_SYNC_STATUS to STATUS_MISSING_TOKEN,
+                    KEY_SYNC_MESSAGE to "Android sync is not registered. Missing persisted device token."
+                )
+            )
+        }
 
         return try {
             val result = runner.syncPending(limit)
@@ -56,6 +66,15 @@ class AndroidSyncWorker @JvmOverloads constructor(
                     )
                 )
             }
+        } catch (_: AndroidSyncAuthenticationException) {
+            Result.failure(
+                workDataOf(
+                    KEY_SYNCED_COUNT to 0,
+                    KEY_FAILED_COUNT to 0,
+                    KEY_SYNC_STATUS to STATUS_AUTH_REQUIRED,
+                    KEY_SYNC_MESSAGE to "Android sync authorization failed. Register this device again."
+                )
+            )
         } catch (_: IOException) {
             Result.retry()
         }
@@ -87,6 +106,8 @@ class AndroidSyncWorker @JvmOverloads constructor(
         const val KEY_SYNC_STATUS = "syncStatus"
         const val KEY_SYNC_MESSAGE = "syncMessage"
         const val STATUS_MISSING_CONFIGURATION = "missing_configuration"
+        const val STATUS_MISSING_TOKEN = "missing_token"
+        const val STATUS_AUTH_REQUIRED = "auth_required"
         const val DEFAULT_PENDING_LIMIT = 50
     }
 }

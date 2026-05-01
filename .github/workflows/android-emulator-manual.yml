@@ -1,0 +1,64 @@
+name: Android Emulator Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Manual, optional emulator validation; run only when runner capacity is acceptable."
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  connected-tests:
+    name: Manual Android emulator connected tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: sdkmanager "platforms;android-36.1" "build-tools;36.0.0" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate manual emulator workflow contract
+        shell: pwsh
+        run: scripts/validate-android-emulator-workflow.ps1 -WorkflowPath .github/workflows/android-emulator-manual.yml
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+        working-directory: android
+
+      - name: Run connected Android tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          working-directory: android
+          script: ./gradlew connectedDebugAndroidTest --no-daemon --stacktrace
+
+      - name: Upload connected Android test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-android-connected-test-report
+          path: |
+            android/app/build/reports/androidTests/connected/**
+            android/app/build/outputs/androidTest-results/connected/**

@@ -19,6 +19,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 builder.Services.AddScoped<DeviceRegistrationService>();
+builder.Services.AddScoped<DeviceTokenAuthenticationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
 builder.Services.AddScoped<RawEventUploadService>();
@@ -52,36 +53,68 @@ app.MapPost("/api/devices/register", async (
 });
 
 app.MapPost("/api/focus-sessions/upload", async (
+    HttpRequest httpRequest,
     UploadFocusSessionsRequest request,
+    DeviceTokenAuthenticationService deviceTokens,
     FocusSessionUploadService uploads) =>
 {
+    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    {
+        return Results.Unauthorized();
+    }
+
     UploadBatchResult response = await uploads.UploadAsync(request);
 
     return Results.Ok(response);
 });
 
 app.MapPost("/api/web-sessions/upload", async (
+    HttpRequest httpRequest,
     UploadWebSessionsRequest request,
+    DeviceTokenAuthenticationService deviceTokens,
     WebSessionUploadService uploads) =>
 {
+    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    {
+        return Results.Unauthorized();
+    }
+
     UploadBatchResult response = await uploads.UploadAsync(request);
 
     return Results.Ok(response);
 });
 
 app.MapPost("/api/raw-events/upload", async (
+    HttpRequest httpRequest,
     UploadRawEventsRequest request,
+    DeviceTokenAuthenticationService deviceTokens,
     RawEventUploadService uploads) =>
 {
+    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    {
+        return Results.Unauthorized();
+    }
+
     UploadBatchResult response = await uploads.UploadAsync(request);
 
     return Results.Ok(response);
 });
 
 app.MapPost("/api/location-contexts/upload", async (
+    HttpRequest httpRequest,
     UploadLocationContextsRequest request,
+    DeviceTokenAuthenticationService deviceTokens,
     LocationContextUploadService uploads) =>
 {
+    string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+    if (!await deviceTokens.IsAuthorizedAsync(request.DeviceId, deviceToken))
+    {
+        return Results.Unauthorized();
+    }
+
     UploadBatchResult response = await uploads.UploadAsync(request);
 
     return Results.Ok(response);

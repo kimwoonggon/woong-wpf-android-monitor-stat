@@ -16,6 +16,10 @@ public sealed class DeviceEntity
 
     public string TimezoneId { get; set; } = "";
 
+    public string DeviceTokenSalt { get; set; } = "";
+
+    public string DeviceTokenHash { get; set; } = "";
+
     public DateTimeOffset CreatedAtUtc { get; set; }
 
     public DateTimeOffset LastSeenAtUtc { get; set; }

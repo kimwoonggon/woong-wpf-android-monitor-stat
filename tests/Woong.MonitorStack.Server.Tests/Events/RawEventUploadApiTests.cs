@@ -15,20 +15,38 @@ namespace Woong.MonitorStack.Server.Tests.Events;
 
 public sealed class RawEventUploadApiTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
+    [Fact]
+    public async Task UploadRawEvents_WhenDeviceTokenHeaderIsMissing_ReturnsUnauthorizedAndPersistsNoRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-raw-event-missing-token-key");
+        var request = new UploadRawEventsRequest(registration.DeviceId, [Raw("missing-token-raw-event")]);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Empty(await dbContext.RawEvents.ToListAsync());
+    }
+
     [Fact]
     public async Task UploadRawEvents_PersistsNewEventAndMarksDuplicateRetry()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
-        string deviceId = Guid.NewGuid().ToString("N");
-        await SeedDeviceAsync(factory, Guid.Parse(deviceId));
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-raw-event-key");
         var item = new RawEventUploadItem(
             clientEventId: "event-1",
             eventType: "foreground_window",
             occurredAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
             payloadJson: """{"processName":"Code.exe","windowTitle":"Codex"}""");
-        var request = new UploadRawEventsRequest(deviceId, [item]);
+        var request = new UploadRawEventsRequest(registration.DeviceId, [item]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/raw-events/upload", request);
         HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/raw-events/upload", request);
 
@@ -42,7 +60,7 @@ public sealed class RawEventUploadApiTests
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         RawEventEntity persisted = Assert.Single(await dbContext.RawEvents.ToListAsync());
-        Assert.Equal(Guid.Parse(deviceId), persisted.DeviceId);
+        Assert.Equal(Guid.ParseExact(registration.DeviceId, "N"), persisted.DeviceId);
         Assert.Equal("event-1", persisted.ClientEventId);
         Assert.Equal("foreground_window", persisted.EventType);
         Assert.Equal("""{"processName":"Code.exe","windowTitle":"Codex"}""", persisted.PayloadJson);
@@ -65,14 +83,10 @@ public sealed class RawEventUploadApiTests
                     payloadJson: """{"processName":"Code.exe"}""")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, "not-a-valid-device-token");
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
-        JsonElement item = json.RootElement.GetProperty("items")[0];
-        Assert.Equal("orphan-raw-event", item.GetProperty("clientId").GetString());
-        Assert.Equal((int)UploadItemStatus.Error, item.GetProperty("status").GetInt32());
-        Assert.Contains("device", item.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
@@ -85,16 +99,17 @@ public sealed class RawEventUploadApiTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = Guid.NewGuid();
-        await SeedDeviceAndExistingRawEventAsync(factory, deviceId);
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-raw-event-batch-key");
+        await SeedExistingRawEventAsync(factory, Guid.ParseExact(registration.DeviceId, "N"));
         var request = new UploadRawEventsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [
                 Raw("existing-raw-event"),
                 Raw("new-raw-event"),
                 Raw("new-raw-event")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -121,10 +136,9 @@ public sealed class RawEventUploadApiTests
         using var factory = new RelationalServerFactory();
         using HttpClient client = factory.CreateClient();
         await factory.EnsureDatabaseCreatedAsync();
-        Guid deviceId = Guid.NewGuid();
-        await SeedDeviceAsync(factory, deviceId);
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "windows-raw-event-privacy-key");
         var request = new UploadRawEventsRequest(
-            deviceId.ToString("N"),
+            registration.DeviceId,
             [
                 Raw("safe-metadata-event"),
                 new RawEventUploadItem(
@@ -134,6 +148,7 @@ public sealed class RawEventUploadApiTests
                     payloadJson: """{"processName":"Code.exe","typedText":"secret"}""")
             ]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/raw-events/upload", request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -151,39 +166,10 @@ public sealed class RawEventUploadApiTests
         Assert.Equal("safe-metadata-event", persisted.ClientEventId);
     }
 
-    private static async Task SeedDeviceAsync(WebApplicationFactory<Program> factory, Guid deviceId)
+    private static async Task SeedExistingRawEventAsync(WebApplicationFactory<Program> factory, Guid deviceId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = "windows-raw-event-key",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
-        await dbContext.SaveChangesAsync();
-    }
-
-    private static async Task SeedDeviceAndExistingRawEventAsync(WebApplicationFactory<Program> factory, Guid deviceId)
-    {
-        using IServiceScope scope = factory.Services.CreateScope();
-        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = "windows-raw-event-batch-key",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
         RawEventUploadItem existing = Raw("existing-raw-event");
         dbContext.RawEvents.Add(new RawEventEntity
         {
@@ -195,6 +181,26 @@ public sealed class RawEventUploadApiTests
         });
         await dbContext.SaveChangesAsync();
     }
+
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(HttpClient client, string deviceKey)
+    {
+        var registrationRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Windows,
+            deviceKey,
+            deviceName: "Windows Workstation",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
+    }
+
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 
     private static RawEventUploadItem Raw(string clientEventId)
         => new(

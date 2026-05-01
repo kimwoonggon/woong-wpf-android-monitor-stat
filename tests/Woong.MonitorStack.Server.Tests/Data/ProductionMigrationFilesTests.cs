@@ -89,6 +89,26 @@ public sealed class ProductionMigrationFilesTests
         Assert.Contains("FK_location_contexts_devices_DeviceId", migrationText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void DeviceTokenVerifierMigration_AddsSaltAndHashWithoutPlaintextTokenColumn()
+    {
+        var migrationsDirectory = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Server",
+            "Data",
+            "Migrations");
+        var migrationFile = Directory
+            .EnumerateFiles(migrationsDirectory, "*_AddDeviceTokenVerifier.cs")
+            .Single();
+        string migrationText = File.ReadAllText(migrationFile);
+
+        Assert.Contains("DeviceTokenHash", migrationText, StringComparison.Ordinal);
+        Assert.Contains("DeviceTokenSalt", migrationText, StringComparison.Ordinal);
+        Assert.Contains("maxLength: 128", migrationText, StringComparison.Ordinal);
+        Assert.DoesNotContain("DeviceToken\"", migrationText, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

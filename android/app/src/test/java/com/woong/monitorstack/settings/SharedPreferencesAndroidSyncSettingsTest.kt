@@ -50,4 +50,51 @@ class SharedPreferencesAndroidSyncSettingsTest {
         assertEquals("android-phone-01", reloaded.deviceId())
         assertFalse(reloaded.isSyncEnabled())
     }
+
+    @Test
+    fun deviceTokenDefaultsBlankAndRegistrationPersistsDeviceIdAndToken() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+
+        assertEquals("", settings.deviceToken())
+        assertFalse(settings.isSyncEnabled())
+
+        settings.persistRegisteredDevice(
+            deviceId = " server-device-id ",
+            deviceToken = "\n device-token-secret\t"
+        )
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertEquals("server-device-id", reloaded.deviceId())
+        assertEquals("device-token-secret", reloaded.deviceToken())
+        assertFalse(reloaded.isSyncEnabled())
+    }
+
+    @Test
+    fun clearSyncConfigurationClearsServerUrlDeviceIdTokenAndDisablesSync() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "server-device-id",
+            deviceToken = "device-token-secret"
+        )
+
+        settings.clearSyncConfiguration()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertFalse(reloaded.isSyncEnabled())
+        assertEquals("", reloaded.serverBaseUrl())
+        assertEquals("", reloaded.deviceId())
+        assertEquals("", reloaded.deviceToken())
+    }
 }

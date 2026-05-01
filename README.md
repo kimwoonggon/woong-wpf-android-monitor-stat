@@ -349,6 +349,21 @@ powershell -ExecutionPolicy Bypass -File scripts\validate-android-release-workfl
 dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidReleaseWorkflow" -maxcpucount:1 -v minimal
 ```
 
+Manual emulator-backed connected tests use a separate workflow so they do not
+run on every push:
+
+```text
+.github/workflows/android-emulator-manual.yml
+```
+
+It is `workflow_dispatch`-only and should be run only when emulator evidence is
+needed and runner capacity is acceptable. Local contract validation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate-android-emulator-workflow.ps1 -WorkflowPath .github\workflows\android-emulator-manual.yml
+dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter AndroidManualEmulatorWorkflowTests -v minimal
+```
+
 ## Android App
 
 The Android MVP is Kotlin + XML/View based. Do not migrate it to Compose for
@@ -569,6 +584,30 @@ dotnet run --project src\Woong.MonitorStack.Server\Woong.MonitorStack.Server.csp
 
 Development OpenAPI is exposed by ASP.NET Core when the environment is
 Development.
+
+### Production Migration Bundle Validation
+
+Production migrations should be applied deliberately by an operator. The helper
+script builds a reviewed EF Core migration bundle; it does not apply migrations
+and does not accept production connection strings.
+
+Safe local validation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 -Help
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 -Configuration Release -OutputPath artifacts\server-migrations\dry-run-validation.exe -DryRun
+dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter ServerProductionMigrationRunbookTests -v minimal
+```
+
+Build the bundle only when a release operator is ready to review it:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 `
+  -Configuration Release `
+  -OutputPath artifacts\server-migrations\woong-server-migrations.exe
+```
+
+More details: `docs/production-migrations.md`.
 
 ### PostgreSQL/Testcontainers Validation
 

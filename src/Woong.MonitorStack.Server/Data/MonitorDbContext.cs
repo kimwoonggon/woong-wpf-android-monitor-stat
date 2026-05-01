@@ -32,6 +32,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.Property(device => device.DeviceKey).HasMaxLength(256).IsRequired();
             entity.Property(device => device.DeviceName).HasMaxLength(256).IsRequired();
             entity.Property(device => device.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.Property(device => device.DeviceTokenSalt).HasMaxLength(128).IsRequired();
+            entity.Property(device => device.DeviceTokenHash).HasMaxLength(128).IsRequired();
             entity.HasIndex(device => new { device.UserId, device.Platform, device.DeviceKey }).IsUnique();
         });
 

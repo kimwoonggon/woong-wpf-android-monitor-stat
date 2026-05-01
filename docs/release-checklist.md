@@ -1,6 +1,6 @@
 # Release Candidate Checklist
 
-Date: 2026-04-28
+Date: 2026-05-02
 
 Use this checklist for the Milestone 12 release-candidate pass.
 
@@ -13,6 +13,50 @@ Use this checklist for the Milestone 12 release-candidate pass.
 - [x] `.\gradlew.bat assembleDebug --no-daemon --stacktrace`
 - [x] `.\gradlew.bat assembleDebugAndroidTest --no-daemon --stacktrace`
 - [x] `.\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace`
+
+## Coordinator Release Validation Commands
+
+Use these commands for the next release validation pass. They are listed as
+operator checks, not proof that the current workspace has already passed them.
+
+### Android Emulator CI
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate-android-emulator-workflow.ps1 -WorkflowPath .github\workflows\android-emulator-manual.yml
+dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter AndroidManualEmulatorWorkflowTests -v minimal
+```
+
+The GitHub Actions workflow `.github/workflows/android-emulator-manual.yml` is
+manual-only (`workflow_dispatch`). Run it only when connected-test emulator
+evidence is needed and runner capacity is acceptable.
+
+### Server Migration Bundle
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 -Help
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 -Configuration Release -OutputPath artifacts\server-migrations\dry-run-validation.exe -DryRun
+dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter ServerProductionMigrationRunbookTests -v minimal
+```
+
+Build a real migration bundle only for a release operator review:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-server-migration-bundle.ps1 `
+  -Configuration Release `
+  -OutputPath artifacts\server-migrations\woong-server-migrations.exe
+```
+
+### Windows Release
+
+```powershell
+dotnet restore Woong.MonitorStack.sln --configfile NuGet.config
+dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+dotnet test Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+powershell -ExecutionPolicy Bypass -File scripts\package-windows-msix.ps1 -CreateTestCertificate
+```
+
+For install validation of a local test MSIX, run the generated installer from an
+elevated prompt and use the certificate emitted beside that exact MSIX artifact.
 
 ## Manual Smoke
 

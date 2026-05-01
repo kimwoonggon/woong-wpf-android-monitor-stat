@@ -14,25 +14,43 @@ namespace Woong.MonitorStack.Server.Tests.Sessions;
 
 public sealed class WebSessionUploadApiTests
 {
+    private const string DeviceTokenHeaderName = "X-Device-Token";
+
+    [Fact]
+    public async Task UploadWebSessions_WhenDeviceTokenHeaderIsMissing_ReturnsUnauthorizedAndPersistsNoRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "missing-token-web-focus");
+        await SeedFocusSessionAsync(factory, Guid.ParseExact(registration.DeviceId, "N"), "missing-token-web-focus");
+        var request = new UploadWebSessionsRequest(
+            registration.DeviceId,
+            [CreateWebSession("missing-token-web-session", "missing-token-web-focus")]);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Empty(await dbContext.WebSessions.ToListAsync());
+    }
+
     [Fact]
     public async Task UploadWebSessions_PersistsNewSessionAndMarksDuplicateRetry()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
-        string deviceId = Guid.NewGuid().ToString("N");
-        await SeedDeviceAndFocusSessionAsync(factory, Guid.Parse(deviceId), "client-session-1");
-        var session = new WebSessionUploadItem(
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "client-session-1");
+        await SeedFocusSessionAsync(factory, Guid.ParseExact(registration.DeviceId, "N"), "client-session-1");
+        var session = CreateWebSession(
             clientSessionId: "web-session-1",
             focusSessionId: "client-session-1",
-            browserFamily: "Chrome",
             url: "https://example.com/docs",
             domain: "example.com",
-            pageTitle: "Docs",
-            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
-            endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
-            durationMs: 600_000);
-        var request = new UploadWebSessionsRequest(deviceId, [session]);
+            pageTitle: "Docs");
+        var request = new UploadWebSessionsRequest(registration.DeviceId, [session]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
         HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
 
@@ -46,7 +64,7 @@ public sealed class WebSessionUploadApiTests
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
         WebSessionEntity persisted = Assert.Single(await dbContext.WebSessions.ToListAsync());
-        Assert.Equal(Guid.Parse(deviceId), persisted.DeviceId);
+        Assert.Equal(Guid.ParseExact(registration.DeviceId, "N"), persisted.DeviceId);
         Assert.Equal("web-session-1", persisted.ClientSessionId);
         Assert.Equal("client-session-1", persisted.FocusSessionId);
         Assert.Equal("example.com", persisted.Domain);
@@ -59,8 +77,8 @@ public sealed class WebSessionUploadApiTests
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
         using HttpClient client = factory.CreateClient();
-        string deviceId = Guid.NewGuid().ToString("N");
-        await SeedDeviceAndFocusSessionAsync(factory, Guid.Parse(deviceId), "domain-only-session-1");
+        DeviceRegistration registration = await RegisterDeviceAsync(client, "domain-only-session-1");
+        await SeedFocusSessionAsync(factory, Guid.ParseExact(registration.DeviceId, "N"), "domain-only-session-1");
         var session = new WebSessionUploadItem(
             clientSessionId: "domain-only-web-session-1",
             focusSessionId: "domain-only-session-1",
@@ -74,8 +92,9 @@ public sealed class WebSessionUploadApiTests
             captureMethod: "UIAutomationAddressBar",
             captureConfidence: "High",
             isPrivateOrUnknown: false);
-        var request = new UploadWebSessionsRequest(deviceId, [session]);
+        var request = new UploadWebSessionsRequest(registration.DeviceId, [session]);
 
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
         HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
         HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/web-sessions/upload", request);
 
@@ -98,24 +117,30 @@ public sealed class WebSessionUploadApiTests
         Assert.False(persisted.IsPrivateOrUnknown);
     }
 
-    private static async Task SeedDeviceAndFocusSessionAsync(
+    private static WebSessionUploadItem CreateWebSession(
+        string clientSessionId,
+        string focusSessionId,
+        string? url = null,
+        string domain = "example.com",
+        string? pageTitle = null)
+        => new(
+            clientSessionId,
+            focusSessionId,
+            browserFamily: "Chrome",
+            url,
+            domain,
+            pageTitle,
+            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 10, 0, TimeSpan.Zero),
+            durationMs: 600_000);
+
+    private static async Task SeedFocusSessionAsync(
         WebApplicationFactory<Program> factory,
         Guid deviceId,
         string focusSessionId)
     {
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
-        dbContext.Devices.Add(new DeviceEntity
-        {
-            Id = deviceId,
-            UserId = "user-1",
-            Platform = Platform.Windows,
-            DeviceKey = $"windows-web-upload-key-{focusSessionId}",
-            DeviceName = "Windows Workstation",
-            TimezoneId = "Asia/Seoul",
-            CreatedAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero),
-            LastSeenAtUtc = new DateTimeOffset(2026, 4, 27, 0, 0, 0, TimeSpan.Zero)
-        });
         dbContext.FocusSessions.Add(new FocusSessionEntity
         {
             DeviceId = deviceId,
@@ -131,6 +156,26 @@ public sealed class WebSessionUploadApiTests
         });
         await dbContext.SaveChangesAsync();
     }
+
+    private static async Task<DeviceRegistration> RegisterDeviceAsync(HttpClient client, string focusSessionId)
+    {
+        var registrationRequest = new RegisterDeviceRequest(
+            userId: "user-1",
+            platform: Platform.Windows,
+            deviceKey: $"windows-web-upload-key-{focusSessionId}",
+            deviceName: "Windows Workstation",
+            timezoneId: "Asia/Seoul");
+
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        return new DeviceRegistration(
+            json.RootElement.GetProperty("deviceId").GetString()!,
+            json.RootElement.GetProperty("deviceToken").GetString()!);
+    }
+
+    private sealed record DeviceRegistration(string DeviceId, string DeviceToken);
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase()
         => new WebApplicationFactory<Program>()

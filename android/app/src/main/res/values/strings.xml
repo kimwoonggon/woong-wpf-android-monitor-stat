@@ -26,6 +26,7 @@
     <string name="sync_device_id_hint">Device ID</string>
     <string name="sync_configuration_help">Used only when sync is explicitly enabled. No passwords, tokens, messages, or typed text are collected.</string>
     <string name="sync_missing_configuration_status">Manual sync needs a server URL and device ID before upload can run.</string>
+    <string name="sync_invalid_server_url_status">Manual sync requires an HTTPS server URL, or HTTP localhost for local development.</string>
     <string name="sync_manual_queued_status">Manual sync queued for configured server.</string>
     <string name="sync_failure_status">Sync failed for %1$d queued items: %2$s. Data remains local and will retry.</string>
 
