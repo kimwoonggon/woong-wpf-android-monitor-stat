@@ -2,6 +2,8 @@ package com.woong.monitorstack.usage
 
 import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.woong.monitorstack.settings.AndroidUsageCollectionSettings
@@ -25,6 +27,7 @@ class AndroidUsageCollectionScheduler(
         }
 
         workScheduler.schedulePeriodicCollection()
+        workScheduler.scheduleImmediateCollection()
         return UsageCollectionScheduleResult.Scheduled
     }
 
@@ -54,6 +57,8 @@ enum class UsageCollectionScheduleResult {
 interface UsageCollectionWorkScheduler {
     fun schedulePeriodicCollection()
 
+    fun scheduleImmediateCollection()
+
     fun cancelPeriodicCollection()
 }
 
@@ -73,12 +78,24 @@ class WorkManagerUsageCollectionWorkScheduler(
         )
     }
 
+    override fun scheduleImmediateCollection() {
+        val request = OneTimeWorkRequestBuilder<CollectUsageWorker>().build()
+
+        workManager.enqueueUniqueWork(
+            ImmediateWorkName,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }
+
     override fun cancelPeriodicCollection() {
         workManager.cancelUniqueWork(UniqueWorkName)
+        workManager.cancelUniqueWork(ImmediateWorkName)
     }
 
     companion object {
         const val UniqueWorkName = "usage_collection_periodic"
+        const val ImmediateWorkName = "usage_collection_immediate"
         const val RepeatIntervalMinutes = 15L
     }
 }

@@ -285,9 +285,10 @@ public sealed class AndroidWireframeLayoutTests
         string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
         string styles = File.ReadAllText(Path.Combine(repoRoot, "android", "app", "src", "main", "res", "values", "styles.xml"));
 
-        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
-        Assert.Contains("android:layout_height=\"96dp\"", main);
-        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"@dimen/bottom_navigation_base_height\"", main);
+        Assert.Contains("android:layout_height=\"@dimen/bottom_navigation_base_height\"", main);
+        Assert.DoesNotContain("android:layout_marginBottom=\"144dp\"", main);
+        Assert.DoesNotContain("android:layout_marginBottom=\"48dp\"", main);
         Assert.Contains("app:itemIconSize=\"18dp\"", main);
         Assert.Contains("app:itemPaddingTop=\"0dp\"", main);
         Assert.Contains("app:itemPaddingBottom=\"0dp\"", main);
@@ -308,9 +309,10 @@ public sealed class AndroidWireframeLayoutTests
         string repoRoot = FindRepositoryRoot();
         string main = ReadAndroidLayout(repoRoot, "activity_main.xml");
 
-        Assert.Contains("android:layout_marginBottom=\"144dp\"", main);
-        Assert.Contains("android:layout_height=\"96dp\"", main);
-        Assert.Contains("android:layout_marginBottom=\"48dp\"", main);
+        Assert.Contains("android:layout_marginBottom=\"@dimen/bottom_navigation_base_height\"", main);
+        Assert.Contains("android:layout_height=\"@dimen/bottom_navigation_base_height\"", main);
+        Assert.DoesNotContain("android:layout_marginBottom=\"144dp\"", main);
+        Assert.DoesNotContain("android:layout_marginBottom=\"48dp\"", main);
         Assert.DoesNotContain("android:paddingBottom=\"8dp\"", main);
         Assert.Contains("app:itemIconSize=\"18dp\"", main);
         Assert.Contains("app:itemPaddingTop=\"0dp\"", main);

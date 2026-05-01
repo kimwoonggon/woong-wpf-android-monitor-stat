@@ -12,9 +12,11 @@ import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.DashboardFragment
 import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
+import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
 import com.woong.monitorstack.usage.UsageCollectionScheduleResult
 import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull
@@ -36,6 +38,9 @@ class MainActivityTest {
         MainActivity.usageCollectionReconcilerFactory = {
             FakeUsageCollectionReconciler(result = UsageCollectionScheduleResult.Scheduled)
         }
+        MainActivity.usageImmediateCollectorFactory = {
+            NoopImmediateCollector
+        }
     }
 
     @After
@@ -43,6 +48,8 @@ class MainActivityTest {
         MainActivity.usageAccessGateFactory = MainActivity.defaultUsageAccessGateFactory()
         MainActivity.usageCollectionReconcilerFactory =
             MainActivity.defaultUsageCollectionReconcilerFactory()
+        MainActivity.usageImmediateCollectorFactory =
+            MainActivity.defaultUsageImmediateCollectorFactory()
     }
 
     @Test
@@ -151,6 +158,89 @@ class MainActivityTest {
     }
 
     @Test
+    fun whenReturningToAppFromAnyTabReconcilesUsageCollection() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val reconciler = FakeUsageCollectionReconciler(
+            result = UsageCollectionScheduleResult.Scheduled
+        )
+        MainActivity.usageCollectionReconcilerFactory = { reconciler }
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val activity = controller.get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navSessions
+        activity.supportFragmentManager.executePendingTransactions()
+
+        controller.pause().resume()
+
+        assertEquals(
+            listOf("com.woong.monitorstack", "com.woong.monitorstack"),
+            reconciler.packageNames
+        )
+    }
+
+    @Test
+    fun dashboardCollectsRecentUsageAndReloadsRoomBackedRows() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        MainActivity.usageImmediateCollectorFactory = {
+            FakeImmediateCollector(context)
+        }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "Chrome",
+            activity.findViewById<TextView>(R.id.currentAppText).text.toString()
+        )
+        assertEquals(
+            "com.android.chrome",
+            activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+        )
+        assertEquals(
+            "2m",
+            activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString()
+        )
+    }
+
+    @Test
+    fun dashboardCurrentFocusShowsLatestSessionNotLongestTopApp() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        MainActivity.usageImmediateCollectorFactory = {
+            FakeMixedImmediateCollector(context)
+        }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "Chrome",
+            activity.findViewById<TextView>(R.id.currentAppText).text.toString()
+        )
+        assertEquals(
+            "com.android.chrome",
+            activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+        )
+        assertEquals(
+            "12m",
+            activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString()
+        )
+    }
+
+    @Test
     fun permissionOnboardingOpenSettingsButtonLaunchesUsageAccessSettings() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
@@ -251,8 +341,14 @@ class MainActivityTest {
     }
 
     private fun waitForMainThreadWork() {
-        Thread.sleep(250)
+        Thread.sleep(500)
         shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun clearMonitorDatabase(context: Context) {
+        Thread {
+            MonitorDatabase.getInstance(context).clearAllTables()
+        }.also { it.start(); it.join() }
     }
 
     private class FakeUsageAccessGate(
@@ -275,6 +371,83 @@ class MainActivityTest {
         override fun reconcile(packageName: String): UsageCollectionScheduleResult {
             packageNames += packageName
             return result
+        }
+    }
+
+    private object NoopImmediateCollector : AndroidRecentUsageCollector {
+        override fun collectRecentUsage(): Int = 0
+    }
+
+    private class FakeImmediateCollector(
+        private val context: Context
+    ) : AndroidRecentUsageCollector {
+        override fun collectRecentUsage(): Int {
+            val timezoneId = ZoneId.systemDefault()
+            val startedAtUtcMillis = System.currentTimeMillis() - 120_000L
+            val endedAtUtcMillis = System.currentTimeMillis()
+            MonitorDatabase.getInstance(context).focusSessionDao().insert(
+                FocusSessionEntity(
+                    clientSessionId = "fake-immediate-chrome",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = startedAtUtcMillis,
+                    endedAtUtcMillis = endedAtUtcMillis,
+                    durationMs = endedAtUtcMillis - startedAtUtcMillis,
+                    localDate = LocalDate.now(timezoneId).toString(),
+                    timezoneId = timezoneId.id,
+                    isIdle = false,
+                    source = "fake_immediate_usage"
+                )
+            )
+            return 1
+        }
+    }
+
+    private class FakeMixedImmediateCollector(
+        private val context: Context
+    ) : AndroidRecentUsageCollector {
+        override fun collectRecentUsage(): Int {
+            val timezoneId = ZoneId.systemDefault()
+            val now = System.currentTimeMillis()
+            val dao = MonitorDatabase.getInstance(context).focusSessionDao()
+            dao.insert(
+                focusSession(
+                    clientSessionId = "fake-immediate-launcher",
+                    packageName = "com.google.android.apps.nexuslauncher",
+                    startedAtUtcMillis = now - 900_000L,
+                    endedAtUtcMillis = now - 300_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            dao.insert(
+                focusSession(
+                    clientSessionId = "fake-immediate-chrome-latest",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = now - 120_000L,
+                    endedAtUtcMillis = now,
+                    timezoneId = timezoneId
+                )
+            )
+            return 2
+        }
+
+        private fun focusSession(
+            clientSessionId: String,
+            packageName: String,
+            startedAtUtcMillis: Long,
+            endedAtUtcMillis: Long,
+            timezoneId: ZoneId
+        ): FocusSessionEntity {
+            return FocusSessionEntity(
+                clientSessionId = clientSessionId,
+                packageName = packageName,
+                startedAtUtcMillis = startedAtUtcMillis,
+                endedAtUtcMillis = endedAtUtcMillis,
+                durationMs = endedAtUtcMillis - startedAtUtcMillis,
+                localDate = LocalDate.now(timezoneId).toString(),
+                timezoneId = timezoneId.id,
+                isIdle = false,
+                source = "fake_immediate_usage"
+            )
         }
     }
 }

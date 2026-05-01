@@ -41,6 +41,10 @@ class DashboardFragment : Fragment() {
         loadPeriod(DashboardPeriod.Today)
     }
 
+    fun refreshFromDatabase() {
+        loadPeriod(DashboardPeriod.Today)
+    }
+
     private fun loadPeriod(period: DashboardPeriod) {
         Thread {
             viewModel.selectPeriod(period)
@@ -55,12 +59,13 @@ class DashboardFragment : Fragment() {
     private fun render(state: DashboardUiState) {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
         val latestSession = state.recentSessions.firstOrNull()
+        val currentAppName = latestSession?.appName ?: topApp
 
-        binding.currentFocusAppIconPlaceholder.text = topApp.firstOrNull()
+        binding.currentFocusAppIconPlaceholder.text = currentAppName.firstOrNull()
             ?.uppercaseChar()
             ?.toString()
             ?: "A"
-        binding.currentAppText.text = topApp
+        binding.currentAppText.text = currentAppName
         binding.currentPackageText.text = latestSession?.packageName ?: getString(R.string.no_package)
         binding.currentSessionDurationText.text = formatClockDuration(state.totalActiveMs)
         binding.lastCollectedText.text = getString(

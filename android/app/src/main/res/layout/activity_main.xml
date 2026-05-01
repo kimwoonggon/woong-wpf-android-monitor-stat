@@ -25,14 +25,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="144dp" />
+        android:layout_marginBottom="@dimen/bottom_navigation_base_height" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="96dp"
+        android:layout_height="@dimen/bottom_navigation_base_height"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="48dp"
         android:background="@color/wms_surface"
         android:clipToPadding="false"
         app:itemIconSize="18dp"

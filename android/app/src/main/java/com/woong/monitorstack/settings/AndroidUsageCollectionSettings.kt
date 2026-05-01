@@ -15,7 +15,7 @@ class SharedPreferencesAndroidUsageCollectionSettings(
     )
 
     override fun isCollectionEnabled(): Boolean {
-        return preferences.getBoolean(KeyCollectionEnabled, false)
+        return preferences.getBoolean(KeyCollectionEnabled, true)
     }
 
     fun setCollectionEnabled(enabled: Boolean) {

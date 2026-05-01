@@ -53,7 +53,7 @@ class AndroidUsageCollectionSchedulerTest {
         val result = scheduler.reconcile(packageName = "com.woong.monitorstack")
 
         assertEquals(UsageCollectionScheduleResult.Scheduled, result)
-        assertEquals(listOf("schedule"), workScheduler.actions)
+        assertEquals(listOf("schedule", "collectNow"), workScheduler.actions)
     }
 
     private class FakeUsageAccessPermissionReader(
@@ -73,6 +73,10 @@ class AndroidUsageCollectionSchedulerTest {
 
         override fun schedulePeriodicCollection() {
             actions += "schedule"
+        }
+
+        override fun scheduleImmediateCollection() {
+            actions += "collectNow"
         }
 
         override fun cancelPeriodicCollection() {

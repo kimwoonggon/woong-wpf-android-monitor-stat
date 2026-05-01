@@ -2,7 +2,6 @@ package com.woong.monitorstack.settings
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,7 +12,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class SharedPreferencesAndroidUsageCollectionSettingsTest {
     @Test
-    fun collectionEnabledDefaultsToFalseAndPersistsTrue() {
+    fun collectionEnabledDefaultsToTrueAfterUsageAccessOptInAndPersistsFalse() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences(
             SharedPreferencesAndroidUsageCollectionSettings.PreferenceName,
@@ -21,10 +20,10 @@ class SharedPreferencesAndroidUsageCollectionSettingsTest {
         ).edit().clear().commit()
         val settings = SharedPreferencesAndroidUsageCollectionSettings(context)
 
-        assertFalse(settings.isCollectionEnabled())
+        assertTrue(settings.isCollectionEnabled())
 
-        settings.setCollectionEnabled(true)
+        settings.setCollectionEnabled(false)
 
-        assertTrue(SharedPreferencesAndroidUsageCollectionSettings(context).isCollectionEnabled())
+        assertTrue(!SharedPreferencesAndroidUsageCollectionSettings(context).isCollectionEnabled())
     }
 }

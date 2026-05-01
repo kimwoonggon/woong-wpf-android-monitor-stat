@@ -4774,3 +4774,16 @@ Validation:
 - Focused Android README architecture test passed after the screenshot command correction.
 - dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 483 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
 - dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.
+
+## 2026-05-01 Android Immediate Usage Collection And Bottom Navigation Fix
+
+- [x] Compact bottom navigation now uses a 72dp base height plus runtime system navigation inset so Dashboard/Sessions/Report/Settings stay visible without hardcoded extra bottom padding.
+- [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
+- [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
+- [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.
+- [x] Current Focus now displays the latest persisted session, not the longest top app, so returning from Chrome shows Chrome as the current/latest app.
+- [x] Emulator evidence captured:
+  - `artifacts/android-check/manual/android-insets-start2.png`
+  - `artifacts/android-check/manual/after-chrome-current-fixed.png`
+- [x] Local emulator DB proof after Chrome return: `focus_sessions=9`, `sync_outbox=9`, with latest rows including `com.android.chrome`.
+- [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
