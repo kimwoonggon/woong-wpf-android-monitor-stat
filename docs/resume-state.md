@@ -24,14 +24,34 @@ Updated: 2026-05-02
   aligned without showing the main toolbar or bottom navigation.
 - The crash buffer was cleared before the latest run and remained empty after
   the successful screenshot capture.
+- Latest Android UI snapshot rerun passed at
+  `artifacts/android-ui-snapshots/20260502-053913/`; `latest` points there.
+- Snapshot `report.md` status is `PASS`, all seven canonical Figma screenshots
+  are `PASS`, and the crash buffer remained empty.
+- Dashboard first viewport now shows Hourly focus immediately after the period
+  filters; Top apps are next below.
 - Dashboard and Report top-app rows now render proportional usage bars with
   reduced row dead space.
 - Focused Android visual coverage:
   `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
-- Chrome/app-switch UsageStats -> Room -> Dashboard/Sessions QA remains the
-  next open Android slice.
+- Chrome/app-switch UsageStats -> Room -> Dashboard/Sessions QA passed with
+  evidence at `artifacts/android-app-switch-qa/20260502-052729/` and
+  `artifacts/android-app-switch-qa/latest/`.
+- App-switch `report.md` status is `PASS`; `room-assertions.json` status is
+  `PASS` with `focusSessionChromeRows=4` and `syncOutboxChromeRows=4`.
+- Foreground-after-return shows `com.woong.monitorstack`, and Woong-only
+  screenshots `dashboard-after-app-switch.png` and
+  `sessions-after-app-switch.png` exist.
+- No Chrome screenshots or Chrome UI dumps were captured.
+- Prepared Android app-switch QA documentation structure with explicit gate
+  states: `PASS`, `BLOCKED` by emulator/adb/install/device readiness, and
+  `FAIL` by product behavior once the flow is reachable.
+- Reaffirmed the app-switch privacy rule: Chrome screenshots, Chrome UI dumps,
+  page text, URL paths, typed text, form contents, and browser page contents
+  are never captured; external foreground proof must use package/process/window
+  metadata plus Room rows and Woong Monitor UI after return.
 - Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-042511/` and
+  `artifacts/android-ui-snapshots/20260502-053913/` and
   `artifacts/android-ui-snapshots/latest/`.
 
 Verified:

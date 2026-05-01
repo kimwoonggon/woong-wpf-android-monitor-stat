@@ -25,13 +25,20 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-042511/
+artifacts/android-ui-snapshots/20260502-053913/
 ```
 
 Latest Android UsageStats current-focus evidence:
 
 ```text
 artifacts/android-usage-current-focus/20260502-012243/
+```
+
+Latest Android app-switch QA evidence:
+
+```text
+artifacts/android-app-switch-qa/20260502-052729/
+artifacts/android-app-switch-qa/latest/
 ```
 
 Latest location opt-in emulator evidence:
@@ -96,7 +103,11 @@ Product boundary reminder:
   interference before instrumentation captures, including Chrome force-stop and
   `CLOSE_SYSTEM_DIALOGS`.
 - [x] Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-042511/`.
+  `artifacts/android-ui-snapshots/20260502-053913/`.
+- [x] Latest snapshot `report.md` status is `PASS`; all seven canonical Figma
+  screenshots are `PASS`.
+- [x] Dashboard first viewport now shows Hourly focus immediately after the
+  period filters; Top apps are next below.
 - [x] Snapshot report now includes per-screen PASS/WARN rows for the seven
   canonical Figma screenshots.
 - [x] Hidden-shell captures now keep Splash/Permission margins aligned without
@@ -245,16 +256,33 @@ Product boundary reminder:
 
 ### J. Chrome/App-Switch UsageStats Regression QA
 
+- [x] Classify the run using the documented gate states:
+  `PASS`, `BLOCKED` by emulator/adb/install/device readiness, or `FAIL` by
+  product behavior after the flow is reachable.
+- [x] Preserve the privacy rule: never capture Chrome screenshots, Chrome UI
+  hierarchy dumps, page text, page titles, URL paths, typed text, form
+  contents, or browser page contents; use package/process/window metadata such
+  as `dumpsys` for external foreground proof.
+- [x] App-switch QA PASS evidence:
+  `artifacts/android-app-switch-qa/20260502-052729/` and
+  `artifacts/android-app-switch-qa/latest/`.
+- [x] `report.md` status is `PASS`.
+- [x] `room-assertions.json` status is `PASS`, with
+  `focusSessionChromeRows=4` and `syncOutboxChromeRows=4`.
+- [x] Foreground-after-return evidence shows `com.woong.monitorstack`.
+- [x] Woong-only screenshots exist:
+  `dashboard-after-app-switch.png` and `sessions-after-app-switch.png`.
+- [x] No Chrome screenshots or Chrome UI dumps were captured.
 - [ ] Use `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
   -Restart` for repeatable emulator launch.
 - [ ] Add an app-switch QA script that performs:
   Woong launch -> Chrome launch -> wait -> Woong return -> collection refresh.
-- [ ] Capture only Woong Monitor UI screenshots before launch, after return,
+- [x] Capture only Woong Monitor UI screenshots before launch, after return,
   Dashboard, and Sessions; prove Chrome foreground via package/process/window
   metadata such as `dumpsys`, not screenshots of Chrome page contents.
-- [ ] Assert Room `focus_session` includes Chrome after returning.
-- [ ] Assert `sync_outbox` rows are created for collected sessions.
-- [ ] Assert Dashboard summary and Sessions list refresh from Room after return.
+- [x] Assert Room `focus_session` includes Chrome after returning.
+- [x] Assert `sync_outbox` rows are created for collected sessions.
+- [x] Assert Dashboard summary and Sessions list refresh from Room after return.
 - [ ] Record process ids before/during/after Chrome to detect emulator process
   death/relaunch.
 - [ ] Capture logcat crash buffer, app logcat, `dumpsys meminfo`, and
@@ -310,7 +338,7 @@ dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal
 - [ ] All seven Figma screens have current emulator PNG evidence.
 - [ ] Each screen has at least one behavior test or screenshot automation gate.
 - [ ] Dashboard and Sessions are Room-backed and refresh after collection.
-- [ ] Chrome/app-switch QA proves collected UsageStats sessions persist to Room
+- [x] Chrome/app-switch QA proves collected UsageStats sessions persist to Room
   and update Dashboard/Sessions after returning to Woong.
 - [ ] Report and App Detail charts use real Room-backed data.
 - [ ] Settings exposes safe privacy/sync/location defaults.

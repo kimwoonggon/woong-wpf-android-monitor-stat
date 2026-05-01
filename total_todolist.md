@@ -2319,10 +2319,15 @@ milestones below are finished.
 - [x] Stabilized `SnapshotCaptureTest` with deterministic MainActivity Usage Access gates and Splash routing waits before shell tab/filter captures.
 - [x] Added RED/GREEN MainActivity regression coverage for delayed Splash routing after Activity destruction.
 - [x] Added RED/GREEN snapshot-script coverage and implementation that clears external browser/system dialog interference before instrumentation capture.
-- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-042511/`.
+- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-053913/`.
 - [x] Added per-screen PASS/WARN rows to Android UI snapshot `report.md`.
 - [x] Fixed hidden-shell screenshot margins so Splash/Permission captures stay aligned without showing toolbar or bottom navigation.
 - [x] Crash buffer was cleared before the latest run and remained empty after screenshot capture.
+- [x] Android UI snapshot rerun `report.md` status PASS with all seven canonical Figma screenshots PASS; latest points to `artifacts/android-ui-snapshots/20260502-053913/`.
+- [x] Dashboard first viewport now shows Hourly focus immediately after filters, with Top apps next below.
 - [x] Dashboard/Report top-app rows now render proportional usage bars with focused test `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [ ] Next Android TODO: compare the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and close the largest remaining visual parity gaps.
-- [ ] Next Android TODO: implement Chrome/app-switch QA script that verifies UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.
+- [x] Chrome/app-switch QA PASS verified UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.
+- [x] App-switch QA evidence: `artifacts/android-app-switch-qa/20260502-052729/` and `artifacts/android-app-switch-qa/latest/`.
+- [x] `report.md` PASS and `room-assertions.json` PASS with `focusSessionChromeRows=4` and `syncOutboxChromeRows=4`.
+- [x] Foreground-after-return shows `com.woong.monitorstack`; `dashboard-after-app-switch.png` and `sessions-after-app-switch.png` exist; no Chrome screenshots or Chrome UI dumps were captured.

@@ -9,9 +9,14 @@ artifacts. It is the working acceptance map for `android_check_todo.md`.
 Latest clean emulator evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-040753/
+artifacts/android-ui-snapshots/20260502-053913/
 artifacts/android-ui-snapshots/latest/
 ```
+
+Latest snapshot result: `report.md` status is `PASS`, all seven canonical
+Figma screenshots are `PASS`, and the crash buffer remained empty. The
+Dashboard first viewport now shows Hourly focus immediately after the period
+filters, with Top apps next below.
 
 The Android app remains UsageStatsManager metadata only. It measures which apps
 were foreground for how long, local Room persistence, sync state, optional
@@ -86,3 +91,43 @@ snapshot state does not hide app-switch regressions.
 
 Screenshots for this QA must be limited to Woong Monitor UI after returning to
 the app. They are local developer evidence only and are not product telemetry.
+Do not capture Chrome screenshots, Chrome UI hierarchy dumps, page text, page
+titles, URL paths, typed text, form contents, or browser page contents. Chrome
+foreground proof must come from package/process/window metadata such as
+`dumpsys`, plus Room rows and Woong Monitor UI after return.
+
+### App-switch gate states
+
+- `PASS`: emulator/app install succeeds, Chrome or another external package is
+  proven foreground by metadata, collection returns to Woong Monitor, Room
+  `focus_session` includes the external package, `sync_outbox` rows are created
+  while sync remains opt-in, Dashboard and Sessions refresh from Room, and
+  diagnostics show no product crash.
+- `BLOCKED`: emulator boot, adb targeting, APK install, instrumentation install,
+  or device connectivity prevents the QA from reaching product behavior. Record
+  the blocker, command output, device serial, and any partial artifact folder
+  without marking product behavior pass/fail.
+- `FAIL`: the QA reaches the product flow but UsageStats collection, Room
+  persistence, sync outbox creation, Dashboard refresh, Sessions refresh, or
+  privacy boundaries behave incorrectly.
+
+### Latest app-switch result
+
+Status: `PASS`
+
+Evidence:
+
+```text
+artifacts/android-app-switch-qa/20260502-052729/
+artifacts/android-app-switch-qa/latest/
+```
+
+Verified:
+
+- `report.md` status is `PASS`.
+- `room-assertions.json` status is `PASS`.
+- `focusSessionChromeRows=4`.
+- `syncOutboxChromeRows=4`.
+- Foreground-after-return shows `com.woong.monitorstack`.
+- `dashboard-after-app-switch.png` and `sessions-after-app-switch.png` exist.
+- No Chrome screenshots or Chrome UI dumps were captured.

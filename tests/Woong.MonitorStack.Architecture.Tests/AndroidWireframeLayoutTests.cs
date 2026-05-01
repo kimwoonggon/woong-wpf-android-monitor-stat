@@ -508,13 +508,19 @@ public sealed class AndroidWireframeLayoutTests
 
         int summaryIndex = dashboard.IndexOf("@+id/summaryCardsGrid", StringComparison.Ordinal);
         int periodIndex = dashboard.IndexOf("@+id/periodFilterScroll", StringComparison.Ordinal);
-        int locationIndex = dashboard.IndexOf("@+id/locationContextCard", StringComparison.Ordinal);
         int chartIndex = dashboard.IndexOf("@+id/hourlyFocusChartCard", StringComparison.Ordinal);
+        int topAppsIndex = dashboard.IndexOf("@+id/topAppsCard", StringComparison.Ordinal);
+        int locationIndex = dashboard.IndexOf("@+id/locationContextCard", StringComparison.Ordinal);
 
         Assert.True(summaryIndex >= 0, "Expected summary cards in the dashboard.");
+        Assert.True(chartIndex >= 0, "Expected hourly focus chart in the dashboard.");
+        Assert.True(topAppsIndex >= 0, "Expected top apps analytics in the dashboard.");
+        Assert.True(locationIndex >= 0, "Expected optional location context in the dashboard.");
         Assert.True(periodIndex > summaryIndex, "Expected period filters after summary cards.");
-        Assert.True(locationIndex > periodIndex, "Optional location context must not push period filters below the first dashboard flow.");
-        Assert.True(chartIndex > locationIndex, "Expected charts after period filters and optional location context.");
+        Assert.True(chartIndex > periodIndex, "Expected hourly chart after period filters.");
+        Assert.True(topAppsIndex > periodIndex, "Expected top apps after period filters.");
+        Assert.True(locationIndex > chartIndex, "Optional location context must not push hourly chart out of the core dashboard analytics flow.");
+        Assert.True(locationIndex > topAppsIndex, "Optional location context must not displace top apps analytics.");
     }
 
     [Fact]

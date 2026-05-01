@@ -24,6 +24,7 @@ artifacts/windows-msix/
 artifacts/android-ui-snapshots/
 artifacts/android-resource-measurements/
 artifacts/android-usage-current-focus/
+artifacts/android-app-switch-qa/
 artifacts/android-check/
 artifacts/android-emulator-stable-run/
 artifacts/android-performance-manual/
