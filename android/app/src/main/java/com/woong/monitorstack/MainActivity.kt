@@ -2,6 +2,7 @@ package com.woong.monitorstack
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
@@ -62,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            binding.bottomNavigation.selectedItemId = R.id.navDashboard
+            showSplashThenRoute()
         }
     }
 
@@ -85,9 +86,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showDashboardOrPermissionOnboarding(scheduleResult: UsageCollectionScheduleResult) {
         if (usageAccessGate.hasUsageAccess(packageName)) {
-            showScreen(DashboardFragment())
+            setShellChromeVisible(true)
+            showScreen(DashboardFragment.newInstance(currentForegroundPackageName = packageName))
             collectRecentUsageThenRefreshDashboard(scheduleResult)
         } else {
+            setShellChromeVisible(false)
             showScreen(
                 PermissionOnboardingFragment.newInstance(
                     collectionStatusText(scheduleResult)
@@ -131,6 +134,23 @@ class MainActivity : AppCompatActivity() {
             .beginTransaction()
             .replace(R.id.mainFragmentContainer, fragment)
             .commit()
+    }
+
+    private fun showSplashThenRoute() {
+        setShellChromeVisible(false)
+        showScreen(SplashFragment())
+        binding.mainFragmentContainer.postDelayed(
+            {
+                showDashboardOrPermissionOnboarding()
+            },
+            splashDelayMillis
+        )
+    }
+
+    private fun setShellChromeVisible(visible: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.GONE
+        binding.topAppBar.visibility = visibility
+        binding.bottomNavigation.visibility = visibility
     }
 
     private fun applySystemBarInsets() {
@@ -205,5 +225,8 @@ class MainActivity : AppCompatActivity() {
 
         var usageImmediateCollectorFactory: (Context) -> AndroidRecentUsageCollector =
             defaultUsageImmediateCollectorFactory()
+
+        const val DefaultSplashDelayMillis = 700L
+        var splashDelayMillis: Long = DefaultSplashDelayMillis
     }
 }

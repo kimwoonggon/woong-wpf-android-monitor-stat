@@ -2147,3 +2147,19 @@ milestones below are finished.
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
 - [x] Local emulator DB proof after Chrome return: `focus_sessions=9`, `sync_outbox=9`, with latest rows including `com.android.chrome`.
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+
+## 2026-05-01 Android Splash, Permission, And Current Focus Correction
+
+- [x] Added a real app Splash route before Dashboard/Permission routing and kept shell chrome hidden during Splash and permission onboarding.
+- [x] Reworked Android 12+ launch splash branding so the OS splash no longer shows the default Android icon; it now uses the Woong bar logo on a white surface.
+- [x] Reworked `fragment_splash.xml` toward the supplied app-loading reference: centered blue logo tile, `Woong Monitor`, `Android Focus Tracker`, and Korean loading text.
+- [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `설정 열기` primary action.
+- [x] Fixed Dashboard Current Focus so the foreground app while the app is open is `Woong Monitor / com.woong.monitorstack`, not stale persisted packages such as Nexus Launcher or Chrome.
+- [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, but the current app panel reports the currently visible app.
+- [x] Added/updated tests for cold-start Splash routing, permission routing, foreground Current Focus precedence, Android wireframe contracts, and Android 12 launch splash branding.
+- [x] Emulator evidence captured under `artifacts/android-check/latest/`:
+  - `00-os-splash-branded.png`
+  - `02-permission-late2.png`
+  - `05-dashboard-final.png`
+- [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+- [ ] Remaining Android UI gap: Dashboard still needs a fuller visual pass against the supplied reference, including top-app list/card polish, chart rendering, report/detail completeness, and screenshot coverage for each bottom-tab flow.

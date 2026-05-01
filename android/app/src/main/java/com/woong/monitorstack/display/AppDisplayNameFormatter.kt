@@ -17,6 +17,7 @@ object AppDisplayNameFormatter {
     }
 
     private val KnownAppNames = mapOf(
+        "com.woong.monitorstack" to "Woong Monitor",
         "com.android.chrome" to "Chrome",
         "com.google.android.youtube" to "YouTube",
         "com.slack" to "Slack",

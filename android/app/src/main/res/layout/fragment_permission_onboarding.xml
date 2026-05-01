@@ -4,105 +4,145 @@
     android:id="@+id/permissionScrollRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/wms_background"
+    android:background="@color/wms_surface"
     android:fillViewport="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/permissionContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:minHeight="720dp"
+        android:padding="28dp">
+
+        <TextView
+            android:id="@+id/permissionBackButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="‹"
+            android:textColor="@color/wms_text_primary"
+            android:textSize="42sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/permissionTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
             android:gravity="center"
-            android:text="Usage Access permission"
+            android:text="@string/permission_screen_title"
             android:textColor="@color/wms_text_primary"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <FrameLayout
+            android:id="@+id/permissionShieldContainer"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="36dp"
+            android:background="@drawable/bg_permission_icon_circle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionTitle">
+
+            <ImageView
+                android:id="@+id/permissionShieldIcon"
+                android:layout_width="58dp"
+                android:layout_height="58dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_permission_shield" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/permissionDescription"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="34dp"
             android:gravity="center"
-            android:lineSpacingExtra="3dp"
-            android:text="Usage Access is required to calculate app usage statistics."
+            android:lineSpacingExtra="4dp"
+            android:text="@string/permission_headline"
             android:textColor="@color/wms_text_primary"
-            android:textSize="16sp" />
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionShieldContainer" />
 
         <TextView
             android:id="@+id/permissionCollectionStatusText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="26dp"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="@string/permission_body"
+            android:textColor="@color/wms_text_secondary"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionDescription" />
+
+        <TextView
+            android:id="@+id/permissionRuntimeStatusText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:gravity="center"
             android:text="@string/usage_collection_paused_until_permission"
-            android:textColor="@color/wms_text_secondary"
-            android:textSize="14sp" />
+            android:textColor="@color/wms_text_muted"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionCollectionStatusText" />
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/collectsCard"
+            android:id="@+id/permissionPrinciplesCard"
             style="@style/WmsCard"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp">
+            android:layout_marginTop="46dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionRuntimeStatusText">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <TextView
-                    style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Collected metadata" />
-
-                <TextView
-                    android:id="@+id/collectsList"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="4dp"
-                    android:text="App name&#10;Package name&#10;Usage start/end time&#10;Usage duration"
+                    android:text="@string/permission_principle_local_only"
                     android:textColor="@color/wms_text_secondary"
                     android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/doesNotCollectCard"
-            style="@style/WmsCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
 
                 <TextView
-                    style="@style/WmsSectionTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Never collected" />
+                    android:layout_marginTop="12dp"
+                    android:text="@string/permission_principle_no_external_sync"
+                    android:textColor="@color/wms_text_secondary"
+                    android:textSize="14sp" />
 
                 <TextView
-                    android:id="@+id/doesNotCollectList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="4dp"
-                    android:text="Typed text&#10;Screen contents&#10;Passwords or messages&#10;Other-app touch coordinates"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/permission_principle_no_hidden_sync"
+                    android:textColor="@color/wms_text_secondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/permission_principle_can_revoke"
                     android:textColor="@color/wms_text_secondary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -110,19 +150,16 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/openUsageAccessSettingsButton"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="24dp"
-            android:text="@string/usage_access_settings"
-            android:textSize="16sp"
-            app:cornerRadius="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/maybeLaterButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:text="Maybe later" />
-    </LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="38dp"
+            android:text="@string/permission_setting_open_korean"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/permissionPrinciplesCard" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

@@ -11,6 +11,7 @@ import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentDashboardBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
+import com.woong.monitorstack.display.AppDisplayNameFormatter
 
 class DashboardFragment : Fragment() {
     private lateinit var binding: FragmentDashboardBinding
@@ -59,14 +60,21 @@ class DashboardFragment : Fragment() {
     private fun render(state: DashboardUiState) {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
         val latestSession = state.recentSessions.firstOrNull()
-        val currentAppName = latestSession?.appName ?: topApp
+        val currentForegroundPackageName = arguments?.getString(ArgumentCurrentForegroundPackageName)
+        val currentAppName = currentForegroundPackageName
+            ?.let(AppDisplayNameFormatter::format)
+            ?: latestSession?.appName
+            ?: topApp
+        val currentPackageName = currentForegroundPackageName
+            ?: latestSession?.packageName
+            ?: getString(R.string.no_package)
 
         binding.currentFocusAppIconPlaceholder.text = currentAppName.firstOrNull()
             ?.uppercaseChar()
             ?.toString()
             ?: "A"
         binding.currentAppText.text = currentAppName
-        binding.currentPackageText.text = latestSession?.packageName ?: getString(R.string.no_package)
+        binding.currentPackageText.text = currentPackageName
         binding.currentSessionDurationText.text = formatClockDuration(state.totalActiveMs)
         binding.lastCollectedText.text = getString(
             R.string.last_collected_compact_value,
@@ -160,6 +168,18 @@ class DashboardFragment : Fragment() {
             binding.sessionTimeRangeText.text = row.startedAtLocalText
             binding.sessionDurationText.text = row.durationText
             binding.sessionStateText.text = "Active"
+        }
+    }
+
+    companion object {
+        private const val ArgumentCurrentForegroundPackageName = "current_foreground_package_name"
+
+        fun newInstance(currentForegroundPackageName: String): DashboardFragment {
+            return DashboardFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ArgumentCurrentForegroundPackageName, currentForegroundPackageName)
+                }
+            }
         }
     }
 }

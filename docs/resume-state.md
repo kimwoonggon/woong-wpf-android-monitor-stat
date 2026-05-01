@@ -4787,3 +4787,27 @@ Validation:
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
 - [x] Local emulator DB proof after Chrome return: `focus_sessions=9`, `sync_outbox=9`, with latest rows including `com.android.chrome`.
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+
+## 2026-05-01 Android Splash, Permission, And Current Focus Correction
+
+- Fixed the user-reported Current Focus problem: when the Android app itself is foreground, Dashboard now shows `Woong Monitor / com.woong.monitorstack` instead of stale Room rows such as Nexus Launcher or Chrome.
+- Added an explicit Splash route before permission/dashboard routing, with top app bar and bottom navigation hidden during Splash and permission onboarding.
+- Updated Android 12+ launch splash theme branding so the OS splash uses the Woong bar logo rather than the default Android icon.
+- Reworked Splash and Permission XML toward the supplied reference images while preserving XML/View MVP constraints.
+- Permission onboarding now shows the shield/principles card layout and a separate runtime status text for Usage Access collection state.
+- Added behavior and architecture tests covering Splash routing, permission routing, foreground Current Focus precedence, Splash branding, and updated permission layout contracts.
+
+Validation:
+
+- Android Gradle `testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed: 486 passed, 6 explicit PostgreSQL/Testcontainers tests skipped by default.
+- dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal passed with 0 warnings and 0 errors.
+- Emulator screenshots:
+  - `artifacts/android-check/latest/00-os-splash-branded.png`
+  - `artifacts/android-check/latest/02-permission-late2.png`
+  - `artifacts/android-check/latest/05-dashboard-final.png`
+
+Remaining Android UI gaps:
+
+- Dashboard visual still needs a fuller pass against the supplied reference.
+- Top-app list/card, chart rendering, report/detail screens, and screenshot coverage for each bottom-tab flow remain open.

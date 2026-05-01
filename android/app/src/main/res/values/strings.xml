@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Woong Monitor</string>
+    <string name="android_focus_tracker">Android Focus Tracker</string>
+    <string name="loading_korean">로딩 중...</string>
+    <string name="permission_screen_title">권한 안내</string>
+    <string name="permission_headline">사용 시간 데이터를 수집하려면\nUsage Access 권한이 필요합니다.</string>
+    <string name="permission_body">이 권한은 앱 사용 시간 측정에만 사용되며,\n아래 원칙을 준수합니다.</string>
+    <string name="permission_setting_open_korean">설정 열기</string>
+    <string name="permission_principle_local_only">○  데이터는 기기에만 저장됩니다</string>
+    <string name="permission_principle_no_external_sync">✓  개인 정보는 외부로 전송되지 않습니다</string>
+    <string name="permission_principle_no_hidden_sync">✓  사용자 동의 없이 동기화하지 않습니다</string>
+    <string name="permission_principle_can_revoke">✓  언제든지 권한을 취소할 수 있습니다</string>
     <string name="usage_access_settings">Open Usage Access settings</string>
     <string name="usage_access_guidance">Usage Access is needed to calculate app usage statistics.</string>
     <string name="usage_collection_paused_until_permission">Collection paused until Usage Access is granted.</string>

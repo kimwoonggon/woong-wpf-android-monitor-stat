@@ -247,8 +247,9 @@ public sealed class AndroidWireframeLayoutTests
 
         string permission = ReadAndroidLayout(repoRoot, "fragment_permission_onboarding.xml");
         Assert.Contains("@+id/openUsageAccessSettingsButton", permission);
-        Assert.Contains("@+id/collectsCard", permission);
-        Assert.Contains("@+id/doesNotCollectCard", permission);
+        Assert.Contains("@+id/permissionShieldIcon", permission);
+        Assert.Contains("@+id/permissionPrinciplesCard", permission);
+        Assert.Contains("@+id/permissionRuntimeStatusText", permission);
 
         string dashboard = ReadAndroidLayout(repoRoot, "fragment_dashboard.xml");
         Assert.Contains("@+id/currentFocusCard", dashboard);
@@ -260,6 +261,61 @@ public sealed class AndroidWireframeLayoutTests
         Assert.Contains("@+id/permissionsSettingsCard", settings);
         Assert.Contains("@+id/locationSettingsCard", settings);
         Assert.Contains("@+id/privacySettingsCard", settings);
+    }
+
+    [Fact]
+    public void AndroidSplashFragment_UsesGoalScreenBranding()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string splash = ReadAndroidLayout(repoRoot, "fragment_splash.xml");
+
+        Assert.Contains("@+id/splashLogoContainer", splash);
+        Assert.Contains("@drawable/bg_android_logo_tile", splash);
+        Assert.Contains("@drawable/ic_android_logo_bars", splash);
+        Assert.Contains("@string/android_focus_tracker", splash);
+        Assert.Contains("@string/loading_korean", splash);
+        Assert.DoesNotContain("@drawable/bg_circle_logo_placeholder", splash);
+    }
+
+    [Fact]
+    public void AndroidPermissionFragment_UsesGoalScreenPermissionCards()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string permission = ReadAndroidLayout(repoRoot, "fragment_permission_onboarding.xml");
+
+        Assert.Contains("@+id/permissionBackButton", permission);
+        Assert.Contains("@+id/permissionShieldIcon", permission);
+        Assert.Contains("@+id/permissionPrinciplesCard", permission);
+        Assert.Contains("@string/permission_headline", permission);
+        Assert.Contains("@string/permission_body", permission);
+        Assert.Contains("@string/permission_setting_open_korean", permission);
+        Assert.Contains("@string/permission_principle_local_only", permission);
+        Assert.Contains("@string/permission_principle_no_external_sync", permission);
+        Assert.Contains("@string/permission_principle_no_hidden_sync", permission);
+        Assert.Contains("@string/permission_principle_can_revoke", permission);
+    }
+
+    [Fact]
+    public void AndroidLaunchTheme_UsesWoongSplashBrandingOnAndroidTwelveAndLater()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string stylesV31 = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "res",
+            "values-v31",
+            "styles.xml"));
+
+        Assert.Contains("name=\"Theme.WoongMonitor\"", stylesV31);
+        Assert.Contains("android:windowSplashScreenBackground", stylesV31);
+        Assert.Contains("@color/wms_surface", stylesV31);
+        Assert.Contains("android:windowSplashScreenAnimatedIcon", stylesV31);
+        Assert.Contains("@drawable/ic_android_logo_bars", stylesV31);
+        Assert.Contains("android:windowSplashScreenIconBackgroundColor", stylesV31);
+        Assert.Contains("@color/wms_primary", stylesV31);
     }
 
     [Fact]

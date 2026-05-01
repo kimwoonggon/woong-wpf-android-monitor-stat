@@ -21,6 +21,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -35,6 +36,7 @@ import org.robolectric.annotation.Config
 class MainActivityTest {
     @Before
     fun setUp() {
+        MainActivity.splashDelayMillis = 0L
         MainActivity.usageCollectionReconcilerFactory = {
             FakeUsageCollectionReconciler(result = UsageCollectionScheduleResult.Scheduled)
         }
@@ -50,6 +52,34 @@ class MainActivityTest {
             MainActivity.defaultUsageCollectionReconcilerFactory()
         MainActivity.usageImmediateCollectorFactory =
             MainActivity.defaultUsageImmediateCollectorFactory()
+        MainActivity.splashDelayMillis = MainActivity.DefaultSplashDelayMillis
+    }
+
+    @Test
+    fun launcherShowsSplashBeforeRoutingToDashboard() {
+        MainActivity.splashDelayMillis = 500L
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val activity = controller.get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            SplashFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
+
+        shadowOf(Looper.getMainLooper()).idleFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            DashboardFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
     }
 
     @Test
@@ -89,10 +119,12 @@ class MainActivityTest {
             PermissionOnboardingFragment::class.java,
             activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
         )
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.GONE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
         assertNotNull(activity.findViewById(R.id.openUsageAccessSettingsButton))
         assertEquals(
             "Collection paused until Usage Access is granted.",
-            activity.findViewById<TextView>(R.id.permissionCollectionStatusText).text.toString()
+            activity.findViewById<TextView>(R.id.permissionRuntimeStatusText).text.toString()
         )
         assertEquals(listOf("com.woong.monitorstack"), reconciler.packageNames)
     }
@@ -115,6 +147,8 @@ class MainActivityTest {
             DashboardFragment::class.java,
             activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
         )
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
         assertEquals(
             R.id.navDashboard,
             activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
@@ -197,22 +231,13 @@ class MainActivityTest {
         activity.supportFragmentManager.executePendingTransactions()
         waitForMainThreadWork()
 
-        assertEquals(
-            "Chrome",
-            activity.findViewById<TextView>(R.id.currentAppText).text.toString()
-        )
-        assertEquals(
-            "com.android.chrome",
-            activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
-        )
-        assertEquals(
-            "2m",
-            activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString()
-        )
+        assertEquals("Woong Monitor", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+        assertEquals(packageNameForTest, activity.findViewById<TextView>(R.id.currentPackageText).text.toString())
+        assertEquals("2m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
     }
 
     @Test
-    fun dashboardCurrentFocusShowsLatestSessionNotLongestTopApp() {
+    fun dashboardCurrentFocusShowsForegroundAppNotStalePersistedSession() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         clearMonitorDatabase(context)
@@ -227,17 +252,36 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals(
-            "Chrome",
+            "Woong Monitor",
             activity.findViewById<TextView>(R.id.currentAppText).text.toString()
         )
         assertEquals(
-            "com.android.chrome",
+            packageNameForTest,
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
         )
         assertEquals(
             "12m",
             activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString()
         )
+    }
+
+    @Test
+    fun dashboardLatestPersistedSessionsStillRenderInRecentSessions() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        MainActivity.usageImmediateCollectorFactory = {
+            FakeMixedImmediateCollector(context)
+        }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val recentSessions = activity.findViewById<RecyclerView>(R.id.recentSessionsRecyclerView)
+        assertTrue(recentSessions.adapter?.itemCount ?: 0 > 0)
     }
 
     @Test
@@ -297,6 +341,7 @@ class MainActivityTest {
     fun reportTabLoadsRoomBackedSevenDaySummary() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
         val database = MonitorDatabase.getInstance(context)
         val today = LocalDate.now().toString()
         Thread {
@@ -350,6 +395,8 @@ class MainActivityTest {
             MonitorDatabase.getInstance(context).clearAllTables()
         }.also { it.start(); it.join() }
     }
+
+    private val packageNameForTest = "com.woong.monitorstack"
 
     private class FakeUsageAccessGate(
         private val hasAccess: Boolean

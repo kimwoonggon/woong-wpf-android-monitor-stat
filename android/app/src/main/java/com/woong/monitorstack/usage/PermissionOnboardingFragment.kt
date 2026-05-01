@@ -24,7 +24,7 @@ class PermissionOnboardingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val fragmentBinding = requireNotNull(binding)
         val usageAccessSettings = UsageAccessSettingsIntentFactory()
-        fragmentBinding.permissionCollectionStatusText.text = arguments?.getString(
+        fragmentBinding.permissionRuntimeStatusText.text = arguments?.getString(
             ArgumentCollectionStatusText
         ) ?: getString(R.string.usage_collection_paused_until_permission)
         fragmentBinding.openUsageAccessSettingsButton.setOnClickListener {

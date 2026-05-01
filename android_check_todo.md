@@ -231,3 +231,19 @@ workspace.
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
 - [x] Local emulator DB proof after Chrome return: `focus_sessions=9`, `sync_outbox=9`, with latest rows including `com.android.chrome`.
 - [x] Validation: `android\\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed.
+
+## 2026-05-01 Android Splash, Permission, And Current Focus Correction
+
+- [x] `MainActivity` now shows a real Splash fragment on cold start before routing to Permission or Dashboard.
+- [x] Top app bar and bottom navigation stay hidden on Splash and permission onboarding.
+- [x] Android 12+ system splash branding uses the Woong bar logo instead of the default Android icon.
+- [x] Permission onboarding uses the supplied shield/principles-card layout and keeps collection status separate from the static explanation text.
+- [x] Dashboard Current Focus now reports the currently visible app as `Woong Monitor / com.woong.monitorstack`, while persisted Room sessions still drive totals and recent session rows.
+- [x] RED/GREEN coverage added for Splash routing, permission routing, foreground Current Focus precedence, Splash branding, and permission XML contract.
+- [x] Android Gradle `testDebugUnitTest assembleDebug` passed.
+- [x] Full solution `dotnet test` and `dotnet build` passed.
+- [x] Latest emulator screenshots:
+  - `artifacts/android-check/latest/00-os-splash-branded.png`
+  - `artifacts/android-check/latest/02-permission-late2.png`
+  - `artifacts/android-check/latest/05-dashboard-final.png`
+- [ ] Continue UI parity pass: dashboard top-app/chart/report/detail visuals still need work against the provided Figma/SVG reference.

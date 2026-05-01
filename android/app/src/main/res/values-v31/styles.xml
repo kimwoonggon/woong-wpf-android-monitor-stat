@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.WoongMonitor" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorPrimaryDark">@color/brand_primary_dark</item>
+        <item name="colorAccent">@color/brand_accent</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/wms_surface</item>
+        <item name="actionBarSize">56dp</item>
+        <item name="android:windowSplashScreenBackground">@color/wms_surface</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_android_logo_bars</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/wms_primary</item>
+    </style>
+</resources>
