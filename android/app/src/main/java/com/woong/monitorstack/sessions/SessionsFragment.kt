@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentSessionsBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
+import com.woong.monitorstack.ui.PeriodButtonStyler
 
 class SessionsFragment : Fragment() {
     private lateinit var binding: FragmentSessionsBinding
@@ -28,14 +30,43 @@ class SessionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.sessionsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.sessionsRecyclerView.adapter = adapter
-        binding.sessionsTodayButton.setOnClickListener { loadSessions(SessionsPeriod.Today) }
-        binding.sessionsOneHourButton.setOnClickListener { loadSessions(SessionsPeriod.LastHour) }
-        binding.sessionsSixHourButton.setOnClickListener { loadSessions(SessionsPeriod.LastSixHours) }
-        binding.sessionsTwentyFourHourButton.setOnClickListener {
-            loadSessions(SessionsPeriod.LastTwentyFourHours)
+        binding.sessionsTodayButton.setOnClickListener {
+            loadSelectedSessions(binding.sessionsTodayButton, SessionsPeriod.Today)
         }
-        binding.sessionsSevenDayButton.setOnClickListener { loadSessions(SessionsPeriod.LastSevenDays) }
-        loadSessions(SessionsPeriod.Today)
+        binding.sessionsOneHourButton.setOnClickListener {
+            loadSelectedSessions(binding.sessionsOneHourButton, SessionsPeriod.LastHour)
+        }
+        binding.sessionsSixHourButton.setOnClickListener {
+            loadSelectedSessions(binding.sessionsSixHourButton, SessionsPeriod.LastSixHours)
+        }
+        binding.sessionsTwentyFourHourButton.setOnClickListener {
+            loadSelectedSessions(
+                binding.sessionsTwentyFourHourButton,
+                SessionsPeriod.LastTwentyFourHours
+            )
+        }
+        binding.sessionsSevenDayButton.setOnClickListener {
+            loadSelectedSessions(binding.sessionsSevenDayButton, SessionsPeriod.LastSevenDays)
+        }
+        loadSelectedSessions(binding.sessionsTodayButton, SessionsPeriod.Today)
+    }
+
+    private fun loadSelectedSessions(selectedButton: MaterialButton, period: SessionsPeriod) {
+        selectPeriodButton(selectedButton)
+        loadSessions(period)
+    }
+
+    private fun selectPeriodButton(selectedButton: MaterialButton) {
+        PeriodButtonStyler.select(
+            selectedButton = selectedButton,
+            buttons = listOf(
+                binding.sessionsTodayButton,
+                binding.sessionsOneHourButton,
+                binding.sessionsSixHourButton,
+                binding.sessionsTwentyFourHourButton,
+                binding.sessionsSevenDayButton
+            )
+        )
     }
 
     private fun loadSessions(period: SessionsPeriod) {

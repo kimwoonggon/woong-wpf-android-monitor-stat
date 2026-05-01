@@ -341,6 +341,80 @@ class MainActivityTest {
     }
 
     @Test
+    fun dashboardPeriodButtonsReflectSelectedRange() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val todayButton = activity.findViewById<Button>(R.id.todayFilterButton)
+        val oneHourButton = activity.findViewById<Button>(R.id.oneHourFilterButton)
+        val sevenDayButton = activity.findViewById<Button>(R.id.sevenDayFilterButton)
+
+        assertTrue(todayButton.isSelected)
+        assertFalse(oneHourButton.isSelected)
+        assertFalse(sevenDayButton.isSelected)
+
+        oneHourButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(todayButton.isSelected)
+        assertTrue(oneHourButton.isSelected)
+        assertFalse(sevenDayButton.isSelected)
+
+        sevenDayButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(todayButton.isSelected)
+        assertFalse(oneHourButton.isSelected)
+        assertTrue(sevenDayButton.isSelected)
+    }
+
+    @Test
+    fun sessionsPeriodButtonsReflectSelectedRange() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navSessions
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val todayButton = activity.findViewById<Button>(R.id.sessionsTodayButton)
+        val sixHourButton = activity.findViewById<Button>(R.id.sessionsSixHourButton)
+        val sevenDayButton = activity.findViewById<Button>(R.id.sessionsSevenDayButton)
+
+        assertTrue(todayButton.isSelected)
+        assertFalse(sixHourButton.isSelected)
+        assertFalse(sevenDayButton.isSelected)
+
+        sixHourButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(todayButton.isSelected)
+        assertTrue(sixHourButton.isSelected)
+        assertFalse(sevenDayButton.isSelected)
+
+        sevenDayButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(todayButton.isSelected)
+        assertFalse(sixHourButton.isSelected)
+        assertTrue(sevenDayButton.isSelected)
+    }
+
+    @Test
     fun permissionOnboardingOpenSettingsButtonLaunchesUsageAccessSettings() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)

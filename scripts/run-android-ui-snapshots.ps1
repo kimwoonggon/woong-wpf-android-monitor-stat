@@ -37,6 +37,8 @@ $featureScreens = @(
     "settings privacy and sync",
     "settings location permission",
     "sessions list",
+    "dashboard 1h selected",
+    "sessions 6h selected",
     "main shell settings",
     "main shell report",
     "report custom range",
@@ -121,6 +123,16 @@ $screenTargets = @(
     [ordered]@{
         Name = "main shell sessions"
         FileName = "10-main-shell-sessions.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "dashboard 1h selected"
+        FileName = "16-dashboard-1h-selected.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "sessions 6h selected"
+        FileName = "17-sessions-6h-selected.png"
         Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
@@ -258,6 +270,7 @@ function Write-AndroidSnapshotArtifacts {
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
         "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Main shell screenshots include Dashboard, Sessions, Report, and Settings tab states.",
+        "Screenshots 16 and 17 show selected-period states after changing Dashboard to 1h and Sessions to 6h.",
         "Report custom range screenshot 15 shows the yyyy-MM-dd start/end inputs and applied Room-backed range state.",
         "Permission onboarding screenshot 13 shows the Usage Access guidance shown when permission is missing.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",

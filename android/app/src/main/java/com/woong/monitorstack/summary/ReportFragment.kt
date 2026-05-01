@@ -1,11 +1,9 @@
 package com.woong.monitorstack.summary
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +16,7 @@ import com.woong.monitorstack.dashboard.DashboardChartConfigurator
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentReportBinding
 import com.woong.monitorstack.databinding.ItemAppUsageBinding
+import com.woong.monitorstack.ui.PeriodButtonStyler
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 
@@ -88,38 +87,15 @@ class ReportFragment : Fragment() {
     }
 
     private fun selectPeriodButton(selectedButton: MaterialButton) {
-        val buttons = listOf(
-            binding.reportSevenDayButton,
-            binding.reportThirtyDayButton,
-            binding.reportNinetyDayButton,
-            binding.reportCustomButton
+        PeriodButtonStyler.select(
+            selectedButton = selectedButton,
+            buttons = listOf(
+                binding.reportSevenDayButton,
+                binding.reportThirtyDayButton,
+                binding.reportNinetyDayButton,
+                binding.reportCustomButton
+            )
         )
-
-        buttons.forEach { button ->
-            val isSelected = button == selectedButton
-            button.isSelected = isSelected
-            applyPeriodButtonStyle(button, isSelected)
-        }
-    }
-
-    private fun applyPeriodButtonStyle(button: MaterialButton, isSelected: Boolean) {
-        val context = button.context
-        val backgroundColor = ContextCompat.getColor(
-            context,
-            if (isSelected) R.color.wms_primary else R.color.wms_surface
-        )
-        val textColor = ContextCompat.getColor(
-            context,
-            if (isSelected) android.R.color.white else R.color.wms_primary
-        )
-        val strokeColor = ContextCompat.getColor(
-            context,
-            if (isSelected) R.color.wms_primary else R.color.wms_border
-        )
-
-        button.backgroundTintList = ColorStateList.valueOf(backgroundColor)
-        button.setTextColor(textColor)
-        button.strokeColor = ColorStateList.valueOf(strokeColor)
     }
 
     private fun loadReport(period: ReportPeriod) {

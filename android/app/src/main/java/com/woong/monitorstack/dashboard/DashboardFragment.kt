@@ -10,11 +10,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentDashboardBinding
 import com.woong.monitorstack.databinding.ItemAppUsageBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
+import com.woong.monitorstack.ui.PeriodButtonStyler
 
 class DashboardFragment : Fragment() {
     private lateinit var binding: FragmentDashboardBinding
@@ -46,18 +48,47 @@ class DashboardFragment : Fragment() {
         binding.topAppsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.topAppsRecyclerView.adapter = topAppsAdapter
         chartConfigurator.configureHourlyBarChart(binding.hourlyFocusChart)
-        binding.todayFilterButton.setOnClickListener { loadPeriod(DashboardPeriod.Today) }
-        binding.oneHourFilterButton.setOnClickListener { loadPeriod(DashboardPeriod.LastHour) }
-        binding.sixHourFilterButton.setOnClickListener { loadPeriod(DashboardPeriod.LastSixHours) }
-        binding.twentyFourHourFilterButton.setOnClickListener {
-            loadPeriod(DashboardPeriod.LastTwentyFourHours)
+        binding.todayFilterButton.setOnClickListener {
+            loadSelectedPeriod(binding.todayFilterButton, DashboardPeriod.Today)
         }
-        binding.sevenDayFilterButton.setOnClickListener { loadPeriod(DashboardPeriod.Recent7Days) }
-        loadPeriod(DashboardPeriod.Today)
+        binding.oneHourFilterButton.setOnClickListener {
+            loadSelectedPeriod(binding.oneHourFilterButton, DashboardPeriod.LastHour)
+        }
+        binding.sixHourFilterButton.setOnClickListener {
+            loadSelectedPeriod(binding.sixHourFilterButton, DashboardPeriod.LastSixHours)
+        }
+        binding.twentyFourHourFilterButton.setOnClickListener {
+            loadSelectedPeriod(
+                binding.twentyFourHourFilterButton,
+                DashboardPeriod.LastTwentyFourHours
+            )
+        }
+        binding.sevenDayFilterButton.setOnClickListener {
+            loadSelectedPeriod(binding.sevenDayFilterButton, DashboardPeriod.Recent7Days)
+        }
+        loadSelectedPeriod(binding.todayFilterButton, DashboardPeriod.Today)
     }
 
     fun refreshFromDatabase() {
-        loadPeriod(DashboardPeriod.Today)
+        loadSelectedPeriod(binding.todayFilterButton, DashboardPeriod.Today)
+    }
+
+    private fun loadSelectedPeriod(selectedButton: MaterialButton, period: DashboardPeriod) {
+        selectPeriodButton(selectedButton)
+        loadPeriod(period)
+    }
+
+    private fun selectPeriodButton(selectedButton: MaterialButton) {
+        PeriodButtonStyler.select(
+            selectedButton = selectedButton,
+            buttons = listOf(
+                binding.todayFilterButton,
+                binding.oneHourFilterButton,
+                binding.sixHourFilterButton,
+                binding.twentyFourHourFilterButton,
+                binding.sevenDayFilterButton
+            )
+        )
     }
 
     private fun loadPeriod(period: DashboardPeriod) {

@@ -5003,3 +5003,29 @@ Remaining Android priorities:
 
 - Polish Dashboard period selected state to match Report.
 - Polish Dashboard/Report chart visuals against the supplied reference.
+
+## 2026-05-01 Android Dashboard And Sessions Period Selection
+
+- Dashboard period buttons now visually reflect the selected range for Today, 1h, 6h, 24h, and 7d.
+- Sessions period buttons now visually reflect the selected range for Today, 1h, 6h, 24h, and 7d.
+- Added shared `PeriodButtonStyler` so Dashboard, Sessions, and Report use the same selected/unselected MaterialButton colors.
+- Android UI snapshot automation now captures selected-period evidence:
+  - `16-dashboard-1h-selected.png`
+  - `17-sessions-6h-selected.png`
+- Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-214011/`.
+
+Validation completed:
+
+- RED `dashboardPeriodButtonsReflectSelectedRange` and `sessionsPeriodButtonsReflectSelectedRange` failed before runtime period selection state existed.
+- Focused Dashboard/Sessions selected-range tests passed after implementation.
+- Report selected-range test still passes after moving styling to the shared helper.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973), report at `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Polish Dashboard/Report/App Detail chart visuals against the supplied reference.
+- Reduce top-app row dead space and consider proportional horizontal bars for the ranked app list.

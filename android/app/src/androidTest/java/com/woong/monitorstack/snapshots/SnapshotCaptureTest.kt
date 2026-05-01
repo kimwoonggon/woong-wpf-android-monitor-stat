@@ -55,6 +55,14 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "10-main-shell-sessions.png")
         )
+        captureMainShellDashboardOneHour(
+            device = device,
+            output = File(outputDir, "16-dashboard-1h-selected.png")
+        )
+        captureMainShellSessionsSixHour(
+            device = device,
+            output = File(outputDir, "17-sessions-6h-selected.png")
+        )
         captureMainShellReport(
             device = device,
             output = File(outputDir, "12-main-shell-report.png")
@@ -163,6 +171,39 @@ class SnapshotCaptureTest {
                 activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                     R.id.bottomNavigation
                 ).selectedItemId = R.id.navSessions
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
+    private fun captureMainShellDashboardOneHour(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            waitForScreen(device)
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.oneHourFilterButton).performClick()
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
+    private fun captureMainShellSessionsSixHour(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                    R.id.bottomNavigation
+                ).selectedItemId = R.id.navSessions
+            }
+            waitForScreen(device)
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.sessionsSixHourButton).performClick()
             }
             waitForScreen(device)
             captureScreen(device, output)

@@ -2255,5 +2255,10 @@ milestones below are finished.
 - [x] Report period buttons now show selected state for 7d, 30d, 90d, and valid Custom ranges.
 - [x] Latest selected Custom range screenshot evidence: `artifacts/android-ui-snapshots/20260501-210345/15-report-custom-range.png`.
 - [x] Validation passed for Report selected-state polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
-- [ ] Next Android TODO: polish Dashboard/Report chart visuals against the supplied reference, especially selected period state and Material styling.
-- [ ] Next Android TODO: apply selected-period styling consistency to Dashboard and Sessions controls.
+- [x] Dashboard and Sessions period buttons now share selected/unselected styling with Report through `PeriodButtonStyler`.
+- [x] Added RED/GREEN UI-state tests for Dashboard and Sessions selected-period behavior.
+- [x] Android UI screenshot automation now captures `16-dashboard-1h-selected.png` and `17-sessions-6h-selected.png`.
+- [x] Latest selected-period screenshot evidence: `artifacts/android-ui-snapshots/20260501-214011/`.
+- [x] Validation passed for Dashboard/Sessions selected-state polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [ ] Next Android TODO: polish Dashboard/Report/App Detail chart visuals against the supplied reference.
+- [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
