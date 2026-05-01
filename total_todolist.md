@@ -1991,7 +1991,7 @@ milestones below are finished.
 ### Remaining Windows Release Work
 
 - [x] Replace per-run test certificate with a stable release signing certificate/secrets strategy before public distribution.
-- [ ] Add a tag-based release workflow after signing policy is finalized.
+- [x] Add a tag-based release workflow after signing policy is finalized.
 
 ## 2026-05-01 Windows MSIX 0x800B010A Certificate Trust Fix
 
@@ -2108,3 +2108,11 @@ milestones below are finished.
 - [x] Updated MSIX packaging script to export public `WoongMonitorStack.Windows.Signing.cer` from a provided PFX without uploading private keys.
 - [x] Updated README and Windows MSIX documentation.
 - [x] Validation: full solution tests passed (479 passed, 6 skipped), Release build passed, coverage generated at 88.0% line / 69.5% branch; commit/push pending.
+## 2026-05-01 Windows Tag-Based Release Workflow
+
+- [x] Added `.github/workflows/windows-wpf-release.yml` for `v*` tags and manual dispatch.
+- [x] Release workflow requires stable signing secrets and does not fall back to test certificates.
+- [x] Release workflow builds, tests, publishes, signs, zips the MSIX bundle, uploads artifact, and attaches it to GitHub Release.
+- [x] Updated README and Windows MSIX documentation.
+- [x] Validation: focused release workflow test passed, full solution tests passed, Release build passed, coverage generated at 88.0% line / 69.5% branch, commit/push pending.
+- [x] Added `xunit.runner.json` for Presentation tests to disable collection parallelism and stabilize LiveCharts coverage runs.

@@ -1,0 +1,82 @@
+name: Windows WPF Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-wpf-release:
+    name: Build, test, sign, and publish Windows WPF release
+    runs-on: windows-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+      WINDOWS_MSIX_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_MSIX_CERTIFICATE_BASE64 }}
+      WINDOWS_MSIX_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_MSIX_CERTIFICATE_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Fail when release signing secrets are missing
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_MSIX_CERTIFICATE_BASE64) -or
+              [string]::IsNullOrWhiteSpace($env:WINDOWS_MSIX_CERTIFICATE_PASSWORD)) {
+            throw "Windows releases require WINDOWS_MSIX_CERTIFICATE_BASE64 and WINDOWS_MSIX_CERTIFICATE_PASSWORD."
+          }
+
+      - name: Restore
+        run: dotnet restore Woong.MonitorStack.sln --configfile NuGet.config
+
+      - name: Build Release
+        run: dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal
+
+      - name: Test Release
+        run: dotnet test Woong.MonitorStack.sln -c Release --no-build -m:1 -v minimal
+
+      - name: Publish Windows app
+        run: dotnet publish src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj -c Release --no-restore -o artifacts\windows-app
+
+      - name: Decode release MSIX signing certificate
+        shell: pwsh
+        run: |
+          [IO.File]::WriteAllBytes(
+            "$env:RUNNER_TEMP\woong-monitor-msix-signing.pfx",
+            [Convert]::FromBase64String($env:WINDOWS_MSIX_CERTIFICATE_BASE64))
+
+      - name: Package signed MSIX
+        shell: pwsh
+        run: .\scripts\package-windows-msix.ps1 -Configuration Release -SkipPublish -Sign -CertificatePath $env:RUNNER_TEMP\woong-monitor-msix-signing.pfx -CertificatePassword $env:WINDOWS_MSIX_CERTIFICATE_PASSWORD
+
+      - name: Archive signed MSIX bundle
+        shell: pwsh
+        run: |
+          $archivePath = "artifacts\woong-monitor-windows-msix-${{ github.ref_name }}.zip"
+          if (Test-Path -LiteralPath $archivePath) {
+            Remove-Item -LiteralPath $archivePath -Force
+          }
+
+          Compress-Archive -Path artifacts\windows-msix\* -DestinationPath $archivePath
+          Write-Host "Release archive: $archivePath"
+
+      - name: Upload Windows release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woong-monitor-windows-msix-${{ github.ref_name }}
+          path: artifacts/woong-monitor-windows-msix-${{ github.ref_name }}.zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/woong-monitor-windows-msix-${{ github.ref_name }}.zip

@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\Woong.MonitorStack.Domain\Woong.MonitorStack.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

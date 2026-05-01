@@ -4723,3 +4723,16 @@ Validation in progress:
 - Full solution tests passed after this note: 479 passed, 6 skipped.
 - Release build passed with 0 warnings and 0 errors.
 - Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973).
+## 2026-05-01 Windows Tag-Based Release Workflow
+
+- Added `.github/workflows/windows-wpf-release.yml` for `v*` tags and manual dispatch.
+- Release publishing now requires the stable MSIX signing secrets and intentionally has no ephemeral test-certificate fallback.
+- The release workflow builds, tests, publishes, signs the MSIX, zips `artifacts/windows-msix`, uploads the zip artifact, and attaches it to the GitHub Release through `softprops/action-gh-release`.
+- Updated README and Windows release documentation.
+
+Validation in progress:
+
+- RED architecture test failed before the release workflow existed.- Focused tag-release architecture tests passed: 1 passed, then coverage-stability architecture tests passed: 2 passed.
+- Full solution tests passed before the final coverage-stability fix: 480 passed, 6 skipped. Final coverage run also executed all test projects successfully: 481 passed, 6 skipped.
+- Release build passed after the final coverage-stability fix with 0 warnings and 0 errors.
+- Coverage collection passed after disabling Presentation test collection parallelism: line 88.0% (4526/5143), branch 69.5% (677/973).

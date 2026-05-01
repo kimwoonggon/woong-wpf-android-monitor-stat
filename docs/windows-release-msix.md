@@ -74,6 +74,24 @@ If either secret is missing, CI falls back to an ephemeral test certificate so
 pull requests and routine main builds still produce a locally testable signed
 MSIX. That fallback certificate is not a stable release signing identity.
 
+## Tag-Based Windows Releases
+
+The release workflow is:
+
+```text
+.github/workflows/windows-wpf-release.yml
+```
+
+It runs for tags matching `v*` and can also be started manually. Unlike the
+regular CI workflow, releases require `WINDOWS_MSIX_CERTIFICATE_BASE64` and
+`WINDOWS_MSIX_CERTIFICATE_PASSWORD`; there is no ephemeral test-certificate
+fallback for release publishing.
+
+The workflow restores, builds, tests, publishes the WPF app, signs the MSIX with
+the stable certificate, creates
+`artifacts\woong-monitor-windows-msix-<tag>.zip`, uploads it as an Actions
+artifact, and attaches it to the GitHub Release for that tag.
+
 ## Download From GitHub Actions
 
 After the `Windows WPF CI` workflow finishes:

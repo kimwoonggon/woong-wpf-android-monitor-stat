@@ -167,6 +167,42 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("ephemeral test certificate", doc, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void WindowsReleaseWorkflow_IsTagBasedAndRequiresStableSigningSecrets()
+    {
+        string workflowPath = Path.Combine(RepositoryRoot, ".github", "workflows", "windows-wpf-release.yml");
+
+        Assert.True(File.Exists(workflowPath), "Windows tag-based release workflow must exist.");
+        string workflow = File.ReadAllText(workflowPath);
+
+        Assert.Contains("tags:", workflow, StringComparison.Ordinal);
+        Assert.Contains("v*", workflow, StringComparison.Ordinal);
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_BASE64", workflow, StringComparison.Ordinal);
+        Assert.Contains("WINDOWS_MSIX_CERTIFICATE_PASSWORD", workflow, StringComparison.Ordinal);
+        Assert.Contains("Fail when release signing secrets are missing", workflow, StringComparison.Ordinal);
+        Assert.Contains("Decode release MSIX signing certificate", workflow, StringComparison.Ordinal);
+        Assert.Contains("-Sign", workflow, StringComparison.Ordinal);
+        Assert.Contains("woong-monitor-windows-msix-${{ github.ref_name }}.zip", workflow, StringComparison.Ordinal);
+        Assert.Contains("softprops/action-gh-release", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("-CreateTestCertificate", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PresentationTests_DisableXunitCollectionParallelismForLiveChartsCoverageStability()
+    {
+        string testProjectRoot = Path.Combine(RepositoryRoot, "tests", "Woong.MonitorStack.Windows.Presentation.Tests");
+        string runnerPath = Path.Combine(testProjectRoot, "xunit.runner.json");
+        string projectPath = Path.Combine(testProjectRoot, "Woong.MonitorStack.Windows.Presentation.Tests.csproj");
+
+        Assert.True(File.Exists(runnerPath), "Presentation tests need xunit.runner.json for coverage stability.");
+        string runner = File.ReadAllText(runnerPath);
+        string project = File.ReadAllText(projectPath);
+
+        Assert.Contains("\"parallelizeTestCollections\": false", runner, StringComparison.Ordinal);
+        Assert.Contains("xunit.runner.json", project, StringComparison.Ordinal);
+        Assert.Contains("CopyToOutputDirectory", project, StringComparison.Ordinal);
+    }
+
     private static string? GetXamlAttribute(XElement element, string attributeName)
         => element
             .Attributes()

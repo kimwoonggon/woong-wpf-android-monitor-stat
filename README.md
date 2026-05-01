@@ -283,6 +283,11 @@ elevated PowerShell prompt.
 
 More details: `docs/windows-release-msix.md`.
 
+Tag-based Windows releases use `.github/workflows/windows-wpf-release.yml`.
+Push a `v*` tag after configuring `WINDOWS_MSIX_CERTIFICATE_BASE64` and
+`WINDOWS_MSIX_CERTIFICATE_PASSWORD`; the release workflow signs with that stable
+certificate and attaches the zipped MSIX bundle to the GitHub Release.
+
 ## Android App
 
 The Android MVP is Kotlin + XML/View based. Do not migrate it to Compose for
