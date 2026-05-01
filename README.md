@@ -351,11 +351,24 @@ fresh machine, install a system image and create it:
 & "$env:ANDROID_HOME\cmdline-tools\latest\bin\avdmanager.bat" create avd -n Medium_Phone -k "system-images;android-36;google_apis;x86_64" -d "pixel_5"
 ```
 
-Start the emulator in its own terminal and leave that terminal open:
+For normal lightweight checks, start the emulator in its own terminal and leave
+that terminal open:
 
 ```powershell
 & "$env:ANDROID_HOME\emulator\emulator.exe" -avd Medium_Phone
 ```
+
+For Chrome/app-switch QA, use the stable launcher instead:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart
+```
+
+This launches the AVD with software GPU rendering, 4 GB RAM, no boot animation,
+and no snapshot restore. Use it when the emulator prints Chromium renderer
+messages such as `bad color buffer handle` or
+`UpdateLayeredWindowIndirect failed`, or when Chrome causes Woong Monitor to
+relaunch from splash because the emulator is under memory pressure.
 
 In a second terminal, wait for the device and confirm Android has finished
 booting:
