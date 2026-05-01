@@ -2319,12 +2319,15 @@ milestones below are finished.
 - [x] Stabilized `SnapshotCaptureTest` with deterministic MainActivity Usage Access gates and Splash routing waits before shell tab/filter captures.
 - [x] Added RED/GREEN MainActivity regression coverage for delayed Splash routing after Activity destruction.
 - [x] Added RED/GREEN snapshot-script coverage and implementation that clears external browser/system dialog interference before instrumentation capture.
-- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-053913/`.
+- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-055751/`.
 - [x] Added per-screen PASS/WARN rows to Android UI snapshot `report.md`.
 - [x] Fixed hidden-shell screenshot margins so Splash/Permission captures stay aligned without showing toolbar or bottom navigation.
 - [x] Crash buffer was cleared before the latest run and remained empty after screenshot capture.
-- [x] Android UI snapshot rerun `report.md` status PASS with all seven canonical Figma screenshots PASS; latest points to `artifacts/android-ui-snapshots/20260502-053913/`.
+- [x] Android UI snapshot rerun `report.md` status PASS with all seven canonical Figma screenshots PASS; latest points to `artifacts/android-ui-snapshots/20260502-055751/`.
 - [x] Dashboard first viewport now shows Hourly focus immediately after filters, with Top apps next below.
+- [x] Report `figma-06-report.png` now shows a seeded multi-day, multi-point trend.
+- [x] Sessions rows are visually compact while preserving readable app/package metadata.
+- [x] Settings now uses clearer Permissions, Collection, Sync, and Privacy visual grouping.
 - [x] Dashboard/Report top-app rows now render proportional usage bars with focused test `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [ ] Next Android TODO: compare the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and close the largest remaining visual parity gaps.
 - [x] Chrome/app-switch QA PASS verified UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.

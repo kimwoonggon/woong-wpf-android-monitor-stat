@@ -6,19 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarEntry
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardChartConfigurator
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentAppDetailBinding
-import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 
 class AppDetailFragment : Fragment() {
     private lateinit var binding: FragmentAppDetailBinding
     private val chartConfigurator = DashboardChartConfigurator()
-    private val adapter = DetailSessionsAdapter()
+    private val adapter = SessionRowAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -97,47 +95,6 @@ class AppDetailFragment : Fragment() {
         }
 
         binding.appHourlyChart.invalidate()
-    }
-
-    private class DetailSessionsAdapter : RecyclerView.Adapter<DetailSessionViewHolder>() {
-        private var rows: List<SessionRow> = emptyList()
-
-        fun submitRows(rows: List<SessionRow>) {
-            this.rows = rows
-            notifyDataSetChanged()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailSessionViewHolder {
-            val binding = ItemFocusSessionBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-
-            return DetailSessionViewHolder(binding)
-        }
-
-        override fun onBindViewHolder(holder: DetailSessionViewHolder, position: Int) {
-            holder.bind(rows[position])
-        }
-
-        override fun getItemCount(): Int = rows.size
-    }
-
-    private class DetailSessionViewHolder(
-        private val binding: ItemFocusSessionBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(row: SessionRow) {
-            binding.sessionAppIconPlaceholder.text = row.appName.firstOrNull()
-                ?.uppercaseChar()
-                ?.toString()
-                ?: "A"
-            binding.sessionAppNameText.text = row.appName
-            binding.sessionPackageText.text = row.packageName
-            binding.sessionTimeRangeText.text = row.timeRangeText
-            binding.sessionDurationText.text = row.durationText
-            binding.sessionStateText.text = row.stateText
-        }
     }
 
     companion object {

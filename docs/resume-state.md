@@ -25,11 +25,16 @@ Updated: 2026-05-02
 - The crash buffer was cleared before the latest run and remained empty after
   the successful screenshot capture.
 - Latest Android UI snapshot rerun passed at
-  `artifacts/android-ui-snapshots/20260502-053913/`; `latest` points there.
+  `artifacts/android-ui-snapshots/20260502-055751/`; `latest` points there.
 - Snapshot `report.md` status is `PASS`, all seven canonical Figma screenshots
   are `PASS`, and the crash buffer remained empty.
 - Dashboard first viewport now shows Hourly focus immediately after the period
   filters; Top apps are next below.
+- Report `figma-06-report.png` now shows a seeded multi-day, multi-point
+  trend.
+- Sessions rows are compact while preserving readable app/package metadata.
+- Settings now has clearer Permissions, Collection, Sync, and Privacy visual
+  grouping.
 - Dashboard and Report top-app rows now render proportional usage bars with
   reduced row dead space.
 - Focused Android visual coverage:
@@ -51,7 +56,7 @@ Updated: 2026-05-02
   are never captured; external foreground proof must use package/process/window
   metadata plus Room rows and Woong Monitor UI after return.
 - Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-053913/` and
+  `artifacts/android-ui-snapshots/20260502-055751/` and
   `artifacts/android-ui-snapshots/latest/`.
 
 Verified:

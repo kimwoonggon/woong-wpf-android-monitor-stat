@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-053913/
+artifacts/android-ui-snapshots/20260502-055751/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -103,11 +103,18 @@ Product boundary reminder:
   interference before instrumentation captures, including Chrome force-stop and
   `CLOSE_SYSTEM_DIALOGS`.
 - [x] Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-053913/`.
+  `artifacts/android-ui-snapshots/20260502-055751/`.
 - [x] Latest snapshot `report.md` status is `PASS`; all seven canonical Figma
   screenshots are `PASS`.
+- [x] Latest snapshot crash buffer remained empty.
 - [x] Dashboard first viewport now shows Hourly focus immediately after the
   period filters; Top apps are next below.
+- [x] Report `figma-06-report.png` now shows a seeded multi-day, multi-point
+  trend.
+- [x] Sessions rows are visually compact while preserving readable app/package
+  metadata.
+- [x] Settings now uses clearer Permissions, Collection, Sync, and Privacy
+  grouping.
 - [x] Snapshot report now includes per-screen PASS/WARN rows for the seven
   canonical Figma screenshots.
 - [x] Hidden-shell captures now keep Splash/Permission margins aligned without

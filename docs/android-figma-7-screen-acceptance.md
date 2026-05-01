@@ -9,14 +9,16 @@ artifacts. It is the working acceptance map for `android_check_todo.md`.
 Latest clean emulator evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-053913/
+artifacts/android-ui-snapshots/20260502-055751/
 artifacts/android-ui-snapshots/latest/
 ```
 
 Latest snapshot result: `report.md` status is `PASS`, all seven canonical
 Figma screenshots are `PASS`, and the crash buffer remained empty. The
 Dashboard first viewport now shows Hourly focus immediately after the period
-filters, with Top apps next below.
+filters, with Top apps next below. The latest `figma-06-report.png` shows a
+seeded multi-day, multi-point trend; Sessions rows are compact; Settings is
+grouped by Permissions, Collection, Sync, and Privacy.
 
 The Android app remains UsageStatsManager metadata only. It measures which apps
 were foreground for how long, local Room persistence, sync state, optional

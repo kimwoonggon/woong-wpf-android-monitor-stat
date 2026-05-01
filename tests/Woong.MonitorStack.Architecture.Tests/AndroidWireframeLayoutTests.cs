@@ -137,13 +137,22 @@ public sealed class AndroidWireframeLayoutTests
     }
 
     [Fact]
-    public void AndroidFocusSessionRowLayout_UsesReadableHeightForAppPackageTimeAndState()
+    public void AndroidFocusSessionRowLayout_UsesCompactReadableDensityForAppPackageTimeAndState()
     {
         string repoRoot = FindRepositoryRoot();
         string row = ReadAndroidLayout(repoRoot, "item_focus_session.xml");
 
         Assert.Contains("android:layout_height=\"wrap_content\"", row);
-        Assert.Contains("android:minHeight=\"116dp\"", row);
+        Assert.Contains("android:minHeight=\"72dp\"", row);
+        Assert.Contains("android:paddingTop=\"6dp\"", row);
+        Assert.Contains("android:paddingBottom=\"6dp\"", row);
+        Assert.Contains("@+id/sessionAppNameText", row);
+        Assert.Contains("@+id/sessionPackageText", row);
+        Assert.Contains("@+id/sessionTimeRangeText", row);
+        Assert.Contains("@+id/sessionDurationText", row);
+        Assert.Contains("@+id/sessionStateText", row);
+        Assert.Contains("android:maxLines=\"1\"", row);
+        Assert.DoesNotContain("android:minHeight=\"116dp\"", row);
     }
 
     [Fact]
@@ -259,8 +268,21 @@ public sealed class AndroidWireframeLayoutTests
 
         string settings = ReadAndroidLayout(repoRoot, "fragment_settings.xml");
         Assert.Contains("@+id/permissionsSettingsCard", settings);
+        Assert.Contains("@+id/permissionsSectionHeading", settings);
+        Assert.Contains("@+id/collectionSectionHeading", settings);
+        Assert.Contains("@+id/syncSectionHeading", settings);
+        Assert.Contains("@+id/privacyStorageSectionHeading", settings);
         Assert.Contains("@+id/locationSettingsCard", settings);
-        Assert.Contains("@+id/privacySettingsCard", settings);
+        Assert.Contains("@+id/privacyStorageSettingsCard", settings);
+        Assert.Contains("@+id/locationContextCheckBox", settings);
+        Assert.Contains("@+id/preciseLatitudeLongitudeCheckBox", settings);
+        Assert.Contains("@+id/requestLocationPermissionButton", settings);
+        Assert.Contains("@+id/sensitiveDataBoundaryText", settings);
+        Assert.Contains("@string/location_context_default", settings);
+        Assert.Contains("@string/precise_location_opt_in", settings);
+        Assert.Contains("@string/sensitive_data_boundary", settings);
+        Assert.Contains("@string/android_storage_boundary", settings);
+        Assert.Contains("@string/android_room_storage_status", settings);
     }
 
     [Fact]
@@ -600,13 +622,22 @@ public sealed class AndroidWireframeLayoutTests
         string repoRoot = FindRepositoryRoot();
         string layout = ReadAndroidLayout(repoRoot, "fragment_settings.xml");
 
+        Assert.Contains("@+id/permissionsSectionHeading", layout);
         Assert.Contains("@+id/usageAccessStatusRow", layout);
+        Assert.Contains("@+id/collectionSectionHeading", layout);
         Assert.Contains("@+id/collectionSettingsCard", layout);
+        Assert.Contains("@+id/backgroundCollectionRow", layout);
         Assert.Contains("@+id/backgroundCollectionSwitch", layout);
         Assert.Contains("@+id/collectionIntervalText", layout);
+        Assert.Contains("@+id/syncSectionHeading", layout);
+        Assert.Contains("@+id/autoSyncRow", layout);
         Assert.Contains("@+id/autoSyncSwitch", layout);
         Assert.Contains("@+id/manualSyncButton", layout);
+        Assert.Contains("@+id/privacyStorageSectionHeading", layout);
         Assert.Contains("@+id/privacyStorageSettingsCard", layout);
+        Assert.Contains("@string/sensitive_data_boundary", layout);
+        Assert.Contains("@string/android_storage_boundary", layout);
+        Assert.Contains("@string/android_room_storage_status", layout);
     }
 
     private static string ReadAndroidLayout(string repoRoot, string fileName)

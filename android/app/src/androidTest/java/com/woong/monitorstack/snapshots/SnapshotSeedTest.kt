@@ -10,6 +10,7 @@ import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.RoomDashboardRepository
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -48,6 +49,34 @@ class SnapshotSeedTest {
                     isIdle = false
                 ),
                 focusSession(
+                    clientSessionId = "snapshot-report-day-minus-1-chrome",
+                    packageName = "com.android.chrome",
+                    startedAt = base.minusDays(1).plusHours(1),
+                    durationMinutes = 35,
+                    isIdle = false
+                ),
+                focusSession(
+                    clientSessionId = "snapshot-report-day-minus-2-youtube",
+                    packageName = "com.google.android.youtube",
+                    startedAt = base.minusDays(2).plusHours(2),
+                    durationMinutes = 50,
+                    isIdle = false
+                ),
+                focusSession(
+                    clientSessionId = "snapshot-report-day-minus-3-slack",
+                    packageName = "com.slack",
+                    startedAt = base.minusDays(3).plusHours(3),
+                    durationMinutes = 25,
+                    isIdle = false
+                ),
+                focusSession(
+                    clientSessionId = "snapshot-report-day-minus-4-chrome",
+                    packageName = "com.android.chrome",
+                    startedAt = base.minusDays(4).plusHours(4),
+                    durationMinutes = 40,
+                    isIdle = false
+                ),
+                focusSession(
                     clientSessionId = "snapshot-idle",
                     packageName = "com.android.chrome",
                     startedAt = base.plusHours(3),
@@ -68,6 +97,19 @@ class SnapshotSeedTest {
                 captureMode = LocationCaptureMode.AppUsageContext,
                 createdAtUtcMillis = base.plusMinutes(30).toInstant().toEpochMilli()
             )
+        )
+
+        val reportRows = database.focusSessionDao()
+            .queryByLocalDateRange(today.minusDays(6).toString(), today.toString())
+            .filterNot { it.isIdle }
+        val reportBucketCount = reportRows
+            .map { it.localDate }
+            .distinct()
+            .size
+
+        assertTrue(
+            "Expected snapshot seed to create at least five report localDate buckets.",
+            reportBucketCount >= 5
         )
     }
 
