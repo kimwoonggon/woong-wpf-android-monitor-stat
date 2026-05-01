@@ -7,7 +7,10 @@ class UsageSessionizer(
         require(sameAppMergeGapMs >= 0) { "sameAppMergeGapMs must not be negative." }
     }
 
-    fun sessionize(events: List<UsageEventSnapshot>): List<UsageAppSession> {
+    fun sessionize(
+        events: List<UsageEventSnapshot>,
+        collectionEndUtcMillis: Long? = null
+    ): List<UsageAppSession> {
         val sessions = mutableListOf<UsageAppSession>()
         var activePackageName: String? = null
         var activeStartedAtUtcMillis: Long? = null
@@ -50,6 +53,23 @@ class UsageSessionizer(
                     }
                 }
             }
+        }
+
+        val packageName = activePackageName
+        val startedAtUtcMillis = activeStartedAtUtcMillis
+        if (
+            collectionEndUtcMillis != null &&
+            packageName != null &&
+            startedAtUtcMillis != null &&
+            collectionEndUtcMillis >= startedAtUtcMillis
+        ) {
+            sessions.add(
+                UsageAppSession(
+                    packageName,
+                    startedAtUtcMillis,
+                    collectionEndUtcMillis
+                )
+            )
         }
 
         return mergeCloseSameAppSessions(sessions)

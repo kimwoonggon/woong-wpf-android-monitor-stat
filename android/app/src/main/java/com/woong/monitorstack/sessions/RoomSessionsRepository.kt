@@ -2,6 +2,7 @@ package com.woong.monitorstack.sessions
 
 import com.woong.monitorstack.data.local.FocusSessionDao
 import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.dashboard.DashboardActivityBucket
 import com.woong.monitorstack.display.AppDisplayNameFormatter
 import java.time.Instant
 import java.time.ZoneId
@@ -28,7 +29,8 @@ class RoomSessionsRepository(
             packageName = packageName,
             totalDurationText = formatDuration(totalDurationMs),
             sessionCountText = "${sessions.size} ${if (sessions.size == 1) "session" else "sessions"}",
-            sessions = sessions.map { it.toSessionRow() }
+            sessions = sessions.map { it.toSessionRow() },
+            hourlyUsage = sessions.toHourlyUsage()
         )
     }
 
@@ -67,6 +69,24 @@ class RoomSessionsRepository(
 
         return "$start - $end"
     }
+
+    private fun List<FocusSessionEntity>.toHourlyUsage(): List<DashboardActivityBucket> {
+        return groupBy { entity ->
+            val zoneId = runCatching { ZoneId.of(entity.timezoneId) }
+                .getOrDefault(ZoneId.systemDefault())
+
+            Instant.ofEpochMilli(entity.startedAtUtcMillis)
+                .atZone(zoneId)
+                .hour
+        }
+            .map { entry ->
+                DashboardActivityBucket(
+                    hourOfDay = entry.key,
+                    durationMs = entry.value.sumOf { it.durationMs }
+                )
+            }
+            .sortedBy { it.hourOfDay }
+    }
 }
 
 data class SessionRow(
@@ -82,5 +102,6 @@ data class AppDetailState(
     val packageName: String,
     val totalDurationText: String,
     val sessionCountText: String,
-    val sessions: List<SessionRow>
+    val sessions: List<SessionRow>,
+    val hourlyUsage: List<DashboardActivityBucket> = emptyList()
 )

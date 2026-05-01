@@ -6,11 +6,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.LineChart
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.DashboardFragment
+import com.woong.monitorstack.sessions.AppDetailFragment
 import com.woong.monitorstack.settings.SharedPreferencesAndroidLocationSettings
 import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
@@ -373,6 +376,7 @@ class MainActivityTest {
         val totalCard = activity.findViewById<View>(R.id.reportTotalFocusCard)
         val topAppCard = activity.findViewById<View>(R.id.reportTopAppCard)
         val topAppsList = activity.findViewById<RecyclerView>(R.id.reportTopAppsRecyclerView)
+        val trendChart = activity.findViewById<LineChart>(R.id.sevenDayTrendChart)
 
         assertEquals(
             "5h 0m",
@@ -383,6 +387,62 @@ class MainActivityTest {
             topAppCard.findViewById<TextView>(R.id.summaryValueText).text.toString()
         )
         assertTrue(topAppsList.adapter?.itemCount ?: 0 > 0)
+        assertNotNull(trendChart.data)
+        assertEquals(1, trendChart.data.getDataSetByIndex(0).entryCount)
+    }
+
+    @Test
+    fun appDetailLoadsRoomBackedHourlyChartForSelectedApp() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        val database = MonitorDatabase.getInstance(context)
+        val today = LocalDate.now().toString()
+        Thread {
+            database.focusSessionDao().insert(
+                FocusSessionEntity(
+                    clientSessionId = "app-detail-chrome-1",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = 1_800_000_000_000L,
+                    endedAtUtcMillis = 1_800_006_000_000L,
+                    durationMs = 6_000_000L,
+                    localDate = today,
+                    timezoneId = "Asia/Seoul",
+                    isIdle = false,
+                    source = "test"
+                )
+            )
+            database.focusSessionDao().insert(
+                FocusSessionEntity(
+                    clientSessionId = "app-detail-chrome-2",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = 1_800_007_200_000L,
+                    endedAtUtcMillis = 1_800_010_200_000L,
+                    durationMs = 3_000_000L,
+                    localDate = today,
+                    timezoneId = "Asia/Seoul",
+                    isIdle = false,
+                    source = "test"
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.mainFragmentContainer,
+                AppDetailFragment.newInstance("com.android.chrome")
+            )
+            .commitNow()
+        waitForMainThreadWork()
+
+        val chart = activity.findViewById<BarChart>(R.id.appHourlyChart)
+
+        assertNotNull(chart.data)
+        assertEquals(2, chart.data.getDataSetByIndex(0).entryCount)
     }
 
     private fun waitForMainThreadWork() {

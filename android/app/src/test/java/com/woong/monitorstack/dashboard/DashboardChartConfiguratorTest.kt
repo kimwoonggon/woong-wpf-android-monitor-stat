@@ -50,6 +50,36 @@ class DashboardChartConfiguratorTest {
         assertFalse(chart.axisRight.isEnabled)
     }
 
+    @Test
+    fun hourlyBarChartUsesHourLabelsAndMinuteAxis() {
+        val chart = BarChart(testContext())
+
+        DashboardChartConfigurator().configureHourlyBarChart(chart)
+
+        assertEquals(XAxis.XAxisPosition.BOTTOM, chart.xAxis.position)
+        assertEquals("09", chart.xAxis.valueFormatter.getFormattedValue(9f))
+        assertEquals("18", chart.xAxis.valueFormatter.getFormattedValue(18f))
+        assertEquals("30m", chart.axisLeft.valueFormatter.getFormattedValue(30f))
+        assertFalse(chart.axisRight.isEnabled)
+    }
+
+    @Test
+    fun dailyTrendChartUsesDayLabelsAndMinuteAxis() {
+        val chart = LineChart(testContext())
+
+        DashboardChartConfigurator().configureDailyTrendChart(
+            chart = chart,
+            dayLabels = listOf("04/27", "04/28")
+        )
+
+        assertEquals(XAxis.XAxisPosition.BOTTOM, chart.xAxis.position)
+        assertEquals("04/27", chart.xAxis.valueFormatter.getFormattedValue(0f))
+        assertEquals("04/28", chart.xAxis.valueFormatter.getFormattedValue(1f))
+        assertEquals("", chart.xAxis.valueFormatter.getFormattedValue(1.5f))
+        assertEquals("90m", chart.axisLeft.valueFormatter.getFormattedValue(90f))
+        assertFalse(chart.axisRight.isEnabled)
+    }
+
     private fun testContext(): Context {
         return ContextThemeWrapper(
             ApplicationProvider.getApplicationContext(),

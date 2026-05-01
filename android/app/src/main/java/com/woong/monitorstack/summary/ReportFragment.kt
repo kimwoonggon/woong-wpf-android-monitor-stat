@@ -7,6 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.woong.monitorstack.R
+import com.woong.monitorstack.dashboard.DashboardChartConfigurator
+import com.woong.monitorstack.dashboard.DashboardDailyActivityBucket
 import com.woong.monitorstack.dashboard.DashboardPeriod
 import com.woong.monitorstack.dashboard.DashboardUsageSlice
 import com.woong.monitorstack.dashboard.DashboardViewModel
@@ -18,6 +24,7 @@ import com.woong.monitorstack.databinding.ItemAppUsageBinding
 class ReportFragment : Fragment() {
     private lateinit var binding: FragmentReportBinding
     private lateinit var viewModel: DashboardViewModel
+    private val chartConfigurator = DashboardChartConfigurator()
     private val topAppsAdapter = TopAppsAdapter()
 
     override fun onCreateView(
@@ -40,6 +47,7 @@ class ReportFragment : Fragment() {
 
         binding.reportTopAppsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.reportTopAppsRecyclerView.adapter = topAppsAdapter
+        chartConfigurator.configureDailyTrendChart(binding.sevenDayTrendChart, emptyList())
         loadSevenDayReport()
     }
 
@@ -72,6 +80,26 @@ class ReportFragment : Fragment() {
         binding.reportTopAppCard.summarySubtitleText.text = "Most used app"
 
         topAppsAdapter.submit(appUsage)
+        renderTrendChart(state.chartData.dailyActivity)
+    }
+
+    private fun renderTrendChart(dailyActivity: List<DashboardDailyActivityBucket>) {
+        val labels = dailyActivity.map { bucket -> bucket.localDate.toShortDateLabel() }
+        val entries = dailyActivity.mapIndexed { index, bucket ->
+            Entry(index.toFloat(), bucket.durationMs / 60_000f)
+        }
+
+        chartConfigurator.configureDailyTrendChart(binding.sevenDayTrendChart, labels)
+
+        if (entries.isEmpty()) {
+            binding.sevenDayTrendChart.clear()
+        } else {
+            binding.sevenDayTrendChart.data = LineData(
+                LineDataSet(entries, getString(R.string.daily_usage_trend))
+            )
+        }
+
+        binding.sevenDayTrendChart.invalidate()
     }
 
     private fun formatDuration(durationMs: Long): String {
@@ -83,6 +111,14 @@ class ReportFragment : Fragment() {
             "${hours}h ${minutes}m"
         } else {
             "${minutes}m"
+        }
+    }
+
+    private fun String.toShortDateLabel(): String {
+        return if (length >= 10) {
+            substring(5, 10).replace("-", "/")
+        } else {
+            this
         }
     }
 

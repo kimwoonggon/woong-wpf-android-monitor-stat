@@ -100,7 +100,15 @@ class RoomDashboardRepository(
                 .sortedWith(
                     compareByDescending<DashboardUsageSlice> { it.durationMs }
                         .thenBy { it.label }
-                )
+                ),
+            dailyActivity = groupBy { it.localDate }
+                .map { entry ->
+                    DashboardDailyActivityBucket(
+                        localDate = entry.key,
+                        durationMs = entry.value.sumOf { it.durationMs }
+                    )
+                }
+                .sortedBy { it.localDate }
         )
     }
 

@@ -14,6 +14,7 @@ import androidx.test.uiautomator.UiDevice
 import com.woong.monitorstack.MainActivity
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardActivity
+import com.woong.monitorstack.sessions.AppDetailFragment
 import com.woong.monitorstack.sessions.SessionsActivity
 import com.woong.monitorstack.settings.SettingsActivity
 import com.woong.monitorstack.summary.DailySummaryActivity
@@ -58,6 +59,10 @@ class SnapshotCaptureTest {
         captureMainShellSettings(
             device = device,
             output = File(outputDir, "11-main-shell-settings.png")
+        )
+        captureMainShellAppDetail(
+            device = device,
+            output = File(outputDir, "14-app-detail.png")
         )
         captureDashboardFeatureScreens(
             device = device,
@@ -181,6 +186,28 @@ class SnapshotCaptureTest {
                 activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                     R.id.bottomNavigation
                 ).selectedItemId = R.id.navReport
+            }
+            waitForScreen(device)
+            captureScreen(device, output)
+        }
+    }
+
+    private fun captureMainShellAppDetail(
+        device: UiDevice,
+        output: File
+    ) {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            waitForScreen(device)
+            scenario.onActivity { activity ->
+                activity.findViewById<View>(R.id.topAppBar).visibility = View.VISIBLE
+                activity.findViewById<View>(R.id.bottomNavigation).visibility = View.VISIBLE
+                activity.supportFragmentManager
+                    .beginTransaction()
+                    .replace(
+                        R.id.mainFragmentContainer,
+                        AppDetailFragment.newInstance("com.android.chrome")
+                    )
+                    .commitNow()
             }
             waitForScreen(device)
             captureScreen(device, output)

@@ -32,6 +32,31 @@ class DashboardChartConfigurator {
         chart.xAxis.valueFormatter = IndexedLabelAxisValueFormatter(appLabels)
         chart.setFitBars(true)
     }
+
+    fun configureHourlyBarChart(chart: BarChart) {
+        chart.description.isEnabled = false
+        chart.setNoDataText("No sessions yet")
+        chart.axisRight.isEnabled = false
+        chart.axisLeft.axisMinimum = 0f
+        chart.axisLeft.valueFormatter = MinuteAxisValueFormatter()
+        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chart.xAxis.granularity = 1f
+        chart.xAxis.isGranularityEnabled = true
+        chart.xAxis.valueFormatter = HourOfDayAxisValueFormatter()
+        chart.setFitBars(true)
+    }
+
+    fun configureDailyTrendChart(chart: LineChart, dayLabels: List<String>) {
+        chart.description.isEnabled = false
+        chart.setNoDataText("No sessions yet")
+        chart.axisRight.isEnabled = false
+        chart.axisLeft.axisMinimum = 0f
+        chart.axisLeft.valueFormatter = MinuteAxisValueFormatter()
+        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chart.xAxis.granularity = 1f
+        chart.xAxis.isGranularityEnabled = true
+        chart.xAxis.valueFormatter = IndexedLabelAxisValueFormatter(dayLabels)
+    }
 }
 
 class HourOfDayAxisValueFormatter : ValueFormatter() {

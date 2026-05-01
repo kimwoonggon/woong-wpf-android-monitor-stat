@@ -99,6 +99,40 @@ class RoomSessionsRepositoryTest {
         assertEquals(listOf("com.android.chrome", "com.android.chrome"), detail.sessions.map { it.packageName })
     }
 
+    @Test
+    fun loadAppDetailBuildsHourlyUsageBucketsForSelectedPackageOnly() {
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "chrome-9",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = 1_000,
+                durationMs = 60_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "chrome-10",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = 3_601_000,
+                durationMs = 120_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "slack-10",
+                packageName = "com.slack",
+                startedAtUtcMillis = 3_601_000,
+                durationMs = 300_000
+            )
+        )
+        val repository = RoomSessionsRepository(database.focusSessionDao())
+
+        val detail = repository.loadAppDetail("com.android.chrome")
+
+        assertEquals(listOf(9, 10), detail.hourlyUsage.map { it.hourOfDay })
+        assertEquals(listOf(60_000L, 120_000L), detail.hourlyUsage.map { it.durationMs })
+    }
+
     private fun focusSession(
         clientSessionId: String,
         packageName: String,

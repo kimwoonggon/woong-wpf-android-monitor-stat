@@ -24,10 +24,21 @@ data class DashboardUsageSlice(
     }
 }
 
+data class DashboardDailyActivityBucket(
+    val localDate: String,
+    val durationMs: Long
+) {
+    init {
+        require(localDate.isNotBlank()) { "localDate must not be blank." }
+        require(durationMs >= 0) { "durationMs must not be negative." }
+    }
+}
+
 data class DashboardChartData(
     val hourlyActivity: List<DashboardActivityBucket> = emptyList(),
     val appUsage: List<DashboardUsageSlice> = emptyList(),
-    val domainUsage: List<DashboardUsageSlice> = emptyList()
+    val domainUsage: List<DashboardUsageSlice> = emptyList(),
+    val dailyActivity: List<DashboardDailyActivityBucket> = emptyList()
 )
 
 data class DashboardChartEntries(

@@ -2188,3 +2188,16 @@ milestones below are finished.
 - [x] Dashboard Current Focus now skips Monitor self rows and Nexus Launcher noise when a meaningful external tracked app is available.
 - [x] Validation passed: focused Current Focus tests and Android Gradle `testDebugUnitTest assembleDebug`.
 - [x] Emulator screenshot captured after opening Chrome and returning to Dashboard: `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`.
+## 2026-05-01 Android Room-Backed Charts, Outbox, And Screenshot Reliability
+
+- [x] Added Room-backed hourly chart data for App Detail selected-package analysis.
+- [x] Added Room-backed daily trend chart data for the Report 7-day summary.
+- [x] Added chart formatter tests for hour labels, day labels, and minute axes.
+- [x] Fixed sync outbox idempotency so duplicate focus-session enqueue does not reset a synced item to pending.
+- [x] Fixed UsageSessionizer open-span behavior so a resumed app with no pause is closed at the collection window end.
+- [x] Extended Android UI snapshot automation with App Detail screenshot `14-app-detail.png`.
+- [x] Added `-DeviceSerial` support to Android UI snapshot script for deterministic emulator targeting.
+- [x] Generated latest emulator screenshot evidence at `artifacts/android-ui-snapshots/20260501-191127/`.
+- [x] Validation passed: Android Gradle unit/build/androidTest APK, Android UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%, focused architecture tests.
+- [ ] Next Android TODO: wire Settings sync opt-in/manual sync UI to real sync settings and status.
+- [ ] Next Android TODO: implement actual Dashboard/Sessions/Report period-filter behavior.

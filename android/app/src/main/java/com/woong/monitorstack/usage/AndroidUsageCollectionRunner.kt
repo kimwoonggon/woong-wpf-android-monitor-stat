@@ -14,7 +14,10 @@ class AndroidUsageCollectionRunner(
     private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer
 ) : UsageCollectionRunner {
     override suspend fun collect(fromUtcMillis: Long, toUtcMillis: Long): Int {
-        val sessions = sessionizer.sessionize(collector.collect(fromUtcMillis, toUtcMillis))
+        val sessions = sessionizer.sessionize(
+            events = collector.collect(fromUtcMillis, toUtcMillis),
+            collectionEndUtcMillis = toUtcMillis
+        )
         val entities = sessions.map { it.toFocusSessionEntity(timezoneId) }
         store.insertAll(entities)
         outboxEnqueuer.enqueueFocusSessions(entities)

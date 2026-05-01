@@ -392,6 +392,16 @@ Android UI screenshots from the repository root:
 powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1
 ```
 
+If more than one emulator/device is connected, pin the target explicitly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554
+```
+
+The screenshot script uses instrumentation to seed Room data and capture
+Dashboard, Sessions, App Detail, Report, Settings, and permission screens from
+inside the app. It does not use blind coordinate taps or screenshot other apps.
+
 Package-scoped resource measurement:
 
 ```powershell

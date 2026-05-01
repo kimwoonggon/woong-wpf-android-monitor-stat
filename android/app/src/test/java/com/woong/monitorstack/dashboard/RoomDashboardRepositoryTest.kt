@@ -104,6 +104,31 @@ class RoomDashboardRepositoryTest {
         assertEquals("09:30", snapshot.locationContext.capturedAtLocalText)
     }
 
+    @Test
+    fun loadRecent7DaysBuildsDailyActivityBuckets() {
+        val dao = database.focusSessionDao()
+        dao.insert(session("chrome-day-1", "com.android.chrome", "2026-04-27T09:00:00", 30, false))
+        dao.insert(session("slack-day-2", "com.slack", "2026-04-28T10:00:00", 15, false))
+        dao.insert(session("idle-day-2", "com.slack", "2026-04-28T11:00:00", 99, true))
+        dao.insert(session("too-old", "com.video", "2026-04-20T09:00:00", 60, false))
+        val repository = RoomDashboardRepository(
+            dao = dao,
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) }
+        )
+
+        val snapshot = repository.load(DashboardPeriod.Recent7Days)
+
+        assertEquals(
+            listOf("2026-04-27", "2026-04-28"),
+            snapshot.chartData.dailyActivity.map { it.localDate }
+        )
+        assertEquals(
+            listOf(30 * 60_000L, 15 * 60_000L),
+            snapshot.chartData.dailyActivity.map { it.durationMs }
+        )
+    }
+
     private fun session(
         id: String,
         packageName: String,

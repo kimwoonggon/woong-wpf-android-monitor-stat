@@ -2,6 +2,7 @@ param(
     [string]$OutputRoot = "",
     [string]$AdbPath = "",
     [string]$GradleWrapperPath = "",
+    [string]$DeviceSerial = "",
     [switch]$SkipBuild
 )
 
@@ -39,6 +40,7 @@ $featureScreens = @(
     "main shell settings",
     "main shell report",
     "permission onboarding",
+    "app detail",
     "daily summary"
 )
 $expectedLocationChecks = @(
@@ -134,6 +136,11 @@ $screenTargets = @(
         Name = "permission onboarding"
         FileName = "13-permission-onboarding.png"
         Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "app detail"
+        FileName = "14-app-detail.png"
+        Capture = "SnapshotCaptureTest"
     }
 )
 
@@ -143,7 +150,14 @@ function Invoke-AdbChecked {
         [string]$Description
     )
 
-    & $AdbPath @Arguments
+    $effectiveArguments = @()
+    if (-not [string]::IsNullOrWhiteSpace($DeviceSerial)) {
+        $effectiveArguments += "-s"
+        $effectiveArguments += $DeviceSerial
+    }
+    $effectiveArguments += $Arguments
+
+    & $AdbPath @effectiveArguments
     if ($LASTEXITCODE -ne 0) {
         throw "$Description failed with adb exit code $LASTEXITCODE."
     }
@@ -222,6 +236,7 @@ function Write-AndroidSnapshotArtifacts {
         generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
         output = $runRoot
         adbPath = $AdbPath
+        deviceSerial = $DeviceSerial
         gradleWrapperPath = $GradleWrapperPath
         expectedScreens = $expectedScreens
         featureScreens = $featureScreens
@@ -306,6 +321,9 @@ try {
     }
 
     $notes.Add("Detected device(s): $($deviceLines -join '; ')")
+    if (-not [string]::IsNullOrWhiteSpace($DeviceSerial)) {
+        $notes.Add("Pinned adb device serial: $DeviceSerial")
+    }
     $seedTestClass = "com.woong.monitorstack.snapshots.SnapshotSeedTest"
     $captureTestClass = "com.woong.monitorstack.snapshots.SnapshotCaptureTest"
     $testRunner = "com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner"

@@ -65,7 +65,8 @@ public sealed class AndroidUiSnapshotScriptTests
             "10-main-shell-sessions.png",
             "11-main-shell-settings.png",
             "12-main-shell-report.png",
-            "13-permission-onboarding.png"
+            "13-permission-onboarding.png",
+            "14-app-detail.png"
         ];
 
         foreach (string screen in expectedFeatureScreens)
@@ -78,6 +79,7 @@ public sealed class AndroidUiSnapshotScriptTests
         Assert.Contains("settings location permission", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("main shell", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("permission onboarding", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("app detail", script, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -242,7 +244,8 @@ exit /b 0
                 "10-main-shell-sessions.png",
                 "11-main-shell-settings.png",
                 "12-main-shell-report.png",
-                "13-permission-onboarding.png"
+                "13-permission-onboarding.png",
+                "14-app-detail.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -264,6 +267,7 @@ exit /b 0
             Assert.Contains("11-main-shell-settings.png", manifestText);
             Assert.Contains("12-main-shell-report.png", manifestText);
             Assert.Contains("13-permission-onboarding.png", manifestText);
+            Assert.Contains("14-app-detail.png", manifestText);
 
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
@@ -279,8 +283,70 @@ exit /b 0
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/11-main-shell-settings.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/12-main-shell-report.png", commands);
             Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/13-permission-onboarding.png", commands);
+            Assert.Contains("/sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/14-app-detail.png", commands);
             Assert.DoesNotContain("am start", commands, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("screencap", commands, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void AndroidUiSnapshotScript_DeviceSerialPinsInstallInstrumentationAndPullCommands()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-snapshots-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeAdb, $$"""
+@echo off
+echo %*>>"{{adbLog}}"
+if "%1"=="devices" (
+  echo List of devices attached
+  echo emulator-5554 device product:test model:FakeDevice
+  echo emulator-5556 device product:test model:OtherFakeDevice
+  exit /b 0
+)
+if "%1"=="-s" if "%3"=="pull" (
+  echo fake png>"%5"
+  exit /b 0
+)
+exit /b 0
+""");
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -OutputRoot \"{tempRoot}\" -AdbPath \"{fakeAdb}\" -GradleWrapperPath \"{fakeGradle}\" -SkipBuild -DeviceSerial emulator-5554")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            process.WaitForExit(30_000);
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.Equal(0, process.ExitCode);
+
+            string commands = File.ReadAllText(adbLog);
+            Assert.Contains("-s emulator-5554 shell am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
+            Assert.Contains("-s emulator-5554 shell am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotCaptureTest", commands);
+            Assert.Contains("-s emulator-5554 pull /sdcard/Android/data/com.woong.monitorstack/files/ui-snapshots/14-app-detail.png", commands);
+            Assert.DoesNotContain("-s emulator-5556", commands);
+            Assert.DoesNotContain("No connected Android device", stdout + stderr);
         }
         finally
         {

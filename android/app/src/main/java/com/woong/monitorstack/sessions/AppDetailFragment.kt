@@ -7,14 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.woong.monitorstack.R
+import com.woong.monitorstack.dashboard.DashboardChartConfigurator
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentAppDetailBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 
 class AppDetailFragment : Fragment() {
     private lateinit var binding: FragmentAppDetailBinding
+    private val chartConfigurator = DashboardChartConfigurator()
     private val adapter = DetailSessionsAdapter()
 
     override fun onCreateView(
@@ -68,14 +72,27 @@ class AppDetailFragment : Fragment() {
         binding.appSessionCountCard.summarySubtitleText.text = getString(R.string.selected_app_sessions)
 
         adapter.submitRows(detail.sessions)
+        renderHourlyChart(detail)
     }
 
     private fun configureChart() {
-        binding.appHourlyChart.description.isEnabled = false
-        binding.appHourlyChart.setNoDataText(getString(R.string.no_sessions_yet))
-        binding.appHourlyChart.axisRight.isEnabled = false
-        binding.appHourlyChart.axisLeft.axisMinimum = 0f
-        binding.appHourlyChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chartConfigurator.configureHourlyBarChart(binding.appHourlyChart)
+        binding.appHourlyChart.invalidate()
+    }
+
+    private fun renderHourlyChart(detail: AppDetailState) {
+        val entries = detail.hourlyUsage.map { bucket ->
+            BarEntry(bucket.hourOfDay.toFloat(), bucket.durationMs / 60_000f)
+        }
+
+        if (entries.isEmpty()) {
+            binding.appHourlyChart.clear()
+        } else {
+            binding.appHourlyChart.data = BarData(
+                BarDataSet(entries, getString(R.string.hourly_usage_today))
+            )
+        }
+
         binding.appHourlyChart.invalidate()
     }
 

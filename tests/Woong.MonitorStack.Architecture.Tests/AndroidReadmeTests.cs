@@ -24,6 +24,8 @@ public sealed class AndroidReadmeTests
         Assert.Contains("& \"$env:ANDROID_HOME\\platform-tools\\adb.exe\" pull /sdcard/woong-dashboard.png artifacts\\android-check\\manual\\dashboard.png", readme, StringComparison.Ordinal);
         Assert.Contains("Raw `exec-out screencap -p >", readme, StringComparison.Ordinal);
         Assert.Contains("scripts\\run-android-ui-snapshots.ps1", readme, StringComparison.Ordinal);
+        Assert.Contains("scripts\\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554", readme, StringComparison.Ordinal);
+        Assert.Contains("Dashboard, Sessions, App Detail, Report, Settings", readme, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

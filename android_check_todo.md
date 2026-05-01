@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260430-222943/
+artifacts/android-ui-snapshots/20260501-191127/
 ```
 
 Latest location opt-in emulator evidence:
@@ -275,3 +275,19 @@ workspace.
 - [x] Dashboard now skips Monitor self rows and Nexus Launcher noise when selecting the Current Focus display candidate.
 - [x] Validation passed: focused Current Focus tests and full Android Gradle unit/build.
 - [x] Emulator screenshot captured: `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`.
+
+## 2026-05-01 Android Room-Backed Charts, Outbox Idempotency, And Screenshot Reliability
+
+- [x] App Detail now renders Room-backed hourly usage chart data for the selected package.
+- [x] Report now renders Room-backed recent-7-days daily trend chart data.
+- [x] Chart formatter tests cover hour labels, day labels, and minute axes so charts avoid meaningless defaults.
+- [x] Sync outbox duplicate enqueue now uses Room `IGNORE`, so a previously synced focus-session outbox item is not reset to pending.
+- [x] Usage sessionization now closes a still-foreground open span at the collection window end, which keeps the current app visible even when Android does not emit a pause event before collection.
+- [x] Android UI screenshot automation now captures `14-app-detail.png`.
+- [x] Android UI screenshot automation accepts `-DeviceSerial`, allowing deterministic emulator targeting such as `emulator-5554`.
+- [x] Latest screenshot evidence: `artifacts/android-ui-snapshots/20260501-191127/`.
+- [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- [ ] Remaining Android gap: wire Settings sync controls to real opt-in state and a local-only/manual sync result.
+- [ ] Remaining Android gap: add period-filter behavior for Dashboard/Sessions/Report buttons beyond the current default views.

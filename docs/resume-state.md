@@ -4854,3 +4854,28 @@ Remaining Android UI gaps:
 - This remains privacy-safe Android UsageStats metadata: package/app usage intervals only, not browser page content, typed text, touch coordinates, screenshots, or passwords.
 - Emulator evidence captured at `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`, showing Monitor open while Current Focus displays `Chrome / com.android.chrome`.
 - Validation: Android Gradle `testDebugUnitTest assembleDebug --no-daemon --stacktrace`, full solution `dotnet test`, and full solution `dotnet build` passed.
+
+## 2026-05-01 Android Room-Backed Charts, Open-Span Sessionization, And Snapshot Reliability
+
+- Added Room-backed App Detail hourly chart data for the selected package and Report recent-7-days trend chart data.
+- Added chart formatter tests for hour labels, day labels, and minute axes.
+- Changed sync outbox duplicate inserts to Room `IGNORE` so recollection does not reset a synced item back to pending.
+- Added UsageSessionizer support for closing a still-foreground app span at the collection window end; Android collection now passes the query end time through to sessionization.
+- Extended Android UI snapshot automation to capture App Detail as `14-app-detail.png`.
+- Added `-DeviceSerial` to `scripts/run-android-ui-snapshots.ps1` so multi-emulator setups can target `emulator-5554` explicitly.
+- Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260501-191127/`.
+
+Validation completed:
+
+- Focused UsageSessionizer tests passed.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot script passed on `emulator-5554` with `-DeviceSerial`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Wire Settings sync controls to actual opt-in state and local-only/manual sync behavior.
+- Implement real period-filter behavior for Dashboard/Sessions/Report buttons.
+- Polish chart colors/labels against the supplied Android flow image after functional gaps are closed.

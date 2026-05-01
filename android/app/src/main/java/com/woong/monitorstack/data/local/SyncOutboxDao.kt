@@ -7,7 +7,7 @@ import androidx.room.Query
 
 @Dao
 interface SyncOutboxDao : SyncOutboxStore, SyncOutboxWriter {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     override fun insert(item: SyncOutboxEntity)
 
     @Query(
