@@ -5,6 +5,7 @@ param(
     [string]$EmulatorPath = "",
     [string]$AdbPath = "",
     [int]$MemoryMb = 4096,
+    [string]$GpuMode = "auto",
     [int]$TimeoutSeconds = 180,
     [switch]$Restart,
     [switch]$DryRun
@@ -83,13 +84,17 @@ if (-not (Test-Path -LiteralPath $AdbPath)) {
 
 $script:ResolvedAdbPath = $AdbPath
 
-$emulatorArgs = @(
-    "-avd", $AvdName,
-    "-gpu", "swiftshader_indirect",
-    "-memory", $MemoryMb.ToString(),
-    "-no-snapshot-load",
-    "-no-boot-anim"
-)
+$emulatorArgs = @("-avd", $AvdName)
+
+if (-not [string]::IsNullOrWhiteSpace($GpuMode)) {
+    $emulatorArgs += @("-gpu", $GpuMode)
+}
+
+if ($MemoryMb -gt 0) {
+    $emulatorArgs += @("-memory", $MemoryMb.ToString())
+}
+
+$emulatorArgs += @("-no-snapshot-load", "-no-boot-anim")
 
 Write-Host "Stable Android emulator launcher"
 Write-Host "AVD: $AvdName"
@@ -97,7 +102,7 @@ Write-Host "Serial: $DeviceSerial"
 Write-Host "Emulator: $EmulatorPath"
 Write-Host "ADB: $AdbPath"
 Write-Host "Args: $($emulatorArgs -join ' ')"
-Write-Host "Reason: uses software GPU rendering and extra RAM to avoid Chrome/Chromium host GPU instability such as bad color buffer handle or UpdateLayeredWindowIndirect failures."
+Write-Host "Reason: avoids snapshot restore and allows controlled GPU/RAM settings for Chrome/app-switch QA."
 
 if ($DryRun) {
     Write-Host "DRY RUN: no emulator was started."

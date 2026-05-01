@@ -52,18 +52,21 @@ powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.p
 The script starts the emulator with:
 
 ```text
--gpu swiftshader_indirect -memory 4096 -no-snapshot-load -no-boot-anim
+-gpu auto -memory 4096 -no-snapshot-load -no-boot-anim
 ```
 
-This avoids the Windows host GPU path and gives the emulator more memory for
-Chrome plus Woong Monitor.
+This avoids stale snapshot state and gives the emulator more memory for Chrome
+plus Woong Monitor. In this workspace, `swiftshader_indirect` was tested against
+the current `Medium_Phone` Play Store Android 37 image and the emulator process
+stayed alive without exposing an ADB device. Keep `-GpuMode auto` for this AVD
+unless a replacement image proves software GPU boot is reliable.
 
 ## If It Still Fails
 
 If Chrome still makes the emulator unstable:
 
 1. Create a non-Play-Store Google APIs AVD with at least 4 GB RAM.
-2. Keep the same `swiftshader_indirect` launch mode.
+2. Test `-GpuMode swiftshader_indirect` on that new AVD.
 3. Capture `logcat`, `dumpsys meminfo`, and `dumpsys gfxinfo` again before
    changing app code.
 

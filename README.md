@@ -364,11 +364,19 @@ For Chrome/app-switch QA, use the stable launcher instead:
 powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart
 ```
 
-This launches the AVD with software GPU rendering, 4 GB RAM, no boot animation,
-and no snapshot restore. Use it when the emulator prints Chromium renderer
-messages such as `bad color buffer handle` or
-`UpdateLayeredWindowIndirect failed`, or when Chrome causes Woong Monitor to
-relaunch from splash because the emulator is under memory pressure.
+This launches the AVD with 4 GB RAM, no boot animation, and no snapshot
+restore. The default GPU mode is `auto` because the current
+`Medium_Phone` Play Store Android 37 image boots reliably that way. If a
+different AVD supports software rendering, you can try:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart -GpuMode swiftshader_indirect
+```
+
+Use this stable launcher when the emulator prints Chromium renderer messages
+such as `bad color buffer handle` or `UpdateLayeredWindowIndirect failed`, or
+when Chrome causes Woong Monitor to relaunch from splash because the emulator is
+under memory pressure.
 
 In a second terminal, wait for the device and confirm Android has finished
 booting:
