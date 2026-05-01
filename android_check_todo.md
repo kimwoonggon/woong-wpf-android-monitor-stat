@@ -306,3 +306,19 @@ workspace.
 - [ ] Remaining Android gap: Dashboard period buttons still need full period reload behavior.
 - [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
 - [ ] Remaining Android gap: manual sync-on should eventually enqueue a configured server sync once endpoint/device configuration UI exists.
+
+## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
+
+- [x] Dashboard Today/1h/6h/24h/7d buttons now reload Room-backed data.
+- [x] Dashboard rolling windows are based on UTC `startedAtUtcMillis`/`endedAtUtcMillis`, not only `localDate`.
+- [x] Dashboard top-app list now displays the top 3 app usage slices for the selected period.
+- [x] Dashboard hourly focus chart now receives Room-backed bar entries for the selected period.
+- [x] Added RED/GREEN tests for Dashboard last-hour repository behavior and MainActivity period-button behavior.
+- [x] Latest screenshot evidence after installing the new APK: `artifacts/android-ui-snapshots/20260501-195308/`.
+- [x] Validation passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Android UI snapshot automation passed on `emulator-5554`.
+- [x] Full solution validation passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- [ ] Remaining Android gap: Report 30d/90d/custom filters still need real range behavior.
+- [ ] Remaining Android gap: UsageStats collection needs anchored lookback/clamping for apps resumed before the collection start.
+- [ ] Remaining Android visual gap: Dashboard chart styling is functional but still needs polish against the supplied reference.

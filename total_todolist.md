@@ -2213,3 +2213,15 @@ milestones below are finished.
 - [ ] Next Android TODO: implement Report 30d/90d/custom range reloads.
 - [ ] Next Android TODO: add server endpoint/device configuration before enabling real manual sync upload.- [x] Full solution validation for Android Settings Sync Opt-In and Sessions Period Filters passed: `dotnet test` 491 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors.
 - [x] Coverage refreshed for Android Settings Sync Opt-In and Sessions Period Filters: line 88.0%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+
+## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
+
+- [x] Dashboard Today/1h/6h/24h/7d controls reload persisted Room sessions for the selected range.
+- [x] Dashboard rolling windows use UTC persisted timestamps and a testable clock, not fake in-memory rows.
+- [x] Dashboard top-app list displays the top 3 app usage slices for the selected period.
+- [x] Dashboard hourly focus chart renders Room-backed bar data for the selected period.
+- [x] RED/GREEN tests added for Dashboard last-hour repository behavior and MainActivity period-button behavior.
+- [x] Latest Android screenshot evidence: `artifacts/android-ui-snapshots/20260501-195308/`.
+- [x] Validation passed: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [ ] Next Android TODO: implement Report 30d/90d/custom filters with real Room ranges.
+- [ ] Next Android TODO: add UsageStats anchored-lookback collection so an app resumed before collection start is clipped into the requested window.

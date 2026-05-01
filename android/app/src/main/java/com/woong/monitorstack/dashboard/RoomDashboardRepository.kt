@@ -20,37 +20,84 @@ class RoomDashboardRepository(
     private val locationDao: LocationContextSnapshotDao? = null,
     private val deviceId: String = DefaultDeviceId,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
-    private val todayProvider: () -> LocalDate = { LocalDate.now(timezoneId) }
+    private val todayProvider: () -> LocalDate = { LocalDate.now(timezoneId) },
+    private val nowProvider: () -> Instant = { Instant.now() }
 ) : DashboardRepository {
     override fun load(period: DashboardPeriod): DashboardSnapshot {
         val today = todayProvider()
-        val dateRange = period.toLocalDateRange(today)
+        val range = period.toUtcRange(today, nowProvider(), timezoneId)
+        val dateRange = range.toLocalDateRange(timezoneId)
         val sessions = dao.queryByLocalDateRange(
             dateRange.first.toString(),
             dateRange.second.toString()
         )
-        val activeSessions = sessions.filterNot { it.isIdle }
+            .filter { it.overlaps(range) }
+            .map { FilteredDashboardSession(it, it.durationWithin(range)) }
+        val activeSessions = sessions.filterNot { it.entity.isIdle }
 
         return DashboardSnapshot(
             totalActiveMs = activeSessions.sumOf { it.durationMs },
             topAppName = activeSessions.topAppName(),
-            idleMs = sessions.filter { it.isIdle }.sumOf { it.durationMs },
+            idleMs = sessions.filter { it.entity.isIdle }.sumOf { it.durationMs },
             recentSessions = sessions.toRecentRows(),
             chartData = activeSessions.toChartData(),
             locationContext = loadLocationContext(dateRange)
         )
     }
 
-    private fun DashboardPeriod.toLocalDateRange(today: LocalDate): Pair<LocalDate, LocalDate> {
+    private fun DashboardPeriod.toUtcRange(
+        today: LocalDate,
+        now: Instant,
+        zoneId: ZoneId
+    ): DashboardUtcRange {
+        fun startOfDay(date: LocalDate): Instant = date.atStartOfDay(zoneId).toInstant()
+
         return when (this) {
-            DashboardPeriod.Today -> today to today
-            DashboardPeriod.Yesterday -> today.minusDays(1) to today.minusDays(1)
-            DashboardPeriod.Recent7Days -> today.minusDays(6) to today
+            DashboardPeriod.Today -> DashboardUtcRange(
+                from = startOfDay(today),
+                to = startOfDay(today.plusDays(1))
+            )
+            DashboardPeriod.Yesterday -> DashboardUtcRange(
+                from = startOfDay(today.minusDays(1)),
+                to = startOfDay(today)
+            )
+            DashboardPeriod.LastHour -> DashboardUtcRange(
+                from = now.minusSeconds(60 * 60),
+                to = now
+            )
+            DashboardPeriod.LastSixHours -> DashboardUtcRange(
+                from = now.minusSeconds(6 * 60 * 60),
+                to = now
+            )
+            DashboardPeriod.LastTwentyFourHours -> DashboardUtcRange(
+                from = now.minusSeconds(24 * 60 * 60),
+                to = now
+            )
+            DashboardPeriod.Recent7Days -> DashboardUtcRange(
+                from = startOfDay(today.minusDays(6)),
+                to = startOfDay(today.plusDays(1))
+            )
         }
     }
 
-    private fun List<FocusSessionEntity>.topAppName(): String? {
-        return groupBy { AppDisplayNameFormatter.format(it.packageName) }
+    private fun DashboardUtcRange.toLocalDateRange(zoneId: ZoneId): Pair<LocalDate, LocalDate> {
+        return from.atZone(zoneId).toLocalDate() to
+            to.minusMillis(1).atZone(zoneId).toLocalDate()
+    }
+
+    private fun FocusSessionEntity.overlaps(range: DashboardUtcRange): Boolean {
+        return endedAtUtcMillis > range.from.toEpochMilli() &&
+            startedAtUtcMillis < range.to.toEpochMilli()
+    }
+
+    private fun FocusSessionEntity.durationWithin(range: DashboardUtcRange): Long {
+        val from = maxOf(startedAtUtcMillis, range.from.toEpochMilli())
+        val to = minOf(endedAtUtcMillis, range.to.toEpochMilli())
+        return (to - from).coerceAtLeast(0L)
+    }
+
+    private fun List<FilteredDashboardSession>.topAppName(): String? {
+        return groupBy { AppDisplayNameFormatter.format(it.entity.packageName) }
             .mapValues { entry -> entry.value.sumOf { it.durationMs } }
             .entries
             .sortedWith(
@@ -61,25 +108,26 @@ class RoomDashboardRepository(
             ?.key
     }
 
-    private fun List<FocusSessionEntity>.toRecentRows(): List<DashboardSessionRow> {
-        return sortedByDescending { it.startedAtUtcMillis }
+    private fun List<FilteredDashboardSession>.toRecentRows(): List<DashboardSessionRow> {
+        return sortedByDescending { it.entity.startedAtUtcMillis }
             .take(10)
-            .map { session ->
+            .map { filteredSession ->
+                val session = filteredSession.entity
                 DashboardSessionRow(
                     appName = AppDisplayNameFormatter.format(session.packageName),
                     packageName = session.packageName,
                     startedAtLocalText = Instant.ofEpochMilli(session.startedAtUtcMillis)
                         .atZone(timezoneId)
                         .format(TimeFormatter),
-                    durationText = formatDuration(session.durationMs)
+                    durationText = formatDuration(filteredSession.durationMs)
                 )
             }
     }
 
-    private fun List<FocusSessionEntity>.toChartData(): DashboardChartData {
+    private fun List<FilteredDashboardSession>.toChartData(): DashboardChartData {
         return DashboardChartData(
             hourlyActivity = groupBy { session ->
-                Instant.ofEpochMilli(session.startedAtUtcMillis)
+                Instant.ofEpochMilli(session.entity.startedAtUtcMillis)
                     .atZone(timezoneId)
                     .hour
             }
@@ -90,7 +138,7 @@ class RoomDashboardRepository(
                     )
                 }
                 .sortedBy { it.hourOfDay },
-            appUsage = groupBy { AppDisplayNameFormatter.format(it.packageName) }
+            appUsage = groupBy { AppDisplayNameFormatter.format(it.entity.packageName) }
                 .map { entry ->
                     DashboardUsageSlice(
                         label = entry.key,
@@ -101,7 +149,7 @@ class RoomDashboardRepository(
                     compareByDescending<DashboardUsageSlice> { it.durationMs }
                         .thenBy { it.label }
                 ),
-            dailyActivity = groupBy { it.localDate }
+            dailyActivity = groupBy { it.entity.localDate }
                 .map { entry ->
                     DashboardDailyActivityBucket(
                         localDate = entry.key,
@@ -171,3 +219,13 @@ class RoomDashboardRepository(
         private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }
+
+private data class DashboardUtcRange(
+    val from: Instant,
+    val to: Instant
+)
+
+private data class FilteredDashboardSession(
+    val entity: FocusSessionEntity,
+    val durationMs: Long
+)

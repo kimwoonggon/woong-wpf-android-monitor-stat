@@ -69,6 +69,32 @@ class RoomDashboardRepositoryTest {
     }
 
     @Test
+    fun loadLastHourUsesUtcWindowAndExcludesOlderSameDayRows() {
+        val dao = database.focusSessionDao()
+        dao.insert(session("chrome-inside", "com.android.chrome", "2026-04-28T11:20:00", 20, false))
+        dao.insert(session("slack-older", "com.slack", "2026-04-28T10:00:00", 30, false))
+        val now = LocalDateTime.parse("2026-04-28T12:00:00")
+            .atZone(timezoneId)
+            .toInstant()
+        val repository = RoomDashboardRepository(
+            dao = dao,
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) },
+            nowProvider = { now }
+        )
+
+        val snapshot = repository.load(DashboardPeriod.LastHour)
+
+        assertEquals(20 * 60_000L, snapshot.totalActiveMs)
+        assertEquals("Chrome", snapshot.topAppName)
+        assertEquals(listOf("Chrome"), snapshot.recentSessions.map { it.appName })
+        assertEquals(
+            listOf(11),
+            snapshot.chartData.hourlyActivity.map { it.hourOfDay }
+        )
+    }
+
+    @Test
     fun loadTodayShowsLatestOptInLocationContextFromRoom() {
         val locationDao = database.locationContextSnapshotDao()
         locationDao.insert(

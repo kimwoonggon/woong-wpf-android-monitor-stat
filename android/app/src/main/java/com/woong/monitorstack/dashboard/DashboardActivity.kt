@@ -73,6 +73,9 @@ class DashboardActivity : AppCompatActivity() {
         return when (this) {
             DashboardPeriod.Today -> com.woong.monitorstack.R.string.filter_today
             DashboardPeriod.Yesterday -> com.woong.monitorstack.R.string.filter_yesterday
+            DashboardPeriod.LastHour -> com.woong.monitorstack.R.string.filter_1h
+            DashboardPeriod.LastSixHours -> com.woong.monitorstack.R.string.filter_6h
+            DashboardPeriod.LastTwentyFourHours -> com.woong.monitorstack.R.string.filter_24h
             DashboardPeriod.Recent7Days -> com.woong.monitorstack.R.string.filter_recent_7_days
         }
     }

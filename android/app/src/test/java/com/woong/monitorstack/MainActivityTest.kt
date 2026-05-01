@@ -289,6 +289,57 @@ class MainActivityTest {
     }
 
     @Test
+    fun dashboardRollingPeriodButtonsReloadRoomBackedSummary() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        val database = MonitorDatabase.getInstance(context)
+        val timezoneId = ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        Thread {
+            database.focusSessionDao().insert(
+                focusSession(
+                    clientSessionId = "dashboard-recent-chrome",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = now - 30 * 60_000L,
+                    endedAtUtcMillis = now - 10 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                focusSession(
+                    clientSessionId = "dashboard-older-slack",
+                    packageName = "com.slack",
+                    startedAtUtcMillis = now - 3 * 60 * 60_000L,
+                    endedAtUtcMillis = now - 2 * 60 * 60_000L,
+                    timezoneId = timezoneId
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        activity.findViewById<Button>(R.id.oneHourFilterButton).performClick()
+        waitForMainThreadWork()
+
+        assertEquals("20m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
+        assertEquals("Chrome", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+
+        activity.findViewById<Button>(R.id.sixHourFilterButton).performClick()
+        waitForMainThreadWork()
+
+        assertEquals("1h 20m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
+        assertTrue(
+            activity.findViewById<RecyclerView>(R.id.topAppsRecyclerView).adapter?.itemCount ?: 0 > 0
+        )
+        assertNotNull(activity.findViewById<BarChart>(R.id.hourlyFocusChart).data)
+    }
+
+    @Test
     fun permissionOnboardingOpenSettingsButtonLaunchesUsageAccessSettings() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
@@ -390,17 +441,20 @@ class MainActivityTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         clearMonitorDatabase(context)
         val database = MonitorDatabase.getInstance(context)
-        val today = LocalDate.now().toString()
+        val timezoneId = ZoneId.systemDefault()
+        val endedAtUtcMillis = System.currentTimeMillis()
+        val startedAtUtcMillis = endedAtUtcMillis - 18_000_000L
+        val today = LocalDate.now(timezoneId).toString()
         Thread {
             database.focusSessionDao().insert(
                 FocusSessionEntity(
                     clientSessionId = "report-fragment-chrome",
                     packageName = "com.android.chrome",
-                    startedAtUtcMillis = 1_800_000_000_000L,
-                    endedAtUtcMillis = 1_800_018_000_000L,
+                    startedAtUtcMillis = startedAtUtcMillis,
+                    endedAtUtcMillis = endedAtUtcMillis,
                     durationMs = 18_000_000L,
                     localDate = today,
-                    timezoneId = "Asia/Seoul",
+                    timezoneId = timezoneId.id,
                     isIdle = false,
                     source = "test"
                 )
@@ -500,6 +554,29 @@ class MainActivityTest {
         }.also { it.start(); it.join() }
     }
 
+    private fun focusSession(
+        clientSessionId: String,
+        packageName: String,
+        startedAtUtcMillis: Long,
+        endedAtUtcMillis: Long,
+        timezoneId: ZoneId
+    ): FocusSessionEntity {
+        return FocusSessionEntity(
+            clientSessionId = clientSessionId,
+            packageName = packageName,
+            startedAtUtcMillis = startedAtUtcMillis,
+            endedAtUtcMillis = endedAtUtcMillis,
+            durationMs = endedAtUtcMillis - startedAtUtcMillis,
+            localDate = java.time.Instant.ofEpochMilli(startedAtUtcMillis)
+                .atZone(timezoneId)
+                .toLocalDate()
+                .toString(),
+            timezoneId = timezoneId.id,
+            isIdle = false,
+            source = "test"
+        )
+    }
+
     private val packageNameForTest = "com.woong.monitorstack"
 
     private class FakeUsageAccessGate(
@@ -561,7 +638,7 @@ class MainActivityTest {
             val now = System.currentTimeMillis()
             val dao = MonitorDatabase.getInstance(context).focusSessionDao()
             dao.insert(
-                focusSession(
+                mixedFocusSession(
                     clientSessionId = "fake-immediate-chrome",
                     packageName = "com.android.chrome",
                     startedAtUtcMillis = now - 900_000L,
@@ -570,7 +647,7 @@ class MainActivityTest {
                 )
             )
             dao.insert(
-                focusSession(
+                mixedFocusSession(
                     clientSessionId = "fake-immediate-launcher",
                     packageName = "com.google.android.apps.nexuslauncher",
                     startedAtUtcMillis = now - 360_000L,
@@ -579,7 +656,7 @@ class MainActivityTest {
                 )
             )
             dao.insert(
-                focusSession(
+                mixedFocusSession(
                     clientSessionId = "fake-immediate-monitor-latest",
                     packageName = "com.woong.monitorstack",
                     startedAtUtcMillis = now - 120_000L,
@@ -590,7 +667,7 @@ class MainActivityTest {
             return 3
         }
 
-        private fun focusSession(
+        private fun mixedFocusSession(
             clientSessionId: String,
             packageName: String,
             startedAtUtcMillis: Long,

@@ -4903,3 +4903,29 @@ Remaining Android priorities:
 - Dashboard period buttons still need true range reload behavior.
 - Report 30d/90d/custom period buttons still need true range reload behavior.
 - Sync-on manual run should enqueue a server sync only after endpoint/device configuration is available.
+
+## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
+
+- Dashboard period buttons now reload Room-backed data for Today, 1h, 6h, 24h, and 7d.
+- `RoomDashboardRepository` now supports rolling UTC windows with a testable clock and filters sessions by persisted UTC instants instead of trusting `localDate` alone.
+- Dashboard App usage now shows the top 3 app slices in `topAppsRecyclerView`.
+- Dashboard hourly focus chart now renders Room-backed bar data for the selected period.
+- Fixed an old Report test fixture that mixed today's `localDate` with unrelated UTC timestamps; Report tests now use matching UTC/local data.
+- Latest emulator screenshot evidence: `artifacts/android-ui-snapshots/20260501-195308/`.
+
+Validation completed:
+
+- RED repository test failed before `LastHour`/`nowProvider` existed.
+- RED Dashboard UI test failed while `topAppsRecyclerView` and `hourlyFocusChart` were not populated.
+- Focused Dashboard repository and MainActivity period/filter tests passed after implementation.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot script passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973). Report: `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Report 30d/90d/custom filters still need real range behavior.
+- UsageStats collection should support an anchored lookback so an app resumed before the collection window can still be clipped into the requested window.
+- Dashboard chart visual polish remains needed; current chart is functional and Room-backed but not yet fully aligned with the supplied Android reference.
