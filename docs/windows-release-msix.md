@@ -139,6 +139,17 @@ certificate has not been trusted in the machine `TrustedPeople` store yet, or
 you used a `.cer` from a different artifact. Re-run the install command above
 from an elevated PowerShell prompt with the `.cer` included beside the `.msix`.
 
+Remove local test certificate trust after verification:
+
+```powershell
+$thumbprint = (Get-AuthenticodeSignature .\WoongMonitorStack.Windows.msix).SignerCertificate.Thumbprint
+certutil -delstore TrustedPeople $thumbprint
+```
+
+Run the removal command from an elevated PowerShell prompt if you trusted the
+certificate with `-TrustScope LocalMachine`. If you deliberately used
+`-TrustScope CurrentUser`, add `-user` to the `certutil` command.
+
 ## Local MSIX Package
 
 The packaging script builds a layout under ignored `artifacts\windows-msix` and

@@ -289,6 +289,16 @@ used. Use the `.cer` shipped beside the `.msix`; the fallback ephemeral test
 certificate changes on every CI run. Double-clicking the `.msix` before that
 trust step is expected to fail for self-signed CI artifacts.
 
+Remove local test certificate trust after verification:
+
+```powershell
+$thumbprint = (Get-AuthenticodeSignature .\WoongMonitorStack.Windows.msix).SignerCertificate.Thumbprint
+certutil -delstore TrustedPeople $thumbprint
+```
+
+Run that cleanup from an elevated PowerShell prompt if you trusted the
+certificate with `-TrustScope LocalMachine`.
+
 More details: `docs/windows-release-msix.md`.
 
 Tag-based Windows releases use `.github/workflows/windows-wpf-release.yml`.

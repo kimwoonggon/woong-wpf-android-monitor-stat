@@ -178,6 +178,25 @@ public sealed class WindowsReleasePackagingTests
     }
 
     [Fact]
+    public void WindowsMsixDocumentationAndArtifactReadme_ExplainHowToRemoveLocalTestCertificateTrust()
+    {
+        string packageScriptPath = Path.Combine(RepositoryRoot, "scripts", "package-windows-msix.ps1");
+        string docPath = Path.Combine(RepositoryRoot, "docs", "windows-release-msix.md");
+        string readmePath = Path.Combine(RepositoryRoot, "README.md");
+
+        string packageScript = File.ReadAllText(packageScriptPath);
+        string doc = File.ReadAllText(docPath);
+        string readme = File.ReadAllText(readmePath);
+
+        Assert.Contains("Remove local test certificate trust", packageScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("certutil -delstore TrustedPeople", packageScript, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Remove local test certificate trust", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("certutil -delstore TrustedPeople", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Remove local test certificate trust", readme, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("certutil -delstore TrustedPeople", readme, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void WindowsReleaseWorkflow_IsTagBasedAndRequiresStableSigningSecrets()
     {
         string workflowPath = Path.Combine(RepositoryRoot, ".github", "workflows", "windows-wpf-release.yml");

@@ -206,6 +206,15 @@ The ephemeral test certificate changes on every CI run, so a certificate from a 
 
 Double-clicking `WoongMonitorStack.Windows.msix` before certificate trust is expected to fail with `0x800B010A`.
 For a double-click MSIX install without a trust step, sign the release with Azure Artifact Signing, Microsoft Store signing, or a public trusted code-signing certificate.
+
+Remove local test certificate trust:
+
+~~~powershell
+`$thumbprint = (Get-AuthenticodeSignature .\WoongMonitorStack.Windows.msix).SignerCertificate.Thumbprint
+certutil -delstore TrustedPeople `$thumbprint
+~~~
+
+Run the removal command from an elevated PowerShell prompt if you trusted the certificate with `-TrustScope LocalMachine`.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
