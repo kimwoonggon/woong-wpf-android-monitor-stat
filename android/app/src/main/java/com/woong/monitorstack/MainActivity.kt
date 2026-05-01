@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     private fun showDashboardOrPermissionOnboarding(scheduleResult: UsageCollectionScheduleResult) {
         if (usageAccessGate.hasUsageAccess(packageName)) {
             setShellChromeVisible(true)
-            showScreen(DashboardFragment.newInstance(currentForegroundPackageName = packageName))
+            showScreen(DashboardFragment())
             collectRecentUsageThenRefreshDashboard(scheduleResult)
         } else {
             setShellChromeVisible(false)

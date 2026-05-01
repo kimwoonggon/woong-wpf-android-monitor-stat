@@ -2141,7 +2141,7 @@ milestones below are finished.
 - [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
 - [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
 - [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.
-- [x] Current Focus now displays the latest persisted session, not the longest top app, so returning from Chrome shows Chrome as the current/latest app.
+- [x] Current Focus now displays the latest meaningful tracked external session from Room, not the Monitor app process itself, so returning from Chrome shows Chrome as the current/latest tracked app.
 - [x] Emulator evidence captured:
   - `artifacts/android-check/manual/android-insets-start2.png`
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
@@ -2153,9 +2153,9 @@ milestones below are finished.
 - [x] Added a real app Splash route before Dashboard/Permission routing and kept shell chrome hidden during Splash and permission onboarding.
 - [x] Reworked Android 12+ launch splash branding so the OS splash no longer shows the default Android icon; it now uses the Woong bar logo on a white surface.
 - [x] Reworked `fragment_splash.xml` toward the supplied app-loading reference: centered blue logo tile, `Woong Monitor`, `Android Focus Tracker`, and Korean loading text.
-- [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `설정 열기` primary action.
-- [x] Fixed Dashboard Current Focus so the foreground app while the app is open is `Woong Monitor / com.woong.monitorstack`, not stale persisted packages such as Nexus Launcher or Chrome.
-- [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, but the current app panel reports the currently visible app.
+- [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `?�정 ?�기` primary action.
+- [x] Fixed Dashboard Current Focus so the app panel prefers the latest meaningful tracked external Room session such as `Chrome / com.android.chrome`, not the Monitor app process itself or low-value launcher rows.
+- [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, and the current app panel reports the latest tracked external app available through UsageStats ingestion.
 - [x] Added/updated tests for cold-start Splash routing, permission routing, foreground Current Focus precedence, Android wireframe contracts, and Android 12 launch splash branding.
 - [x] Emulator evidence captured under `artifacts/android-check/latest/`:
   - `00-os-splash-branded.png`
@@ -2180,3 +2180,11 @@ milestones below are finished.
 - [ ] Next Android UI TODO: populate App Detail hourly chart and Report trend chart with real Room-backed datasets.
 - [ ] Next Android UI TODO: tune bottom navigation/system-inset visual height on emulator screenshots.
 - [ ] Android parity note: Android cannot mirror WPF browser domain/window-title tracking through UsageStatsManager; keep Android app/package usage only unless a future explicit safe API scope is approved.
+
+## 2026-05-01 Android Current Focus External App Follow-Up
+
+- [x] Added RED/GREEN Robolectric coverage for returning to Dashboard after Chrome, launcher, and Monitor usage rows exist; Current Focus must show `Chrome / com.android.chrome`.
+- [x] Removed self-package injection from MainActivity into DashboardFragment.
+- [x] Dashboard Current Focus now skips Monitor self rows and Nexus Launcher noise when a meaningful external tracked app is available.
+- [x] Validation passed: focused Current Focus tests and Android Gradle `testDebugUnitTest assembleDebug`.
+- [x] Emulator screenshot captured after opening Chrome and returning to Dashboard: `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`.

@@ -231,13 +231,13 @@ class MainActivityTest {
         activity.supportFragmentManager.executePendingTransactions()
         waitForMainThreadWork()
 
-        assertEquals("Woong Monitor", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
-        assertEquals(packageNameForTest, activity.findViewById<TextView>(R.id.currentPackageText).text.toString())
+        assertEquals("Chrome", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+        assertEquals("com.android.chrome", activity.findViewById<TextView>(R.id.currentPackageText).text.toString())
         assertEquals("2m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
     }
 
     @Test
-    fun dashboardCurrentFocusShowsForegroundAppNotStalePersistedSession() {
+    fun dashboardCurrentFocusShowsLatestTrackedExternalAppAfterReturningFromChrome() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
         clearMonitorDatabase(context)
@@ -252,15 +252,15 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals(
-            "Woong Monitor",
+            "Chrome",
             activity.findViewById<TextView>(R.id.currentAppText).text.toString()
         )
         assertEquals(
-            packageNameForTest,
+            "com.android.chrome",
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
         )
         assertEquals(
-            "12m",
+            "13m",
             activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString()
         )
     }
@@ -458,23 +458,32 @@ class MainActivityTest {
             val dao = MonitorDatabase.getInstance(context).focusSessionDao()
             dao.insert(
                 focusSession(
-                    clientSessionId = "fake-immediate-launcher",
-                    packageName = "com.google.android.apps.nexuslauncher",
+                    clientSessionId = "fake-immediate-chrome",
+                    packageName = "com.android.chrome",
                     startedAtUtcMillis = now - 900_000L,
-                    endedAtUtcMillis = now - 300_000L,
+                    endedAtUtcMillis = now - 420_000L,
                     timezoneId = timezoneId
                 )
             )
             dao.insert(
                 focusSession(
-                    clientSessionId = "fake-immediate-chrome-latest",
-                    packageName = "com.android.chrome",
+                    clientSessionId = "fake-immediate-launcher",
+                    packageName = "com.google.android.apps.nexuslauncher",
+                    startedAtUtcMillis = now - 360_000L,
+                    endedAtUtcMillis = now - 180_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            dao.insert(
+                focusSession(
+                    clientSessionId = "fake-immediate-monitor-latest",
+                    packageName = "com.woong.monitorstack",
                     startedAtUtcMillis = now - 120_000L,
                     endedAtUtcMillis = now,
                     timezoneId = timezoneId
                 )
             )
-            return 2
+            return 3
         }
 
         private fun focusSession(

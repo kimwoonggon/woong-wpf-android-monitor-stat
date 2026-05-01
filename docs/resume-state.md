@@ -4781,7 +4781,7 @@ Validation:
 - [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
 - [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
 - [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.
-- [x] Current Focus now displays the latest persisted session, not the longest top app, so returning from Chrome shows Chrome as the current/latest app.
+- [x] Current Focus now displays the latest meaningful tracked external session from Room, not the Monitor app process itself, so returning from Chrome shows Chrome as the current/latest tracked app.
 - [x] Emulator evidence captured:
   - `artifacts/android-check/manual/android-insets-start2.png`
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
@@ -4790,7 +4790,7 @@ Validation:
 
 ## 2026-05-01 Android Splash, Permission, And Current Focus Correction
 
-- Fixed the user-reported Current Focus problem: when the Android app itself is foreground, Dashboard now shows `Woong Monitor / com.woong.monitorstack` instead of stale Room rows such as Nexus Launcher or Chrome.
+- Fixed the user-reported Current Focus problem: Dashboard now prefers the latest meaningful tracked external Room session, such as `Chrome / com.android.chrome`, instead of showing the Monitor app process itself or low-value launcher rows.
 - Added an explicit Splash route before permission/dashboard routing, with top app bar and bottom navigation hidden during Splash and permission onboarding.
 - Updated Android 12+ launch splash theme branding so the OS splash uses the Woong bar logo rather than the default Android icon.
 - Reworked Splash and Permission XML toward the supplied reference images while preserving XML/View MVP constraints.
@@ -4845,3 +4845,12 @@ Remaining Android UI gaps:
 - App Detail and Report chart containers exist but still need real chart datasets.
 - Bottom navigation/system-inset sizing should be visually reviewed again on the user's emulator because screenshots still show a large white navigation region.
 - Settings text is structurally correct but should be polished for Korean copy consistency.
+
+## 2026-05-01 Android Current Focus External App Follow-Up
+
+- Updated the Dashboard route so MainActivity no longer injects its own package name as the current foreground app.
+- Dashboard Current Focus now selects the latest meaningful tracked external app from Room, skipping `com.woong.monitorstack` and launcher noise when a real usage session such as Chrome is available.
+- Added RED/GREEN Robolectric coverage for returning from Chrome while Monitor is foreground: the Current Focus panel must show `Chrome / com.android.chrome`.
+- This remains privacy-safe Android UsageStats metadata: package/app usage intervals only, not browser page content, typed text, touch coordinates, screenshots, or passwords.
+- Emulator evidence captured at `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`, showing Monitor open while Current Focus displays `Chrome / com.android.chrome`.
+- Validation: Android Gradle `testDebugUnitTest assembleDebug --no-daemon --stacktrace`, full solution `dotnet test`, and full solution `dotnet build` passed.

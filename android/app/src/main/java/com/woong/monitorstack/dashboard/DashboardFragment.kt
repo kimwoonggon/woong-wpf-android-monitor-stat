@@ -11,7 +11,6 @@ import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentDashboardBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
-import com.woong.monitorstack.display.AppDisplayNameFormatter
 
 class DashboardFragment : Fragment() {
     private lateinit var binding: FragmentDashboardBinding
@@ -59,14 +58,11 @@ class DashboardFragment : Fragment() {
 
     private fun render(state: DashboardUiState) {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
-        val latestSession = state.recentSessions.firstOrNull()
-        val currentForegroundPackageName = arguments?.getString(ArgumentCurrentForegroundPackageName)
-        val currentAppName = currentForegroundPackageName
-            ?.let(AppDisplayNameFormatter::format)
-            ?: latestSession?.appName
+        val latestSession = state.latestMeaningfulTrackedSession(requireContext().packageName)
+        val currentAppName = latestSession?.appName
             ?: topApp
-        val currentPackageName = currentForegroundPackageName
-            ?: latestSession?.packageName
+        val currentPackageName = latestSession?.packageName
+            ?: state.topAppPackageName
             ?: getString(R.string.no_package)
 
         binding.currentFocusAppIconPlaceholder.text = currentAppName.firstOrNull()
@@ -129,6 +125,19 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    private fun DashboardUiState.latestMeaningfulTrackedSession(
+        monitorPackageName: String
+    ): DashboardSessionRow? {
+        val noisyPackages = setOf(
+            monitorPackageName,
+            "com.google.android.apps.nexuslauncher"
+        )
+
+        return recentSessions.firstOrNull { session -> session.packageName !in noisyPackages }
+            ?: recentSessions.firstOrNull { session -> session.packageName != monitorPackageName }
+            ?: recentSessions.firstOrNull()
+    }
+
     private class SessionsAdapter : RecyclerView.Adapter<SessionViewHolder>() {
         private val sessions = mutableListOf<DashboardSessionRow>()
 
@@ -171,15 +180,4 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val ArgumentCurrentForegroundPackageName = "current_foreground_package_name"
-
-        fun newInstance(currentForegroundPackageName: String): DashboardFragment {
-            return DashboardFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ArgumentCurrentForegroundPackageName, currentForegroundPackageName)
-                }
-            }
-        }
-    }
 }
