@@ -272,12 +272,38 @@ function Clear-AndroidSnapshotInterference {
         -Description "Dismiss any remaining system dialog with BACK before Android UI snapshots"
 }
 
+function Get-AndroidCanonicalScreenStatuses {
+    $canonicalTargets = @($screenTargets | Where-Object { $_.FileName -like "figma-*.png" })
+    $statuses = @()
+
+    foreach ($target in $canonicalTargets) {
+        $localPath = Join-Path $runRoot $target.FileName
+        $fileInfo = if (Test-Path $localPath) { Get-Item $localPath } else { $null }
+        $screenStatus = if ($fileInfo -and $fileInfo.Length -gt 0) { "PASS" } else { "WARN" }
+        $note = if ($screenStatus -eq "PASS") {
+            "Captured non-empty local screenshot."
+        } else {
+            "Screenshot missing or empty; rerun emulator capture before visual sign-off."
+        }
+
+        $statuses += [ordered]@{
+            name = $target.Name
+            status = $screenStatus
+            fileName = $target.FileName
+            note = $note
+        }
+    }
+
+    return $statuses
+}
+
 function Write-AndroidSnapshotArtifacts {
     param(
         [string]$Status,
         [string]$BlockedReason
     )
 
+    $canonicalScreenStatuses = Get-AndroidCanonicalScreenStatuses
     $reportLines = @(
         "# Android UI Snapshot Report",
         "",
@@ -297,6 +323,16 @@ function Write-AndroidSnapshotArtifacts {
     )
     foreach ($screen in $featureScreens) {
         $reportLines += "- $screen"
+    }
+    $reportLines += @(
+        "",
+        "## Canonical Figma Screen Status",
+        "",
+        "| Screen | Status | Artifact | Note |",
+        "|---|---|---|---|"
+    )
+    foreach ($screenStatus in $canonicalScreenStatuses) {
+        $reportLines += "| $($screenStatus.name) | $($screenStatus.status) | ``$($screenStatus.fileName)`` | $($screenStatus.note) |"
     }
     $reportLines += @(
         "",
@@ -349,6 +385,7 @@ function Write-AndroidSnapshotArtifacts {
         gradleWrapperPath = $GradleWrapperPath
         expectedScreens = $expectedScreens
         featureScreens = $featureScreens
+        screenStatuses = $canonicalScreenStatuses
         expectedLocationChecks = $expectedLocationChecks
         screenshots = $screenshots
         blockedReason = $BlockedReason

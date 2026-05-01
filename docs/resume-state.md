@@ -19,8 +19,19 @@ Updated: 2026-05-02
 - Fixed local screenshot automation pollution from external browser/system
   dialogs by force-stopping known Chrome packages and broadcasting
   `CLOSE_SYSTEM_DIALOGS` before instrumentation captures.
+- Added per-screen PASS/WARN rows to the Android UI snapshot `report.md`.
+- Fixed hidden-shell screenshot margins so Splash and Permission captures stay
+  aligned without showing the main toolbar or bottom navigation.
+- The crash buffer was cleared before the latest run and remained empty after
+  the successful screenshot capture.
+- Dashboard and Report top-app rows now render proportional usage bars with
+  reduced row dead space.
+- Focused Android visual coverage:
+  `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
+- Chrome/app-switch UsageStats -> Room -> Dashboard/Sessions QA remains the
+  next open Android slice.
 - Latest clean emulator evidence:
-  `artifacts/android-ui-snapshots/20260502-040753/` and
+  `artifacts/android-ui-snapshots/20260502-042511/` and
   `artifacts/android-ui-snapshots/latest/`.
 
 Verified:
@@ -4814,7 +4825,7 @@ Validation:
 - [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
 - [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
 - [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.
-- [x] Current Focus now displays the latest meaningful tracked external session from Room, not the Monitor app process itself, so returning from Chrome shows Chrome as the current/latest tracked app.
+- [x] Superseded historical behavior: Current Focus previously displayed the latest meaningful tracked external session from Room, so returning from Chrome showed Chrome as the current/latest tracked app. The 2026-05-02 foreground policy now shows `Woong Monitor / com.woong.monitorstack` when Woong is foreground.
 - [x] Emulator evidence captured:
   - `artifacts/android-check/manual/android-insets-start2.png`
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
@@ -4999,7 +5010,8 @@ Remaining Android priorities:
 - Added safe current-focus emulator validation at `scripts/run-android-usage-current-focus-validation.ps1`.
 - The current-focus validation launches Chrome `about:blank`, returns to Woong, confirms Woong is foreground, then captures only Woong UI evidence.
 - Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/`.
-- Latest current-focus evidence: `artifacts/android-usage-current-focus/20260501-205619/`.
+- Latest current-focus evidence: `artifacts/android-usage-current-focus/20260502-012243/`
+  supersedes the earlier `20260501-205619` run.
 
 Validation completed:
 
@@ -5081,17 +5093,17 @@ Validation completed:
 
 Remaining Android priorities:
 
-- Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
+- Top-app row dead space/proportional usage bars are complete for Dashboard and Report; continue visual review for any remaining ranked-list polish.
 - Improve Dashboard chart density so the top-app chart does not crowd labels when many apps appear.
 - Continue runtime tracking validation for current app collection through UsageStats and Room refresh.
 
 ## 2026-05-01 Android Current Focus Noise Filtering
 
 - Added RED/GREEN coverage for the case where Chrome usage is followed by AOSP launcher, SystemUI, and Woong app sessions after returning to the dashboard.
-- Current Focus now ignores common launcher/SystemUI packages and shows the latest meaningful external app instead of launcher noise.
+- Superseded historical behavior: Current Focus ignored common launcher/SystemUI packages and showed the latest meaningful external app instead of launcher noise. The 2026-05-02 foreground policy now shows `Woong Monitor / com.woong.monitorstack` when Woong is foreground while still treating launcher/SystemUI as noise.
 - `DashboardSessionRow` now carries `durationMs`, so Current Focus duration shows the selected focus session duration instead of the whole selected-period total.
 - Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
-- Current-focus emulator validation generated XML evidence with Chrome/com.android.chrome at `artifacts/android-usage-current-focus/20260501-225045/`, but the PNG was blank on this run; keep screenshot reliability as a separate follow-up.
+- Superseded historical evidence note: the blank-PNG follow-up from `artifacts/android-usage-current-focus/20260501-225045/` was resolved by the 2026-05-02 validation retry path, with passing evidence at `artifacts/android-usage-current-focus/20260502-012243/`.
 
 Validation completed:
 
@@ -5105,8 +5117,8 @@ Validation completed:
 
 Remaining Android priorities:
 
-- Fix current-focus validation screenshot reliability so PNG evidence matches the XML hierarchy evidence.
-- Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
+- Current-focus validation screenshot reliability was resolved by the 2026-05-02 foreground correction and retry path.
+- Top-app row dead space/proportional usage bars are complete for Dashboard and Report; continue visual review for any remaining ranked-list polish.
 - Continue checking UsageStats overlap/idempotency so repeated collection windows do not inflate totals.
 
 ## 2026-05-01 Android GitHub Actions CI/CD

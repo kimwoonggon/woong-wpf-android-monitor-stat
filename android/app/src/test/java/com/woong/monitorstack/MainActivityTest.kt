@@ -3,6 +3,7 @@ package com.woong.monitorstack
 import android.content.Context
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -85,6 +86,53 @@ class MainActivityTest {
         )
         assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.topAppBar).visibility)
         assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
+    }
+
+    @Test
+    fun shellChromeVisibilityUpdatesFragmentContainerMargins() {
+        MainActivity.splashDelayMillis = 500L
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val dashboardController = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val dashboardActivity = dashboardController.get()
+        dashboardActivity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(View.GONE, dashboardActivity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.GONE, dashboardActivity.findViewById<View>(R.id.bottomNavigation).visibility)
+        assertEquals(0, dashboardActivity.fragmentContainerMargins().topMargin)
+        assertEquals(0, dashboardActivity.fragmentContainerMargins().bottomMargin)
+
+        shadowOf(Looper.getMainLooper()).idleFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+        dashboardActivity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(View.VISIBLE, dashboardActivity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.VISIBLE, dashboardActivity.findViewById<View>(R.id.bottomNavigation).visibility)
+        assertEquals(
+            dashboardActivity.findViewById<View>(R.id.topAppBar).layoutParams.height,
+            dashboardActivity.fragmentContainerMargins().topMargin
+        )
+        assertEquals(
+            dashboardActivity.findViewById<View>(R.id.bottomNavigation).layoutParams.height,
+            dashboardActivity.fragmentContainerMargins().bottomMargin
+        )
+
+        MainActivity.splashDelayMillis = 0L
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = false) }
+        val permissionActivity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        permissionActivity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            PermissionOnboardingFragment::class.java,
+            permissionActivity.supportFragmentManager
+                .findFragmentById(R.id.mainFragmentContainer)
+                ?.javaClass
+        )
+        assertEquals(View.GONE, permissionActivity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.GONE, permissionActivity.findViewById<View>(R.id.bottomNavigation).visibility)
+        assertEquals(0, permissionActivity.fragmentContainerMargins().topMargin)
+        assertEquals(0, permissionActivity.fragmentContainerMargins().bottomMargin)
     }
 
     @Test
@@ -940,6 +988,11 @@ class MainActivityTest {
     private fun waitForMainThreadWork() {
         Thread.sleep(500)
         shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun MainActivity.fragmentContainerMargins(): ViewGroup.MarginLayoutParams {
+        return findViewById<View>(R.id.mainFragmentContainer)
+            .layoutParams as ViewGroup.MarginLayoutParams
     }
 
     private fun clearMonitorDatabase(context: Context) {

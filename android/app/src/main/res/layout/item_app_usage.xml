@@ -40,6 +40,21 @@
         app:layout_constraintStart_toStartOf="@id/appNameText"
         app:layout_constraintTop_toBottomOf="@id/appNameText" />
 
+    <ProgressBar
+        android:id="@+id/appUsageProportionBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="5dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="100"
+        android:progressTint="@color/wms_primary"
+        android:progressBackgroundTint="@color/wms_border"
+        app:layout_constraintEnd_toEndOf="@id/appDurationText"
+        app:layout_constraintStart_toStartOf="@id/appNameText"
+        app:layout_constraintTop_toBottomOf="@id/packageNameText" />
+
     <TextView
         android:id="@+id/appDurationText"
         android:layout_width="wrap_content"

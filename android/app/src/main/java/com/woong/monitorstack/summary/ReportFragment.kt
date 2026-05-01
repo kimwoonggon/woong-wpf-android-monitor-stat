@@ -175,10 +175,12 @@ class ReportFragment : Fragment() {
 
     private class TopAppsAdapter : RecyclerView.Adapter<TopAppViewHolder>() {
         private val rows = mutableListOf<ReportTopApp>()
+        private var maxDurationMs: Long = 0L
 
         fun submit(items: List<ReportTopApp>) {
             rows.clear()
             rows.addAll(items)
+            maxDurationMs = rows.maxOfOrNull { it.durationMs } ?: 0L
             notifyDataSetChanged()
         }
 
@@ -193,7 +195,7 @@ class ReportFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: TopAppViewHolder, position: Int) {
-            holder.bind(rows[position])
+            holder.bind(rows[position], maxDurationMs)
         }
 
         override fun getItemCount(): Int = rows.size
@@ -202,7 +204,7 @@ class ReportFragment : Fragment() {
     private class TopAppViewHolder(
         private val binding: ItemAppUsageBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(row: ReportTopApp) {
+        fun bind(row: ReportTopApp, maxDurationMs: Long) {
             binding.appIconPlaceholder.text = row.appName.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
@@ -211,6 +213,18 @@ class ReportFragment : Fragment() {
             binding.packageNameText.text = "Focus time"
             binding.appDurationText.text = formatDuration(row.durationMs)
             binding.appDetailText.text = ""
+            bindProportion(row.durationMs, maxDurationMs)
+        }
+
+        private fun bindProportion(durationMs: Long, maxDurationMs: Long) {
+            if (durationMs <= 0L || maxDurationMs <= 0L) {
+                binding.appUsageProportionBar.visibility = View.GONE
+                return
+            }
+
+            binding.appUsageProportionBar.visibility = View.VISIBLE
+            binding.appUsageProportionBar.progress =
+                ((durationMs * 100L) / maxDurationMs).toInt().coerceIn(1, 100)
         }
 
         private fun formatDuration(durationMs: Long): String {

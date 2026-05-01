@@ -72,12 +72,17 @@ Android cannot track browser domains like the Windows Chrome native-messaging
 pipeline. Android app-switch QA must focus on app usage metadata:
 
 1. Launch Woong Monitor.
-2. Open Chrome or another app.
+2. Open Chrome or another app without capturing that app's page contents.
 3. Return to Woong Monitor.
 4. Run/trigger recent UsageStats collection.
-5. Verify Room `focus_session` rows include the external app.
-6. Verify `sync_outbox` rows are created while sync remains opt-in.
-7. Verify Dashboard and Sessions refresh from Room.
+5. Prove the external app foreground interval with package/process/window
+   metadata such as `dumpsys`, not screenshots of browser/page contents.
+6. Verify Room `focus_session` rows include the external app.
+7. Verify `sync_outbox` rows are created while sync remains opt-in.
+8. Verify Dashboard and Sessions refresh from Room.
 
 Use `scripts/start-android-emulator-stable.ps1` before emulator QA so stale
 snapshot state does not hide app-switch regressions.
+
+Screenshots for this QA must be limited to Woong Monitor UI after returning to
+the app. They are local developer evidence only and are not product telemetry.

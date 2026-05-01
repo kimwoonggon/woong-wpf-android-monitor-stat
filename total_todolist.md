@@ -2141,7 +2141,7 @@ milestones below are finished.
 - [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
 - [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
 - [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.
-- [x] Current Focus now displays the latest meaningful tracked external session from Room, not the Monitor app process itself, so returning from Chrome shows Chrome as the current/latest tracked app.
+- [x] Superseded historical behavior: Current Focus previously displayed the latest meaningful tracked external session from Room, so returning from Chrome showed Chrome as the current/latest tracked app. The 2026-05-02 foreground policy now shows `Woong Monitor / com.woong.monitorstack` when Woong is foreground.
 - [x] Emulator evidence captured:
   - `artifacts/android-check/manual/android-insets-start2.png`
   - `artifacts/android-check/manual/after-chrome-current-fixed.png`
@@ -2154,8 +2154,8 @@ milestones below are finished.
 - [x] Reworked Android 12+ launch splash branding so the OS splash no longer shows the default Android icon; it now uses the Woong bar logo on a white surface.
 - [x] Reworked `fragment_splash.xml` toward the supplied app-loading reference: centered blue logo tile, `Woong Monitor`, `Android Focus Tracker`, and Korean loading text.
 - [x] Reworked `fragment_permission_onboarding.xml` toward the supplied permission reference: centered shield, Korean headline/body, principles card, and `?¤ì • ?´ê¸°` primary action.
-- [x] Fixed Dashboard Current Focus so the app panel prefers the latest meaningful tracked external Room session such as `Chrome / com.android.chrome`, not the Monitor app process itself or low-value launcher rows.
-- [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, and the current app panel reports the latest tracked external app available through UsageStats ingestion.
+- [x] Superseded historical behavior: Dashboard Current Focus once preferred the latest meaningful tracked external Room session such as `Chrome / com.android.chrome`. The 2026-05-02 foreground policy now prefers proven foreground truth, including Woong Monitor itself when it is foreground.
+- [x] Kept Room-backed usage totals and recent sessions separate from Current Focus: persisted app usage still drives Active Focus/Sessions, and the current app panel reports foreground app truth when Android can prove it.
 - [x] Added/updated tests for cold-start Splash routing, permission routing, foreground Current Focus precedence, Android wireframe contracts, and Android 12 launch splash branding.
 - [x] Emulator evidence captured under `artifacts/android-check/latest/`:
   - `00-os-splash-branded.png`
@@ -2183,9 +2183,9 @@ milestones below are finished.
 
 ## 2026-05-01 Android Current Focus External App Follow-Up
 
-- [x] Added RED/GREEN Robolectric coverage for returning to Dashboard after Chrome, launcher, and Monitor usage rows exist; Current Focus must show `Chrome / com.android.chrome`.
+- [x] Superseded historical behavior: RED/GREEN Robolectric coverage once expected `Chrome / com.android.chrome` after Chrome, launcher, and Monitor usage rows existed. The 2026-05-02 foreground policy supersedes this with Woong foreground truth.
 - [x] Removed self-package injection from MainActivity into DashboardFragment.
-- [x] Dashboard Current Focus now skips Monitor self rows and Nexus Launcher noise when a meaningful external tracked app is available.
+- [x] Superseded historical behavior: Dashboard Current Focus skipped Monitor self rows and Nexus Launcher noise when a meaningful external tracked app was available. Current behavior keeps launcher/SystemUI as noise but no longer treats Woong Monitor as noise when foreground.
 - [x] Validation passed: focused Current Focus tests and Android Gradle `testDebugUnitTest assembleDebug`.
 - [x] Emulator screenshot captured after opening Chrome and returning to Dashboard: `artifacts/android-check/latest/android-current-focus-after-chrome-dashboard.png`.
 ## 2026-05-01 Android Room-Backed Charts, Outbox, And Screenshot Reliability
@@ -2250,7 +2250,7 @@ milestones below are finished.
 - [x] Added `scripts/run-android-usage-current-focus-validation.ps1` and `docs/android-usage-current-focus-validation.md` for safe Chrome -> Woong UsageStats current-focus emulator evidence.
 - [x] Ignored `artifacts/android-usage-current-focus/` generated outputs.
 - [x] Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-203803/`.
-- [x] Latest Android current-focus evidence: `artifacts/android-usage-current-focus/20260501-205619/`.
+- [x] Latest Android current-focus evidence: `artifacts/android-usage-current-focus/20260502-012243/`.
 - [x] Validation passed: Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest`, Android UI snapshots on `emulator-5554`, current-focus validation on `emulator-5554`, full solution `dotnet test`/`dotnet build`, and coverage line 88.0% / branch 69.5%.
 - [x] Report period buttons now show selected state for 7d, 30d, 90d, and valid Custom ranges.
 - [x] Latest selected Custom range screenshot evidence: `artifacts/android-ui-snapshots/20260501-210345/15-report-custom-range.png`.
@@ -2264,14 +2264,16 @@ milestones below are finished.
 - [x] Added RED/GREEN tests for chart visual contract, hidden raw value labels, and branded bar/line datasets.
 - [x] Latest chart screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`.
 - [x] Validation passed for Android chart visual polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
-- [x] Current Focus ignores AOSP launcher/SystemUI noise after returning from Chrome and keeps the latest meaningful external app visible.
+- [x] Superseded historical behavior: Current Focus ignored AOSP launcher/SystemUI noise after returning from Chrome and kept the latest meaningful external app visible. Current behavior still ignores launcher/SystemUI noise but shows Woong Monitor when Woong is foreground.
 - [x] Current Focus session duration now uses the selected session duration instead of the whole selected-period total.
 - [x] Added RED/GREEN current-focus noise test and refreshed Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-224147/`.
 - [x] Added Android GitHub Actions CI/CD workflow for unit tests, debug/release APK builds, Android test APK build, and artifact uploads.
 - [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
 - [x] Local equivalent Android CI command passed: `android\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
-- [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.- [ ] Next Android TODO: fix current-focus validation screenshot timing/retry; XML evidence currently includes Chrome/com.android.chrome but PNG was blank.
-- [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
+- [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.
+- [x] Current-focus validation screenshot timing/retry follow-up is superseded by the 2026-05-02 foreground validation pass at `artifacts/android-usage-current-focus/20260502-012243/`.
+- [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
+- [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
@@ -2317,7 +2319,10 @@ milestones below are finished.
 - [x] Stabilized `SnapshotCaptureTest` with deterministic MainActivity Usage Access gates and Splash routing waits before shell tab/filter captures.
 - [x] Added RED/GREEN MainActivity regression coverage for delayed Splash routing after Activity destruction.
 - [x] Added RED/GREEN snapshot-script coverage and implementation that clears external browser/system dialog interference before instrumentation capture.
-- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-040753/`.
-- [ ] Next Android TODO: add per-screen PASS/FAIL/WARN rows to Android UI snapshot `report.md`.
+- [x] Latest clean Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260502-042511/`.
+- [x] Added per-screen PASS/WARN rows to Android UI snapshot `report.md`.
+- [x] Fixed hidden-shell screenshot margins so Splash/Permission captures stay aligned without showing toolbar or bottom navigation.
+- [x] Crash buffer was cleared before the latest run and remained empty after screenshot capture.
+- [x] Dashboard/Report top-app rows now render proportional usage bars with focused test `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [ ] Next Android TODO: compare the latest seven canonical screenshots against `artifacts/android-ui-flow/woong-monitor-android-ui-flow.figma-import.svg` and close the largest remaining visual parity gaps.
 - [ ] Next Android TODO: implement Chrome/app-switch QA script that verifies UsageStats -> Room -> Dashboard/Sessions refresh after returning from Chrome.

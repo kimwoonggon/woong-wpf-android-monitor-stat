@@ -331,6 +331,18 @@ exit /b 0
             Assert.Contains("13-permission-onboarding.png", manifestText);
             Assert.Contains("14-app-detail.png", manifestText);
 
+            string report = File.ReadAllText(Path.Combine(latest, "report.md"));
+            Assert.Contains("## Canonical Figma Screen Status", report);
+            Assert.Contains("| Figma Splash | PASS | `figma-01-splash.png` |", report);
+            Assert.Contains("| Figma Permission | PASS | `figma-02-permission.png` |", report);
+            Assert.Contains("| Figma Dashboard | PASS | `figma-03-dashboard.png` |", report);
+            Assert.Contains("| Figma Sessions | PASS | `figma-04-sessions.png` |", report);
+            Assert.Contains("| Figma App Detail | PASS | `figma-05-app-detail.png` |", report);
+            Assert.Contains("| Figma Report | PASS | `figma-06-report.png` |", report);
+            Assert.Contains("| Figma Settings | PASS | `figma-07-settings.png` |", report);
+            Assert.Contains("screenStatuses", manifestText);
+            Assert.Contains("Figma Splash", manifestText);
+
             string commands = File.ReadAllText(adbLog);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotSeedTest", commands);
             Assert.Contains("am instrument -w -e class com.woong.monitorstack.snapshots.SnapshotCaptureTest", commands);

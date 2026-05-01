@@ -254,10 +254,12 @@ class DashboardFragment : Fragment() {
 
     private class TopAppsAdapter : RecyclerView.Adapter<TopAppViewHolder>() {
         private val apps = mutableListOf<DashboardUsageSlice>()
+        private var maxDurationMs: Long = 0L
 
         fun submit(rows: List<DashboardUsageSlice>) {
             apps.clear()
             apps.addAll(rows)
+            maxDurationMs = apps.maxOfOrNull { it.durationMs } ?: 0L
             notifyDataSetChanged()
         }
 
@@ -272,7 +274,7 @@ class DashboardFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: TopAppViewHolder, position: Int) {
-            holder.bind(apps[position])
+            holder.bind(apps[position], maxDurationMs)
         }
 
         override fun getItemCount(): Int = apps.size
@@ -281,7 +283,7 @@ class DashboardFragment : Fragment() {
     private class TopAppViewHolder(
         private val binding: ItemAppUsageBinding
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(row: DashboardUsageSlice) {
+        fun bind(row: DashboardUsageSlice, maxDurationMs: Long) {
             binding.appIconPlaceholder.text = row.label.firstOrNull()
                 ?.uppercaseChar()
                 ?.toString()
@@ -290,6 +292,18 @@ class DashboardFragment : Fragment() {
             binding.packageNameText.text = ""
             binding.appDurationText.text = formatDuration(row.durationMs)
             binding.appDetailText.text = ""
+            bindProportion(row.durationMs, maxDurationMs)
+        }
+
+        private fun bindProportion(durationMs: Long, maxDurationMs: Long) {
+            if (durationMs <= 0L || maxDurationMs <= 0L) {
+                binding.appUsageProportionBar.visibility = View.GONE
+                return
+            }
+
+            binding.appUsageProportionBar.visibility = View.VISIBLE
+            binding.appUsageProportionBar.progress =
+                ((durationMs * 100L) / maxDurationMs).toInt().coerceIn(1, 100)
         }
 
         private fun formatDuration(durationMs: Long): String {

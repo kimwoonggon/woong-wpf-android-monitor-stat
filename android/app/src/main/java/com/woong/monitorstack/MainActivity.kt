@@ -3,6 +3,7 @@ package com.woong.monitorstack
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.core.view.ViewCompat
@@ -28,12 +29,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var usageCollectionReconciler: UsageCollectionReconciler
     private lateinit var usageImmediateCollector: AndroidRecentUsageCollector
     private var completedInitialResume = false
+    private var shellChromeVisible = true
+    private var fragmentTopMarginWithChrome = 0
+    private var fragmentBottomMarginWithChrome = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        rememberFragmentContainerChromeMargins()
         setSupportActionBar(binding.topAppBar)
         applySystemBarInsets()
         usageAccessGate = usageAccessGateFactory(applicationContext)
@@ -150,9 +155,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setShellChromeVisible(visible: Boolean) {
+        shellChromeVisible = visible
         val visibility = if (visible) View.VISIBLE else View.GONE
         binding.topAppBar.visibility = visibility
         binding.bottomNavigation.visibility = visibility
+        applyFragmentContainerChromeMargins()
+    }
+
+    private fun rememberFragmentContainerChromeMargins() {
+        val layoutParams = binding.mainFragmentContainer.layoutParams
+        if (layoutParams is ViewGroup.MarginLayoutParams) {
+            fragmentTopMarginWithChrome = layoutParams.topMargin
+            fragmentBottomMarginWithChrome = layoutParams.bottomMargin
+        }
+    }
+
+    private fun applyFragmentContainerChromeMargins() {
+        binding.mainFragmentContainer.layoutParams =
+            binding.mainFragmentContainer.layoutParams.apply {
+                if (this is ViewGroup.MarginLayoutParams) {
+                    topMargin = if (shellChromeVisible) fragmentTopMarginWithChrome else 0
+                    bottomMargin = if (shellChromeVisible) fragmentBottomMarginWithChrome else 0
+                }
+            }
     }
 
     private fun applySystemBarInsets() {
@@ -171,12 +196,8 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.updatePadding(
                 bottom = layout.bottomNavigationPaddingBottomPx
             )
-            binding.mainFragmentContainer.layoutParams =
-                binding.mainFragmentContainer.layoutParams.apply {
-                    if (this is android.view.ViewGroup.MarginLayoutParams) {
-                        bottomMargin = layout.fragmentBottomMarginPx
-                    }
-                }
+            fragmentBottomMarginWithChrome = layout.fragmentBottomMarginPx
+            applyFragmentContainerChromeMargins()
 
             insets
         }
