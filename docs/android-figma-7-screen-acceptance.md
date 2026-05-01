@@ -6,6 +6,16 @@ This inventory maps the user-provided Android Figma/SVG flow to concrete
 Android XML/View implementation surfaces, behavior tests, and screenshot
 artifacts. It is the working acceptance map for `android_check_todo.md`.
 
+Android UI flow reference image:
+
+```text
+docs/assets/android/android-ui-flow-reference.png
+```
+
+This image is a design reference for the Android XML/View flow. It is not
+product telemetry, not a monitored-user screenshot, and not runtime collection
+evidence.
+
 Latest clean emulator evidence:
 
 ```text
