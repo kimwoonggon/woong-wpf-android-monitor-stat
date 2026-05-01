@@ -88,8 +88,10 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             result.CurrentSession,
             persisted,
             pollAtUtc,
-            ResolveSnapshotDbWriteTime(persisted, browserPersistence),
+            ResolveSnapshotDbWriteTime(persisted, browserPersistence.HasPersistedWebSession),
             browserPersistence.CurrentDomain,
+            browserPersistence.CurrentWebSessionStartedAtUtc,
+            browserPersistence.CurrentWebSessionDuration,
             browserPersistence.CaptureStatus,
             browserPersistence.HasPersistedWebSession);
     }
@@ -104,6 +106,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
+        bool closedFocusWebSession = CompleteCurrentWebSessionForClosedFocus(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
         bool stoppedWebSession = CompleteCurrentWebSession(pollAtUtc, result.CurrentSession.DeviceId);
         persisted = Persist(result.CurrentSession);
@@ -118,8 +121,10 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             pollAtUtc,
             _lastDbWriteAtUtc,
             browserPersistence.CurrentDomain,
+            browserPersistence.CurrentWebSessionStartedAtUtc,
+            browserPersistence.CurrentWebSessionDuration,
             browserPersistence.CaptureStatus,
-            browserPersistence.HasPersistedWebSession || stoppedWebSession);
+            closedFocusWebSession || browserPersistence.HasPersistedWebSession || stoppedWebSession);
     }
 
     public DashboardTrackingSnapshot PollOnce()
@@ -132,16 +137,20 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
+        bool closedFocusWebSession = CompleteCurrentWebSessionForClosedFocus(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
+        bool hasPersistedWebSession = closedFocusWebSession || browserPersistence.HasPersistedWebSession;
 
         return ToSnapshot(
             result.CurrentSession,
             persisted,
             pollAtUtc,
-            ResolveSnapshotDbWriteTime(persisted, browserPersistence),
+            ResolveSnapshotDbWriteTime(persisted, hasPersistedWebSession),
             browserPersistence.CurrentDomain,
+            browserPersistence.CurrentWebSessionStartedAtUtc,
+            browserPersistence.CurrentWebSessionDuration,
             browserPersistence.CaptureStatus,
-            browserPersistence.HasPersistedWebSession);
+            hasPersistedWebSession);
     }
 
     public DashboardSyncResult SyncNow(bool syncEnabled)
@@ -200,8 +209,11 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             PersistWebSession(session, result.CurrentSession.DeviceId);
         }
 
+        WebSession? currentPreview = sessionizer.PreviewCurrent(sanitizedSnapshot.CapturedAtUtc);
         return new BrowserPersistenceResult(
             sanitizedSnapshot.Domain,
+            currentPreview?.StartedAtUtc,
+            currentPreview is null ? TimeSpan.Zero : currentPreview.Range.Duration,
             MapBrowserCaptureStatus(sanitizedSnapshot),
             completedSessions.Count > 0);
     }
@@ -244,10 +256,25 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         return completedSessions.Count > 0;
     }
 
+    private bool CompleteCurrentWebSessionForClosedFocus(FocusSession? closedSession)
+    {
+        if (closedSession is null ||
+            _webSessionizer is null ||
+            !string.Equals(_webSessionizerFocusSessionId, closedSession.ClientSessionId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        bool completed = CompleteCurrentWebSession(closedSession.EndedAtUtc, closedSession.DeviceId);
+        _webSessionizer = null;
+        _webSessionizerFocusSessionId = null;
+        return completed;
+    }
+
     private DateTimeOffset? ResolveSnapshotDbWriteTime(
         DashboardPersistedSessionSnapshot? persistedSession,
-        BrowserPersistenceResult browserPersistence)
-        => persistedSession is null && !browserPersistence.HasPersistedWebSession
+        bool hasPersistedWebSession)
+        => persistedSession is null && !hasPersistedWebSession
             ? null
             : _lastDbWriteAtUtc;
 
@@ -257,6 +284,8 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         DateTimeOffset lastPollAtUtc,
         DateTimeOffset? lastDbWriteAtUtc,
         string? currentBrowserDomain = null,
+        DateTimeOffset? currentWebSessionStartedAtUtc = null,
+        TimeSpan currentWebSessionDuration = default,
         DashboardBrowserCaptureStatus browserCaptureStatus = DashboardBrowserCaptureStatus.Unavailable,
         bool hasPersistedWebSession = false)
         => new(
@@ -266,6 +295,8 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
             CurrentSessionDuration: TimeSpan.FromMilliseconds(session.DurationMs),
             LastPersistedSession: persistedSession,
             CurrentBrowserDomain: currentBrowserDomain,
+            CurrentWebSessionStartedAtUtc: currentWebSessionStartedAtUtc,
+            CurrentWebSessionDuration: currentWebSessionDuration,
             BrowserCaptureStatus: browserCaptureStatus,
             LastPollAtUtc: lastPollAtUtc,
             LastDbWriteAtUtc: lastDbWriteAtUtc,
@@ -281,16 +312,22 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private sealed record BrowserPersistenceResult(
         string? CurrentDomain,
+        DateTimeOffset? CurrentWebSessionStartedAtUtc,
+        TimeSpan CurrentWebSessionDuration,
         DashboardBrowserCaptureStatus CaptureStatus,
         bool HasPersistedWebSession)
     {
         public static BrowserPersistenceResult Empty { get; } = new(
             null,
+            null,
+            TimeSpan.Zero,
             DashboardBrowserCaptureStatus.Unavailable,
             HasPersistedWebSession: false);
 
         public static BrowserPersistenceResult Error { get; } = new(
             null,
+            null,
+            TimeSpan.Zero,
             DashboardBrowserCaptureStatus.Error,
             HasPersistedWebSession: false);
     }

@@ -263,10 +263,16 @@ GitHub Actions uploads `woong-monitor-windows-msix` with:
   or `certificates\WoongMonitorStack.Windows.TestSigning.cer` for fallback test
   certificate builds
 - `install-windows-msix.ps1`
+- `Install-WoongMonitorStack.Windows.cmd`
 - `README.md`
 
-Signed install for the CI/local test certificate. Open PowerShell as
-Administrator first:
+Recommended signed install for the CI/local test certificate:
+
+1. Extract the `woong-monitor-windows-msix` artifact.
+2. Right-click `Install-WoongMonitorStack.Windows.cmd`.
+3. Choose **Run as administrator**.
+
+Manual install from an elevated PowerShell prompt:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File artifacts\windows-msix\install-windows-msix.ps1 `
@@ -277,9 +283,11 @@ powershell -ExecutionPolicy Bypass -File artifacts\windows-msix\install-windows-
 ```
 
 If Windows reports `0x800B010A` or says the publisher certificate cannot be
-verified, the public test certificate is not trusted in
-`Cert:\LocalMachine\TrustedPeople` yet. Re-run the command above from an
-elevated PowerShell prompt.
+verified, the public certificate from that exact artifact is not trusted in
+`Cert:\LocalMachine\TrustedPeople` yet, or a `.cer` from a different CI run was
+used. Use the `.cer` shipped beside the `.msix`; the fallback ephemeral test
+certificate changes on every CI run. Double-clicking the `.msix` before that
+trust step is expected to fail for self-signed CI artifacts.
 
 More details: `docs/windows-release-msix.md`.
 

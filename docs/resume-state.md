@@ -5095,3 +5095,30 @@ Remaining Android CI/CD priorities:
 
 - Add a separate manual emulator workflow for `connectedDebugAndroidTest` once runner cost/reliability is acceptable.
 - Add Android release signing secrets and store publishing only after explicit release requirements are defined.
+
+## 2026-05-01 Windows WebSession Focus-Leave Flush And MSIX Artifact Installer
+
+- Fixed a runtime web-session persistence bug where an open browser domain session could be lost when the foreground focus left Chrome/Edge/Firefox/Brave before a domain change or Stop.
+- Added RED/GREEN coverage for `chatgpt.com` staying open for 15 minutes, then switching to another app; the coordinator now flushes the open WebSession to SQLite and queues a `web_session` outbox item.
+- Added RED/GREEN coverage for `chatgpt.com` staying open on the same browser tab/domain for 15 minutes without a close event. The coordinator now exposes the active WebSession duration, and the WPF dashboard overlays that live duration into Web Focus, top domains, charts, and Web Sessions so the current domain is visible before the session closes.
+- Strengthened MSIX install artifacts for self-signed CI builds:
+  - `install-windows-msix.ps1` now verifies that the provided `.cer` thumbprint matches the MSIX signer before importing trust.
+  - `package-windows-msix.ps1` now emits `Install-WoongMonitorStack.Windows.cmd`, which launches the install script elevated for the bundled MSIX/certificate pair.
+  - Windows CI uploads the installer launcher with the MSIX artifact.
+  - README and Windows MSIX docs now clarify that double-clicking the `.msix` before certificate trust is expected to fail for ephemeral/self-signed CI artifacts.
+- The correct install path is to extract the `woong-monitor-windows-msix` artifact and run `Install-WoongMonitorStack.Windows.cmd` as administrator, or manually run `install-windows-msix.ps1` with the `.cer` from the same artifact.
+
+Validation completed:
+
+- RED `PollOnce_WhenLeavingBrowserFocus_FlushesOpenWebSessionBeforeStartingNextApp` failed before the coordinator flushed the open browser session on focus change.
+- RED `PollOnce_WhenSameBrowserDomainStaysOpen_ReturnsActiveWebSessionDurationWithoutPersisting` failed before live active WebSession duration was exposed.
+- RED `PollTrackingCommand_WhenCurrentWebDomainContinues_ShowsActiveWebDurationBeforeSessionCloses` failed before the dashboard overlaid the active WebSession into Web Focus/top domains/Web Sessions.
+- Focused browser/sessionizer tests passed: 15 passed.
+- Focused WPF tracking tests passed: `WindowsTrackingDashboardCoordinatorTests` + `MainWindowTrackingPipelineTests`, 27 passed.
+- Focused WPF dashboard presentation tests passed: `DashboardTrackingStateTests` + `DashboardViewModelTests`, 66 passed.
+- Focused Windows release packaging architecture tests passed: 3 passed.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 494 passed, 6 skipped.
+- Release build `dotnet build Woong.MonitorStack.sln -c Release --no-restore -m:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.1% (4604/5223), branch 70.2% (713/1015), report at `artifacts/coverage/SummaryGithub.md`.
+- Local MSIX packaging passed with `scripts\package-windows-msix.ps1 -Configuration Release -SkipPublish -CreateTestCertificate`, producing `WoongMonitorStack.Windows.msix`, matching public `.cer`, README, install script, and `Install-WoongMonitorStack.Windows.cmd`.
+- MSIX install script WhatIf passed with the bundled package/certificate pair and LocalMachine TrustedPeople trust target.

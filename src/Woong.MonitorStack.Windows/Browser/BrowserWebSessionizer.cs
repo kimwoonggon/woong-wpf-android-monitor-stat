@@ -49,19 +49,20 @@ public sealed class BrowserWebSessionizer
             return [];
         }
 
-        var completed = new WebSession(
-            _focusSessionId,
-            _current.BrowserName,
-            _current.Url,
-            _current.Domain!,
-            _current.TabTitle,
-            TimeRange.FromUtc(_current.CapturedAtUtc, snapshot.CapturedAtUtc),
-            _current.CaptureMethod.ToString(),
-            _current.CaptureConfidence.ToString(),
-            _current.IsPrivateOrUnknown);
+        WebSession completed = CreateSession(_current, snapshot.CapturedAtUtc);
 
         _current = HasWebIdentity(snapshot) ? snapshot : null;
         return [completed];
+    }
+
+    public WebSession? PreviewCurrent(DateTimeOffset endedAtUtc)
+    {
+        if (_current is null || endedAtUtc <= _current.CapturedAtUtc)
+        {
+            return null;
+        }
+
+        return CreateSession(_current, endedAtUtc);
     }
 
     public IReadOnlyList<WebSession> CompleteCurrent(DateTimeOffset endedAtUtc)
@@ -78,23 +79,23 @@ public sealed class BrowserWebSessionizer
             return [];
         }
 
-        return
-        [
-            new WebSession(
-                _focusSessionId,
-                current.BrowserName,
-                current.Url,
-                current.Domain!,
-                current.TabTitle,
-                TimeRange.FromUtc(current.CapturedAtUtc, endedAtUtc),
-                current.CaptureMethod.ToString(),
-                current.CaptureConfidence.ToString(),
-                current.IsPrivateOrUnknown)
-        ];
+        return [CreateSession(current, endedAtUtc)];
     }
 
     private static bool HasWebIdentity(BrowserActivitySnapshot snapshot)
         => !string.IsNullOrWhiteSpace(snapshot.Domain);
+
+    private WebSession CreateSession(BrowserActivitySnapshot snapshot, DateTimeOffset endedAtUtc)
+        => new(
+            _focusSessionId,
+            snapshot.BrowserName,
+            snapshot.Url,
+            snapshot.Domain!,
+            snapshot.TabTitle,
+            TimeRange.FromUtc(snapshot.CapturedAtUtc, endedAtUtc),
+            snapshot.CaptureMethod.ToString(),
+            snapshot.CaptureConfidence.ToString(),
+            snapshot.IsPrivateOrUnknown);
 
     private static bool IsDuplicate(BrowserActivitySnapshot current, BrowserActivitySnapshot next)
         => current.WindowHandle == next.WindowHandle

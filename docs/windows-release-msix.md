@@ -50,8 +50,10 @@ Artifacts:
 The `woong-monitor-windows-msix` artifact contains:
 
 - `WoongMonitorStack.Windows.msix`
-- `certificates\WoongMonitorStack.Windows.TestSigning.cer`
+- `certificates\WoongMonitorStack.Windows.TestSigning.cer` for ephemeral CI test-certificate builds
+- `certificates\WoongMonitorStack.Windows.Signing.cer` for stable release-secret builds
 - `install-windows-msix.ps1`
+- `Install-WoongMonitorStack.Windows.cmd`
 - `README.md`
 
 The CI artifact does not include the private `.pfx` key.
@@ -99,8 +101,10 @@ After the `Windows WPF CI` workflow finishes:
 1. Open the workflow run in GitHub Actions.
 2. Download the artifact named `woong-monitor-windows-msix`.
 3. Extract the zip to a local folder.
-4. Open PowerShell as Administrator in the extracted folder.
-5. Run:
+4. Right-click `Install-WoongMonitorStack.Windows.cmd`.
+5. Choose **Run as administrator** and accept the UAC prompt.
+
+Manual install from an elevated PowerShell prompt:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
@@ -110,15 +114,30 @@ powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 `
   -TrustScope LocalMachine
 ```
 
+Use the `.cer` shipped in the same artifact as the `.msix`. For stable
+release-secret builds that file is normally
+`certificates\WoongMonitorStack.Windows.Signing.cer`; for ephemeral CI
+test-certificate builds it is normally
+`certificates\WoongMonitorStack.Windows.TestSigning.cer`.
+
+The ephemeral test certificate changes on every CI run, so a certificate from a
+previous artifact will not trust a newly downloaded package.
+
 The first install trusts the public test certificate in
 `Cert:\LocalMachine\TrustedPeople`. This requires Administrator because Windows
 App Installer validates MSIX signing certificates against the machine trust
 store. Before the certificate is trusted, `Get-AuthenticodeSignature` can report
 an untrusted-root status even though the MSIX has a signer certificate.
 
+Double-clicking `WoongMonitorStack.Windows.msix` before certificate trust is expected to fail
+for CI/local test-certificate artifacts. The MSIX package is signed, but Windows
+does not trust a self-signed or private signing certificate until you explicitly
+install the public `.cer` on the machine.
+
 If you see `0x800B010A` or "publisher certificate could not be verified", the
-certificate has not been trusted in the machine `TrustedPeople` store yet. Re-run
-the install command above from an elevated PowerShell prompt.
+certificate has not been trusted in the machine `TrustedPeople` store yet, or
+you used a `.cer` from a different artifact. Re-run the install command above
+from an elevated PowerShell prompt with the `.cer` included beside the `.msix`.
 
 ## Local MSIX Package
 
@@ -186,6 +205,11 @@ from a provided stable release signing certificate so the install artifact still
 contains the public certificate required for sideload trust.
 
 Do not commit private signing certificates or passwords.
+
+For a double-click MSIX install without any certificate trust step, do not use
+the ephemeral CI test certificate. Sign the MSIX with Azure Artifact Signing
+(formerly Trusted Signing), Microsoft Store signing, or a public trusted
+code-signing certificate whose chain is already trusted by Windows.
 
 ## Notes
 

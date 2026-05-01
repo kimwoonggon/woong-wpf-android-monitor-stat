@@ -19,6 +19,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
     private string? _currentWindowTitle;
+    private ActiveWebSessionSnapshot? _activeWebSession;
     private bool _isTrackingRunning;
     private TimeRange? _customRange;
 
@@ -211,6 +212,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
         CurrentBrowserDomainText = FormatBrowserDomain(snapshot.CurrentBrowserDomain);
         BrowserCaptureStatusText = FormatBrowserCaptureStatus(snapshot.BrowserCaptureStatus);
+        _activeWebSession = CreateActiveWebSessionSnapshot(snapshot);
         _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
         UpdateCurrentWindowTitleText();
         CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
@@ -368,10 +370,15 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         DashboardTrackingSnapshot snapshot = _trackingCoordinator.PollOnce();
         UpdateCurrentActivity(snapshot);
-        if (snapshot.LastPersistedSession is not null || snapshot.HasPersistedWebSession)
+        bool hasPersistedChanges = snapshot.LastPersistedSession is not null || snapshot.HasPersistedWebSession;
+        if (hasPersistedChanges)
         {
             AddPersistenceEvents(snapshot);
             AddSessionStartedEvents(snapshot);
+        }
+
+        if (hasPersistedChanges || snapshot.CurrentWebSessionDuration > TimeSpan.Zero)
+        {
             RefreshSummary(ResolveRange(SelectedPeriod));
         }
     }
@@ -539,7 +546,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     private void RefreshSummary(TimeRange range)
     {
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
-        IReadOnlyList<WebSession> webSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
+        IReadOnlyList<WebSession> persistedWebSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
+        IReadOnlyList<WebSession> webSessions = IncludeActiveWebSession(persistedWebSessions, range);
         DailySummary summary = BuildRangeSummary(focusSessions, webSessions, range);
         long totalForegroundMs = focusSessions.Sum(session => session.DurationMs);
         string periodDescriptor = FormatPeriodDescriptor(SelectedPeriod);
@@ -716,6 +724,49 @@ public sealed partial class DashboardViewModel : ObservableObject
         return new DailySummary(summaryDate, totalActiveMs, totalIdleMs, totalWebMs, topApps, topDomains);
     }
 
+    private IReadOnlyList<WebSession> IncludeActiveWebSession(IReadOnlyList<WebSession> persistedWebSessions, TimeRange range)
+    {
+        WebSession? activeWebSession = CreateActiveWebSessionForRange(range);
+        if (activeWebSession is null)
+        {
+            return persistedWebSessions;
+        }
+
+        var sessions = new List<WebSession>(persistedWebSessions.Count + 1) { activeWebSession };
+        sessions.AddRange(persistedWebSessions);
+        return sessions;
+    }
+
+    private WebSession? CreateActiveWebSessionForRange(TimeRange range)
+    {
+        if (_activeWebSession is null)
+        {
+            return null;
+        }
+
+        DateTimeOffset startedAtUtc = _activeWebSession.StartedAtUtc > range.StartedAtUtc
+            ? _activeWebSession.StartedAtUtc
+            : range.StartedAtUtc;
+        DateTimeOffset endedAtUtc = _activeWebSession.EndedAtUtc < range.EndedAtUtc
+            ? _activeWebSession.EndedAtUtc
+            : range.EndedAtUtc;
+        if (endedAtUtc <= startedAtUtc)
+        {
+            return null;
+        }
+
+        return new WebSession(
+            "current-active-web-session",
+            _activeWebSession.BrowserFamily,
+            url: null,
+            _activeWebSession.Domain,
+            pageTitle: null,
+            TimeRange.FromUtc(startedAtUtc, endedAtUtc),
+            captureMethod: "LiveDashboardPreview",
+            captureConfidence: "Live",
+            isPrivateOrUnknown: false);
+    }
+
     private TimeRange ResolveRange(DashboardPeriod period)
     {
         DateTimeOffset utcNow = _clock.UtcNow.ToUniversalTime();
@@ -815,6 +866,29 @@ public sealed partial class DashboardViewModel : ObservableObject
                 session.BrowserFamily,
                 TextOrDefault(session.CaptureConfidence, "Unknown")))
             .ToList();
+    }
+
+    private ActiveWebSessionSnapshot? CreateActiveWebSessionSnapshot(DashboardTrackingSnapshot snapshot)
+    {
+        if (snapshot.CurrentWebSessionStartedAtUtc is null ||
+            snapshot.CurrentWebSessionDuration <= TimeSpan.Zero ||
+            string.IsNullOrWhiteSpace(snapshot.CurrentBrowserDomain))
+        {
+            return null;
+        }
+
+        DateTimeOffset endedAtUtc = snapshot.LastPollAtUtc
+            ?? snapshot.CurrentWebSessionStartedAtUtc.Value.Add(snapshot.CurrentWebSessionDuration);
+        if (endedAtUtc <= snapshot.CurrentWebSessionStartedAtUtc.Value)
+        {
+            return null;
+        }
+
+        return new ActiveWebSessionSnapshot(
+            FormatBrowserDomain(snapshot.CurrentBrowserDomain),
+            TextOrDefault(snapshot.AppName, "Current browser"),
+            snapshot.CurrentWebSessionStartedAtUtc.Value,
+            endedAtUtc);
     }
 
     private IReadOnlyList<DashboardEventLogRow> BuildLiveEventRows(
@@ -979,4 +1053,10 @@ public sealed partial class DashboardViewModel : ObservableObject
             DashboardBrowserCaptureStatus.Error => "Browser capture error",
             _ => "Browser capture unavailable"
         };
+
+    private sealed record ActiveWebSessionSnapshot(
+        string Domain,
+        string BrowserFamily,
+        DateTimeOffset StartedAtUtc,
+        DateTimeOffset EndedAtUtc);
 }

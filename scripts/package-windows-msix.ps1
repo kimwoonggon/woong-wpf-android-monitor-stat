@@ -187,18 +187,44 @@ This artifact contains a signed MSIX package:
 - `WoongMonitorStack.Windows.msix`
 - `certificates\$CertificateFileName`
 - `install-windows-msix.ps1`
+- `Install-WoongMonitorStack.Windows.cmd`
 
-Install from an elevated PowerShell prompt:
+Recommended install path:
+
+1. Right-click `Install-WoongMonitorStack.Windows.cmd`.
+2. Choose **Run as administrator**.
+3. Accept the UAC prompt.
+
+Manual install from an elevated PowerShell prompt:
 
 ~~~powershell
 powershell -ExecutionPolicy Bypass -File .\install-windows-msix.ps1 -PackagePath .\WoongMonitorStack.Windows.msix -CertificatePath .\certificates\$CertificateFileName -TrustCertificate -TrustScope LocalMachine
 ~~~
 
-The installer script trusts the public certificate in `Cert:\LocalMachine\TrustedPeople`.
-That machine-wide store is required for reliable MSIX/App Installer validation of self-signed or private release certificates.
+Use the `.cer` shipped in the same artifact as the `.msix`.
+The ephemeral test certificate changes on every CI run, so a certificate from a previous artifact will not trust this package.
+
+Double-clicking `WoongMonitorStack.Windows.msix` before certificate trust is expected to fail with `0x800B010A`.
+For a double-click MSIX install without a trust step, sign the release with Azure Artifact Signing, Microsoft Store signing, or a public trusted code-signing certificate.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
+}
+
+function Write-InstallLauncher {
+    param(
+        [string]$Path,
+        [string]$CertificateFileName
+    )
+
+    $content = @"
+@echo off
+setlocal
+set SCRIPT_DIR=%~dp0
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process PowerShell -Verb RunAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File ""%SCRIPT_DIR%install-windows-msix.ps1"" -PackagePath ""%SCRIPT_DIR%WoongMonitorStack.Windows.msix"" -CertificatePath ""%SCRIPT_DIR%certificates\$CertificateFileName"" -TrustCertificate -TrustScope LocalMachine'"
+"@
+
+    Set-Content -Path $Path -Value $content -Encoding ASCII
 }
 
 if (-not (Test-Path -LiteralPath $manifestTemplatePath)) {
@@ -304,9 +330,14 @@ Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\install-windows-msix.ps1") 
     -Force
 
 if (-not [string]::IsNullOrWhiteSpace($generatedCerPath)) {
+    $certificateFileName = Split-Path -Leaf $generatedCerPath
+    Write-InstallLauncher `
+        -Path (Join-Path $outputRootPath "Install-WoongMonitorStack.Windows.cmd") `
+        -CertificateFileName $certificateFileName
+
     Write-InstallReadme `
         -Path (Join-Path $outputRootPath "README.md") `
-        -CertificateFileName (Split-Path -Leaf $generatedCerPath)
+        -CertificateFileName $certificateFileName
 }
 
 Write-Host "MSIX package: $msixPath"

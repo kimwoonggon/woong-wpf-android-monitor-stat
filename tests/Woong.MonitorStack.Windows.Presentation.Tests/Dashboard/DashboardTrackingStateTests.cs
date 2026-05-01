@@ -389,6 +389,52 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public void PollTrackingCommand_WhenCurrentWebDomainContinues_ShowsActiveWebDurationBeforeSessionCloses()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var now = startedAtUtc.AddMinutes(15);
+        var dataSource = new MutableDashboardDataSource();
+        var coordinator = new FakeTrackingCoordinator
+        {
+            StartSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.Zero,
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "chatgpt.com",
+                CurrentWebSessionStartedAtUtc: startedAtUtc,
+                CurrentWebSessionDuration: TimeSpan.Zero),
+            PollSnapshot = new DashboardTrackingSnapshot(
+                AppName: "Chrome",
+                ProcessName: "chrome.exe",
+                WindowTitle: null,
+                CurrentSessionDuration: TimeSpan.FromMinutes(15),
+                LastPersistedSession: null,
+                CurrentBrowserDomain: "chatgpt.com",
+                CurrentWebSessionStartedAtUtc: startedAtUtc,
+                CurrentWebSessionDuration: TimeSpan.FromMinutes(15),
+                LastPollAtUtc: now)
+        };
+        var viewModel = new DashboardViewModel(
+            dataSource,
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            coordinator);
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        viewModel.StartTrackingCommand.Execute(null);
+        viewModel.PollTrackingCommand.Execute(null);
+
+        DashboardWebSessionRow row = Assert.Single(viewModel.RecentWebSessions);
+        Assert.Equal("chatgpt.com", row.Domain);
+        Assert.Equal("15m", row.Duration);
+        Assert.Equal(900_000, viewModel.TotalWebMs);
+        Assert.Equal("chatgpt.com", viewModel.TopDomainName);
+        Assert.Contains(viewModel.DomainUsagePoints, point => point.Label == "chatgpt.com" && point.ValueMs == 900_000);
+    }
+
+    [Fact]
     public void UpdateCurrentActivity_WhenWindowTitleHidden_MasksWindowTitle()
     {
         DashboardViewModel viewModel = CreateViewModel();

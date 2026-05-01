@@ -73,4 +73,5 @@ jobs:
             artifacts/windows-msix/*.msix
             artifacts/windows-msix/certificates/*.cer
             artifacts/windows-msix/install-windows-msix.ps1
+            artifacts/windows-msix/Install-WoongMonitorStack.Windows.cmd
             artifacts/windows-msix/README.md

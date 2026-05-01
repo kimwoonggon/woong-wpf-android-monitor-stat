@@ -55,6 +55,7 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("artifacts/windows-msix/*.msix", workflow, StringComparison.Ordinal);
         Assert.Contains("artifacts/windows-msix/certificates/*.cer", workflow, StringComparison.Ordinal);
         Assert.Contains("artifacts/windows-msix/install-windows-msix.ps1", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/windows-msix/Install-WoongMonitorStack.Windows.cmd", workflow, StringComparison.Ordinal);
         Assert.Contains("artifacts/windows-msix/README.md", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("*.pfx", workflow, StringComparison.OrdinalIgnoreCase);
     }
@@ -127,6 +128,9 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("Export-PublicCertificateFromPfx", packageScript, StringComparison.Ordinal);
         Assert.Contains("WoongMonitorStack.Windows.Signing.cer", packageScript, StringComparison.Ordinal);
         Assert.Contains("install-windows-msix.ps1", packageScript, StringComparison.Ordinal);
+        Assert.Contains("Install-WoongMonitorStack.Windows.cmd", packageScript, StringComparison.Ordinal);
+        Assert.Contains("Assert-CertificateMatchesPackageSigner", installScript, StringComparison.Ordinal);
+        Assert.Contains("Get-AuthenticodeSignature", installScript, StringComparison.Ordinal);
         Assert.Contains("README.md", packageScript, StringComparison.Ordinal);
         Assert.Contains("Add-AppxPackage", installScript, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Cert:\\CurrentUser\\TrustedPeople", installScript, StringComparison.OrdinalIgnoreCase);
@@ -137,6 +141,7 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("TrustCertificate", installScript, StringComparison.Ordinal);
         Assert.DoesNotContain("MSIX_SIGNING_CERTIFICATE", packageScript, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Remove-Item Cert:", installScript, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Cert:\\LocalMachine\\Root", installScript, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -153,8 +158,13 @@ public sealed class WindowsReleasePackagingTests
         Assert.Contains("scripts\\install-windows-msix.ps1", doc, StringComparison.Ordinal);
         Assert.Contains("-CreateTestCertificate", doc, StringComparison.Ordinal);
         Assert.Contains("WoongMonitorStack.Windows.TestSigning.cer", doc, StringComparison.Ordinal);
+        Assert.Contains("WoongMonitorStack.Windows.Signing.cer", doc, StringComparison.Ordinal);
         Assert.Contains("woong-monitor-windows-msix", doc, StringComparison.Ordinal);
         Assert.Contains("0x800B010A", doc, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Double-clicking `WoongMonitorStack.Windows.msix` before certificate trust is expected to fail", doc, StringComparison.Ordinal);
+        Assert.Contains("Use the `.cer` shipped in the same artifact as the `.msix`", doc, StringComparison.Ordinal);
+        Assert.Contains("ephemeral test certificate changes on every CI run", doc, StringComparison.Ordinal);
+        Assert.Contains("Install-WoongMonitorStack.Windows.cmd", doc, StringComparison.Ordinal);
         Assert.Contains("LocalMachine", doc, StringComparison.Ordinal);
         Assert.Contains("Administrator", doc, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("unsigned MSIX", doc, StringComparison.OrdinalIgnoreCase);

@@ -10,7 +10,9 @@ public sealed record DashboardTrackingSnapshot(
     DashboardBrowserCaptureStatus BrowserCaptureStatus = DashboardBrowserCaptureStatus.Unavailable,
     DateTimeOffset? LastPollAtUtc = null,
     DateTimeOffset? LastDbWriteAtUtc = null,
-    bool HasPersistedWebSession = false)
+    bool HasPersistedWebSession = false,
+    DateTimeOffset? CurrentWebSessionStartedAtUtc = null,
+    TimeSpan CurrentWebSessionDuration = default)
 {
     public static DashboardTrackingSnapshot Empty { get; } = new(
         AppName: null,

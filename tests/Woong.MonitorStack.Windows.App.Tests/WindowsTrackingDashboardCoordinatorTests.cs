@@ -289,6 +289,53 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void PollOnce_WhenSameBrowserDomainStaysOpen_ReturnsActiveWebSessionDurationWithoutPersisting()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "ChatGPT - Chrome"));
+        var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+            capturedAtUtc: startedAtUtc,
+            domain: "chatgpt.com",
+            url: "https://chatgpt.com/"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteWebSessionRepository webRepository = CreateWebSessionRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            webRepository,
+            outboxRepository,
+            clock,
+            browserReader);
+
+        coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(15);
+        browserReader.Snapshot = CreateBrowserSnapshot(
+            capturedAtUtc: clock.UtcNow,
+            domain: "chatgpt.com",
+            url: "https://chatgpt.com/");
+
+        DashboardTrackingSnapshot snapshot = coordinator.PollOnce();
+
+        Assert.Equal("chatgpt.com", snapshot.CurrentBrowserDomain);
+        Assert.Equal(startedAtUtc, snapshot.CurrentWebSessionStartedAtUtc);
+        Assert.Equal(TimeSpan.FromMinutes(15), snapshot.CurrentWebSessionDuration);
+        Assert.False(snapshot.HasPersistedWebSession);
+        Assert.Empty(webRepository.QueryByFocusSessionId($"20:200:{startedAtUtc.ToUnixTimeMilliseconds()}"));
+        Assert.Empty(outboxRepository.QueryAll());
+    }
+
+    [Fact]
     public void StartTracking_WhenBrowserReaderFails_ReturnsCaptureErrorWithoutBreakingFocusTracking()
     {
         var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
@@ -321,6 +368,62 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         Assert.Equal(DashboardBrowserCaptureStatus.Error, snapshot.BrowserCaptureStatus);
         Assert.Empty(webRepository.QueryByFocusSessionId("20:200:1777334400000"));
         Assert.Empty(outboxRepository.QueryAll());
+    }
+
+    [Fact]
+    public void PollOnce_WhenLeavingBrowserFocus_FlushesOpenWebSessionBeforeStartingNextApp()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "ChatGPT - Chrome"));
+        var browserReader = new MutableBrowserActivityReader(CreateBrowserSnapshot(
+            capturedAtUtc: startedAtUtc,
+            domain: "chatgpt.com",
+            url: "https://chatgpt.com/"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteWebSessionRepository webRepository = CreateWebSessionRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            webRepository,
+            outboxRepository,
+            clock,
+            browserReader);
+
+        coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(15);
+        foregroundReader.ForegroundWindow = new ForegroundWindowInfo(
+            hwnd: 300,
+            processId: 30,
+            processName: "Code.exe",
+            executablePath: "C:\\Apps\\Code.exe",
+            windowTitle: "Project - Visual Studio Code");
+        browserReader.Snapshot = null;
+
+        DashboardTrackingSnapshot snapshot = coordinator.PollOnce();
+
+        string chromeFocusSessionId = $"20:200:{startedAtUtc.ToUnixTimeMilliseconds()}";
+        WebSession saved = Assert.Single(webRepository.QueryByFocusSessionId(chromeFocusSessionId));
+        Assert.Equal("chatgpt.com", saved.Domain);
+        Assert.Equal(900_000, saved.DurationMs);
+        Assert.True(snapshot.HasPersistedWebSession);
+        Assert.Equal("Code.exe", snapshot.AppName);
+        Assert.Equal("chrome.exe persisted at 09:15 for 15m", snapshot.LastPersistedSession?.ToDisplayText("Asia/Seoul"));
+
+        Assert.Contains(outboxRepository.QueryAll(), item =>
+            item.AggregateType == "web_session" &&
+            item.PayloadJson.Contains("chatgpt.com", StringComparison.Ordinal) &&
+            item.PayloadJson.Contains("900000", StringComparison.Ordinal));
     }
 
     [Fact]

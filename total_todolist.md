@@ -2273,3 +2273,22 @@ milestones below are finished.
 - [ ] Next Android CI TODO: add manual emulator workflow for `connectedDebugAndroidTest` after runner reliability/cost is acceptable.- [ ] Next Android TODO: fix current-focus validation screenshot timing/retry; XML evidence currently includes Chrome/com.android.chrome but PNG was blank.
 - [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
 - [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.
+## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
+
+- [x] Fixed WPF runtime tracking bug: leaving a browser foreground focus now flushes the open WebSession before the coordinator starts tracking the next app.
+- [x] Added RED/GREEN coverage for a 15-minute `chatgpt.com` session followed by switching to `Code.exe`; SQLite now contains a 900000ms `chatgpt.com` web_session and a pending web_session outbox item.
+- [x] Strengthened MSIX install artifact UX: generated artifacts now include `Install-WoongMonitorStack.Windows.cmd` to launch the installer script elevated for the bundled package/certificate pair.
+- [x] `install-windows-msix.ps1` now verifies that the supplied `.cer` thumbprint matches the MSIX signer before importing trust, catching mismatched/old CI artifact certificates.
+- [x] README and `docs/windows-release-msix.md` now explain that double-clicking a self-signed CI `.msix` before certificate trust is expected to fail with `0x800B010A`; use the same-artifact `.cer` or a real trusted signing path for double-click install.
+- [x] Validation passed: focused WPF tracking tests (26 passed) and focused Windows MSIX architecture tests (3 passed).
+
+## 2026-05-01 Windows Live WebSession Duration Follow-Up
+
+- [x] Fixed live dashboard undercount: a current same-domain browser session now exposes active WebSession duration before domain change/Stop, so Web Focus/top domains/Web Sessions show the ongoing `chatgpt.com` duration instead of only an old short row.
+- [x] Added RED/GREEN coordinator coverage for a 15-minute same-domain `chatgpt.com` active WebSession without prematurely persisting a closed row.
+- [x] Added RED/GREEN dashboard coverage that overlays the active WebSession into Web Focus, top domains, charts, and Web Sessions before the session closes.
+- [x] Validation passed: focused browser/sessionizer tests (15 passed), focused WPF tracking tests (27 passed), and focused WPF dashboard presentation tests (66 passed).
+- [x] Full solution validation passed for Windows WebSession/MSIX recovery: `dotnet test` 494 passed / 6 skipped, Release `dotnet build` 0 warnings / 0 errors.
+- [x] Coverage refreshed for Windows WebSession/MSIX recovery: line 88.1%, branch 70.2%, report at `artifacts/coverage/SummaryGithub.md`.
+- [x] Local MSIX packaging validation passed with generated test certificate, bundled README/install script, and `Install-WoongMonitorStack.Windows.cmd`.
+- [x] MSIX install script `-WhatIf` validation passed with the same-artifact package/certificate pair and LocalMachine TrustedPeople target.
