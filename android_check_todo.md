@@ -360,6 +360,10 @@ workspace.
 - [x] Android UI screenshot automation now captures `16-dashboard-1h-selected.png` and `17-sessions-6h-selected.png`.
 - [x] Latest selected-period screenshot evidence: `artifacts/android-ui-snapshots/20260501-214011/`.
 - [x] Validation passed for Dashboard/Sessions selected-state polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
+- [x] Dashboard, App Detail, and Report charts now share a readable MPAndroidChart visual contract through `DashboardChartConfigurator`.
+- [x] Added RED/GREEN tests for muted chart axes/grids, disabled legends/highlights, branded bar/line datasets, and hidden raw value labels.
+- [x] Latest chart screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`.
+- [x] Validation passed for chart visual polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
 - [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
-- [ ] Remaining Android visual gap: polish Dashboard and Report chart styling against the supplied reference.
-- [ ] Remaining Android visual gap: polish App Detail chart styling and top-app row spacing against the supplied reference.
+- [ ] Remaining Android visual gap: reduce top-app row dead space and add proportional usage bars for ranked app lists.
+- [ ] Remaining Android visual gap: improve Dashboard chart density so app labels remain readable when many apps exist.

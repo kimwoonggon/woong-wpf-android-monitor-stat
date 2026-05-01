@@ -2,10 +2,13 @@ package com.woong.monitorstack.dashboard
 
 import android.content.Context
 import android.view.ContextThemeWrapper
+import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
 import com.woong.monitorstack.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -17,6 +20,53 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class DashboardChartConfiguratorTest {
+    @Test
+    fun chartConfiguratorsApplyReadableSharedVisualStyle() {
+        val context = testContext()
+        val chart = BarChart(context)
+
+        DashboardChartConfigurator().configureHourlyBarChart(chart)
+
+        val mutedText = ContextCompat.getColor(context, R.color.wms_text_muted)
+        val border = ContextCompat.getColor(context, R.color.wms_border)
+
+        assertFalse(chart.description.isEnabled)
+        assertFalse(chart.legend.isEnabled)
+        assertFalse(chart.isHighlightPerTapEnabled)
+        assertFalse(chart.isHighlightPerDragEnabled)
+        assertEquals(mutedText, chart.xAxis.textColor)
+        assertEquals(mutedText, chart.axisLeft.textColor)
+        assertEquals(border, chart.xAxis.gridColor)
+        assertEquals(border, chart.axisLeft.gridColor)
+    }
+
+    @Test
+    fun focusBarDataSetUsesBrandColorAndHidesRawValueLabels() {
+        val context = testContext()
+        val dataSet = DashboardChartConfigurator().createFocusBarDataSet(
+            context = context,
+            entries = listOf(BarEntry(9f, 30f)),
+            label = "Hourly focus"
+        )
+
+        assertEquals(ContextCompat.getColor(context, R.color.wms_primary), dataSet.color)
+        assertFalse(dataSet.isDrawValuesEnabled)
+    }
+
+    @Test
+    fun trendLineDataSetUsesBrandColorAndHidesRawValueLabels() {
+        val context = testContext()
+        val dataSet = DashboardChartConfigurator().createTrendLineDataSet(
+            context = context,
+            entries = listOf(Entry(0f, 120f)),
+            label = "Daily trend"
+        )
+
+        assertEquals(ContextCompat.getColor(context, R.color.wms_primary), dataSet.color)
+        assertEquals(ContextCompat.getColor(context, R.color.wms_primary), dataSet.circleColors.first())
+        assertFalse(dataSet.isDrawValuesEnabled)
+    }
+
     @Test
     fun hourlyChartUsesHourLabelsAndMinuteAxis() {
         val chart = LineChart(testContext())

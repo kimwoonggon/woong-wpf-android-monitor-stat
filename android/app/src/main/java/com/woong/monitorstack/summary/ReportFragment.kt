@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardChartConfigurator
@@ -143,7 +142,11 @@ class ReportFragment : Fragment() {
             binding.sevenDayTrendChart.clear()
         } else {
             binding.sevenDayTrendChart.data = LineData(
-                LineDataSet(entries, getString(R.string.daily_usage_trend))
+                chartConfigurator.createTrendLineDataSet(
+                    context = requireContext(),
+                    entries = entries,
+                    label = getString(R.string.daily_usage_trend)
+                )
             )
         }
 

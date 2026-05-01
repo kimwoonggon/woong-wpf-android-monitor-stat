@@ -2260,5 +2260,9 @@ milestones below are finished.
 - [x] Android UI screenshot automation now captures `16-dashboard-1h-selected.png` and `17-sessions-6h-selected.png`.
 - [x] Latest selected-period screenshot evidence: `artifacts/android-ui-snapshots/20260501-214011/`.
 - [x] Validation passed for Dashboard/Sessions selected-state polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
-- [ ] Next Android TODO: polish Dashboard/Report/App Detail chart visuals against the supplied reference.
+- [x] Dashboard, Report, and App Detail charts now share readable MPAndroidChart styling and branded datasets through `DashboardChartConfigurator`.
+- [x] Added RED/GREEN tests for chart visual contract, hidden raw value labels, and branded bar/line datasets.
+- [x] Latest chart screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`.
+- [x] Validation passed for Android chart visual polish: Android Gradle unit/build/androidTest APK, UI snapshot script on `emulator-5554`, full dotnet test/build, coverage line 88.0% / branch 69.5%.
 - [ ] Next Android TODO: reduce top-app row dead space and consider proportional horizontal bars for ranked app lists.
+- [ ] Next Android TODO: improve Dashboard chart density so app labels remain readable when many apps exist.

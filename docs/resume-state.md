@@ -5029,3 +5029,25 @@ Remaining Android priorities:
 
 - Polish Dashboard/Report/App Detail chart visuals against the supplied reference.
 - Reduce top-app row dead space and consider proportional horizontal bars for the ranked app list.
+
+## 2026-05-01 Android Chart Visual Contract Polish
+
+- Added shared readable MPAndroidChart styling in `DashboardChartConfigurator`.
+- Dashboard, DashboardFragment, App Detail, and Report charts now use the same muted axis/grid styling, disabled legends, disabled highlight interactions, and brand-blue datasets.
+- Added RED/GREEN tests proving chart configurators apply the shared visual contract and dataset helpers hide raw value labels.
+- Latest Android UI screenshot evidence: `artifacts/android-ui-snapshots/20260501-221704/`, especially `03-dashboard-charts.png`, `14-app-detail.png`, and `12-main-shell-report.png`.
+
+Validation completed:
+
+- Focused `DashboardChartConfiguratorTest` chart visual contract tests passed.
+- Android Gradle `testDebugUnitTest assembleDebug assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed on `emulator-5554`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 491 passed, 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Coverage collection passed: line 88.0% (4526/5143), branch 69.5% (677/973), report at `artifacts/coverage/SummaryGithub.md`.
+
+Remaining Android priorities:
+
+- Reduce top-app row dead space and add a proportional usage-bar treatment for ranked app lists.
+- Improve Dashboard chart density so the top-app chart does not crowd labels when many apps appear.
+- Continue runtime tracking validation for current app collection through UsageStats and Room refresh.

@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
@@ -160,11 +159,12 @@ class DashboardFragment : Fragment() {
         }
 
         binding.hourlyFocusChart.data = BarData(
-            BarDataSet(
-                hourlyActivity.map { bucket ->
+            chartConfigurator.createFocusBarDataSet(
+                context = requireContext(),
+                entries = hourlyActivity.map { bucket ->
                     BarEntry(bucket.hourOfDay.toFloat(), bucket.durationMs / 60_000f)
                 },
-                getString(R.string.hourly_focus_chart_title)
+                label = getString(R.string.hourly_focus_chart_title)
             )
         )
         binding.hourlyFocusChart.invalidate()

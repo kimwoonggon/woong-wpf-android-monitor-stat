@@ -10,9 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.ActivityDashboardBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
@@ -118,7 +116,11 @@ class DashboardActivity : AppCompatActivity() {
             binding.activityLineChart.clear()
         } else {
             binding.activityLineChart.data = LineData(
-                LineDataSet(chartEntries.activityEntries, "Activity")
+                chartConfigurator.createTrendLineDataSet(
+                    context = this,
+                    entries = chartEntries.activityEntries,
+                    label = "Activity"
+                )
             )
         }
 
@@ -126,7 +128,11 @@ class DashboardActivity : AppCompatActivity() {
             binding.appUsageBarChart.clear()
         } else {
             binding.appUsageBarChart.data = BarData(
-                BarDataSet(chartEntries.appEntries, "Apps")
+                chartConfigurator.createFocusBarDataSet(
+                    context = this,
+                    entries = chartEntries.appEntries,
+                    label = "Apps"
+                )
             )
         }
 

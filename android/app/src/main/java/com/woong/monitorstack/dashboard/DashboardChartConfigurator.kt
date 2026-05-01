@@ -1,15 +1,23 @@
 package com.woong.monitorstack.dashboard
 
+import android.content.Context
+import androidx.core.content.ContextCompat
+import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.woong.monitorstack.R
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class DashboardChartConfigurator {
     fun configureHourlyChart(chart: LineChart) {
-        chart.description.isEnabled = false
+        applyReadableVisualStyle(chart)
         chart.setNoDataText("No sessions yet")
         chart.axisRight.isEnabled = false
         chart.axisLeft.axisMinimum = 0f
@@ -21,7 +29,7 @@ class DashboardChartConfigurator {
     }
 
     fun configureAppUsageChart(chart: BarChart, appLabels: List<String> = emptyList()) {
-        chart.description.isEnabled = false
+        applyReadableVisualStyle(chart)
         chart.setNoDataText("No sessions yet")
         chart.axisRight.isEnabled = false
         chart.axisLeft.axisMinimum = 0f
@@ -34,7 +42,7 @@ class DashboardChartConfigurator {
     }
 
     fun configureHourlyBarChart(chart: BarChart) {
-        chart.description.isEnabled = false
+        applyReadableVisualStyle(chart)
         chart.setNoDataText("No sessions yet")
         chart.axisRight.isEnabled = false
         chart.axisLeft.axisMinimum = 0f
@@ -47,7 +55,7 @@ class DashboardChartConfigurator {
     }
 
     fun configureDailyTrendChart(chart: LineChart, dayLabels: List<String>) {
-        chart.description.isEnabled = false
+        applyReadableVisualStyle(chart)
         chart.setNoDataText("No sessions yet")
         chart.axisRight.isEnabled = false
         chart.axisLeft.axisMinimum = 0f
@@ -56,6 +64,65 @@ class DashboardChartConfigurator {
         chart.xAxis.granularity = 1f
         chart.xAxis.isGranularityEnabled = true
         chart.xAxis.valueFormatter = IndexedLabelAxisValueFormatter(dayLabels)
+    }
+
+    fun createFocusBarDataSet(
+        context: Context,
+        entries: List<BarEntry>,
+        label: String
+    ): BarDataSet {
+        val primary = ContextCompat.getColor(context, R.color.wms_primary)
+        return BarDataSet(entries, label).apply {
+            color = primary
+            valueTextColor = primary
+            setDrawValues(false)
+            highLightColor = primary
+        }
+    }
+
+    fun createTrendLineDataSet(
+        context: Context,
+        entries: List<Entry>,
+        label: String
+    ): LineDataSet {
+        val primary = ContextCompat.getColor(context, R.color.wms_primary)
+        val surface = ContextCompat.getColor(context, R.color.wms_surface)
+        return LineDataSet(entries, label).apply {
+            color = primary
+            setCircleColor(primary)
+            circleHoleColor = surface
+            valueTextColor = primary
+            lineWidth = 2.5f
+            circleRadius = 4f
+            circleHoleRadius = 2f
+            setDrawValues(false)
+            highLightColor = primary
+        }
+    }
+
+    private fun applyReadableVisualStyle(chart: BarLineChartBase<*>) {
+        val context = chart.context
+        val mutedText = ContextCompat.getColor(context, R.color.wms_text_muted)
+        val border = ContextCompat.getColor(context, R.color.wms_border)
+
+        chart.description.isEnabled = false
+        chart.legend.isEnabled = false
+        chart.setTouchEnabled(false)
+        chart.setScaleEnabled(false)
+        chart.setHighlightPerTapEnabled(false)
+        chart.setHighlightPerDragEnabled(false)
+        chart.setDrawGridBackground(false)
+        chart.setNoDataTextColor(mutedText)
+
+        chart.xAxis.textColor = mutedText
+        chart.xAxis.textSize = 11f
+        chart.xAxis.gridColor = border
+        chart.xAxis.axisLineColor = border
+
+        chart.axisLeft.textColor = mutedText
+        chart.axisLeft.textSize = 11f
+        chart.axisLeft.gridColor = border
+        chart.axisLeft.axisLineColor = border
     }
 }
 

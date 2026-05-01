@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardChartConfigurator
@@ -89,7 +88,11 @@ class AppDetailFragment : Fragment() {
             binding.appHourlyChart.clear()
         } else {
             binding.appHourlyChart.data = BarData(
-                BarDataSet(entries, getString(R.string.hourly_usage_today))
+                chartConfigurator.createFocusBarDataSet(
+                    context = requireContext(),
+                    entries = entries,
+                    label = getString(R.string.hourly_usage_today)
+                )
             )
         }
 
