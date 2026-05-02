@@ -1,7 +1,6 @@
 package com.woong.monitorstack
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -238,7 +237,7 @@ class MainActivityTest {
         )
         val insets = WindowInsetsCompat.Builder()
             .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 96))
-            .setInsets(WindowInsetsCompat.Type.tappableElement(), Insets.of(0, 0, 0, 0))
+            .setInsets(WindowInsetsCompat.Type.tappableElement(), Insets.of(0, 0, 0, 96))
             .build()
 
         val returnedInsets = ViewCompat.dispatchApplyWindowInsets(root, insets)
@@ -258,15 +257,18 @@ class MainActivityTest {
 
     @Suppress("DEPRECATION")
     @Test
-    fun mainShellDisablesNavigationBarContrastScrimSoBottomTabsStayReadable() {
+    fun mainShellUsesOpaqueSystemNavigationBarSoAndroidButtonsRemainVisible() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
             .get()
 
-        assertEquals(Color.TRANSPARENT, activity.window.navigationBarColor)
+        assertTrue(
+            "The Android back/home/recent buttons must use the dark icon mode so they remain visible on the stable white system navigation area.",
+            activity.window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR != 0
+        )
         assertFalse(
-            "Android navigation-bar contrast scrim makes bottom tab labels look faded when the shell draws at the bottom.",
+            "The shell should keep the system navigation area stable and readable without a contrast scrim over the app tabs.",
             activity.window.isNavigationBarContrastEnforced
         )
     }

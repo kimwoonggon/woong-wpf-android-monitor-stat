@@ -53,7 +53,7 @@ public static class DashboardLiveChartsMapper
             [series],
             labels,
             [new Axis { MinLimit = 0, Labeler = FormatMillisecondsAsMinutes }],
-            [new Axis { Labels = labels }],
+            [new Axis { Labels = labels, MinStep = 1, ForceStepToMin = true }],
             pointList.Count == 0 ? "No data for selected period" : "");
     }
 

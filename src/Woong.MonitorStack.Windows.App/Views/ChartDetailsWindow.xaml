@@ -15,12 +15,14 @@
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -30,7 +32,37 @@
                    Text="{Binding Title}"
                    Style="{StaticResource HeadingTextStyle}" />
 
-        <Border Grid.Row="1"
+        <StackPanel Grid.Row="1"
+                    Margin="0,14,0,0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+            <TextBlock Text="Period"
+                       Margin="0,0,8,0"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource BodyTextStyle}" />
+            <ListBox AutomationProperties.AutomationId="ChartDetailsPeriodSelector"
+                     ItemsSource="{Binding PeriodOptions}"
+                     SelectedValuePath="Period"
+                     SelectedValue="{Binding SelectedPeriod, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     BorderThickness="0"
+                     Background="{StaticResource TransparentBrush}"
+                     ItemContainerStyle="{StaticResource ChartDetailsPeriodSelectorItemStyle}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+
+        <Border Grid.Row="2"
                 Margin="0,18,0,0"
                 Style="{StaticResource DashboardCardBorderStyle}">
             <lvc:CartesianChart AutomationProperties.AutomationId="ChartDetailsHorizontalBarChart"
@@ -39,7 +71,7 @@
                                 YAxes="{Binding Chart.YAxes}" />
         </Border>
 
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Margin="0,14,0,0"
                 Style="{StaticResource DashboardCardBorderStyle}">
             <ListView AutomationProperties.AutomationId="ChartDetailsRowsList"

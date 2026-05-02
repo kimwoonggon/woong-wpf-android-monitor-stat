@@ -275,7 +275,17 @@ class RoomDashboardRepository(
             capturedAtLocalText = capturedAt.atZone(timezoneId).format(TimeFormatter),
             visitStatsText = visitSummary.visitStatsText,
             topVisitText = visitSummary.topVisitText,
-            mapPoints = visitSummary.mapPoints
+            mapPoints = visitSummary.mapPoints.ifEmpty {
+                listOf(
+                    LocationMapPoint(
+                        latitude = latitude!!,
+                        longitude = longitude!!,
+                        durationMs = 0L,
+                        sampleCount = 1,
+                        capturedAtLocalText = capturedAt.atZone(timezoneId).format(TimeFormatter)
+                    )
+                )
+            }
         )
     }
 

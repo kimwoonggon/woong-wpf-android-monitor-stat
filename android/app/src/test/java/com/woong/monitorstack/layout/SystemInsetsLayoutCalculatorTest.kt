@@ -5,7 +5,7 @@ import org.junit.Test
 
 class SystemInsetsLayoutCalculatorTest {
     @Test
-    fun calculateAddsOnlyRequiredTappableInsetToBottomNavigation() {
+    fun calculateKeepsBottomNavigationCompactAndLeavesSystemButtonsOutsideApp() {
         val calculator = SystemInsetsLayoutCalculator(
             baseBottomNavigationHeightPx = 56,
             contentBottomClearancePx = 0
@@ -13,9 +13,9 @@ class SystemInsetsLayoutCalculatorTest {
 
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
-        assertEquals(80, layout.bottomNavigationHeightPx)
-        assertEquals(80, layout.fragmentBottomMarginPx)
-        assertEquals(24, layout.bottomNavigationPaddingBottomPx)
+        assertEquals(56, layout.bottomNavigationHeightPx)
+        assertEquals(56, layout.fragmentBottomMarginPx)
+        assertEquals(0, layout.bottomNavigationPaddingBottomPx)
     }
 
     @Test

@@ -134,6 +134,14 @@ class RoomDashboardRepositoryTest {
         assertEquals("126.9780", snapshot.locationContext.longitudeText)
         assertEquals("±36m", snapshot.locationContext.accuracyText)
         assertEquals("09:30", snapshot.locationContext.capturedAtLocalText)
+        assertEquals(
+            "A current coordinate should still draw one local map point even before visit aggregation has produced a location_visit row.",
+            1,
+            snapshot.locationContext.mapPoints.size
+        )
+        assertEquals(37.5665, snapshot.locationContext.mapPoints.single().latitude, 0.0001)
+        assertEquals(126.9780, snapshot.locationContext.mapPoints.single().longitude, 0.0001)
+        assertEquals("09:30", snapshot.locationContext.mapPoints.single().capturedAtLocalText)
     }
 
     @Test

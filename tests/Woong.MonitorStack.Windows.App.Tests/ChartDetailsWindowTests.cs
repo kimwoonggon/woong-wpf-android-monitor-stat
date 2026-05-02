@@ -134,4 +134,111 @@ public sealed class ChartDetailsWindowTests
                 window.Close();
             }
         });
+
+    [Fact]
+    public void ChartDetailsWindow_GroupsCaseVariantsIntoOneHorizontalBar()
+        => RunOnStaThread(() =>
+        {
+            var request = new DashboardChartDetailsRequest(
+                "App focus details",
+                "Apps",
+                [
+                    new DashboardChartPoint("Chrome.exe", 600_000),
+                    new DashboardChartPoint("chrome.exe", 300_000)
+                ]);
+            var window = new ChartDetailsWindow(request);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
+                DashboardChartPoint row = Assert.Single(
+                    viewModel.DetailRows.Select(detail => new DashboardChartPoint(detail.Label, detail.ValueMs)));
+                Assert.Equal("Chrome.exe", row.Label);
+                Assert.Equal(900_000, row.ValueMs);
+                var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(viewModel.Chart.Series));
+                Assert.Equal([900_000], rowSeries.Values);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void ChartDetailsWindowViewModel_SelectPeriodUpdatesChartRowsAndKeepsOrderAligned()
+    {
+        var request = new DashboardChartDetailsRequest(
+            "App focus details",
+            "Apps",
+            Points:
+            [
+                new DashboardChartPoint("Chrome", 600_000),
+                new DashboardChartPoint("Code.exe", 300_000)
+            ],
+            SelectedPeriod: DashboardPeriod.LastHour,
+            PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
+            {
+                [DashboardPeriod.LastHour] =
+                [
+                    new DashboardChartPoint("Chrome", 600_000),
+                    new DashboardChartPoint("Code.exe", 300_000)
+                ],
+                [DashboardPeriod.Last6Hours] =
+                [
+                    new DashboardChartPoint("Terminal", 900_000),
+                    new DashboardChartPoint("Chrome", 120_000),
+                    new DashboardChartPoint("Terminal", 60_000)
+                ]
+            });
+        ChartDetailsWindowViewModel viewModel = ChartDetailsWindowViewModel.FromRequest(request);
+
+        viewModel.SelectPeriod(DashboardPeriod.Last6Hours);
+
+        Assert.Equal(DashboardPeriod.Last6Hours, viewModel.SelectedPeriod);
+        Assert.Equal(["Terminal", "Chrome"], viewModel.DetailRows.Select(row => row.Label));
+        Assert.Equal(["Terminal", "Chrome"], viewModel.Chart.Labels);
+        Assert.Equal(["Terminal", "Chrome"], Assert.Single(viewModel.Chart.YAxes).Labels);
+        var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(viewModel.Chart.Series));
+        Assert.Equal([960_000, 120_000], rowSeries.Values);
+    }
+
+    [Fact]
+    public void ChartDetailsWindow_RendersPeriodFilterOptions()
+        => RunOnStaThread(() =>
+        {
+            var request = new DashboardChartDetailsRequest(
+                "Domain focus details",
+                "Domains",
+                Points: [new DashboardChartPoint("github.com", 600_000)],
+                SelectedPeriod: DashboardPeriod.Today,
+                PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
+                {
+                    [DashboardPeriod.Today] = [new DashboardChartPoint("github.com", 600_000)],
+                    [DashboardPeriod.LastHour] = [new DashboardChartPoint("github.com", 60_000)],
+                    [DashboardPeriod.Last6Hours] = [new DashboardChartPoint("github.com", 360_000)],
+                    [DashboardPeriod.Last24Hours] = [new DashboardChartPoint("github.com", 1_200_000)],
+                    [DashboardPeriod.Custom] = [new DashboardChartPoint("github.com", 120_000)]
+                });
+            var window = new ChartDetailsWindow(request);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var periodSelector = FindByAutomationId<ListBox>(window, "ChartDetailsPeriodSelector");
+                Assert.Equal(5, periodSelector.Items.Count);
+                var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
+                Assert.Equal(
+                    ["Today", "1h", "6h", "24h", "Custom"],
+                    viewModel.PeriodOptions.Select(option => option.Label));
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
 }

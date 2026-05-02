@@ -2688,3 +2688,26 @@ milestones below are finished.
 - [x] Full validation passed before commit: `dotnet restore`, `dotnet test`,
   `dotnet build`, Android `:app:testDebugUnitTest`, Android
   `:app:assembleDebug`, and `run-local-integrated-dashboard.ps1 -DryRun`.
+
+## 2026-05-03 WPF Detail Filters And Android Map/Nav Regression Follow-Up
+
+- [x] WPF: detail windows now expose visible `Today`, `1h`, `6h`, `24h`, and
+  `Custom` period selectors instead of hiding the period choice behind a single
+  collapsed control.
+- [x] WPF: app/domain detail windows group duplicate labels case-insensitively,
+  sort by duration descending, cap the chart/table at top 10, and keep all
+  chart category labels aligned one-to-one with their horizontal bars.
+- [x] WPF: detail chart Y axes force a one-category step so LiveCharts does not
+  thin ten bars down to only two visible labels.
+- [x] Android: Dashboard location card shows the local mini map above
+  latitude/longitude rows, and the mini map still renders a map-like local
+  preview when only the latest location snapshot exists.
+- [x] Android: Dashboard location map falls back to the latest opt-in snapshot
+  as one point until persisted `location_visits` rows accumulate.
+- [x] Android: bottom navigation remains compact at the app floor while the
+  Android back/home/recent system navigation area stays visible underneath with
+  dark icons on a stable white system bar.
+- [x] Validation passed: focused WPF detail tests, focused WPF architecture
+  tests, full solution `dotnet test`, full solution `dotnet build`, Android
+  focused location/inset tests, Android full `:app:testDebugUnitTest`, and
+  Android `:app:assembleDebug`.

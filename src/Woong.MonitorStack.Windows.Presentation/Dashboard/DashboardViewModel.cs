@@ -287,7 +287,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         _chartDetailsPresenter.ShowChartDetails(new DashboardChartDetailsRequest(
             "App focus details",
             "Apps",
-            AppUsageDetailPoints));
+            AppUsageDetailPoints,
+            SelectedPeriod,
+            BuildPeriodPointSets(BuildAppUsageDetailPoints)));
     }
 
     [RelayCommand]
@@ -297,7 +299,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         _chartDetailsPresenter.ShowChartDetails(new DashboardChartDetailsRequest(
             "Domain focus details",
             "Domains",
-            DomainUsageDetailPoints));
+            DomainUsageDetailPoints,
+            SelectedPeriod,
+            BuildPeriodPointSets(BuildDomainUsageDetailPoints)));
     }
 
     [RelayCommand]
@@ -722,6 +726,38 @@ public sealed partial class DashboardViewModel : ObservableObject
             .ToList();
 
         return new DailySummary(summaryDate, totalActiveMs, totalIdleMs, totalWebMs, topApps, topDomains);
+    }
+
+    private IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>> BuildPeriodPointSets(
+        Func<TimeRange, IReadOnlyList<DashboardChartPoint>> buildPoints)
+    {
+        DashboardPeriod[] periods =
+        [
+            DashboardPeriod.Today,
+            DashboardPeriod.LastHour,
+            DashboardPeriod.Last6Hours,
+            DashboardPeriod.Last24Hours,
+            DashboardPeriod.Custom
+        ];
+
+        return periods.ToDictionary(period => period, period => buildPoints(ResolveRange(period)));
+    }
+
+    private IReadOnlyList<DashboardChartPoint> BuildAppUsageDetailPoints(TimeRange range)
+    {
+        IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
+        DailySummary summary = BuildRangeSummary(focusSessions, [], range);
+
+        return DashboardChartMapper.BuildAppUsagePoints(summary).Take(10).ToList();
+    }
+
+    private IReadOnlyList<DashboardChartPoint> BuildDomainUsageDetailPoints(TimeRange range)
+    {
+        IReadOnlyList<WebSession> persistedWebSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
+        IReadOnlyList<WebSession> webSessions = IncludeActiveWebSession(persistedWebSessions, range);
+        DailySummary summary = BuildRangeSummary([], webSessions, range);
+
+        return DashboardChartMapper.BuildDomainUsagePoints(summary).Take(10).ToList();
     }
 
     private IReadOnlyList<WebSession> IncludeActiveWebSession(IReadOnlyList<WebSession> persistedWebSessions, TimeRange range)

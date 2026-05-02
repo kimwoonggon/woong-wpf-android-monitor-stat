@@ -86,6 +86,7 @@ class LocationMiniMapView @JvmOverloads constructor(
         )
         canvas.drawRoundRect(bounds, 16f, 16f, backgroundPaint)
         canvas.drawRoundRect(bounds, 16f, 16f, borderPaint)
+        drawLocalMapContext(canvas)
 
         if (points.isEmpty()) {
             canvas.drawText(
@@ -97,7 +98,6 @@ class LocationMiniMapView @JvmOverloads constructor(
             return
         }
 
-        drawLocalMapContext(canvas)
         drawPoints(canvas)
     }
 

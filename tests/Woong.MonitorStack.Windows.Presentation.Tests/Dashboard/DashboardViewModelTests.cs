@@ -638,6 +638,41 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void ShowAppFocusDetailsCommand_IncludesPeriodPointSetsForDetailWindowFilters()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        var todayOnly = Session(
+            "today-only",
+            "today.exe",
+            now.AddHours(-2),
+            now.AddHours(-2).AddMinutes(30),
+            isIdle: false);
+        var lastHourOnly = Session(
+            "last-hour-only",
+            "last-hour.exe",
+            now.AddMinutes(-30),
+            now.AddMinutes(-10),
+            isIdle: false);
+        var presenter = new RecordingChartDetailsPresenter();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([todayOnly, lastHourOnly], []),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            chartDetailsPresenter: presenter);
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.ShowAppFocusDetailsCommand.Execute(null);
+
+        DashboardChartDetailsRequest request = Assert.Single(presenter.Requests);
+        Assert.Equal(DashboardPeriod.LastHour, request.SelectedPeriod);
+        Assert.Equal(
+            [DashboardPeriod.Today, DashboardPeriod.LastHour, DashboardPeriod.Last6Hours, DashboardPeriod.Last24Hours, DashboardPeriod.Custom],
+            request.PeriodPoints.Keys);
+        Assert.Equal(["last-hour.exe"], request.PeriodPoints[DashboardPeriod.LastHour].Select(point => point.Label));
+        Assert.Contains("today.exe", request.PeriodPoints[DashboardPeriod.Today].Select(point => point.Label));
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesRecentSessionRows()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -1047,11 +1082,15 @@ public sealed class DashboardViewModelTests
             LastFocusQueryStartedAtUtc = startedAtUtc;
             LastFocusQueryEndedAtUtc = endedAtUtc;
 
-            return focusSessions;
+            return focusSessions
+                .Where(session => session.EndedAtUtc > startedAtUtc && session.StartedAtUtc < endedAtUtc)
+                .ToList();
         }
 
         public IReadOnlyList<WebSession> QueryWebSessions(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
-            => webSessions;
+            => webSessions
+                .Where(session => session.EndedAtUtc > startedAtUtc && session.StartedAtUtc < endedAtUtc)
+                .ToList();
     }
 
     private sealed class FixedClock(DateTimeOffset utcNow) : IDashboardClock

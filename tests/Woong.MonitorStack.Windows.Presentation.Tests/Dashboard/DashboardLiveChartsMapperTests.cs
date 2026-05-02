@@ -154,4 +154,22 @@ public sealed class DashboardLiveChartsMapperTests
         var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(chart.Series));
         Assert.Equal([600_000, 300_000], rowSeries.Values);
     }
+
+    [Fact]
+    public void BuildHorizontalBarChart_ForDetailsForcesEveryCategoryLabel()
+    {
+        DashboardChartPoint[] points = Enumerable.Range(1, 10)
+            .Select(index => new DashboardChartPoint($"app-{index}", (11 - index) * 60_000))
+            .ToArray();
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart(
+            "Apps",
+            points,
+            maxCategoryLabelLength: null);
+
+        Axis yAxis = Assert.Single(chart.YAxes);
+        Assert.Equal(points.Select(point => point.Label), yAxis.Labels);
+        Assert.Equal(1, yAxis.MinStep);
+        Assert.True(yAxis.ForceStepToMin);
+    }
 }

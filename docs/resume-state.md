@@ -5641,3 +5641,20 @@ Validation update:
 - .NET full test passed: dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal (626 passed plus 6 PostgreSQL-environment skips across server tests).
 - .NET full build passed: dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal.
 - Local dashboard dry-run passed: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 -DryRun.
+
+## 2026-05-03 WPF Detail Filters And Android Map/Nav Regression Follow-Up
+
+- WPF app/domain detail windows now show visible period choices for Today, 1h, 6h, 24h, and Custom.
+- Detail charts now group duplicate labels case-insensitively, sort descending by duration, cap both chart and table at top 10, and force one Y-axis category step so every horizontal bar has its own visible label.
+- Android Dashboard location context now places the local no-network mini map above latitude/longitude text, and the repository falls back to the latest opt-in location snapshot as one map point until visit aggregation exists.
+- Android shell navigation now keeps Dashboard/Sessions/Report/Settings compact at the app floor while the Android back/home/recent system navigation area remains visible below the app with dark navigation icons.
+
+Validation update:
+
+- Focused WPF detail tests passed: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --filter "FullyQualifiedName~ChartDetailsWindowTests" --no-restore -v minimal`.
+- Focused WPF presentation chart tests passed: `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --filter "FullyQualifiedName~DashboardLiveChartsMapperTests|FullyQualifiedName~DashboardViewModelTests" --no-restore -v minimal`.
+- Focused WPF architecture tests passed after moving the new selector style into `Styles/Tabs.xaml`.
+- Android focused location/inset tests passed and Android full unit tests passed: `.\gradlew.bat :app:testDebugUnitTest --no-daemon --max-workers=1 --stacktrace`.
+- Android debug build passed: `.\gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 --stacktrace`.
+- .NET full test passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` with 631 passed and 6 PostgreSQL-environment skips.
+- .NET full build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.

@@ -1,6 +1,9 @@
 package com.woong.monitorstack.dashboard
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,6 +23,22 @@ class LocationMiniMapViewTest {
 
         assertEquals(0, view.pointCount)
         assertTrue(view.contentDescription.toString().contains("No location statistics"))
+    }
+
+    @Test
+    fun emptyMapStillDrawsLocalPreviewContext() {
+        val view = LocationMiniMapView(context()).apply {
+            layout(0, 0, 320, 144)
+        }
+        val bitmap = Bitmap.createBitmap(320, 144, Bitmap.Config.ARGB_8888)
+
+        view.setPoints(emptyList())
+        view.draw(Canvas(bitmap))
+
+        assertTrue(
+            "Empty location state should still show the local map preview grid/background, not a blank panel.",
+            bitmap.getPixel(84, 30) != Color.WHITE
+        )
     }
 
     @Test

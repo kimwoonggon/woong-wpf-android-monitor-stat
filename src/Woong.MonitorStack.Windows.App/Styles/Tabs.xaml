@@ -13,6 +13,15 @@
         <Setter Property="Padding" Value="14,8" />
     </Style>
 
+    <Style x:Key="ChartDetailsPeriodSelectorItemStyle" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="MinWidth" Value="72" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Margin" Value="4,0" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="TabHeaderIconTextStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="Width" Value="20" />
         <Setter Property="Height" Value="20" />

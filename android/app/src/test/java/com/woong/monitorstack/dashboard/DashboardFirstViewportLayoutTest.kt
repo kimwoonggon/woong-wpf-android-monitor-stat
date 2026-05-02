@@ -91,6 +91,24 @@ class DashboardFirstViewportLayoutTest {
         )
     }
 
+    @Test
+    fun locationCardShowsMiniMapBeforeCoordinateRows() {
+        val context = ContextThemeWrapper(
+            ApplicationProvider.getApplicationContext<Context>(),
+            R.style.Theme_WoongMonitor
+        )
+        val binding = FragmentDashboardBinding.inflate(LayoutInflater.from(context))
+        val locationCardContent = binding.locationContextCard.getChildAt(0) as ViewGroup
+
+        val miniMapIndex = locationCardContent.indexOfChild(binding.locationMiniMapView)
+        val latitudeIndex = locationCardContent.indexOfChild(binding.locationLatitudeText)
+
+        assertTrue(
+            "The map preview should appear above latitude/longitude rows so the location card reads as a map first.",
+            miniMapIndex in 0 until latitudeIndex
+        )
+    }
+
     private fun ViewGroup.indexOfChild(child: View): Int {
         return (0 until childCount).firstOrNull { index -> getChildAt(index) == child } ?: -1
     }
