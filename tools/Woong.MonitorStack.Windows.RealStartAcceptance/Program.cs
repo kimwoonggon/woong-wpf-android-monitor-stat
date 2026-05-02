@@ -20,7 +20,7 @@ internal static class RealStartAcceptanceRunner
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             Console.Error.WriteLine($"[FAIL] {exception.Message}");
-            Console.Error.WriteLine("Usage: --app <path> --db <path> [--seconds <seconds>] [--allow-server-sync]");
+            Console.Error.WriteLine("Usage: --app <path> --db <path> [--seconds <seconds>] [--allow-server-sync] [--verify-db-only]");
             return 2;
         }
 
@@ -36,16 +36,32 @@ internal static class RealStartAcceptanceRunner
         Process? process = null;
         try
         {
-            if (!File.Exists(options.AppPath))
+            if (options.VerifyDatabaseOnly)
             {
-                throw new FileNotFoundException("WPF app executable was not found.", options.AppPath);
+                RealStartEvidence[] databaseEvidence = BuildDatabaseOnlyEvidence(options);
+                bool isDatabaseEvidenceSuccess = databaseEvidence.All(item => item.Status is AcceptanceStatus.Pass);
+                WriteRealStartArtifacts(options, databaseEvidence, isDatabaseEvidenceSuccess);
+                if (isDatabaseEvidenceSuccess)
+                {
+                    Console.WriteLine("PASS: verified domain-only web_session duration evidence from local SQLite.");
+                    return 0;
+                }
+
+                Console.Error.WriteLine("FAIL: local SQLite web_session evidence did not satisfy domain-only privacy requirements.");
+                return 1;
+            }
+
+            string appPath = options.AppPath ?? throw new InvalidOperationException("--app is required outside --verify-db-only mode.");
+            if (!File.Exists(appPath))
+            {
+                throw new FileNotFoundException("WPF app executable was not found.", appPath);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(options.DatabasePath)!);
-            var startInfo = new ProcessStartInfo(options.AppPath)
+            var startInfo = new ProcessStartInfo(appPath)
             {
                 UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(options.AppPath) ?? Environment.CurrentDirectory
+                WorkingDirectory = Path.GetDirectoryName(appPath) ?? Environment.CurrentDirectory
             };
             startInfo.Environment["WOONG_MONITOR_LOCAL_DB"] = options.DatabasePath;
             startInfo.Environment["WOONG_MONITOR_DEVICE_ID"] = "real-start-local";
@@ -266,6 +282,36 @@ internal static class RealStartAcceptanceRunner
         WriteRealStartManifest(outputDirectory, options, evidence, safety, isSuccess, failure);
     }
 
+    private static RealStartEvidence[] BuildDatabaseOnlyEvidence(RealStartOptions options)
+    {
+        int webCount = CountRows(options.DatabasePath, "web_session");
+        if (webCount <= 0)
+        {
+            throw new InvalidOperationException("No web_session rows were persisted.");
+        }
+
+        DomainOnlyWebEvidence webEvidence = ReadDomainOnlyWebEvidence(options.DatabasePath);
+
+        return
+        [
+            new(
+                "domain-only web_session duration persisted",
+                "> 0 ms duration for a domain-only persisted web session",
+                $"{webEvidence.Domain}:{webEvidence.DurationMs.ToString(System.Globalization.CultureInfo.InvariantCulture)}ms",
+                webEvidence.DurationMs > 0 ? AcceptanceStatus.Pass : AcceptanceStatus.Fail),
+            new(
+                "domain-only web_session privacy",
+                "domain is present while url and page_title are NULL",
+                $"domain={webEvidence.Domain}; urlNull={webEvidence.UrlIsNull}; pageTitleNull={webEvidence.PageTitleIsNull}",
+                webEvidence.UrlIsNull && webEvidence.PageTitleIsNull ? AcceptanceStatus.Pass : AcceptanceStatus.Fail),
+            new(
+                "real server sync not required for DB-only evidence",
+                "AllowServerSync=false and evidence is read from local SQLite only",
+                options.AllowServerSync ? "AllowServerSync=true" : "AllowServerSync=false",
+                options.AllowServerSync ? AcceptanceStatus.Fail : AcceptanceStatus.Pass)
+        ];
+    }
+
     private static void WriteRealStartReport(
         string outputDirectory,
         IReadOnlyCollection<RealStartEvidence> evidence,
@@ -320,6 +366,7 @@ internal static class RealStartAcceptanceRunner
         {
             status = isSuccess ? "PASS" : "FAIL",
             generatedAtUtc = DateTimeOffset.UtcNow,
+            mode = options.VerifyDatabaseOnly ? "database-only" : "fla-ui",
             appPath = options.AppPath,
             databasePath = options.DatabasePath,
             allowServerSync = options.AllowServerSync,
@@ -366,7 +413,7 @@ internal static class RealStartAcceptanceRunner
             new(
                 "Process cleanup scoped to launched WPF app",
                 "Cleanup closes only the process launched by this RealStart acceptance run.",
-                options.AppPath,
+                options.AppPath ?? "database-only mode",
                 AcceptanceStatus.Pass)
         ];
 
@@ -389,6 +436,31 @@ internal static class RealStartAcceptanceRunner
         return value is string processName && !string.IsNullOrWhiteSpace(processName)
             ? processName
             : throw new InvalidOperationException("No readable focus_session process/app name was persisted.");
+    }
+
+    private static DomainOnlyWebEvidence ReadDomainOnlyWebEvidence(string databasePath)
+    {
+        using var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False");
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT domain, duration_ms, url IS NULL, page_title IS NULL
+            FROM web_session
+            ORDER BY ended_at_utc DESC
+            LIMIT 1;
+            """;
+
+        using SqliteDataReader reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            throw new InvalidOperationException("No readable web_session row was persisted.");
+        }
+
+        return new DomainOnlyWebEvidence(
+            reader.GetString(0),
+            reader.GetInt64(1),
+            reader.GetInt64(2) == 1,
+            reader.GetInt64(3) == 1);
     }
 
     private static bool ElementContainsText(AutomationElement element, string expectedText)
@@ -429,12 +501,19 @@ internal sealed record RealStartEvidence(
     string Actual,
     AcceptanceStatus Status);
 
+internal sealed record DomainOnlyWebEvidence(
+    string Domain,
+    long DurationMs,
+    bool UrlIsNull,
+    bool PageTitleIsNull);
+
 internal sealed record RealStartOptions(
-    string AppPath,
+    string? AppPath,
     string DatabasePath,
     TimeSpan ObservationDuration,
     TimeSpan Timeout,
-    bool AllowServerSync)
+    bool AllowServerSync,
+    bool VerifyDatabaseOnly)
 {
     public static RealStartOptions Parse(string[] args)
     {
@@ -443,6 +522,7 @@ internal sealed record RealStartOptions(
         var observationDuration = TimeSpan.FromSeconds(3);
         var timeout = TimeSpan.FromSeconds(20);
         var allowServerSync = false;
+        var verifyDatabaseOnly = false;
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -464,12 +544,15 @@ internal sealed record RealStartOptions(
                 case "--allow-server-sync":
                     allowServerSync = true;
                     break;
+                case "--verify-db-only":
+                    verifyDatabaseOnly = true;
+                    break;
                 default:
                     throw new ArgumentException($"Unknown argument: {arg}");
             }
         }
 
-        if (string.IsNullOrWhiteSpace(appPath))
+        if (!verifyDatabaseOnly && string.IsNullOrWhiteSpace(appPath))
         {
             throw new ArgumentException("--app is required.");
         }
@@ -480,11 +563,12 @@ internal sealed record RealStartOptions(
         }
 
         return new RealStartOptions(
-            Path.GetFullPath(appPath),
+            string.IsNullOrWhiteSpace(appPath) ? null : Path.GetFullPath(appPath),
             Path.GetFullPath(databasePath),
             observationDuration,
             timeout,
-            allowServerSync);
+            allowServerSync,
+            verifyDatabaseOnly);
     }
 
     private static int ReadPositiveInt(string[] args, ref int index, string argumentName)

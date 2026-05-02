@@ -85,6 +85,11 @@ Recent WPF chart hardening:
   the top-10 detail cutoff, while dashboard charts remain limited to top 3.
 - [x] Chart details windows expose full labels and human-readable duration
   values in a read-only details list alongside the horizontal chart.
+- [x] RealStart DB-only evidence can prove domain-only web-session duration
+  persistence from a temp SQLite database without launching browsers, capturing
+  external app screenshots, or enabling real server sync.
+  Evidence:
+  `WpfRealStartAcceptanceScriptTests.RealStartTool_VerifyDbOnlyReportsDomainOnlyWebSessionDurationEvidence`.
 
 ## Runtime Modes To Verify
 

@@ -156,6 +156,18 @@ It will use a temp DB unless configured otherwise.
 Real server sync must remain disabled unless `--AllowServerSync` is explicitly
 provided.
 
+When a live desktop/browser run is not feasible, RealStart can verify a
+pre-seeded temp SQLite database without launching browsers or capturing
+external app screenshots:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-wpf-real-start-acceptance.ps1 -VerifyDatabaseOnly -DatabasePath <temp-real-start.db>
+```
+
+That mode writes `real-start-report.md` and `real-start-manifest.json` beside
+the DB. Passing evidence must include a domain-only `web_session` row with a
+positive duration, null `url`, null `page_title`, and `AllowServerSync=false`.
+
 ## Visual Review Prompt
 
 The snapshot package should generate

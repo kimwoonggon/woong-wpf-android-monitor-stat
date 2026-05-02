@@ -2470,4 +2470,9 @@ milestones below are finished.
   capacity blockers (`BLOCKED`/exit 2) from validation failures (`FAIL`/exit
   1), removes stale test output on blocked runs, and restores
   `WOONG_MONITOR_RUN_POSTGRES_TESTS` after execution.
+- [x] WPF RealStart evidence now has a DB-only verification path for
+  domain-only `web_session` duration persistence: it reads a temp SQLite DB,
+  writes `real-start-report.md`/`real-start-manifest.json`, keeps
+  `AllowServerSync=false`, and avoids launching browsers or capturing external
+  app screenshots.
 - [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, token-protected 401/403 response policy, and runtime retention alert delivery have focused coverage; production user/session provider selection still needs implementation/validation.

@@ -452,8 +452,11 @@ Product boundary reminder:
 - [x] Woong-only screenshots exist:
   `dashboard-after-app-switch.png` and `sessions-after-app-switch.png`.
 - [x] No Chrome screenshots or Chrome UI dumps were captured.
-- [ ] Use `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
+- [x] Use `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
   -Restart` for repeatable emulator launch.
+  - Latest PASS evidence:
+    `artifacts/android-emulator-stable/20260502-173815/`; `adb devices -l`
+    reported `emulator-5554 device` and `sys.boot_completed=1`.
 - [x] Add an app-switch QA script that performs:
   Woong launch -> Chrome launch -> wait -> Woong return -> collection refresh.
 - [x] Capture only Woong Monitor UI screenshots before launch, after return,
