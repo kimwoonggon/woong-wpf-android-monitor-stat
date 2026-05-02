@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private var fragmentBottomMarginWithChrome = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_WoongMonitor)
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)

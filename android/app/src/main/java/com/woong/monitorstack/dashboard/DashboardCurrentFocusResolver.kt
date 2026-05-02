@@ -1,5 +1,7 @@
 package com.woong.monitorstack.dashboard
 
+import com.woong.monitorstack.usage.AndroidForegroundNoise
+
 class DashboardCurrentFocusResolver(
     private val monitorPackageName: String
 ) {
@@ -19,14 +21,7 @@ class DashboardCurrentFocusResolver(
     }
 
     companion object {
-        val NoisyForegroundPackages = setOf(
-            "com.google.android.apps.nexuslauncher",
-            "com.android.launcher",
-            "com.android.launcher2",
-            "com.android.launcher3",
-            "com.android.systemui",
-            "com.google.android.googlequicksearchbox"
-        )
+        val NoisyForegroundPackages = AndroidForegroundNoise.PackageNames
     }
 }
 

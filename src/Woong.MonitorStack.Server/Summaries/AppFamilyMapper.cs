@@ -9,7 +9,8 @@ public static class AppFamilyMapper
         ["code.exe"] = "VS Code",
         ["com.microsoft.vscode"] = "VS Code",
         ["slack.exe"] = "Slack",
-        ["com.slack"] = "Slack"
+        ["com.slack"] = "Slack",
+        ["com.google.android.youtube"] = "YouTube"
     };
 
     public static string GetFamilyLabel(string platformAppKey)

@@ -10,6 +10,10 @@
         <item name="actionBarSize">56dp</item>
     </style>
 
+    <style name="Theme.WoongMonitor.Starting" parent="Theme.WoongMonitor">
+        <item name="android:windowBackground">@drawable/bg_launch_splash</item>
+    </style>
+
     <style name="WmsCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/wms_surface</item>
         <item name="strokeColor">@color/wms_border</item>

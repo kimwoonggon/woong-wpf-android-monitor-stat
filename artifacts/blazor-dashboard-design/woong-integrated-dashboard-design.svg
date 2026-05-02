@@ -1,0 +1,142 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="Integrated Device Dashboard design">
+  <defs>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .card { fill: #ffffff; stroke: #dce3ec; stroke-width: 1.5; }
+      .soft { fill: #eef6ff; stroke: #bfdbfe; stroke-width: 1.2; }
+      .green { fill: #ecfdf5; stroke: #bbf7d0; stroke-width: 1.2; }
+      .orange { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1.2; }
+      .purple { fill: #f5f3ff; stroke: #ddd6fe; stroke-width: 1.2; }
+      .text { font-family: "Segoe UI", Arial, sans-serif; fill: #0f172a; }
+      .muted { font-family: "Segoe UI", Arial, sans-serif; fill: #64748b; }
+      .tiny { font-size: 13px; }
+      .body { font-size: 16px; }
+      .label { font-size: 18px; font-weight: 700; }
+      .title { font-size: 32px; font-weight: 800; }
+      .metric { font-size: 30px; font-weight: 800; }
+      .bar { fill: #1671df; }
+      .bar2 { fill: #22c55e; }
+      .bar3 { fill: #8b5cf6; }
+      .track { fill: #e5e7eb; }
+      .line { stroke: #94a3b8; stroke-width: 2; fill: none; }
+      .arrow { stroke: #1671df; stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1671df" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900" />
+
+  <text class="text title" x="44" y="58">Integrated Device Dashboard</text>
+  <text class="muted body" x="44" y="86">Windows + Android metadata verified through PostgreSQL, API contracts, and C# Blazor</text>
+  <rect class="green" x="1040" y="32" width="140" height="38" rx="19" />
+  <text class="text tiny" x="1060" y="56">PostgreSQL</text>
+  <rect class="orange" x="1194" y="32" width="92" height="38" rx="19" />
+  <text class="text tiny" x="1214" y="56">Sync Opt-In</text>
+  <rect class="soft" x="1300" y="32" width="70" height="38" rx="19" />
+  <text class="text tiny" x="1316" y="56">Privacy Safe</text>
+
+  <rect class="card" x="36" y="118" width="280" height="270" rx="16" />
+  <text class="text label" x="60" y="152">Windows WPF</text>
+  <text class="muted tiny" x="60" y="180">Local SQLite metadata source</text>
+  <rect class="soft" x="60" y="205" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="232">focus_session</text>
+  <rect class="soft" x="60" y="257" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="284">web_session</text>
+  <rect class="soft" x="60" y="309" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="336">sync_outbox</text>
+  <text class="muted tiny" x="60" y="368">Chrome domains: github.com, chatgpt.com</text>
+
+  <rect class="card" x="36" y="420" width="280" height="270" rx="16" />
+  <text class="text label" x="60" y="454">Android</text>
+  <text class="muted tiny" x="60" y="482">Room + UsageStats metadata source</text>
+  <rect class="green" x="60" y="507" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="534">app_usage_session</text>
+  <rect class="green" x="60" y="559" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="586">location_context</text>
+  <rect class="green" x="60" y="611" width="232" height="42" rx="10" />
+  <text class="text body" x="78" y="638">sync_outbox</text>
+  <text class="muted tiny" x="60" y="670">Apps: Chrome, YouTube; location opt-in</text>
+
+  <rect class="card" x="380" y="150" width="290" height="506" rx="16" />
+  <text class="text label" x="408" y="188">Server Integration Path</text>
+  <rect class="soft" x="418" y="220" width="214" height="48" rx="12" />
+  <text class="text body" x="448" y="250">Upload APIs</text>
+  <path class="arrow" d="M 525 272 L 525 318" />
+  <rect class="green" x="418" y="320" width="214" height="48" rx="12" />
+  <text class="text body" x="445" y="350">PostgreSQL DB</text>
+  <path class="arrow" d="M 525 372 L 525 418" />
+  <rect class="purple" x="418" y="420" width="214" height="58" rx="12" />
+  <text class="text body" x="438" y="446">IntegratedDashboard</text>
+  <text class="text body" x="466" y="466">QueryService</text>
+  <path class="arrow" d="M 525 482 L 525 528" />
+  <rect class="soft" x="418" y="530" width="214" height="48" rx="12" />
+  <text class="text body" x="448" y="560">JSON API</text>
+  <path class="arrow" d="M 525 582 L 525 622" />
+  <rect class="soft" x="418" y="622" width="214" height="48" rx="12" />
+  <text class="text body" x="458" y="652">Blazor UI</text>
+
+  <path class="arrow" d="M 316 254 C 350 254 350 244 380 244" />
+  <path class="arrow" d="M 316 556 C 350 556 350 244 380 244" />
+
+  <rect class="card" x="724" y="118" width="640" height="604" rx="18" />
+  <rect class="bg" x="748" y="146" width="592" height="552" rx="14" />
+  <text class="text label" x="774" y="184">/dashboard</text>
+  <text class="muted tiny" x="774" y="208">Integrated Device Dashboard</text>
+
+  <rect class="card" x="774" y="238" width="128" height="92" rx="12" />
+  <text class="muted tiny" x="792" y="264">Active Focus</text>
+  <text class="text metric" x="792" y="302">2h 00m</text>
+  <rect class="card" x="918" y="238" width="128" height="92" rx="12" />
+  <text class="muted tiny" x="936" y="264">Idle</text>
+  <text class="text metric" x="936" y="302">5m</text>
+  <rect class="card" x="1062" y="238" width="128" height="92" rx="12" />
+  <text class="muted tiny" x="1080" y="264">Web Focus</text>
+  <text class="text metric" x="1080" y="302">30m</text>
+  <rect class="card" x="1206" y="238" width="108" height="92" rx="12" />
+  <text class="muted tiny" x="1224" y="264">Devices</text>
+  <text class="text metric" x="1224" y="302">2</text>
+
+  <rect class="card" x="774" y="360" width="250" height="144" rx="12" />
+  <text class="text label" x="794" y="392">Platform Totals</text>
+  <text class="muted tiny" x="794" y="424">windows</text>
+  <rect class="track" x="870" y="412" width="118" height="12" rx="6" />
+  <rect class="bar" x="870" y="412" width="92" height="12" rx="6" />
+  <text class="muted tiny" x="794" y="458">android</text>
+  <rect class="track" x="870" y="446" width="118" height="12" rx="6" />
+  <rect class="bar2" x="870" y="446" width="82" height="12" rx="6" />
+
+  <rect class="card" x="1048" y="360" width="266" height="144" rx="12" />
+  <text class="text label" x="1068" y="392">Top Apps</text>
+  <text class="muted tiny" x="1068" y="424">Chrome</text>
+  <rect class="track" x="1140" y="412" width="138" height="12" rx="6" />
+  <rect class="bar" x="1140" y="412" width="112" height="12" rx="6" />
+  <text class="muted tiny" x="1068" y="458">VS Code</text>
+  <rect class="track" x="1140" y="446" width="138" height="12" rx="6" />
+  <rect class="bar" x="1140" y="446" width="92" height="12" rx="6" />
+
+  <rect class="card" x="774" y="526" width="250" height="138" rx="12" />
+  <text class="text label" x="794" y="558">Top Domains</text>
+  <text class="muted tiny" x="794" y="590">github.com</text>
+  <rect class="track" x="878" y="578" width="110" height="12" rx="6" />
+  <rect class="bar3" x="878" y="578" width="82" height="12" rx="6" />
+  <text class="muted tiny" x="794" y="624">chatgpt.com</text>
+  <rect class="track" x="878" y="612" width="110" height="12" rx="6" />
+  <rect class="bar3" x="878" y="612" width="58" height="12" rx="6" />
+
+  <rect class="card" x="1048" y="526" width="266" height="138" rx="12" />
+  <text class="text label" x="1068" y="558">Location Samples</text>
+  <text class="muted tiny" x="1068" y="590">37.5665,126.9780</text>
+  <text class="muted tiny" x="1068" y="624">Opt-in coarse metadata only</text>
+
+  <rect class="card" x="774" y="682" width="540" height="28" rx="8" />
+  <text class="muted tiny" x="796" y="702">Devices: Windows WPF Acceptance | Android Acceptance | UTC | PostgreSQL</text>
+
+  <path class="arrow" d="M 670 554 C 700 554 700 554 724 554" />
+
+  <rect class="orange" x="36" y="744" width="1328" height="110" rx="16" />
+  <text class="text label" x="64" y="782">Acceptance Evidence + Privacy Boundary</text>
+  <text class="muted body" x="64" y="814">API JSON totals match Blazor page totals. Desktop and narrow screenshots capture only the Woong dashboard.</text>
+  <text class="muted body" x="64" y="842">Metadata only: no device tokens, typed text, clipboard, page contents, messages, screenshots, Android touch coordinates, or local DB cross-reads.</text>
+</svg>

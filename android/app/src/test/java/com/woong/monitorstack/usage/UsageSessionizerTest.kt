@@ -119,4 +119,35 @@ class UsageSessionizerTest {
         assertEquals(30_000, session.endedAtUtcMillis)
         assertEquals(20_000, session.durationMs)
     }
+
+    @Test
+    fun sessionizeIgnoresBootstrapLauncherNoiseBeforeMonitorForeground() {
+        val sessionizer = UsageSessionizer(
+            ignoredPackageNames = setOf(
+                "com.google.android.apps.nexuslauncher",
+                "com.android.systemui"
+            )
+        )
+        val events = listOf(
+            UsageEventSnapshot(
+                "com.google.android.apps.nexuslauncher",
+                UsageEventType.ACTIVITY_RESUMED,
+                1_000
+            ),
+            UsageEventSnapshot("com.android.systemui", UsageEventType.ACTIVITY_RESUMED, 1_500),
+            UsageEventSnapshot("com.woong.monitorstack", UsageEventType.ACTIVITY_RESUMED, 2_000),
+            UsageEventSnapshot("com.woong.monitorstack", UsageEventType.ACTIVITY_PAUSED, 12_000)
+        )
+
+        val sessions = sessionizer.sessionize(
+            events = events,
+            collectionStartUtcMillis = 0,
+            collectionEndUtcMillis = 20_000
+        )
+
+        val session = sessions.single()
+        assertEquals("com.woong.monitorstack", session.packageName)
+        assertEquals(2_000, session.startedAtUtcMillis)
+        assertEquals(12_000, session.endedAtUtcMillis)
+    }
 }

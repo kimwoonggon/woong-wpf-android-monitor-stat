@@ -113,6 +113,27 @@ public sealed class IntegratedDashboardQueryService
             .OrderByDescending(total => total.SampleCount)
             .ThenBy(total => total.Label, StringComparer.Ordinal)
             .ToList();
+        List<IntegratedPlatformUsage> platformUsage = platformTotals
+            .Select(total => new IntegratedPlatformUsage(
+                total.Platform,
+                total.ActiveMs,
+                total.IdleMs,
+                total.WebMs,
+                TopAppsForPlatform(total.Platform),
+                TopDomainsForPlatform(total.Platform)))
+            .ToList();
+        List<IntegratedLocationRoutePoint> locationRoute = locationContexts
+            .OrderBy(context => context.CapturedAtUtc)
+            .ThenBy(context => context.ClientContextId, StringComparer.Ordinal)
+            .Select(context => new IntegratedLocationRoutePoint(
+                context.ClientContextId,
+                context.CapturedAtUtc,
+                context.Latitude!.Value,
+                context.Longitude!.Value,
+                context.AccuracyMeters,
+                context.CaptureMode,
+                context.PermissionState))
+            .ToList();
 
         return new IntegratedDashboardSnapshot(
             userId,
@@ -126,13 +147,36 @@ public sealed class IntegratedDashboardQueryService
             platformTotals,
             topApps,
             topDomains,
-            topLocations);
+            topLocations,
+            platformUsage,
+            locationRoute);
 
         long FocusDuration(FocusSessionEntity session)
             => OverlapDurationMs(session.StartedAtUtc, session.EndedAtUtc, rangeStartUtc, rangeEndUtc);
 
         long WebDuration(WebSessionEntity session)
             => OverlapDurationMs(session.StartedAtUtc, session.EndedAtUtc, rangeStartUtc, rangeEndUtc);
+
+        List<IntegratedUsageTotal> TopAppsForPlatform(string platformKey)
+            => focusSessions
+                .Where(session => !session.IsIdle &&
+                                  platformByDeviceId.TryGetValue(session.DeviceId, out Platform platform) &&
+                                  ToPlatformKey(platform) == platformKey)
+                .GroupBy(session => AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey))
+                .Select(group => new IntegratedUsageTotal(group.Key, group.Sum(FocusDuration)))
+                .OrderByDescending(total => total.DurationMs)
+                .ThenBy(total => total.Label, StringComparer.Ordinal)
+                .ToList();
+
+        List<IntegratedUsageTotal> TopDomainsForPlatform(string platformKey)
+            => webSessions
+                .Where(session => platformByDeviceId.TryGetValue(session.DeviceId, out Platform platform) &&
+                                  ToPlatformKey(platform) == platformKey)
+                .GroupBy(session => session.Domain)
+                .Select(group => new IntegratedUsageTotal(group.Key, group.Sum(WebDuration)))
+                .OrderByDescending(total => total.DurationMs)
+                .ThenBy(total => total.Label, StringComparer.Ordinal)
+                .ToList();
     }
 
     private static string FormatLocationCell(double latitude, double longitude)
@@ -192,7 +236,9 @@ public sealed record IntegratedDashboardSnapshot(
     IReadOnlyList<IntegratedPlatformTotal> PlatformTotals,
     IReadOnlyList<IntegratedUsageTotal> TopApps,
     IReadOnlyList<IntegratedUsageTotal> TopDomains,
-    IReadOnlyList<IntegratedLocationTotal> TopLocations);
+    IReadOnlyList<IntegratedLocationTotal> TopLocations,
+    IReadOnlyList<IntegratedPlatformUsage> PlatformUsage,
+    IReadOnlyList<IntegratedLocationRoutePoint> LocationRoute);
 
 public sealed record IntegratedDeviceSummary(
     Guid DeviceId,
@@ -212,3 +258,20 @@ public sealed record IntegratedPlatformTotal(
 public sealed record IntegratedUsageTotal(string Label, long DurationMs);
 
 public sealed record IntegratedLocationTotal(string Label, int SampleCount);
+
+public sealed record IntegratedPlatformUsage(
+    string Platform,
+    long ActiveMs,
+    long IdleMs,
+    long WebMs,
+    IReadOnlyList<IntegratedUsageTotal> TopApps,
+    IReadOnlyList<IntegratedUsageTotal> TopDomains);
+
+public sealed record IntegratedLocationRoutePoint(
+    string ClientContextId,
+    DateTimeOffset CapturedAtUtc,
+    double Latitude,
+    double Longitude,
+    double? AccuracyMeters,
+    string CaptureMode,
+    string PermissionState);

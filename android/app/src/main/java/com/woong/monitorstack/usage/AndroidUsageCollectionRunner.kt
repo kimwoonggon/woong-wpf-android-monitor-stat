@@ -68,7 +68,9 @@ class AndroidUsageCollectionRunner(
 
             return AndroidUsageCollectionRunner(
                 collector = UsageStatsCollector(AndroidUsageEventsReader(appContext)),
-                sessionizer = UsageSessionizer(),
+                sessionizer = UsageSessionizer(
+                    ignoredPackageNames = AndroidForegroundNoise.PackageNames
+                ),
                 store = RoomUsageSessionStore(database.focusSessionDao()),
                 outboxEnqueuer = FocusSessionSyncOutboxEnqueuer(database.syncOutboxDao())
             )

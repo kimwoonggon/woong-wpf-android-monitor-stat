@@ -5601,3 +5601,20 @@ Verified so far:
 - Wired `fragment_dashboard.xml`/`DashboardFragment` so the Dashboard location card renders the mini map from Room-backed visit data.
 - Updated Android screenshot seed data and `scripts/run-android-ui-snapshots.ps1` so local UI evidence includes deterministic location visit statistics and `locationMiniMapView`.
 - Validation passed: focused Android RED/GREEN tests, `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`, and emulator UI snapshot acceptance at `artifacts/android-ui-snapshots/20260502-202141/`.
+
+## 2026-05-02 Android Branded First Launch And Bootstrap Noise Filtering
+
+- Fixed the initial Android bootstrap noise path: `UsageSessionizer` now accepts ignored package names and production collection passes launcher/SystemUI packages through `AndroidForegroundNoise`, so NexusLauncher/SystemUI events do not become persisted focus sessions or outbox rows.
+- Reused the same foreground-noise list in Dashboard current-focus resolution so display and persistence rules stay consistent.
+- Added a dedicated `Theme.WoongMonitor.Starting` launch theme for `MainActivity`, with pre-31 launch background and Android 12+ splash attributes, then `MainActivity.onCreate` switches to the normal `Theme.WoongMonitor` before UI inflation.
+- RED/GREEN validation passed for `UsageSessionizerTest.sessionizeIgnoresBootstrapLauncherNoiseBeforeMonitorForeground` and `AndroidLaunchThemeTests.AndroidMainActivity_UsesDedicatedStartingThemeForBrandedFirstLaunch`.
+- Full Android validation passed: `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`.
+- Android UI snapshot acceptance passed with fresh evidence at `artifacts/android-ui-snapshots/20260502-204431/`.
+
+## 2026-05-02 Blazor Platform Split And Location Route Follow-Up
+
+- Added Blazor `/dashboard` sections for Combined View, Windows View, Android View, platform-specific Top Apps/Top Domains, integrated rankings, and a local SVG Location Movement Route.
+- Extended `IntegratedDashboardQueryService` snapshot output with `PlatformUsage` and ordered `LocationRoute` data so Windows/WPF and Android usage can be shown separately and then integrated.
+- Added `docs/blazor-integrated-dashboard-wireflow.md` to document PostgreSQL-only integration, Windows/Android source separation, Android Chrome domain limitations, and opted-in location route rendering.
+- Parallel subagents completed WPF and Android data inventory docs plus Figma-importable SVG artifacts under `docs/data/` and `artifacts/data-diagrams/`.
+- Focused validation passed: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardBlazorWireflowTests -v minimal` and `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~GetAsync_SeparatesWindowsAndroidAndCombinedUsageAndOrdersLocationRoute -v minimal`.

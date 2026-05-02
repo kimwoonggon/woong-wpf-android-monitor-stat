@@ -1,7 +1,8 @@
 package com.woong.monitorstack.usage
 
 class UsageSessionizer(
-    private val sameAppMergeGapMs: Long = 5_000
+    private val sameAppMergeGapMs: Long = 5_000,
+    private val ignoredPackageNames: Set<String> = emptySet()
 ) {
     init {
         require(sameAppMergeGapMs >= 0) { "sameAppMergeGapMs must not be negative." }
@@ -16,7 +17,10 @@ class UsageSessionizer(
         var activePackageName: String? = null
         var activeStartedAtUtcMillis: Long? = null
 
-        for (event in events.sortedBy { it.occurredAtUtcMillis }) {
+        for (event in events
+            .filterNot { it.packageName in ignoredPackageNames }
+            .sortedBy { it.occurredAtUtcMillis }
+        ) {
             when (event.eventType) {
                 UsageEventType.ACTIVITY_RESUMED -> {
                     val packageName = activePackageName

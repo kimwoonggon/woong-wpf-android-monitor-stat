@@ -2529,6 +2529,15 @@ milestones below are finished.
   `scripts/run-integrated-dashboard-acceptance.ps1`, architecture coverage,
   Figma-importable design SVG, and Playwright screenshots for the Blazor
   dashboard with seeded PostgreSQL Windows + Android data.
+- [x] Follow-up completed: `/dashboard` now separates Combined View,
+  Windows View, and Android View so WPF sessions/apps/domains and Android
+  UsageStats sessions/apps are readable independently before being integrated.
+- [x] Follow-up completed: integrated dashboard renders an opted-in
+  latitude/longitude movement route as local SVG from PostgreSQL
+  `LocationContext` metadata without loading external map tiles.
+- [x] Follow-up completed: added `docs/blazor-integrated-dashboard-wireflow.md`
+  plus WPF/Android data inventory docs and Figma-importable SVG artifacts under
+  `docs/data/` and `artifacts/data-diagrams/`.
 
 ## 2026-05-02 Docker PostgreSQL Local Server Flow
 
@@ -2612,3 +2621,23 @@ milestones below are finished.
   `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`,
   and emulator UI snapshot acceptance at
   `artifacts/android-ui-snapshots/20260502-202141/`.
+
+## 2026-05-02 Android Branded First Launch And Bootstrap Noise Filtering
+
+- [x] Added RED/GREEN UsageSessionizer coverage proving bootstrap launcher and
+  SystemUI events are ignored before the Woong Monitor foreground session is
+  created.
+- [x] Added shared Android foreground-noise package list for UsageStats
+  sessionization and Dashboard current-focus resolution.
+- [x] Wired production Android usage collection to ignore launcher/SystemUI
+  packages before sessions are persisted to Room or enqueued to outbox.
+- [x] Added RED/GREEN architecture coverage requiring `MainActivity` to use a
+  dedicated branded `Theme.WoongMonitor.Starting` launch theme.
+- [x] Added Android launch background and `values-v31` splash theme so the OS
+  launch window follows Woong branding before the app `SplashFragment` renders.
+- [x] `MainActivity` immediately switches back to `Theme.WoongMonitor` in
+  `onCreate`, avoiding a long-lived launch-only theme.
+- [x] Validation passed: focused Android/architecture tests, full Android
+  `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`,
+  and Android UI snapshot acceptance at
+  `artifacts/android-ui-snapshots/20260502-204431/`.

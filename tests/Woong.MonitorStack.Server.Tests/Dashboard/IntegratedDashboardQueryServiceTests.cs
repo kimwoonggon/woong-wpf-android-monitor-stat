@@ -72,6 +72,61 @@ public sealed class IntegratedDashboardQueryServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_SeparatesWindowsAndroidAndCombinedUsageAndOrdersLocationRoute()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid windowsDeviceId = Guid.NewGuid();
+        Guid androidDeviceId = Guid.NewGuid();
+        DateTimeOffset dayStartUtc = new(2026, 5, 2, 0, 0, 0, TimeSpan.Zero);
+
+        database.Context.Devices.AddRange(
+            Device(windowsDeviceId, "user-1", Platform.Windows, "windows-key", "Windows PC"),
+            Device(androidDeviceId, "user-1", Platform.Android, "android-key", "Android Phone"));
+        database.Context.FocusSessions.AddRange(
+            Focus(windowsDeviceId, "win-vscode", "Code.exe", dayStartUtc.AddHours(9), 3_600_000, isIdle: false),
+            Focus(windowsDeviceId, "win-chrome", "chrome.exe", dayStartUtc.AddHours(10), 1_800_000, isIdle: false),
+            Focus(androidDeviceId, "android-youtube", "com.google.android.youtube", dayStartUtc.AddHours(11), 2_400_000, isIdle: false),
+            Focus(androidDeviceId, "android-chrome", "com.android.chrome", dayStartUtc.AddHours(12), 1_200_000, isIdle: false));
+        database.Context.WebSessions.AddRange(
+            Web(windowsDeviceId, "web-github", "win-chrome", "github.com", dayStartUtc.AddHours(10), 1_200_000),
+            Web(androidDeviceId, "web-mobile", "android-chrome", "m.example", dayStartUtc.AddHours(12), 600_000));
+        database.Context.LocationContexts.AddRange(
+            Location(androidDeviceId, "loc-home", dayStartUtc.AddHours(8), 37.5665, 126.9780),
+            Location(androidDeviceId, "loc-office", dayStartUtc.AddHours(9), 37.5700, 126.9820),
+            Location(androidDeviceId, "loc-cafe", dayStartUtc.AddHours(12), 37.5750, 126.9900));
+        await database.Context.SaveChangesAsync();
+        var service = new IntegratedDashboardQueryService(database.Context);
+
+        IntegratedDashboardSnapshot snapshot = await service.GetAsync(
+            "user-1",
+            new DateOnly(2026, 5, 2),
+            new DateOnly(2026, 5, 2),
+            "UTC");
+
+        IntegratedPlatformUsage windows = Assert.Single(
+            snapshot.PlatformUsage,
+            usage => usage.Platform == "windows");
+        IntegratedPlatformUsage android = Assert.Single(
+            snapshot.PlatformUsage,
+            usage => usage.Platform == "android");
+
+        Assert.Equal(5_400_000, windows.ActiveMs);
+        Assert.Equal("VS Code", windows.TopApps[0].Label);
+        Assert.Equal("github.com", windows.TopDomains[0].Label);
+        Assert.Equal(3_600_000, android.ActiveMs);
+        Assert.Equal("YouTube", android.TopApps[0].Label);
+        Assert.Equal("m.example", android.TopDomains[0].Label);
+        Assert.Equal(9_000_000, snapshot.TotalActiveMs);
+        Assert.Collection(
+            snapshot.LocationRoute,
+            point => Assert.Equal("loc-home", point.ClientContextId),
+            point => Assert.Equal("loc-office", point.ClientContextId),
+            point => Assert.Equal("loc-cafe", point.ClientContextId));
+        Assert.Equal(37.5750, snapshot.LocationRoute[^1].Latitude);
+        Assert.Equal(126.9900, snapshot.LocationRoute[^1].Longitude);
+    }
+
+    [Fact]
     public async Task GetAsync_FiltersWebSessionsAndLocationSamplesByRequestedTimezoneLocalDate()
     {
         await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();

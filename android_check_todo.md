@@ -1019,3 +1019,10 @@ workspace.
   UI evidence can show top-location statistics and the local mini map.
 - [x] Latest location mini-map evidence:
   `artifacts/android-ui-snapshots/20260502-202141/02-dashboard-summary-location.png`.
+- [x] Initial UsageStats bootstrap noise is filtered before persistence:
+  `UsageSessionizer` ignores launcher/SystemUI packages so the first useful
+  session can be `Woong Monitor` instead of NexusLauncher/SystemUI.
+- [x] MainActivity now uses a dedicated `Theme.WoongMonitor.Starting` launch
+  theme and immediately switches to the normal app theme during `onCreate`.
+- [x] Latest branded-launch/noise-filter validation:
+  `artifacts/android-ui-snapshots/20260502-204431/figma-01-splash.png`.
