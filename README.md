@@ -50,7 +50,9 @@ Inside the app, open **Settings** to manage the SQLite file:
 - **Runtime log** shows the local log path used for tracking start/stop, poll,
   persistence, sync-skip, and recoverable error events.
 - Clicking the window X minimizes the app to the Windows taskbar so tracking can
-  continue. Use **Settings -> Exit app** when you explicitly want to shut down.
+  continue. Right-click the small notification-area icon and choose
+  **Exit Woong Monitor Stack**, or use **Settings -> Exit app**, when you
+  explicitly want to shut down.
 
 ## Privacy Boundaries
 
@@ -165,8 +167,9 @@ not record keystrokes, typed text, page contents, screenshots, passwords, form
 input, or clipboard contents.
 
 The main window is explicitly shown in the Windows taskbar. Clicking X minimizes
-the window to the taskbar instead of exiting. Use **Settings -> Exit app** for a
-real app shutdown.
+the window to the notification area instead of exiting. To really shut down,
+right-click the hidden notification-area icon and choose
+**Exit Woong Monitor Stack**, or use **Settings -> Exit app**.
 
 To run safely with a temporary SQLite DB:
 

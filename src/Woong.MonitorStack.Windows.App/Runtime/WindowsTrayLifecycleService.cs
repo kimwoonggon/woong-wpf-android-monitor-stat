@@ -27,6 +27,8 @@ public interface IWindowsTrayIcon : IDisposable
     bool IsVisible { get; set; }
 
     event EventHandler? RestoreRequested;
+
+    event EventHandler? ExitRequested;
 }
 
 public sealed class NoopWindowsTrayIcon : IWindowsTrayIcon
@@ -34,6 +36,12 @@ public sealed class NoopWindowsTrayIcon : IWindowsTrayIcon
     public bool IsVisible { get; set; }
 
     public event EventHandler? RestoreRequested
+    {
+        add { }
+        remove { }
+    }
+
+    public event EventHandler? ExitRequested
     {
         add { }
         remove { }
@@ -72,6 +80,8 @@ public sealed class WindowsNotifyIcon : IWindowsTrayIcon
 
     public event EventHandler? RestoreRequested;
 
+    public event EventHandler? ExitRequested;
+
     public void Dispose()
     {
         if (_disposed)
@@ -91,6 +101,8 @@ public sealed class WindowsNotifyIcon : IWindowsTrayIcon
     {
         var menu = new Forms.ContextMenuStrip();
         _ = menu.Items.Add("Show Woong Monitor Stack", null, (_, _) => RestoreRequested?.Invoke(this, EventArgs.Empty));
+        _ = menu.Items.Add(new Forms.ToolStripSeparator());
+        _ = menu.Items.Add("Exit Woong Monitor Stack", null, (_, _) => ExitRequested?.Invoke(this, EventArgs.Empty));
 
         return menu;
     }
@@ -164,6 +176,7 @@ public sealed class WindowsTrayLifecycleService : IWindowsTrayLifecycleService
         _runtimeLogSink = runtimeLogSink ?? throw new ArgumentNullException(nameof(runtimeLogSink));
         _fallbackDiagnostic = fallbackDiagnostic ?? (message => Trace.WriteLine(message));
         _trayIcon.RestoreRequested += OnTrayRestoreRequested;
+        _trayIcon.ExitRequested += OnTrayExitRequested;
     }
 
     public bool IsExplicitExitRequested { get; private set; }
@@ -218,6 +231,9 @@ public sealed class WindowsTrayLifecycleService : IWindowsTrayLifecycleService
             RestoreFromTray(_registeredWindow);
         }
     }
+
+    private void OnTrayExitRequested(object? sender, EventArgs e)
+        => RequestExplicitExit(_registeredWindow);
 
     private void WriteLifecycleEvent(string eventType)
     {

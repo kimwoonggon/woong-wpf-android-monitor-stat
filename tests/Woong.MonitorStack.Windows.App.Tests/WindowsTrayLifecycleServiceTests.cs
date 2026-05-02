@@ -61,6 +61,24 @@ public sealed class WindowsTrayLifecycleServiceTests
     }
 
     [Fact]
+    public void TrayIconExitRequest_ClosesRegisteredWindowDisposesTrayAndWritesLifecycleEvent()
+    {
+        var window = new FakeTrayWindow();
+        var trayIcon = new FakeTrayIcon { IsVisible = true };
+        var runtimeLogSink = new RecordingRuntimeLogSink();
+        var service = new WindowsTrayLifecycleService(trayIcon, runtimeLogSink);
+        service.RegisterWindow(window);
+
+        trayIcon.RaiseExitRequested();
+
+        Assert.True(service.IsExplicitExitRequested);
+        Assert.Equal(1, window.CloseCallCount);
+        Assert.Equal(0, window.HideCallCount);
+        Assert.True(trayIcon.IsDisposed);
+        Assert.Contains(runtimeLogSink.Events, logEvent => logEvent.EventType == "Explicit exit requested");
+    }
+
+    [Fact]
     public void MinimizeToTaskbar_WhenRuntimeLogSinkThrows_DoesNotThrowAndWritesFallbackDiagnostic()
     {
         var fallbackMessages = new List<string>();
@@ -112,8 +130,13 @@ public sealed class WindowsTrayLifecycleServiceTests
 
         public event EventHandler? RestoreRequested;
 
+        public event EventHandler? ExitRequested;
+
         public void RaiseRestoreRequested()
             => RestoreRequested?.Invoke(this, EventArgs.Empty);
+
+        public void RaiseExitRequested()
+            => ExitRequested?.Invoke(this, EventArgs.Empty);
 
         public void Dispose()
             => IsDisposed = true;

@@ -5685,3 +5685,11 @@ Validation update:
 - `DashboardLocationMapController` creates a Google `MapView` only when a nonblank key exists; otherwise it keeps `LocationMiniMapView` visible and states that the local fallback is being used.
 - Added docs in `docs/android-google-maps.md` and updated README/location docs with privacy notes: external Google map tiles are explicit because map rendering uses Google services, while default fallback stays no-network.
 - Focused validation passed for Google Maps configuration/policy/controller tests.
+
+## 2026-05-03 WPF Notification-Area Exit Menu Follow-Up
+
+- Added a right-click notification-area menu item: `Exit Woong Monitor Stack`.
+- `IWindowsTrayIcon` now exposes `ExitRequested`; `WindowsNotifyIcon` raises it from the context menu and `WindowsTrayLifecycleService` routes it through explicit exit.
+- The X/system-close path still hides to the notification area; the tray menu exit path closes the registered WPF window and disposes the tray icon.
+- Focused validation passed for `WindowsTrayLifecycleServiceTests`.
+- Validation note: focused tray lifecycle tests passed and solution build passed. A full solution `dotnet test` attempt completed every project test assembly with zero assertion failures, then the test host terminated from an existing WPF Dispatcher `VerifyAccess` shutdown exception after the Architecture test assembly; this remains a test-host cleanup issue rather than a tray-menu behavior failure.

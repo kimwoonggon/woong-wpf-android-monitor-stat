@@ -2750,3 +2750,14 @@ milestones below are finished.
   location docs.
 - [ ] Capture emulator evidence with a real Google Maps API key configured;
   default no-key validation can only prove the safe local fallback path.
+
+## 2026-05-03 WPF Notification-Area Exit Menu Follow-Up
+
+- [x] Added a notification-area icon right-click menu item,
+  `Exit Woong Monitor Stack`.
+- [x] Wired tray icon exit requests into `WindowsTrayLifecycleService` so this
+  path sets explicit-exit state, closes the registered WPF window, hides and
+  disposes the tray icon, and writes the lifecycle log event.
+- [x] Preserved X/system-close behavior as hide-to-notification-area, not app
+  shutdown.
+- [x] Added focused unit coverage for tray-icon exit request behavior.
