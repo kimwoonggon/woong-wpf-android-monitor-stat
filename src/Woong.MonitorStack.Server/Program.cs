@@ -52,6 +52,25 @@ app.MapPost("/api/devices/register", async (
     return Results.Ok(response);
 });
 
+app.MapPost("/api/devices/{deviceId}/token/rotate", async (
+    string deviceId,
+    HttpRequest httpRequest,
+    DeviceTokenAuthenticationService deviceTokens,
+    DeviceRegistrationService registrations) =>
+{
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, deviceId, deviceTokens);
+    if (unauthorized is not null)
+    {
+        return unauthorized;
+    }
+
+    DeviceTokenRotationResponse? response = await registrations.RotateTokenAsync(deviceId);
+
+    return response is null
+        ? Results.NotFound()
+        : Results.Ok(response);
+});
+
 app.MapPost("/api/focus-sessions/upload", async (
     HttpRequest httpRequest,
     UploadFocusSessionsRequest request,

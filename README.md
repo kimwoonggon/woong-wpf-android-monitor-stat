@@ -342,6 +342,12 @@ created only when `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
 configured. Unsigned release artifacts are CI/testing outputs only and must not
 be treated as Play Store-ready packages.
 
+Android/server sync is also not a public release path until these policies are
+closed: production endpoint discovery/configuration, local-development endpoint
+labeling, user-auth/device-registration policy, secure device-token storage,
+token rotation/revocation, and Android Play signing/publishing approval. Current
+APK artifacts are for internal validation.
+
 Local release workflow contract validation:
 
 ```powershell

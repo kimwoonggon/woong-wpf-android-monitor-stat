@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -13,6 +15,20 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class SharedPreferencesAndroidSyncSettingsTest {
+    private lateinit var tokenStore: FakeAndroidSyncTokenStore
+
+    @Before
+    fun setUp() {
+        tokenStore = FakeAndroidSyncTokenStore()
+        SharedPreferencesAndroidSyncSettings.tokenStoreFactory = { tokenStore }
+    }
+
+    @After
+    fun tearDown() {
+        SharedPreferencesAndroidSyncSettings.tokenStoreFactory =
+            SharedPreferencesAndroidSyncSettings.defaultTokenStoreFactory()
+    }
+
     @Test
     fun syncEnabledDefaultsToFalseAndPersistsTrue() {
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -75,6 +91,43 @@ class SharedPreferencesAndroidSyncSettingsTest {
     }
 
     @Test
+    fun registrationDoesNotStoreDeviceTokenInOrdinarySettingsPreferences() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val preferences = context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        )
+        preferences.edit().clear().commit()
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+
+        settings.persistRegisteredDevice(
+            deviceId = "server-device-id",
+            deviceToken = "device-token-secret"
+        )
+
+        assertFalse(preferences.contains("device_token"))
+        assertFalse(preferences.all.values.contains("device-token-secret"))
+    }
+
+    @Test
+    fun legacyPlaintextDeviceTokenMigratesOutOfOrdinarySettingsPreferencesOnRead() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val preferences = context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        )
+        preferences.edit()
+            .clear()
+            .putString("device_token", " legacy-device-token ")
+            .commit()
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+
+        assertEquals("legacy-device-token", settings.deviceToken())
+        assertFalse(preferences.contains("device_token"))
+        assertFalse(preferences.all.values.contains(" legacy-device-token "))
+    }
+
+    @Test
     fun clearSyncConfigurationClearsServerUrlDeviceIdTokenAndDisablesSync() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences(
@@ -96,5 +149,19 @@ class SharedPreferencesAndroidSyncSettingsTest {
         assertEquals("", reloaded.serverBaseUrl())
         assertEquals("", reloaded.deviceId())
         assertEquals("", reloaded.deviceToken())
+    }
+
+    private class FakeAndroidSyncTokenStore : AndroidSyncTokenStore {
+        private var token = ""
+
+        override fun deviceToken(): String = token
+
+        override fun saveDeviceToken(deviceToken: String) {
+            token = deviceToken.trim()
+        }
+
+        override fun clearDeviceToken() {
+            token = ""
+        }
     }
 }

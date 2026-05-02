@@ -73,6 +73,29 @@ public sealed class DeviceRegistrationService
             isNew);
     }
 
+    public async Task<DeviceTokenRotationResponse?> RotateTokenAsync(string deviceId)
+    {
+        if (!Guid.TryParseExact(deviceId, "N", out Guid parsedDeviceId))
+        {
+            return null;
+        }
+
+        DeviceEntity? device = await _dbContext.Devices
+            .SingleOrDefaultAsync(existing => existing.Id == parsedDeviceId);
+        if (device is null)
+        {
+            return null;
+        }
+
+        device.DeviceTokenSalt = DeviceTokenFactory.CreateSalt();
+        string deviceToken = DeviceTokenFactory.CreateToken(device);
+        device.DeviceTokenHash = DeviceTokenFactory.HashToken(deviceToken);
+
+        await _dbContext.SaveChangesAsync();
+
+        return new DeviceTokenRotationResponse(device.Id.ToString("N"), deviceToken);
+    }
+
     private static string FormatPlatform(Platform platform)
         => platform switch
         {

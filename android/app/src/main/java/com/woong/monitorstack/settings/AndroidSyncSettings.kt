@@ -10,7 +10,11 @@ interface AndroidSyncSettings {
     fun deviceToken(): String = ""
 }
 
-class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettings {
+class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
+    context: Context,
+    private val tokenStore: AndroidSyncTokenStore =
+        tokenStoreFactory(context.applicationContext)
+) : AndroidSyncSettings {
     private val preferences = context.applicationContext.getSharedPreferences(
         PreferenceName,
         Context.MODE_PRIVATE
@@ -52,20 +56,34 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
     }
 
     override fun deviceToken(): String {
-        return preferences.getString(KeyDeviceToken, "").orEmpty()
+        val token = tokenStore.deviceToken()
+        if (token.isNotBlank()) {
+            return token
+        }
+
+        val legacyPlaintextToken = preferences.getString(KeyDeviceToken, "").orEmpty().trim()
+        if (legacyPlaintextToken.isBlank()) {
+            return ""
+        }
+
+        tokenStore.saveDeviceToken(legacyPlaintextToken)
+        preferences.edit().remove(KeyDeviceToken).apply()
+        return legacyPlaintextToken
     }
 
     fun persistRegisteredDevice(
         deviceId: String,
         deviceToken: String
     ) {
+        tokenStore.saveDeviceToken(deviceToken)
         preferences.edit()
             .putString(KeyDeviceId, deviceId.trim())
-            .putString(KeyDeviceToken, deviceToken.trim())
+            .remove(KeyDeviceToken)
             .apply()
     }
 
     fun clearSyncConfiguration() {
+        tokenStore.clearDeviceToken()
         preferences.edit()
             .putBoolean(KeySyncEnabled, false)
             .remove(KeyServerBaseUrl)
@@ -81,5 +99,12 @@ class SharedPreferencesAndroidSyncSettings(context: Context) : AndroidSyncSettin
         private const val KeyDeviceId = "device_id"
         private const val KeyDeviceKey = "device_key"
         private const val KeyDeviceToken = "device_token"
+
+        fun defaultTokenStoreFactory(): (Context) -> AndroidSyncTokenStore = {
+            AndroidKeystoreSyncTokenStore(it)
+        }
+
+        var tokenStoreFactory: (Context) -> AndroidSyncTokenStore =
+            defaultTokenStoreFactory()
     }
 }

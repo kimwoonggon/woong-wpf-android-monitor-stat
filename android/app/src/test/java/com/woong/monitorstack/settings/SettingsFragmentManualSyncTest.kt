@@ -24,6 +24,7 @@ class SettingsFragmentManualSyncTest {
     private lateinit var context: Context
     private lateinit var launcher: RecordingManualSyncLauncher
     private lateinit var registrationLauncher: RecordingDeviceRegistrationLauncher
+    private lateinit var tokenStore: FakeAndroidSyncTokenStore
 
     @Before
     fun setUp() {
@@ -32,6 +33,8 @@ class SettingsFragmentManualSyncTest {
             SharedPreferencesAndroidSyncSettings.PreferenceName,
             Context.MODE_PRIVATE
         ).edit().clear().commit()
+        tokenStore = FakeAndroidSyncTokenStore()
+        SharedPreferencesAndroidSyncSettings.tokenStoreFactory = { tokenStore }
         launcher = RecordingManualSyncLauncher()
         registrationLauncher = RecordingDeviceRegistrationLauncher()
         SettingsFragment.manualSyncLauncherFactory = { launcher }
@@ -40,6 +43,8 @@ class SettingsFragmentManualSyncTest {
 
     @After
     fun tearDown() {
+        SharedPreferencesAndroidSyncSettings.tokenStoreFactory =
+            SharedPreferencesAndroidSyncSettings.defaultTokenStoreFactory()
         SettingsFragment.manualSyncLauncherFactory = SettingsFragment.defaultManualSyncLauncherFactory()
         SettingsFragment.deviceRegistrationLauncherFactory =
             SettingsFragment.defaultDeviceRegistrationLauncherFactory()
@@ -313,6 +318,20 @@ class SettingsFragmentManualSyncTest {
         ) {
             requests += request
             callback(Result.success(response))
+        }
+    }
+
+    private class FakeAndroidSyncTokenStore : AndroidSyncTokenStore {
+        private var token = ""
+
+        override fun deviceToken(): String = token
+
+        override fun saveDeviceToken(deviceToken: String) {
+            token = deviceToken.trim()
+        }
+
+        override fun clearDeviceToken() {
+            token = ""
         }
     }
 

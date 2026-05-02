@@ -8,7 +8,7 @@ Updated: 2026-05-02
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-083810/` and
+  `artifacts/android-ui-snapshots/20260502-091350/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Settings/sync evidence includes `figma-07-settings.png`, `settings.png`,
   `05-settings-privacy-sync.png`, and

@@ -67,17 +67,20 @@ sync consent.
 
 Before public Android/server sync release, these items remain blockers:
 
-- Secure Android token storage; SharedPreferences-backed token persistence is
-  not release-complete.
-- Token rotation/revocation and invalid-token recovery behavior.
-- Registration policy/user auth decision for first registration and
-  re-registration.
+- Android auth-required repair prompting and token refresh/re-registration
+  behavior after `401/403`.
+- Device revocation and cross-device management behavior.
+- Registration policy/user auth decision: who may register a device, whether
+  first registration requires a user/session token, and how re-registration is
+  authorized.
 - Visible Android registration/repair UI now exists in Settings; production
   polish, real identity policy, and automatic auth repair still remain.
-- Production endpoint discovery/policy, including production copy/configuration
-  and local developer labeling.
-- Android Play signing and publishing requirements if distribution moves beyond
-  internal CI artifacts.
+- Production endpoint discovery/policy: approved server base URL source,
+  production-vs-local environment labeling, loopback-only HTTP exceptions, and
+  release behavior when no production endpoint is configured.
+- Android Play signing/publishing policy: real `ANDROID_KEYSTORE_*` secrets,
+  versioning, Play Console track, artifact retention, and release approval
+  requirements if distribution moves beyond internal CI artifacts.
 
 ### Device Registration
 
@@ -97,16 +100,19 @@ persist the server-issued device ID/token pair. Remaining requirements:
 
 Production sync must not rely only on user-entered `deviceId`. Server-side
 token issuance/enforcement is active, and Android can persist the server-issued
-token and attach it to upload requests. This is still not release-complete until
-secure token storage, token refresh/re-registration, auth repair prompting, and
-production endpoint policy are finished.
+token in Android Keystore-backed storage and attach it to upload requests. This
+is still not release-complete until token refresh/re-registration, auth repair
+prompting, and production endpoint policy are finished.
 
-- Define whether Android uses a device token, user auth token, or both.
+- Define whether Android uses a device token, user auth token, or both, and
+  whether a user/session token is mandatory before first registration or
+  re-registration.
 - Use the server-issued device token as the current upload authorization
   contract. Upload requests send it as `X-Device-Token`; payloads must not carry
   auth material.
-- Store tokens in an Android-appropriate secure store before production use;
-  SharedPreferences token persistence is not release-complete secure storage.
+- Store tokens in Android-appropriate secure storage; the current implementation
+  keeps ciphertext/IV outside ordinary `woong_monitor_settings` preferences and
+  uses Android Keystore AES-GCM for the default runtime token store.
 - Send auth material through headers, not payload fields. Android focus and
   location upload calls now send `X-Device-Token`; future upload types must
   follow the same contract.
@@ -200,15 +206,18 @@ The current server shape issues a device token during registration and enforces
 uploads. Remaining server-side hardening should be split into small slices:
 
 1. Token rotation and revocation:
-   - Add an explicit server operation to rotate a device token.
-   - Persist enough verifier metadata to invalidate old tokens without storing
-     plaintext tokens.
-   - Add tests proving old tokens fail, the new token works, and no existing
-     focus/web/raw/location rows are deleted or rewritten.
+   - Server token rotation is implemented at
+     `POST /api/devices/{deviceId}/token/rotate`: current token required, old
+     token invalidated, new token returned, and existing focus/web/raw/location
+     rows preserved.
+   - Remaining: add explicit revocation/cross-device management semantics after
+     user-auth policy is decided.
 
 2. Registration policy and user auth:
    - Decide whether registration is allowed with device credentials only or
      must require a user auth/session token.
+   - Define who owns a device record and how a user can revoke or replace an
+     Android device.
    - Keep first registration explicit and visible to the client user.
    - Add tests for unauthenticated registration rejection once user auth exists,
      while preserving idempotent registration for the same user/platform/device
@@ -245,8 +254,10 @@ work:
 Remaining URL hardening:
 
 - Normalize trailing slashes consistently.
-- Document production endpoint discovery/configuration and local developer
-  labeling.
+- Document production endpoint discovery/configuration, local developer
+  labeling, and release behavior when the production endpoint is unset.
+- Decide whether release builds allow user-entered endpoints or require a
+  pinned/managed endpoint policy.
 
 ### Retry And Backoff
 
@@ -316,9 +327,9 @@ Future implementation should proceed by vertical TDD slices.
   `AndroidSyncClient` after registration.
 - [x] Auth failure marks sync as configuration/auth required, not as a generic
   retry loop.
-- [ ] Device tokens are stored in Android Keystore-backed secure storage, not
+- [x] Device tokens are stored in Android Keystore-backed secure storage, not
   plaintext `woong_monitor_settings` SharedPreferences.
-- [ ] Existing plaintext `device_token` values are migrated or removed without
+- [x] Existing plaintext `device_token` values are migrated or removed without
   logging token contents.
 - [x] Retryable network failures return WorkManager retry and preserve pending
   outbox rows.
@@ -328,7 +339,7 @@ Future implementation should proceed by vertical TDD slices.
 - [x] Repeated location-context uploads with the same `clientContextId` are
   treated as idempotent success when the server returns `Duplicate`.
 - [x] Outbox duplicate enqueue never resets a synced row to pending.
-- [ ] Android sync payload tests prove no forbidden browser URL/path, page
+- [x] Android sync payload tests prove no forbidden browser URL/path, page
   title, typed text, clipboard, screenshot, or touch-coordinate fields exist.
 - [x] Server integration tests cover Android focus-session upload with
   Windows-only fields omitted.

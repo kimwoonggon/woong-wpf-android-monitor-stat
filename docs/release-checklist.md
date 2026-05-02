@@ -109,3 +109,24 @@ elevated prompt and use the certificate emitted beside that exact MSIX artifact.
   hardening because no real Android device is available in this workspace.
 - [x] Add longer-running Windows collector profiling once continuous background
   tracking is enabled.
+
+## Public Android/Server Sync Release Blockers
+
+These are still open for any public Android/server sync release and must not be
+closed until the owning implementation agents report verified completion:
+
+- [x] Secure Android device-token storage; runtime token storage uses Android
+  Keystore-backed AES-GCM and ordinary `woong_monitor_settings` no longer stores
+  plaintext `device_token`.
+- [x] Server token rotation; current token is required, old token is
+  invalidated, new token works, and existing sync rows are preserved.
+- [ ] Device revocation and Android invalid-token recovery policy.
+- [ ] User-auth/registration policy: decide who may register or re-register an
+  Android device, whether first registration requires a user/session token, and
+  how revocation or replacement works.
+- [ ] Production endpoint discovery/policy: approved server base URL source,
+  release behavior when unset, local-dev endpoint labeling, and loopback-only
+  HTTP exceptions.
+- [ ] Android Play signing/publishing: configure real `ANDROID_KEYSTORE_*`
+  secrets, versioning, Play Console track, artifact retention, and release
+  approval requirements before distribution beyond internal CI artifacts.

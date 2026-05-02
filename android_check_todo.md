@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-083810/
+artifacts/android-ui-snapshots/20260502-091350/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -100,11 +100,11 @@ Product boundary reminder:
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - [x] Snapshot report status: `PASS`.
 - [x] Evidence paths:
-  - `artifacts/android-ui-snapshots/20260502-083810/`
+  - `artifacts/android-ui-snapshots/20260502-091350/`
   - `artifacts/android-ui-snapshots/latest/`
-  - `artifacts/android-ui-snapshots/20260502-083810/figma-07-settings.png`
-  - `artifacts/android-ui-snapshots/20260502-083810/05-settings-privacy-sync.png`
-  - `artifacts/android-ui-snapshots/20260502-083810/06-settings-location-permission.png`
+  - `artifacts/android-ui-snapshots/20260502-091350/figma-07-settings.png`
+  - `artifacts/android-ui-snapshots/20260502-091350/05-settings-privacy-sync.png`
+  - `artifacts/android-ui-snapshots/20260502-091350/06-settings-location-permission.png`
 - [x] Privacy boundary repeated: screenshots are local developer artifacts only,
   captured inside Woong Monitor UI; no other-app content, typed text,
   passwords, form contents, clipboard contents, browser/page contents, or
@@ -706,20 +706,27 @@ workspace.
   focus-session uploads with Windows-only fields omitted/null.
 - [x] Android production network policy rejects broad cleartext traffic while
   allowing only explicit loopback HTTP for local development.
-- [ ] Remaining Android sync hardening: secure production token storage,
-  token refresh/re-registration behavior, auth-required repair prompting, and
-  production endpoint policy remain open before release use.
-- [ ] Release blockers before public Android/server sync: secure Android token
-  storage instead of SharedPreferences, token rotation/revocation, registration
-  policy/user auth decision, production endpoint discovery/policy, and Android
-  Play signing/publishing requirements if distribution moves beyond internal
-  artifacts.
-- [ ] Secure token storage TDD plan: first add behavior tests proving
-  registration persists a usable token without writing plaintext
-  `device_token` to `woong_monitor_settings`, clear/disconnect removes the
-  token, and any legacy plaintext token is migrated or cleared; then implement
-  Android Keystore-backed storage while keeping Settings/Register/Manual Sync
-  behavior unchanged.
+- [x] Android device tokens now use a token-store abstraction with Android
+  Keystore AES-GCM runtime storage; ordinary `woong_monitor_settings` no longer
+  stores plaintext `device_token`, and legacy plaintext tokens are
+  migrated/removed.
+- [x] Server device-token rotation is implemented: current token required, old
+  token invalidated, new token works, and existing sync rows are preserved.
+- [ ] Remaining Android sync hardening: Android token refresh/re-registration
+  behavior, auth-required repair prompting, production endpoint
+  discovery/policy, Play signing/publishing policy, user-auth registration
+  policy, and device revocation policy remain open before release use.
+- [ ] Release blockers before public Android/server sync: decide who may
+  register/re-register/revoke devices and whether user auth is required,
+  document approved production endpoint source plus local-dev exceptions, define
+  Android auth-repair UX, and define Android Play signing/publishing
+  requirements if distribution moves beyond internal artifacts.
+- [x] Secure token storage TDD plan completed: tests prove registration
+  persists a usable token without writing plaintext `device_token` to
+  `woong_monitor_settings`, clear/disconnect removes the token, legacy
+  plaintext token is migrated or cleared, and runtime storage uses Android
+  Keystore-backed AES-GCM while keeping Settings/Register/Manual Sync behavior
+  unchanged.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
 
