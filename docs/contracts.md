@@ -26,6 +26,16 @@ Updated: 2026-04-29
 
 ## Upload Idempotency
 
+- Device registration returns a server-issued device token for upload
+  authentication. Clients send the token in the `X-Device-Token` header on
+  protected upload and token-management requests.
+- Device token revocation is `POST /api/devices/{deviceId}/token/revoke`.
+  It requires the current `X-Device-Token` value for the same `deviceId`.
+  A valid revocation returns `204 NoContent` and invalidates that token for
+  future uploads, token rotation, and repeated revocation calls. Missing,
+  invalid, mismatched, or already revoked tokens return `401 Unauthorized`.
+  Existing focus session, web session, raw event, and location context rows are
+  preserved; revocation must not delete or rewrite stored session facts.
 - Focus session uploads must include `clientSessionId`.
 - Focus session uploads may include Windows metadata fields:
   `processId`, `processName`, `processPath`, `windowHandle`, and `windowTitle`.

@@ -13,6 +13,9 @@
     <string name="permission_principle_no_hidden_sync">✓  사용자 동의 없이 동기화하지 않습니다</string>
     <string name="permission_principle_can_revoke">✓  언제든지 권한을 취소할 수 있습니다</string>
 
+    <string name="permission_collected_metadata">Collects: app name, package name, start time, end time, and duration.</string>
+    <string name="permission_not_collected_data">Does not collect: keyboard input, screen contents, passwords, or touch coordinates.</string>
+
     <string name="usage_access_settings">Open Usage Access settings</string>
     <string name="usage_access_guidance">Usage Access is needed to calculate app usage statistics.</string>
     <string name="usage_collection_paused_until_permission">Collection paused until Usage Access is granted.</string>

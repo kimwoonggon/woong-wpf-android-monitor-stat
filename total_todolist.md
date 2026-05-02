@@ -2271,6 +2271,7 @@ milestones below are finished.
 - [x] Added Android GitHub Actions CI/CD workflow for unit tests, debug/release APK builds, Android test APK build, and artifact uploads.
 - [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
 - [x] Local equivalent Android CI command passed: `android\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
+- [x] Android CI artifact hardening: push/PR workflow uses the Gradle wrapper from `android/`, builds debug/release/androidTest APKs, uploads unit-test reports and any produced APKs on failure, and does not require emulator/connected tests.
 - [x] Added Android release workflow `.github/workflows/android-release.yml`.
 - [x] Added release workflow validator `scripts/validate-android-release-workflow.ps1` and focused architecture coverage `AndroidReleaseWorkflowTests.cs`.
 - [x] Android release workflow runs from `android/`, uses the Gradle wrapper, and does not require connected/emulator tests.
@@ -2305,7 +2306,7 @@ milestones below are finished.
 - [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, production endpoint source/config implementation, Play signing/publishing policy, user-auth registration policy, and device revocation policy stay open before release use.
 - [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices and whether user auth is required, implement the approved production endpoint source/config path, and decide Android Play signing/publishing requirements.
 - [x] Secure token storage implementation plan completed: tests prove `device_token` is absent from `woong_monitor_settings`, legacy plaintext token is migrated/cleared, Settings/Register/Manual Sync behavior stays unchanged, and runtime storage uses Android Keystore-backed AES-GCM without adding AndroidX security-crypto.
-- [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-100659/`.
+- [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-102036/`.
 - [x] Settings now renders real Usage Access granted/missing state and persists the background collection switch through the Android collection settings abstraction.
 - [x] Android UI snapshot automation now creates beginner-review before/after aliases for the seven canonical Woong UI screens without capturing other apps.
 - [x] Server device-token revocation endpoint requires the current token, invalidates future upload/rotation attempts with the revoked token, and preserves existing stored sessions.

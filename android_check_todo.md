@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-100659/
+artifacts/android-ui-snapshots/20260502-102036/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -37,7 +37,7 @@ artifacts/android-usage-current-focus/20260502-012243/
 Latest accepted Android app-switch QA evidence:
 
 ```text
-artifacts/android-app-switch-qa/20260502-073336/
+artifacts/android-app-switch-qa/20260502-101059/
 ```
 
 Historical attempted Android app-switch QA evidence, not accepted:
@@ -93,6 +93,20 @@ Product boundary reminder:
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
 
+### 2026-05-02 Android App-Switch QA Fresh Evidence
+
+- [x] Emulator available: `emulator-5554`.
+- [x] Ran privacy-preserving Chrome/app-switch QA:
+  `powershell -ExecutionPolicy Bypass -File scripts\run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -ChromeForegroundSeconds 3`.
+- [x] Result: `PASS`; artifact path:
+  `artifacts/android-app-switch-qa/20260502-101059/`.
+- [x] Room assertions: `focusSessionChromeRows=1`,
+  `syncOutboxChromeRows=1`.
+- [x] Privacy boundary repeated: no Chrome screenshots or Chrome UI hierarchy
+  dumps were captured; Chrome participation is represented by foreground and
+  process text evidence plus Room metadata rows, with Woong-only screenshots
+  captured after return.
+
 ### 2026-05-02 Android Settings Sync Snapshot Evidence
 
 - [x] Emulator available: `emulator-5554`.
@@ -100,11 +114,11 @@ Product boundary reminder:
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - [x] Snapshot report status: `PASS`.
 - [x] Evidence paths:
-  - `artifacts/android-ui-snapshots/20260502-100659/`
+  - `artifacts/android-ui-snapshots/20260502-102036/`
   - `artifacts/android-ui-snapshots/latest/`
-  - `artifacts/android-ui-snapshots/20260502-100659/figma-07-settings.png`
-  - `artifacts/android-ui-snapshots/20260502-100659/05-settings-privacy-sync.png`
-  - `artifacts/android-ui-snapshots/20260502-100659/06-settings-location-permission.png`
+  - `artifacts/android-ui-snapshots/20260502-102036/figma-07-settings.png`
+  - `artifacts/android-ui-snapshots/20260502-102036/05-settings-privacy-sync.png`
+  - `artifacts/android-ui-snapshots/20260502-102036/06-settings-location-permission.png`
 - [x] Beginner-review aliases are copied after canonical capture:
   `01-splash-before.png`/`01-splash-after.png` through
   `07-settings-before.png`/`07-settings-after.png`.
@@ -799,6 +813,9 @@ workspace.
 - [x] Added Android GitHub Actions workflow `.github/workflows/android-ci.yml`.
 - [x] Android CI runs unit tests, debug APK build, release APK build, and Android test APK build.
 - [x] Android CI uploads debug/release/test APKs and unit test reports as GitHub Actions artifacts.
+- [x] Android CI artifact hardening: push/PR workflow uses the Gradle wrapper
+  from `android/`, uploads unit-test reports and any produced APKs on failure,
+  and does not require emulator/connected tests.
 - [x] Added `scripts/validate-android-ci.ps1`; RED failed before workflow existed and GREEN passes after adding it.
 - [x] Local equivalent CI command passed: `android\\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
 - [x] Added Android release workflow `.github/workflows/android-release.yml`.

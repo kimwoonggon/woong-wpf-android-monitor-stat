@@ -323,12 +323,17 @@ Gradle, then runs:
 ./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace
 ```
 
-GitHub Actions uploads:
+On success, Android CI uploads:
 
 - `woong-monitor-android-debug-apk`
 - `woong-monitor-android-release-apk`
 - `woong-monitor-android-test-apk`
 - `woong-monitor-android-unit-test-report`
+
+The upload steps use `if: always()` with missing files ignored, so unit test
+reports and any APKs produced before a failure are still preserved for triage.
+Push/PR Android CI does not run emulator or `connectedDebugAndroidTest`; manual
+connected-test evidence lives in the separate emulator workflow below.
 
 The Android CI release APK artifact is not a Play Store release. It is a
 CI-built unsigned package artifact for local verification only.

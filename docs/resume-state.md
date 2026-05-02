@@ -2,6 +2,21 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Android App-Switch QA Fresh Evidence
+
+- Emulator available: `emulator-5554`.
+- Ran privacy-preserving Chrome/app-switch QA with
+  `powershell -ExecutionPolicy Bypass -File scripts\run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -ChromeForegroundSeconds 3`.
+- Result: PASS. Fresh evidence at
+  `artifacts/android-app-switch-qa/20260502-101059/` and
+  `artifacts/android-app-switch-qa/latest/`.
+- Room assertions: `focusSessionChromeRows=1`,
+  `syncOutboxChromeRows=1`.
+- Privacy boundary: no Chrome screenshots or Chrome UI hierarchy dumps were
+  captured. Chrome participation is represented by foreground/process text
+  evidence and Room metadata rows; Woong-only screenshots were captured after
+  return.
+
 ## 2026-05-02 Android Secure Token Connected Evidence
 
 - Emulator available: `emulator-5554`.
@@ -22,7 +37,7 @@ Updated: 2026-05-02
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-100659/` and
+  `artifacts/android-ui-snapshots/20260502-102036/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Settings/sync evidence includes `figma-07-settings.png`, `settings.png`,
   `05-settings-privacy-sync.png`, and
@@ -5369,4 +5384,4 @@ Remaining priorities:
 - Hardened Android release workflow so tag release publishing requires signing secrets and publishes only the signed release APK.
 - Settings now displays real Usage Access status and persists background collection through the Android collection settings abstraction.
 - Android snapshot automation now copies the seven canonical Woong UI screenshots to beginner-review before/after aliases, without capturing Chrome or other apps.
-- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-100659/` and `artifacts/android-ui-snapshots/latest/`.
+- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-102036/` and `artifacts/android-ui-snapshots/latest/`.

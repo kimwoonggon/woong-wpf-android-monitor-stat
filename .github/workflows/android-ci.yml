@@ -54,22 +54,28 @@ jobs:
         working-directory: android
 
       - name: Upload Android debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: woong-monitor-android-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
 
       - name: Upload Android release APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: woong-monitor-android-release-apk
           path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: ignore
 
       - name: Upload Android test APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: woong-monitor-android-test-apk
           path: android/app/build/outputs/apk/androidTest/debug/*.apk
+          if-no-files-found: ignore
 
       - name: Upload Android unit test report
         if: always()
@@ -79,3 +85,4 @@ jobs:
           path: |
             android/app/build/reports/tests/testDebugUnitTest/**
             android/app/build/test-results/testDebugUnitTest/**
+          if-no-files-found: ignore
