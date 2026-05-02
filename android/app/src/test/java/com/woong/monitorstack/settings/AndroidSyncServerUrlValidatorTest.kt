@@ -19,4 +19,17 @@ class AndroidSyncServerUrlValidatorTest {
         assertFalse(AndroidSyncServerUrlValidator.isValid("https://user:pass@sync.example"))
         assertFalse(AndroidSyncServerUrlValidator.isValid("not a url"))
     }
+
+    @Test
+    fun productionEndpointRequiresHttpsAndRejectsLoopbackOrExampleFallbacks() {
+        assertTrue(AndroidSyncServerUrlValidator.isValidProductionEndpoint("https://sync.example"))
+
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint(""))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("   "))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("http://localhost:5080"))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("http://127.0.0.1:5080"))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("http://[::1]:5080"))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("https://example.com"))
+        assertFalse(AndroidSyncServerUrlValidator.isValidProductionEndpoint("https://user:pass@sync.example"))
+    }
 }

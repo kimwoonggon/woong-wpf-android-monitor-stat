@@ -1,6 +1,7 @@
 package com.woong.monitorstack.settings
 
 import android.content.Context
+import com.woong.monitorstack.BuildConfig
 import java.util.UUID
 
 interface AndroidSyncSettings {
@@ -16,7 +17,8 @@ interface AndroidSyncSettings {
 class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
     context: Context,
     private val tokenStore: AndroidSyncTokenStore =
-        tokenStoreFactory(context.applicationContext)
+        tokenStoreFactory(context.applicationContext),
+    private val productionSyncBaseUrl: String = BuildConfig.PRODUCTION_SYNC_BASE_URL
 ) : AndroidSyncSettings {
     private val preferences = context.applicationContext.getSharedPreferences(
         PreferenceName,
@@ -32,7 +34,12 @@ class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
     }
 
     override fun serverBaseUrl(): String {
-        return preferences.getString(KeyServerBaseUrl, "").orEmpty()
+        val userEnteredBaseUrl = preferences.getString(KeyServerBaseUrl, "").orEmpty()
+        if (userEnteredBaseUrl.isNotBlank()) {
+            return userEnteredBaseUrl
+        }
+
+        return AndroidSyncServerUrlValidator.productionEndpointOrBlank(productionSyncBaseUrl)
     }
 
     fun setServerBaseUrl(serverBaseUrl: String) {

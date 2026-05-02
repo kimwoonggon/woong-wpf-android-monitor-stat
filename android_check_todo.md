@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-103650/
+artifacts/android-ui-snapshots/20260502-131615/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -37,7 +37,13 @@ artifacts/android-usage-current-focus/20260502-012243/
 Latest accepted Android app-switch QA evidence:
 
 ```text
-artifacts/android-app-switch-qa/20260502-101059/
+artifacts/android-app-switch-qa/20260502-125805/
+```
+
+Latest Android manual app-switch/performance evidence:
+
+```text
+artifacts/android-manual-run/20260502-130509/
 ```
 
 Historical attempted Android app-switch QA evidence, not accepted:
@@ -68,7 +74,7 @@ artifacts/android-check/20260430-183032/
 Latest Android resource measurement evidence:
 
 ```text
-artifacts/android-resource-measurements/20260430-223105/
+artifacts/android-resource-measurements/20260502-125737/
 ```
 
 Each checked feature should have:
@@ -107,6 +113,28 @@ Product boundary reminder:
   process text evidence plus Room metadata rows, with Woong-only screenshots
   captured after return.
 
+### 2026-05-02 Android Manual App-Switch/Performance Evidence
+
+- [x] Emulator already available as `emulator-5554`; stable emulator restart
+  was not required.
+- [x] Initial full app-switch QA command built/installed successfully but
+  produced a BLOCKED/FAIL artifact because `dumpsys window` timed out after
+  60 seconds:
+  `artifacts/android-app-switch-qa/20260502-125534/`.
+- [x] Package-scoped resource measurement passed:
+  `artifacts/android-resource-measurements/20260502-125737/`.
+- [x] App-switch QA retry passed with installed APKs and longer adb timeout:
+  `artifacts/android-app-switch-qa/20260502-125805/`.
+- [x] Manual evidence index written:
+  `artifacts/android-manual-run/20260502-130509/` and
+  `artifacts/android-manual-run/latest/`.
+- [x] Room assertions: `focusSessionChromeRows=3`,
+  `syncOutboxChromeRows=3`.
+- [x] Privacy boundary repeated: no Chrome screenshots or Chrome UI hierarchy
+  dumps were captured; no typed text, passwords, form contents, clipboard
+  contents, browser/page contents, other-app screenshots, or global touch
+  coordinates were captured.
+
 ### 2026-05-02 Android Sessions/Report Snapshot Expansion Evidence
 
 - [x] Emulator available: `emulator-5554`.
@@ -114,15 +142,15 @@ Product boundary reminder:
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - [x] Snapshot report status: `PASS`.
 - [x] Evidence paths:
-  - `artifacts/android-ui-snapshots/20260502-103650/`
+  - `artifacts/android-ui-snapshots/20260502-131615/`
   - `artifacts/android-ui-snapshots/latest/`
-  - `artifacts/android-ui-snapshots/20260502-103650/18-sessions-default.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/19-sessions-filtered.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/20-report-7d.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/21-report-30d.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/22-report-90d.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/23-report-custom-valid.png`
-  - `artifacts/android-ui-snapshots/20260502-103650/24-report-custom-invalid.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/18-sessions-default.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/19-sessions-filtered.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/20-report-7d.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/21-report-30d.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/22-report-90d.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/23-report-custom-valid.png`
+  - `artifacts/android-ui-snapshots/20260502-131615/24-report-custom-invalid.png`
 - [x] Privacy boundary repeated: screenshots are local developer artifacts only,
   captured inside Woong Monitor UI; no Chrome/other-app content, typed text,
   passwords, form contents, clipboard contents, browser/page contents, or
@@ -207,7 +235,7 @@ Product boundary reminder:
   Android parity slice.
 - [x] Store the latest full-screen evidence under
   `artifacts/android-ui-snapshots/latest/`.
-- [ ] Store manual app-switch/performance evidence under
+- [x] Store manual app-switch/performance evidence under
   `artifacts/android-manual-run/latest/` or a dated run folder.
 - [x] Add visual review notes comparing the latest screenshots to
   `docs/assets/android/android-ui-flow-reference.png`.
@@ -289,8 +317,8 @@ Product boundary reminder:
 - [x] Tapping a session row must open the selected app detail screen.
 - [x] Add empty-state copy for no sessions in the selected period.
 - [x] Capture Sessions default and filtered screenshots:
-  `artifacts/android-ui-snapshots/20260502-103650/18-sessions-default.png`
-  and `artifacts/android-ui-snapshots/20260502-103650/19-sessions-filtered.png`.
+  `artifacts/android-ui-snapshots/20260502-131615/18-sessions-default.png`
+  and `artifacts/android-ui-snapshots/20260502-131615/19-sessions-filtered.png`.
 - [ ] Capture Sessions empty-state if possible and row-tap screenshots.
 
 ### F. App Detail Screen Parity
@@ -300,7 +328,7 @@ Product boundary reminder:
   total usage, session count, hourly chart, session list.
 - [x] Hourly chart must use real selected-app Room data.
 - [x] Session list must show selected package only.
-- [ ] Back returns to Sessions without losing selected tab state.
+- [x] Back returns to Sessions without losing selected tab state.
 - [ ] Capture App Detail for a seeded Chrome row and another seeded app row.
 
 ### G. Report Screen Parity
@@ -314,8 +342,8 @@ Product boundary reminder:
 - [x] Top apps list must show ranked apps with readable labels/durations and
   proportional usage bars.
 - [x] Capture Report 7d, 30d, 90d, Custom valid, and Custom invalid states:
-  `artifacts/android-ui-snapshots/20260502-103650/20-report-7d.png`
-  through `artifacts/android-ui-snapshots/20260502-103650/24-report-custom-invalid.png`.
+  `artifacts/android-ui-snapshots/20260502-131615/20-report-7d.png`
+  through `artifacts/android-ui-snapshots/20260502-131615/24-report-custom-invalid.png`.
 
 ### H. Settings Screen Parity
 
@@ -762,15 +790,18 @@ workspace.
 - [x] Settings now shows sync/registration/auth state without making sync appear
   enabled by default; worker auth-required status is persisted and surfaces as
   a repair-needed Settings state.
+- [x] Android production endpoint source/config path implemented:
+  `BuildConfig.PRODUCTION_SYNC_BASE_URL` is populated by
+  `woongProductionSyncBaseUrl` or `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`,
+  defaults blank, rejects local/example/invalid endpoints, and preserves
+  explicit user-entered advanced endpoints.
 - [ ] Remaining Android sync hardening: Android token refresh/re-registration
-  behavior, production endpoint source/config implementation, Play
-  signing/publishing policy, user-auth registration policy, and device
-  revocation policy remain open before release use.
+  behavior, Play signing/publishing policy, user-auth registration policy, and
+  device revocation policy remain open before release use.
 - [ ] Release blockers before public Android/server sync: decide who may
   register/re-register/revoke devices and whether user auth is required,
-  implement the approved production endpoint source/config path, and define
-  Android Play signing/publishing requirements if
-  distribution moves beyond internal artifacts.
+  and define Android Play signing/publishing requirements if distribution moves
+  beyond internal artifacts.
 - [x] Secure token storage TDD plan completed: tests prove registration
   persists a usable token without writing plaintext `device_token` to
   `woong_monitor_settings`, clear/disconnect removes the token, legacy

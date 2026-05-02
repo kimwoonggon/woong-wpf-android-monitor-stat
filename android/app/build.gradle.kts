@@ -3,6 +3,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+fun String.asBuildConfigString(): String {
+    return "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+}
+
+val productionSyncBaseUrl = providers
+    .gradleProperty("woongProductionSyncBaseUrl")
+    .orElse(providers.environmentVariable("WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL"))
+    .getOrElse("")
+    .trim()
+
 android {
     namespace = "com.woong.monitorstack"
     compileSdk {
@@ -19,6 +29,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            "String",
+            "PRODUCTION_SYNC_BASE_URL",
+            productionSyncBaseUrl.asBuildConfigString()
+        )
     }
 
     buildTypes {
@@ -38,6 +53,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     testOptions {

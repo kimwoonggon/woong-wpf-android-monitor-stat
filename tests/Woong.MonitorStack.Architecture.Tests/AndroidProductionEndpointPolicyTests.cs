@@ -33,6 +33,54 @@ public sealed class AndroidProductionEndpointPolicyTests
 
         Assert.Contains("must not silently fall back to a local, blank, or example endpoint", readme, StringComparison.Ordinal);
         Assert.Contains("user-entered endpoints only as explicit advanced/manual configuration", readme, StringComparison.Ordinal);
+        Assert.Contains("woongProductionSyncBaseUrl", hardeningPlan, StringComparison.Ordinal);
+        Assert.Contains("WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL", hardeningPlan, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AndroidProductionEndpointSource_IsBuildConfigBackedAndDefaultsBlank()
+    {
+        string buildGradle = File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "android",
+            "app",
+            "build.gradle.kts"));
+        string syncSettings = File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "settings",
+            "AndroidSyncSettings.kt"));
+        string validator = File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "android",
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "settings",
+            "AndroidSyncServerUrlValidator.kt"));
+
+        Assert.Contains("buildConfig = true", buildGradle, StringComparison.Ordinal);
+        Assert.Contains("woongProductionSyncBaseUrl", buildGradle, StringComparison.Ordinal);
+        Assert.Contains("WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL", buildGradle, StringComparison.Ordinal);
+        Assert.Contains("\"PRODUCTION_SYNC_BASE_URL\"", buildGradle, StringComparison.Ordinal);
+        Assert.Contains(".getOrElse(\"\")", buildGradle, StringComparison.Ordinal);
+
+        Assert.Contains("BuildConfig.PRODUCTION_SYNC_BASE_URL", syncSettings, StringComparison.Ordinal);
+        Assert.Contains("productionEndpointOrBlank", syncSettings, StringComparison.Ordinal);
+        Assert.Contains("isValidProductionEndpoint", validator, StringComparison.Ordinal);
+        Assert.Contains("!isLoopbackHost(host)", validator, StringComparison.Ordinal);
+        Assert.Contains("!isExampleHost(host)", validator, StringComparison.Ordinal);
     }
 
     [Fact]

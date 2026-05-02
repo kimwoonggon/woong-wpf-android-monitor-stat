@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.Extensions.Options;
 using Woong.MonitorStack.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Server.Data;
@@ -19,6 +20,9 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 builder.Services.AddScoped<DeviceRegistrationService>();
+builder.Services.Configure<DeviceRegistrationAuthOptions>(
+    builder.Configuration.GetSection(DeviceRegistrationAuthOptions.SectionName));
+builder.Services.AddScoped<IRegistrationUserIdentitySource, HeaderRegistrationUserIdentitySource>();
 builder.Services.AddScoped<DeviceTokenAuthenticationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
@@ -45,9 +49,26 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/api/devices/register", async (
     RegisterDeviceRequest request,
+    HttpRequest httpRequest,
+    IRegistrationUserIdentitySource registrationUserIdentity,
+    IOptions<DeviceRegistrationAuthOptions> registrationAuthOptions,
     DeviceRegistrationService registrations) =>
 {
-    DeviceRegistrationResponse response = await registrations.RegisterAsync(request, DateTimeOffset.UtcNow);
+    string? authenticatedUserId = registrationUserIdentity.GetAuthenticatedUserId(httpRequest);
+    if (registrationAuthOptions.Value.RequireAuthenticatedUser &&
+        string.IsNullOrWhiteSpace(authenticatedUserId))
+    {
+        return Results.Unauthorized();
+    }
+
+    string effectiveUserId = authenticatedUserId ?? request.UserId;
+    var effectiveRequest = new RegisterDeviceRequest(
+        effectiveUserId,
+        request.Platform,
+        request.DeviceKey,
+        request.DeviceName,
+        request.TimezoneId);
+    DeviceRegistrationResponse response = await registrations.RegisterAsync(effectiveRequest, DateTimeOffset.UtcNow);
 
     return Results.Ok(response);
 });

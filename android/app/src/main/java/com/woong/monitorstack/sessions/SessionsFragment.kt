@@ -15,6 +15,7 @@ import com.woong.monitorstack.ui.PeriodButtonStyler
 class SessionsFragment : Fragment() {
     private lateinit var binding: FragmentSessionsBinding
     private val adapter = SessionRowAdapter { row -> openAppDetail(row.packageName) }
+    private var selectedPeriod = SessionsPeriod.Today
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,12 +47,23 @@ class SessionsFragment : Fragment() {
         binding.sessionsSevenDayButton.setOnClickListener {
             loadSelectedSessions(binding.sessionsSevenDayButton, SessionsPeriod.LastSevenDays)
         }
-        loadSelectedSessions(binding.sessionsTodayButton, SessionsPeriod.Today)
+        loadSelectedSessions(buttonForPeriod(selectedPeriod), selectedPeriod)
     }
 
     private fun loadSelectedSessions(selectedButton: MaterialButton, period: SessionsPeriod) {
+        selectedPeriod = period
         selectPeriodButton(selectedButton)
         loadSessions(period)
+    }
+
+    private fun buttonForPeriod(period: SessionsPeriod): MaterialButton {
+        return when (period) {
+            SessionsPeriod.Today -> binding.sessionsTodayButton
+            SessionsPeriod.LastHour -> binding.sessionsOneHourButton
+            SessionsPeriod.LastSixHours -> binding.sessionsSixHourButton
+            SessionsPeriod.LastTwentyFourHours -> binding.sessionsTwentyFourHourButton
+            SessionsPeriod.LastSevenDays -> binding.sessionsSevenDayButton
+        }
     }
 
     private fun selectPeriodButton(selectedButton: MaterialButton) {

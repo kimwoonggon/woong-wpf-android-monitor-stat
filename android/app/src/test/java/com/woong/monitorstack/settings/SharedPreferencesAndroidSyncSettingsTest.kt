@@ -52,7 +52,10 @@ class SharedPreferencesAndroidSyncSettingsTest {
             SharedPreferencesAndroidSyncSettings.PreferenceName,
             Context.MODE_PRIVATE
         ).edit().clear().commit()
-        val settings = SharedPreferencesAndroidSyncSettings(context)
+        val settings = SharedPreferencesAndroidSyncSettings(
+            context = context,
+            productionSyncBaseUrl = ""
+        )
 
         assertEquals("", settings.serverBaseUrl())
         assertEquals("", settings.deviceId())
@@ -61,10 +64,67 @@ class SharedPreferencesAndroidSyncSettingsTest {
         settings.setServerBaseUrl("  https://api.example.test  ")
         settings.setDeviceId("\n android-phone-01\t")
 
-        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        val reloaded = SharedPreferencesAndroidSyncSettings(
+            context = context,
+            productionSyncBaseUrl = ""
+        )
         assertEquals("https://api.example.test", reloaded.serverBaseUrl())
         assertEquals("android-phone-01", reloaded.deviceId())
         assertFalse(reloaded.isSyncEnabled())
+    }
+
+    @Test
+    fun serverBaseUrlUsesReleaseManagedProductionEndpointOnlyWhenUserEndpointIsUnset() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val settings = SharedPreferencesAndroidSyncSettings(
+            context = context,
+            productionSyncBaseUrl = " https://sync.example "
+        )
+
+        assertEquals("https://sync.example", settings.serverBaseUrl())
+
+        settings.setServerBaseUrl(" http://localhost:5080 ")
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(
+            context = context,
+            productionSyncBaseUrl = "https://sync.example"
+        )
+        assertEquals("http://localhost:5080", reloaded.serverBaseUrl())
+    }
+
+    @Test
+    fun serverBaseUrlFailsClosedWhenReleaseManagedEndpointIsUnsetOrUnsafe() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+
+        assertEquals(
+            "",
+            SharedPreferencesAndroidSyncSettings(
+                context = context,
+                productionSyncBaseUrl = ""
+            ).serverBaseUrl()
+        )
+        assertEquals(
+            "",
+            SharedPreferencesAndroidSyncSettings(
+                context = context,
+                productionSyncBaseUrl = "http://localhost:5080"
+            ).serverBaseUrl()
+        )
+        assertEquals(
+            "",
+            SharedPreferencesAndroidSyncSettings(
+                context = context,
+                productionSyncBaseUrl = "https://example.com"
+            ).serverBaseUrl()
+        )
     }
 
     @Test

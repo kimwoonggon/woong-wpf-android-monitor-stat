@@ -139,6 +139,10 @@ closed until the owning implementation agents report verified completion:
   endpoint. If the production endpoint is unset, sync must remain disabled.
   Release builds may accept a user-entered endpoint only as explicit
   advanced/manual configuration, not as the default production path.
+  Android production endpoint source is `BuildConfig.PRODUCTION_SYNC_BASE_URL`,
+  populated by Gradle property `woongProductionSyncBaseUrl` or environment
+  variable `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`. If unset or invalid, sync
+  remains disabled/fail-closed; loopback HTTP remains local-development only.
 - [ ] Android Play signing/publishing: configure real `ANDROID_KEYSTORE_*`
   secrets, versioning, Play Console track, artifact retention, and release
   approval requirements before distribution beyond internal CI artifacts.

@@ -269,7 +269,9 @@ workers must fail closed without upload attempts.
 Approved endpoint sources, in priority order:
 
 1. A release-managed production endpoint supplied by signed build/release
-   configuration.
+   configuration. Android reads this from `BuildConfig.PRODUCTION_SYNC_BASE_URL`,
+   which is populated from Gradle property `woongProductionSyncBaseUrl` or
+   environment variable `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`.
 2. An explicit advanced/manual configuration path for internal operators or
    testers.
 3. Local developer loopback endpoints for development builds and emulator
@@ -284,6 +286,19 @@ Local developer HTTP endpoints are limited to loopback hosts: `localhost`,
 `127.0.0.1`, and `::1`. Any local HTTP endpoint must be labeled nonproduction.
 Non-loopback production sync endpoints require HTTPS, no embedded credentials,
 and no broad cleartext network policy.
+
+Current implementation:
+
+- `PRODUCTION_SYNC_BASE_URL` defaults to blank at build time.
+- When the production endpoint is blank, local/example, HTTP loopback, or
+  otherwise invalid, Android resolves no production endpoint and sync remains
+  disabled/fail-closed unless the user has explicitly entered an advanced
+  endpoint.
+- User-entered advanced endpoints remain explicit and are still validated:
+  HTTPS is required outside loopback local development and embedded credentials
+  are rejected.
+- `localhost`, `127.0.0.1`, and `::1` HTTP endpoints remain local-development
+  only.
 
 ### Retry And Backoff
 

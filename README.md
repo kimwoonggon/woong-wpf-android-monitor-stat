@@ -371,6 +371,13 @@ disabled. Release builds may accept user-entered endpoints only as explicit
 advanced/manual configuration for internal operators or testers; local HTTP is
 limited to labeled nonproduction loopback endpoints.
 
+The release-managed Android sync endpoint is `BuildConfig.PRODUCTION_SYNC_BASE_URL`.
+Set it with Gradle property `woongProductionSyncBaseUrl` or environment variable
+`WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL` during the release build. If it is
+unset, blank, local/example, or otherwise invalid, Android resolves no
+production endpoint and sync remains disabled/fail-closed until an operator or
+tester explicitly enters an advanced endpoint.
+
 Local release workflow contract validation:
 
 ```powershell

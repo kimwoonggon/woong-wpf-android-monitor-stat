@@ -985,6 +985,54 @@ class MainActivityTest {
         assertEquals(2, chart.data.getDataSetByIndex(0).entryCount)
     }
 
+    @Test
+    fun appDetailBackReturnsToSessionsWithoutLosingSelectedPeriod() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+            R.id.bottomNavigation
+        ).selectedItemId = R.id.navSessions
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val todayButton = activity.findViewById<Button>(R.id.sessionsTodayButton)
+        val sixHourButton = activity.findViewById<Button>(R.id.sessionsSixHourButton)
+        sixHourButton.performClick()
+        waitForMainThreadWork()
+
+        assertFalse(todayButton.isSelected)
+        assertTrue(sixHourButton.isSelected)
+
+        activity.supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.mainFragmentContainer,
+                AppDetailFragment.newInstance("com.android.chrome")
+            )
+            .addToBackStack("app-detail")
+            .commit()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        activity.onBackPressedDispatcher.onBackPressed()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        assertEquals(
+            R.id.navSessions,
+            activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            ).selectedItemId
+        )
+        assertFalse(activity.findViewById<Button>(R.id.sessionsTodayButton).isSelected)
+        assertTrue(activity.findViewById<Button>(R.id.sessionsSixHourButton).isSelected)
+    }
+
     private fun waitForMainThreadWork() {
         Thread.sleep(500)
         shadowOf(Looper.getMainLooper()).idle()

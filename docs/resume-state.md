@@ -2,13 +2,31 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Android Manual App-Switch/Performance Evidence
+
+- Emulator already available as `emulator-5554`; stable emulator restart was
+  not required.
+- Initial full app-switch QA command built/installed successfully but produced
+  a BLOCKED/FAIL artifact because `dumpsys window` timed out after 60 seconds:
+  `artifacts/android-app-switch-qa/20260502-125534/`.
+- Resource measurement passed at
+  `artifacts/android-resource-measurements/20260502-125737/`.
+- App-switch QA retry passed with installed APKs and longer adb timeout at
+  `artifacts/android-app-switch-qa/20260502-125805/`.
+- Manual evidence index: `artifacts/android-manual-run/20260502-130509/` and
+  `artifacts/android-manual-run/latest/`.
+- Room assertions: `focusSessionChromeRows=3`, `syncOutboxChromeRows=3`.
+- Privacy boundary: no Chrome screenshots, Chrome UI hierarchy dumps, typed
+  text, passwords, form contents, clipboard contents, browser/page contents,
+  other-app screenshots, or global touch coordinates were captured.
+
 ## 2026-05-02 Android Sessions/Report Snapshot Expansion Evidence
 
 - Emulator available: `emulator-5554`.
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-103650/` and
+  `artifacts/android-ui-snapshots/20260502-131615/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Added explicit evidence files for Sessions default/filtered and Report 7d,
   30d, 90d, Custom valid, and Custom invalid states:
@@ -53,7 +71,7 @@ Updated: 2026-05-02
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-102036/` and
+  `artifacts/android-ui-snapshots/20260502-131615/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Settings/sync evidence includes `figma-07-settings.png`, `settings.png`,
   `05-settings-privacy-sync.png`, and
@@ -5400,4 +5418,4 @@ Remaining priorities:
 - Hardened Android release workflow so tag release publishing requires signing secrets and publishes only the signed release APK.
 - Settings now displays real Usage Access status and persists background collection through the Android collection settings abstraction.
 - Android snapshot automation now copies the seven canonical Woong UI screenshots to beginner-review before/after aliases, without capturing Chrome or other apps.
-- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-102036/` and `artifacts/android-ui-snapshots/latest/`.
+- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-131615/` and `artifacts/android-ui-snapshots/latest/`.
