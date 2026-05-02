@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Windows Data Structure</title>
+  <desc id="desc">Windows WPF local SQLite tables, sync outbox, server API, PostgreSQL, and future Blazor dashboard data flow.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f9fc; }
+      .panel { fill: #ffffff; stroke: #c9d4e5; stroke-width: 2; rx: 12; }
+      .table { fill: #ffffff; stroke: #2f5f98; stroke-width: 2; rx: 10; }
+      .process { fill: #eef6ff; stroke: #4a7fbd; stroke-width: 2; rx: 10; }
+      .server { fill: #f4fbf1; stroke: #5b8c54; stroke-width: 2; rx: 10; }
+      .warn { fill: #fff7e8; stroke: #b98122; stroke-width: 2; rx: 10; }
+      .title { font: 700 28px Segoe UI, Arial, sans-serif; fill: #1f2937; }
+      .section { font: 700 18px Segoe UI, Arial, sans-serif; fill: #1f2937; }
+      .label { font: 600 15px Segoe UI, Arial, sans-serif; fill: #1f2937; }
+      .text { font: 13px Segoe UI, Arial, sans-serif; fill: #374151; }
+      .small { font: 12px Segoe UI, Arial, sans-serif; fill: #4b5563; }
+      .code { font: 12px Consolas, monospace; fill: #1f2937; }
+      .arrow { stroke: #34465d; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed { stroke-dasharray: 7 6; }
+      .privacy { fill: #7c2d12; font: 700 13px Segoe UI, Arial, sans-serif; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#34465d" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900" />
+  <text class="title" x="48" y="54">Windows/WPF Local Data Structure for Integrated Blazor Dashboard Planning</text>
+  <text class="text" x="50" y="82">Metadata-only local SQLite facts sync through API DTOs into PostgreSQL. Blazor should read PostgreSQL, not Windows SQLite.</text>
+
+  <rect class="panel" x="40" y="120" width="900" height="700" />
+  <text class="section" x="65" y="155">Windows WPF client and local SQLite</text>
+
+  <rect class="process" x="70" y="190" width="230" height="86" />
+  <text class="label" x="92" y="218">Foreground collector</text>
+  <text class="small" x="92" y="242">HWND, PID, process name</text>
+  <text class="small" x="92" y="262">UTC timestamp, idle state</text>
+
+  <rect class="process" x="345" y="190" width="230" height="86" />
+  <text class="label" x="374" y="218">FocusSessionizer</text>
+  <text class="small" x="374" y="242">Closes app/window intervals</text>
+  <text class="small" x="374" y="262">Derives localDate</text>
+
+  <rect class="table" x="70" y="330" width="330" height="190" />
+  <text class="label" x="95" y="360">focus_session</text>
+  <text class="code" x="95" y="386">client_session_id PK</text>
+  <text class="code" x="95" y="406">device_id, platform_app_key</text>
+  <text class="code" x="95" y="426">started_at_utc, ended_at_utc</text>
+  <text class="code" x="95" y="446">duration_ms, local_date, timezone_id</text>
+  <text class="code" x="95" y="466">is_idle, source</text>
+  <text class="code" x="95" y="486">process_id/name/path, window_handle</text>
+  <text class="code" x="95" y="506">window_title nullable; cleared by default</text>
+
+  <rect class="process" x="620" y="190" width="270" height="86" />
+  <text class="label" x="646" y="218">Browser metadata reader</text>
+  <text class="small" x="646" y="242">UI Automation fallback or</text>
+  <text class="small" x="646" y="262">Chrome native message input</text>
+
+  <rect class="table" x="445" y="330" width="330" height="190" />
+  <text class="label" x="470" y="360">web_session</text>
+  <text class="code" x="470" y="386">id local PK</text>
+  <text class="code" x="470" y="406">focus_session_id</text>
+  <text class="code" x="470" y="426">browser_family, domain required</text>
+  <text class="code" x="470" y="446">url nullable, page_title nullable</text>
+  <text class="code" x="470" y="466">started_at_utc, ended_at_utc</text>
+  <text class="code" x="470" y="486">duration_ms</text>
+  <text class="code" x="470" y="506">capture_method/confidence/privacy flag</text>
+
+  <rect class="table" x="445" y="570" width="330" height="145" />
+  <text class="label" x="470" y="600">browser_raw_event</text>
+  <text class="code" x="470" y="626">id local PK</text>
+  <text class="code" x="470" y="646">browser_family, window_id, tab_id</text>
+  <text class="code" x="470" y="666">url/title/domain nullable</text>
+  <text class="code" x="470" y="686">observed_at_utc</text>
+  <text class="small" x="470" y="706">Short-retention source evidence</text>
+
+  <rect class="table" x="70" y="570" width="330" height="180" />
+  <text class="label" x="95" y="600">sync_outbox</text>
+  <text class="code" x="95" y="626">id PK</text>
+  <text class="code" x="95" y="646">aggregate_type: focus_session/web_session</text>
+  <text class="code" x="95" y="666">aggregate_id</text>
+  <text class="code" x="95" y="686">payload_json upload DTO</text>
+  <text class="code" x="95" y="706">status, retry_count</text>
+  <text class="code" x="95" y="726">created/synced UTC, last_error</text>
+
+  <rect class="process" x="815" y="330" width="95" height="385" />
+  <text class="label" x="835" y="420" transform="rotate(90 835 420)">WPF dashboard</text>
+  <text class="small" x="855" y="420" transform="rotate(90 855 420)">SqliteDashboardDataSource</text>
+  <text class="small" x="875" y="420" transform="rotate(90 875 420)">focus + web sessions</text>
+
+  <rect class="panel" x="980" y="120" width="370" height="330" />
+  <text class="section" x="1005" y="155">Sync and integrated store</text>
+
+  <rect class="process" x="1015" y="190" width="295" height="70" />
+  <text class="label" x="1040" y="218">WindowsSyncWorker</text>
+  <text class="small" x="1040" y="242">Processes pending/failed outbox rows</text>
+
+  <rect class="server" x="1015" y="300" width="295" height="85" />
+  <text class="label" x="1040" y="328">ASP.NET Core API</text>
+  <text class="small" x="1040" y="352">/api/focus-sessions/upload</text>
+  <text class="small" x="1040" y="372">/api/web-sessions/upload</text>
+
+  <rect class="server" x="1015" y="500" width="295" height="160" />
+  <text class="label" x="1040" y="530">PostgreSQL integrated DB</text>
+  <text class="code" x="1040" y="556">devices</text>
+  <text class="code" x="1040" y="576">focus_sessions</text>
+  <text class="code" x="1040" y="596">web_sessions</text>
+  <text class="code" x="1040" y="616">raw_events</text>
+  <text class="code" x="1040" y="636">daily_summaries, app_family_mappings</text>
+
+  <rect class="server" x="1015" y="705" width="295" height="70" />
+  <text class="label" x="1040" y="733">Future C# Blazor dashboard</text>
+  <text class="small" x="1040" y="757">Reads PostgreSQL summaries/facts</text>
+
+  <rect class="warn" x="980" y="805" width="370" height="64" />
+  <text class="privacy" x="1005" y="832">Privacy boundary</text>
+  <text class="small" x="1005" y="854">No keystrokes, clipboard, screenshots, page contents,</text>
+  <text class="small" x="1005" y="872">messages, form input, or covert collection.</text>
+
+  <path class="arrow" d="M300 233 H345" />
+  <path class="arrow" d="M460 276 V330" />
+  <path class="arrow" d="M620 233 H575" />
+  <path class="arrow" d="M755 276 V330" />
+  <path class="arrow dashed" d="M755 276 C790 360 790 510 775 600" />
+  <path class="arrow" d="M235 520 V570" />
+  <path class="arrow" d="M445 425 H400" />
+  <path class="arrow" d="M445 650 H400" />
+  <path class="arrow" d="M400 425 H815" />
+  <path class="arrow" d="M775 425 H815" />
+  <path class="arrow" d="M400 660 H1015 V225" />
+  <path class="arrow" d="M1162 260 V300" />
+  <path class="arrow" d="M1162 385 V500" />
+  <path class="arrow" d="M1162 660 V705" />
+
+  <text class="small" x="422" y="405">domain-only default</text>
+  <text class="small" x="420" y="548">serialized Upload* request DTOs</text>
+  <text class="small" x="1030" y="474">device token + idempotent client ids</text>
+</svg>

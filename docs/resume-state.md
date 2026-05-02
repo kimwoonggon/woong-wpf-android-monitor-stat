@@ -5538,3 +5538,14 @@ Verified so far:
 - `android\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
 - Android UI snapshot automation passed after the location-statistics/bottom-nav slice on `emulator-5554`, producing `artifacts/android-ui-snapshots/20260502-181343/` with canonical seven-screen PASS evidence.
 - Coverage refreshed after this slice: line 87.6%, branch 70.4%, report at `artifacts/coverage/SummaryGithub.md`.
+
+## 2026-05-02 Integrated Blazor Dashboard Bootstrap
+
+- Installed Blazor-related skill guidance with `npx skills add github/awesome-copilot@fluentui-blazor -g -y`.
+- Reused existing subagents for parallel Android/WPF data-structure docs and SVG artifacts because the agent thread limit blocked new spawns.
+- Added server-side `IntegratedDashboardQueryService` under `src/Woong.MonitorStack.Server/Dashboard/` to aggregate already-synced PostgreSQL data from Windows and Android devices.
+- Added `/api/dashboard/integrated` and initial Blazor SSR `/dashboard` page.
+- Added shared integrated data structure docs and SVG: `docs/data/integrated-data-structure.md` and `artifacts/data-diagrams/integrated-data-structure.svg`.
+- Focused validation so far: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardQueryServiceTests -v minimal` and `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardEndpointTests -v minimal`.
+- Known follow-ups: exact timezone-aware cross-midnight splitting for integrated web/location stats, authenticated production dashboard ownership policy, and browser screenshot evidence for the Blazor UI.
+- Full validation after Blazor bootstrap passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 610 tests with 6 PostgreSQL-environment skips, `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings/errors, and coverage refreshed to line 87.9% / branch 70.4%.

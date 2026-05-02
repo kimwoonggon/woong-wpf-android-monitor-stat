@@ -2497,3 +2497,32 @@ milestones below are finished.
   and location-statistics changes: `artifacts/android-ui-snapshots/20260502-181343/`.
 - [x] Refresh .NET coverage after this slice: line 87.6%, branch 70.4%,
   report at `artifacts/coverage/SummaryGithub.md`.
+
+## 2026-05-02 Integrated Blazor Dashboard Bootstrap
+
+- [x] Search/install Blazor-related skill guidance: installed
+  `github/awesome-copilot@fluentui-blazor` for future Fluent UI Blazor work.
+- [x] Assign parallel subagents to document Android and Windows local data
+  structures with Mermaid diagrams and Figma-importable SVG artifacts.
+- [x] Add `IntegratedDashboardQueryService` to aggregate PostgreSQL
+  Windows/Android facts by device, platform, app family, browser domain, and
+  opted-in coarse location samples.
+- [x] Add RED/GREEN server tests proving Windows and Android device data are
+  combined into one dashboard snapshot.
+- [x] Add `/api/dashboard/integrated` JSON endpoint for machine-readable
+  integrated dashboard data.
+- [x] Add initial Blazor SSR `/dashboard` page that renders Windows + Android
+  active focus, idle, web focus, platform totals, top apps, top domains,
+  location samples, and device rows.
+- [x] Add `docs/data/integrated-data-structure.md` and
+  `artifacts/data-diagrams/integrated-data-structure.svg` for shared review.
+- [x] Validation passed for integrated Blazor bootstrap: full solution
+  `dotnet test` passed 610 tests / 6 PostgreSQL-environment tests skipped,
+  full solution `dotnet build` passed with 0 warnings and 0 errors, and
+  coverage refreshed at line 87.9% / branch 70.4%.
+- [ ] Follow-up: add exact timezone-aware cross-midnight splitting to
+  `IntegratedDashboardQueryService` for web sessions and location samples.
+- [ ] Follow-up: add authenticated production user/session provider before
+  exposing the dashboard beyond local/dev use.
+- [ ] Follow-up: add browser/Playwright screenshot evidence for the Blazor
+  dashboard after the first UI shell stabilizes.

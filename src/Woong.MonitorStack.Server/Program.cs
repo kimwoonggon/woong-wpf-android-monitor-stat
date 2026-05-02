@@ -2,8 +2,10 @@ using System.Globalization;
 using Microsoft.Extensions.Options;
 using Woong.MonitorStack.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Woong.MonitorStack.Server.Components;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Devices;
+using Woong.MonitorStack.Server.Dashboard;
 using Woong.MonitorStack.Server.Events;
 using Woong.MonitorStack.Server.Locations;
 using Woong.MonitorStack.Server.Sessions;
@@ -14,6 +16,7 @@ string monitorDbConnectionString = builder.Configuration.GetConnectionString("Mo
     ?? "Host=localhost;Database=woong_monitor;Username=postgres;Password=postgres";
 
 builder.Services.AddOpenApi();
+builder.Services.AddRazorComponents();
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddDbContext<MonitorDbContext>(options => options.UseNpgsql(monitorDbConnectionString));
@@ -45,6 +48,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 builder.Services.AddScoped<LocationContextUploadService>();
 builder.Services.AddScoped<DailySummaryQueryService>();
 builder.Services.AddScoped<DailySummaryAggregationService>();
+builder.Services.AddScoped<IntegratedDashboardQueryService>();
 
 var app = builder.Build();
 
@@ -52,6 +56,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseAntiforgery();
+app.MapRazorComponents<App>();
 
 app.MapPost("/api/devices/register", async (
     RegisterDeviceRequest request,
@@ -195,6 +202,48 @@ app.MapGet("/api/daily-summaries/{summaryDate}", async (
     var response = await summaries.GetAsync(userId, parsedDate, timezoneId);
 
     return Results.Ok(response);
+});
+
+app.MapGet("/api/dashboard/integrated", async (
+    string userId,
+    string from,
+    string to,
+    string timezoneId,
+    IntegratedDashboardQueryService dashboard) =>
+{
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        return BadRequest("Query parameter 'userId' is required.");
+    }
+
+    if (string.IsNullOrWhiteSpace(timezoneId))
+    {
+        return BadRequest("Query parameter 'timezoneId' is required.");
+    }
+
+    if (!TryParseIsoDate(from, out DateOnly fromDate))
+    {
+        return BadRequest("Query parameter 'from' must be an ISO date in yyyy-MM-dd format.");
+    }
+
+    if (!TryParseIsoDate(to, out DateOnly toDate))
+    {
+        return BadRequest("Query parameter 'to' must be an ISO date in yyyy-MM-dd format.");
+    }
+
+    if (toDate < fromDate)
+    {
+        return BadRequest("Query parameter 'to' must be on or after 'from'.");
+    }
+
+    if (!IsSupportedTimeZoneId(timezoneId))
+    {
+        return BadRequest("Query parameter 'timezoneId' is not supported.");
+    }
+
+    IntegratedDashboardSnapshot snapshot = await dashboard.GetAsync(userId, fromDate, toDate, timezoneId);
+
+    return Results.Ok(snapshot);
 });
 
 static bool TryParseIsoDate(string value, out DateOnly date)

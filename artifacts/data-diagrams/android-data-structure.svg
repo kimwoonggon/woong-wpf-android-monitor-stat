@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">Android data structure and sync flow</title>
+  <desc id="desc">Standalone diagram of Android Room tables, outbox upload, privacy boundary, and PostgreSQL integration targets.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f9fb; }
+      .title { font: 700 28px Arial, sans-serif; fill: #14213d; }
+      .subtitle { font: 400 15px Arial, sans-serif; fill: #455a64; }
+      .section { font: 700 16px Arial, sans-serif; fill: #14213d; }
+      .text { font: 400 13px Arial, sans-serif; fill: #1f2933; }
+      .small { font: 400 12px Arial, sans-serif; fill: #374151; }
+      .box { fill: #ffffff; stroke: #9aa9b5; stroke-width: 1.4; rx: 8; }
+      .room { fill: #eef7ff; stroke: #2f80ed; }
+      .sync { fill: #fff7e8; stroke: #d9822b; }
+      .server { fill: #eefaf1; stroke: #2f9e44; }
+      .privacy { fill: #fff0f0; stroke: #d64545; }
+      .derived { fill: #f4f0ff; stroke: #7c3aed; }
+      .line { fill: none; stroke: #556270; stroke-width: 2; marker-end: url(#arrow); }
+      .dash { fill: none; stroke: #7b8794; stroke-width: 2; stroke-dasharray: 6 5; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#556270"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="820"/>
+  <text class="title" x="48" y="52">Android Local Data Structure</text>
+  <text class="subtitle" x="48" y="78">Room metadata tables, retryable outbox, opt-in location context, and PostgreSQL dashboard mapping</text>
+
+  <rect class="box" x="48" y="116" width="250" height="108"/>
+  <text class="section" x="66" y="146">UsageStats collection</text>
+  <text class="text" x="66" y="173">Android usage events</text>
+  <text class="text" x="66" y="193">resumed/paused app sessions</text>
+  <text class="small" x="66" y="213">source: android_usage_stats</text>
+
+  <rect class="box room" x="358" y="100" width="286" height="150"/>
+  <text class="section" x="378" y="130">Room: focus_sessions</text>
+  <text class="text" x="378" y="157">PK clientSessionId</text>
+  <text class="text" x="378" y="177">packageName, start/end UTC ms</text>
+  <text class="text" x="378" y="197">durationMs, localDate, timezoneId</text>
+  <text class="text" x="378" y="217">isIdle, source</text>
+
+  <rect class="box sync" x="706" y="100" width="266" height="150"/>
+  <text class="section" x="726" y="130">Room: sync_outbox</text>
+  <text class="text" x="726" y="157">PK clientItemId</text>
+  <text class="text" x="726" y="177">aggregateType + payloadJson</text>
+  <text class="text" x="726" y="197">Pending / Failed / Synced</text>
+  <text class="text" x="726" y="217">retryCount, lastError, timestamps</text>
+
+  <rect class="box server" x="1032" y="100" width="200" height="150"/>
+  <text class="section" x="1052" y="130">Server/PostgreSQL</text>
+  <text class="text" x="1052" y="157">devices</text>
+  <text class="text" x="1052" y="177">focus session facts</text>
+  <text class="text" x="1052" y="197">location context facts</text>
+  <text class="text" x="1052" y="217">Blazor dashboard views</text>
+
+  <path class="line" d="M298 170 H348"/>
+  <path class="line" d="M644 175 H696"/>
+  <path class="line" d="M972 175 H1022"/>
+
+  <rect class="box" x="48" y="340" width="250" height="124"/>
+  <text class="section" x="66" y="370">Opt-in location context</text>
+  <text class="text" x="66" y="397">Requires setting enabled</text>
+  <text class="text" x="66" y="417">and foreground permission</text>
+  <text class="text" x="66" y="437">Coordinates nullable by design</text>
+
+  <rect class="box room" x="358" y="314" width="286" height="150"/>
+  <text class="section" x="378" y="344">Room: location_context_snapshots</text>
+  <text class="text" x="378" y="371">PK id, deviceId</text>
+  <text class="text" x="378" y="391">capturedAtUtcMillis</text>
+  <text class="text" x="378" y="411">latitude/longitude/accuracy nullable</text>
+  <text class="text" x="378" y="431">permissionState, captureMode</text>
+
+  <rect class="box derived" x="358" y="528" width="286" height="150"/>
+  <text class="section" x="378" y="558">Room: location_visits</text>
+  <text class="text" x="378" y="585">Local derived aggregate</text>
+  <text class="text" x="378" y="605">deviceId, locationKey</text>
+  <text class="text" x="378" y="625">rounded coordinates, sampleCount</text>
+  <text class="text" x="378" y="645">first/last captured UTC ms</text>
+
+  <rect class="box" x="706" y="344" width="266" height="104"/>
+  <text class="section" x="726" y="374">AndroidSyncWorker</text>
+  <text class="text" x="726" y="401">Uploads when sync is enabled</text>
+  <text class="text" x="726" y="421">Uses X-Device-Token</text>
+
+  <rect class="box" x="706" y="560" width="266" height="96"/>
+  <text class="section" x="726" y="590">Local UI read models</text>
+  <text class="text" x="726" y="617">Dashboard, Sessions, Report</text>
+  <text class="text" x="726" y="637">Read Room tables directly</text>
+
+  <path class="line" d="M298 402 H348"/>
+  <path class="line" d="M644 389 H696"/>
+  <path class="line" d="M839 344 V260"/>
+  <path class="line" d="M972 396 C1010 396 1010 250 1032 250"/>
+  <path class="dash" d="M501 464 V518"/>
+  <path class="dash" d="M644 603 H696"/>
+  <path class="dash" d="M501 250 V304"/>
+  <path class="dash" d="M501 250 C520 292 654 323 706 374"/>
+
+  <rect class="box privacy" x="48" y="704" width="1184" height="70"/>
+  <text class="section" x="66" y="733">Privacy boundary</text>
+  <text class="text" x="66" y="758">Integrate metadata only. Do not collect or import typed text, passwords, messages, form input, clipboard contents, browser page contents, full URLs, global touch coordinates, screenshots, or other-app UI contents. Sync and location remain opt-in.</text>
+</svg>

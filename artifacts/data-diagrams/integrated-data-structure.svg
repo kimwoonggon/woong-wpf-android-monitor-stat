@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <rect width="1280" height="760" fill="#f6f8fb"/>
+  <text x="40" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Woong Monitor Integrated Data Structure</text>
+  <text x="40" y="84" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#64748b">Windows SQLite and Android Room stay local. PostgreSQL is the only integrated database.</text>
+
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#94a3b8" flood-opacity="0.25"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="40" y="125" width="270" height="170" rx="14" fill="#ffffff" stroke="#bfdbfe"/>
+    <text x="64" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#0f172a">Windows WPF</text>
+    <text x="64" y="192" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">foreground windows</text>
+    <text x="64" y="218" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">focus_session / web_session</text>
+    <text x="64" y="244" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">SQLite local outbox</text>
+    <text x="64" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">domain-only browser metadata</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="40" y="360" width="270" height="180" rx="14" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="64" y="395" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#0f172a">Android App</text>
+    <text x="64" y="427" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">UsageStatsManager</text>
+    <text x="64" y="453" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">Room focus sessions</text>
+    <text x="64" y="479" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">location_context / location_visits</text>
+    <text x="64" y="505" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">WorkManager sync outbox</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="495" y="205" width="290" height="260" rx="16" fill="#ffffff" stroke="#c7d2fe"/>
+    <text x="520" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">ASP.NET Core APIs</text>
+    <text x="520" y="278" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/api/devices/register</text>
+    <text x="520" y="304" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/api/focus-sessions/upload</text>
+    <text x="520" y="330" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/api/web-sessions/upload</text>
+    <text x="520" y="356" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/api/location-contexts/upload</text>
+    <text x="520" y="392" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Device token + user ownership</text>
+    <text x="520" y="418" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">retry-safe idempotent uploads</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="910" y="130" width="300" height="285" rx="16" fill="#ffffff" stroke="#fed7aa"/>
+    <text x="935" y="166" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">PostgreSQL Integrated DB</text>
+    <text x="935" y="202" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">devices</text>
+    <text x="935" y="228" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">focus_sessions</text>
+    <text x="935" y="254" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">web_sessions</text>
+    <text x="935" y="280" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">location_contexts</text>
+    <text x="935" y="306" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">daily_summaries</text>
+    <text x="935" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">app_families / mappings</text>
+    <text x="935" y="370" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#b45309">Only DB that integrates Windows + Android</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="910" y="500" width="300" height="160" rx="16" fill="#ffffff" stroke="#bae6fd"/>
+    <text x="935" y="536" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Blazor Dashboard</text>
+    <text x="935" y="572" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/dashboard</text>
+    <text x="935" y="598" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">/api/dashboard/integrated</text>
+    <text x="935" y="624" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#475569">platform / app / domain / location totals</text>
+  </g>
+
+  <path d="M310 210 C390 210 410 285 495 285" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M310 450 C390 450 410 385 495 385" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M785 330 C840 330 855 270 910 270" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1060 415 L1060 500" stroke="#2563eb" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="40" y="620" width="745" height="90" rx="12" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="64" y="652" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#9a3412">Privacy boundary</text>
+  <text x="64" y="680" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#9a3412">No typed text, passwords, form fields, clipboard contents, page contents, Android touch coordinates, or screenshots are integrated.</text>
+</svg>

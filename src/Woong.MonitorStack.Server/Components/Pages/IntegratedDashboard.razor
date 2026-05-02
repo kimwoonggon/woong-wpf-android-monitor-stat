@@ -1,0 +1,356 @@
+@page "/dashboard"
+@inject IntegratedDashboardQueryService DashboardQuery
+
+<PageTitle>Integrated Device Dashboard</PageTitle>
+
+<section class="dashboard-shell">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Windows + Android</p>
+            <h1>Integrated Device Dashboard</h1>
+            <p class="subtitle">@FromDateText - @ToDateText · @TimezoneId</p>
+        </div>
+        <div class="status-pill">PostgreSQL integrated view</div>
+    </header>
+
+    @if (_error is not null)
+    {
+        <div class="message error">@_error</div>
+    }
+    else if (_snapshot is null)
+    {
+        <div class="message">Loading dashboard...</div>
+    }
+    else
+    {
+        <section class="metric-grid" aria-label="Integrated summary cards">
+            <article class="metric-card primary">
+                <span>Active Focus</span>
+                <strong>@FormatDuration(_snapshot.TotalActiveMs)</strong>
+                <small>Idle excluded across Windows and Android</small>
+            </article>
+            <article class="metric-card">
+                <span>Idle</span>
+                <strong>@FormatDuration(_snapshot.TotalIdleMs)</strong>
+                <small>Foreground but inactive</small>
+            </article>
+            <article class="metric-card">
+                <span>Web Focus</span>
+                <strong>@FormatDuration(_snapshot.TotalWebMs)</strong>
+                <small>Browser domain metadata</small>
+            </article>
+            <article class="metric-card">
+                <span>Devices</span>
+                <strong>@_snapshot.Devices.Count</strong>
+                <small>Registered devices in this user range</small>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="panel">
+                <h2>Platform Totals</h2>
+                @foreach (IntegratedPlatformTotal platform in _snapshot.PlatformTotals)
+                {
+                    <div class="bar-row">
+                        <span>@platform.Platform</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:@Percent(platform.ActiveMs, _snapshot.TotalActiveMs)%"></div>
+                        </div>
+                        <strong>@FormatDuration(platform.ActiveMs)</strong>
+                    </div>
+                }
+            </article>
+
+            <article class="panel">
+                <h2>Top Apps</h2>
+                @foreach (IntegratedUsageTotal app in _snapshot.TopApps.Take(5))
+                {
+                    <div class="bar-row">
+                        <span>@app.Label</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:@Percent(app.DurationMs, _snapshot.TotalActiveMs)%"></div>
+                        </div>
+                        <strong>@FormatDuration(app.DurationMs)</strong>
+                    </div>
+                }
+            </article>
+
+            <article class="panel">
+                <h2>Top Domains</h2>
+                @foreach (IntegratedUsageTotal domain in _snapshot.TopDomains.Take(5))
+                {
+                    <div class="bar-row">
+                        <span>@domain.Label</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:@Percent(domain.DurationMs, _snapshot.TotalWebMs)%"></div>
+                        </div>
+                        <strong>@FormatDuration(domain.DurationMs)</strong>
+                    </div>
+                }
+            </article>
+
+            <article class="panel">
+                <h2>Location Samples</h2>
+                @if (_snapshot.TopLocations.Count == 0)
+                {
+                    <p class="muted">No opted-in location metadata in this range.</p>
+                }
+                @foreach (IntegratedLocationTotal location in _snapshot.TopLocations.Take(5))
+                {
+                    <div class="location-row">
+                        <span>@location.Label</span>
+                        <strong>@location.SampleCount samples</strong>
+                    </div>
+                }
+            </article>
+        </section>
+
+        <section class="panel device-panel">
+            <h2>Devices</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Device</th>
+                        <th>Timezone</th>
+                        <th>Active</th>
+                        <th>Idle</th>
+                        <th>Web</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (IntegratedDeviceSummary device in _snapshot.Devices)
+                    {
+                        <tr>
+                            <td>@device.Platform</td>
+                            <td>@device.DeviceName</td>
+                            <td>@device.TimezoneId</td>
+                            <td>@FormatDuration(device.ActiveMs)</td>
+                            <td>@FormatDuration(device.IdleMs)</td>
+                            <td>@FormatDuration(device.WebMs)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </section>
+    }
+</section>
+
+<style>
+    .dashboard-shell {
+        padding: 28px;
+    }
+
+    .hero {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .eyebrow,
+    .subtitle,
+    .muted {
+        color: var(--muted);
+    }
+
+    .eyebrow {
+        font-weight: 700;
+        letter-spacing: .06em;
+        margin: 0 0 4px;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        font-size: 32px;
+        margin: 0;
+    }
+
+    h2 {
+        font-size: 18px;
+        margin: 0 0 16px;
+    }
+
+    .subtitle {
+        margin: 6px 0 0;
+    }
+
+    .status-pill {
+        background: #eaf3ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        color: #0758bd;
+        font-weight: 700;
+        padding: 10px 16px;
+        white-space: nowrap;
+    }
+
+    .message,
+    .metric-card,
+    .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+
+    .message {
+        padding: 18px;
+    }
+
+    .message.error {
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .metric-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-bottom: 14px;
+    }
+
+    .metric-card {
+        padding: 18px;
+    }
+
+    .metric-card span,
+    .metric-card small {
+        color: var(--muted);
+        display: block;
+    }
+
+    .metric-card strong {
+        display: block;
+        font-size: 28px;
+        margin: 8px 0 4px;
+    }
+
+    .metric-card.primary {
+        border-color: #bfdbfe;
+        box-shadow: inset 4px 0 0 var(--primary);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panel {
+        padding: 18px;
+    }
+
+    .bar-row {
+        align-items: center;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: minmax(120px, 1fr) 2fr minmax(72px, auto);
+        margin: 12px 0;
+    }
+
+    .bar-track {
+        background: #e5e7eb;
+        border-radius: 999px;
+        height: 12px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        background: var(--primary);
+        border-radius: inherit;
+        height: 100%;
+        min-width: 3px;
+    }
+
+    .location-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 12px 0;
+    }
+
+    .device-panel {
+        margin-top: 14px;
+        overflow-x: auto;
+    }
+
+    table {
+        border-collapse: collapse;
+        min-width: 720px;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 8px;
+        text-align: left;
+    }
+
+    th {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    @@media (max-width: 960px) {
+        .hero {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .metric-grid,
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery(Name = "userId")]
+    public string? UserId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "from")]
+    public string? From { get; set; }
+
+    [SupplyParameterFromQuery(Name = "to")]
+    public string? To { get; set; }
+
+    [SupplyParameterFromQuery(Name = "timezoneId")]
+    public string? TimezoneId { get; set; }
+
+    private IntegratedDashboardSnapshot? _snapshot;
+    private string? _error;
+
+    private string FromDateText => From ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+    private string ToDateText => To ?? FromDateText;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        string userId = string.IsNullOrWhiteSpace(UserId) ? "local-user" : UserId;
+        string timezoneId = string.IsNullOrWhiteSpace(TimezoneId) ? "UTC" : TimezoneId;
+
+        if (!DateOnly.TryParse(FromDateText, out DateOnly fromDate) ||
+            !DateOnly.TryParse(ToDateText, out DateOnly toDate))
+        {
+            _error = "Use ISO dates such as 2026-04-30 for from/to.";
+            return;
+        }
+
+        _snapshot = await DashboardQuery.GetAsync(userId, fromDate, toDate, timezoneId);
+    }
+
+    private static int Percent(long value, long total)
+        => total <= 0 ? 0 : Math.Clamp((int)Math.Round(value * 100.0 / total), 0, 100);
+
+    private static string FormatDuration(long durationMs)
+    {
+        TimeSpan duration = TimeSpan.FromMilliseconds(durationMs);
+
+        if (duration.TotalHours >= 1)
+        {
+            return $"{(int)duration.TotalHours}h {duration.Minutes:D2}m";
+        }
+
+        return $"{Math.Max(0, (int)duration.TotalMinutes)}m";
+    }
+}
