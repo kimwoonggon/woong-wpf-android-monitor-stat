@@ -171,7 +171,12 @@ closed until the owning implementation agents report verified completion:
   Before tagging, confirm `versionCode`, `versionName`, approved Play Console
   track, and release approver.
   After the tag release, download the GitHub Release archive, verify
-  `woong-monitor-android-release-signed.apk` is the only release APK, upload
-  the signed APK to the approved Play Console track, and record the GitHub tag,
-  artifact name, Play track, and release approver.
+  `woong-monitor-android-release-signed.apk` is the only release APK, compare
+  `release-readiness.json` with the artifact and release decision, upload the
+  signed APK to the approved Play Console track, and record the GitHub tag,
+  artifact name, Play track, release approver, and emulator evidence path.
+  The readiness manifest must record `versionCode`, `versionName`, the signed
+  APK SHA-256, whether a production sync endpoint was configured, that sync
+  default opt-in remains false, that Play publishing is manual, and that
+  emulator evidence is required before public promotion.
   unsigned, debug, and androidTest APKs are internal validation artifacts only.

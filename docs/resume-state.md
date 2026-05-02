@@ -5500,3 +5500,11 @@ Validation completed for Android snapshot residual + Server HeaderStub guard sli
 - Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
 - Coverage collection passed: line 87.7%, branch 69.7%, report at `artifacts/coverage/SummaryGithub.md`.
+## 2026-05-02 Android Release Readiness Manifest
+
+- Android release workflow now writes `artifacts/android-release/release-readiness.json` beside the signed APK.
+- The manifest records `versionCode`, `versionName`, signed APK SHA-256, production sync endpoint configured state, `syncDefaultOptIn=false`, `playPublishingMode=manual`, and `emulatorEvidenceRequiredBeforePublicRelease=true`.
+- README and `docs/release-checklist.md` now require operators to compare the readiness manifest with the signed APK and record the GitHub tag, artifact name, Play track, release approver, and emulator evidence path.
+- Validation passed: local Android release workflow validator, focused `AndroidReleaseWorkflowTests`, Android Gradle `testDebugUnitTest assembleRelease`, full solution `dotnet test` (579 passed / 6 skipped), full solution `dotnet build`, and coverage collection.
+- Latest coverage after this slice: line 87.7%, branch 69.7%, report at `artifacts/coverage/SummaryGithub.md`.
+- Remaining queue: configure real Android signing secrets/Play track only when release requirements are explicit; implement production user/session provider; add server retention alerting values; continue WPF/Server hardening.

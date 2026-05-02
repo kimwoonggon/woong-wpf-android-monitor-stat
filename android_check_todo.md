@@ -924,6 +924,10 @@ workspace.
 - [x] Tag-based Android release publishing requires `ANDROID_KEYSTORE_*`
   secrets and publishes only the signed release APK; unsigned/debug/test APKs
   remain CI artifacts, not release assets.
+- [x] Android release workflow writes `release-readiness.json` beside the signed
+  APK with version, signed APK SHA-256, production endpoint configured flag,
+  sync default opt-in false, manual Play publishing mode, and emulator evidence
+  requirement before public promotion.
 - [x] Connected/emulator tests are not required in the Android release workflow.
 - [x] Validation passed: local release workflow validator, focused Android
   release workflow architecture tests, and Android Gradle

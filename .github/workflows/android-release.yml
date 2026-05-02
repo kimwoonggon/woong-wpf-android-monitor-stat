@@ -20,6 +20,7 @@ jobs:
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL: ${{ vars.WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL }}
 
     steps:
       - name: Checkout
@@ -90,11 +91,42 @@ jobs:
             $aligned
           & $apksigner verify --verbose $signed
 
+      - name: Write Android release readiness manifest
+        shell: pwsh
+        run: |
+          $signed = "artifacts/android-release/woong-monitor-android-release-signed.apk"
+          $readiness = "artifacts/android-release/release-readiness.json"
+          $gradleFile = Get-Content -Raw -Path "android/app/build.gradle.kts"
+          $versionCode = [regex]::Match($gradleFile, "versionCode\s*=\s*(\d+)").Groups[1].Value
+          $versionName = [regex]::Match($gradleFile, "versionName\s*=\s*`"([^`"]+)`"").Groups[1].Value
+          if ([string]::IsNullOrWhiteSpace($versionCode) -or [string]::IsNullOrWhiteSpace($versionName)) {
+            throw "Could not read Android versionCode/versionName from android/app/build.gradle.kts."
+          }
+
+          $manifest = [ordered]@{
+            generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+            gitRefName = "${{ github.ref_name }}"
+            gitSha = "${{ github.sha }}"
+            versionCode = [int]$versionCode
+            versionName = $versionName
+            signedApkFile = "woong-monitor-android-release-signed.apk"
+            signedApkSha256 = (Get-FileHash -Algorithm SHA256 -Path $signed).Hash.ToLowerInvariant()
+            productionSyncBaseUrlConfigured = -not [string]::IsNullOrWhiteSpace($env:WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL)
+            syncDefaultOptIn = $false
+            playPublishingMode = "manual"
+            emulatorEvidenceRequiredBeforePublicRelease = $true
+          }
+
+          $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $readiness -Encoding utf8
+          Write-Host "Release readiness manifest: $readiness"
+
       - name: Upload Android APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: woong-monitor-android-signed-apk-${{ github.ref_name }}
-          path: artifacts/android-release/woong-monitor-android-release-signed.apk
+          path: |
+            artifacts/android-release/woong-monitor-android-release-signed.apk
+            artifacts/android-release/release-readiness.json
           if-no-files-found: error
 
       - name: Archive Android release artifacts

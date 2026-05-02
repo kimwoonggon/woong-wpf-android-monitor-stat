@@ -44,6 +44,14 @@ public sealed class AndroidReleaseWorkflowTests
         Assert.Contains("ANDROID_KEY_ALIAS", workflow, StringComparison.Ordinal);
         Assert.Contains("ANDROID_KEY_PASSWORD", workflow, StringComparison.Ordinal);
         Assert.Contains("apksigner verify --verbose", workflow, StringComparison.Ordinal);
+        Assert.Contains("release-readiness.json", workflow, StringComparison.Ordinal);
+        Assert.Contains("versionCode", workflow, StringComparison.Ordinal);
+        Assert.Contains("versionName", workflow, StringComparison.Ordinal);
+        Assert.Contains("signedApkSha256", workflow, StringComparison.Ordinal);
+        Assert.Contains("productionSyncBaseUrlConfigured", workflow, StringComparison.Ordinal);
+        Assert.Contains("syncDefaultOptIn", workflow, StringComparison.Ordinal);
+        Assert.Contains("playPublishingMode", workflow, StringComparison.Ordinal);
+        Assert.Contains("emulatorEvidenceRequiredBeforePublicRelease", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-debug.apk", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-test.apk", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-release-unsigned.apk", workflow, StringComparison.Ordinal);
@@ -82,7 +90,11 @@ public sealed class AndroidReleaseWorkflowTests
             Assert.Contains("download the GitHub Release archive", document, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("verify `woong-monitor-android-release-signed.apk`", document, StringComparison.Ordinal);
             Assert.Contains("upload the signed APK to the approved Play Console track", document, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("record the GitHub tag, artifact name, Play track, and release approver", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("record the GitHub tag, artifact name, Play track, release approver", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("release-readiness.json", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("signed APK SHA-256", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("sync default opt-in remains false", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("emulator evidence path", document, StringComparison.OrdinalIgnoreCase);
         }
     }
 
