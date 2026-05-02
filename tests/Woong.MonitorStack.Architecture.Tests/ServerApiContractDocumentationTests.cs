@@ -66,6 +66,26 @@ public sealed class ServerApiContractDocumentationTests
         Assert.DoesNotContain("[x] Production user/session provider selected", releaseChecklist, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void PublicReleaseDocs_KeepProductionUserAuthOpenUntilAuthenticationHandlerIsConfigured()
+    {
+        string releaseChecklistPath = Path.Combine(RepositoryRoot, "docs", "release-checklist.md");
+        string hardeningPlanPath = Path.Combine(RepositoryRoot, "docs", "android-server-sync-hardening-plan.md");
+
+        Assert.True(File.Exists(releaseChecklistPath), "Release checklist documentation must exist.");
+        Assert.True(File.Exists(hardeningPlanPath), "Android/server sync hardening plan must exist.");
+
+        string releaseChecklist = NormalizeWhitespace(File.ReadAllText(releaseChecklistPath));
+        string combinedDocs = StripMarkdownCodeTicks(
+            NormalizeWhitespace(File.ReadAllText(releaseChecklistPath) + " " + File.ReadAllText(hardeningPlanPath)));
+
+        Assert.Contains("DeviceRegistrationAuth:RequiredAuthenticationScheme", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("registered authentication handler", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("upstream authentication middleware", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("runtime guard", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("[x] Production user/session provider selected", releaseChecklist, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

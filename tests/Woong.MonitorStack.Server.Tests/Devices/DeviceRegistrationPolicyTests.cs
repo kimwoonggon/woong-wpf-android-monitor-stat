@@ -317,6 +317,25 @@ public sealed class DeviceRegistrationPolicyTests
     }
 
     [Fact]
+    public async Task Startup_WhenProductionStrictClaimsPrincipalSchemeHasNoAuthenticationHandler_FailsStartupGuard()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(
+            requireAuthenticatedUser: true,
+            environmentName: "Production",
+            userIdentityProviderMode: DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+            requiredAuthenticationScheme: "Bearer");
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Task.Run(() =>
+            {
+                using HttpClient _ = factory.CreateClient();
+            }));
+
+        Assert.Contains("DeviceRegistrationAuth:RequiredAuthenticationScheme=Bearer", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("registered authentication handler", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Startup_WhenProductionStrictAuthUsesClaimsPrincipalWithoutAuthenticationScheme_FailsConfigurationValidation()
     {
         ValidateOptionsResult result = ValidateProductionAuthOptions(new DeviceRegistrationAuthOptions
@@ -503,7 +522,8 @@ public sealed class DeviceRegistrationPolicyTests
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase(
         bool requireAuthenticatedUser,
         string environmentName = "Testing",
-        string? userIdentityProviderMode = null)
+        string? userIdentityProviderMode = null,
+        string? requiredAuthenticationScheme = null)
         => new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -517,6 +537,11 @@ public sealed class DeviceRegistrationPolicyTests
                     if (!string.IsNullOrWhiteSpace(userIdentityProviderMode))
                     {
                         values["DeviceRegistrationAuth:UserIdentityProviderMode"] = userIdentityProviderMode;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(requiredAuthenticationScheme))
+                    {
+                        values["DeviceRegistrationAuth:RequiredAuthenticationScheme"] = requiredAuthenticationScheme;
                     }
 
                     configuration.AddInMemoryCollection(values);

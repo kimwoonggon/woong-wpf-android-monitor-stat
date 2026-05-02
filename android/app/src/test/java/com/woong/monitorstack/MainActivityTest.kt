@@ -142,7 +142,10 @@ class MainActivityTest {
             dashboardActivity.fragmentContainerMargins().topMargin
         )
         assertEquals(
-            dashboardActivity.findViewById<View>(R.id.bottomNavigation).layoutParams.height,
+            dashboardActivity.findViewById<View>(R.id.bottomNavigation).layoutParams.height +
+                dashboardActivity.resources.getDimensionPixelSize(
+                    R.dimen.bottom_navigation_content_clearance
+                ),
             dashboardActivity.fragmentContainerMargins().bottomMargin
         )
 
@@ -163,6 +166,42 @@ class MainActivityTest {
         assertEquals(View.GONE, permissionActivity.findViewById<View>(R.id.bottomNavigation).visibility)
         assertEquals(0, permissionActivity.fragmentContainerMargins().topMargin)
         assertEquals(0, permissionActivity.fragmentContainerMargins().bottomMargin)
+    }
+
+    @Test
+    fun mainTabsKeepContentContainerAboveBottomNavigationWithClearance() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val bottomNavigation =
+            activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
+                R.id.bottomNavigation
+            )
+        val expectedClearance = activity.resources.getDimensionPixelSize(
+            R.dimen.bottom_navigation_content_clearance
+        )
+
+        listOf(
+            R.id.navDashboard,
+            R.id.navSessions,
+            R.id.navReport,
+            R.id.navSettings
+        ).forEach { tabId ->
+            bottomNavigation.selectedItemId = tabId
+            activity.supportFragmentManager.executePendingTransactions()
+            waitForMainThreadWork()
+
+            assertEquals(View.VISIBLE, bottomNavigation.visibility)
+            assertTrue(
+                "Main tab content must keep a bottom margin above the navigation bar plus clearance.",
+                activity.fragmentContainerMargins().bottomMargin >=
+                    bottomNavigation.layoutParams.height + expectedClearance
+            )
+        }
     }
 
     @Test
@@ -361,6 +400,14 @@ class MainActivityTest {
         assertEquals(
             "com.woong.monitorstack",
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+        )
+        assertEquals(
+            "Chrome",
+            activity.findViewById<TextView>(R.id.latestCollectedExternalAppText).text.toString()
+        )
+        assertEquals(
+            "com.android.chrome",
+            activity.findViewById<TextView>(R.id.latestCollectedExternalPackageText).text.toString()
         )
         assertEquals(
             "13m",

@@ -184,7 +184,13 @@ class MainActivity : AppCompatActivity() {
         val baseBottomNavigationHeightPx = resources.getDimensionPixelSize(
             R.dimen.bottom_navigation_base_height
         )
-        val layoutCalculator = SystemInsetsLayoutCalculator(baseBottomNavigationHeightPx)
+        val contentBottomClearancePx = resources.getDimensionPixelSize(
+            R.dimen.bottom_navigation_content_clearance
+        )
+        val layoutCalculator = SystemInsetsLayoutCalculator(
+            baseBottomNavigationHeightPx = baseBottomNavigationHeightPx,
+            contentBottomClearancePx = contentBottomClearancePx
+        )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainRoot) { _, insets ->
             val bottomInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom

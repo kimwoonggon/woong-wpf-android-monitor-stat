@@ -24,6 +24,7 @@ builder.Services.AddSingleton<IValidateOptions<DeviceRegistrationAuthOptions>, D
 builder.Services.AddOptions<DeviceRegistrationAuthOptions>()
     .Bind(builder.Configuration.GetSection(DeviceRegistrationAuthOptions.SectionName))
     .ValidateOnStart();
+builder.Services.AddHostedService<DeviceRegistrationAuthStartupGuard>();
 builder.Services.AddScoped<HeaderRegistrationUserIdentitySource>();
 builder.Services.AddScoped<ClaimsPrincipalRegistrationUserIdentitySource>();
 builder.Services.AddScoped<IRegistrationUserIdentitySource, ConfiguredRegistrationUserIdentitySource>();

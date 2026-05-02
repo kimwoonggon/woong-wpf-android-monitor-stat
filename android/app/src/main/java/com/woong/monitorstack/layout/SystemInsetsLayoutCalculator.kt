@@ -7,11 +7,15 @@ data class SystemInsetsLayout(
 )
 
 class SystemInsetsLayoutCalculator(
-    private val baseBottomNavigationHeightPx: Int
+    private val baseBottomNavigationHeightPx: Int,
+    private val contentBottomClearancePx: Int = 0
 ) {
     init {
         require(baseBottomNavigationHeightPx > 0) {
             "baseBottomNavigationHeightPx must be positive."
+        }
+        require(contentBottomClearancePx >= 0) {
+            "contentBottomClearancePx must not be negative."
         }
     }
 
@@ -21,7 +25,7 @@ class SystemInsetsLayoutCalculator(
 
         return SystemInsetsLayout(
             bottomNavigationHeightPx = adjustedHeightPx,
-            fragmentBottomMarginPx = adjustedHeightPx,
+            fragmentBottomMarginPx = adjustedHeightPx + contentBottomClearancePx,
             bottomNavigationPaddingBottomPx = safeBottomInsetPx
         )
     }

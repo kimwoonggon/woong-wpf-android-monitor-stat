@@ -669,6 +669,12 @@ try {
     }
     Copy-AndroidBeginnerReviewAliases
     Write-AndroidSnapshotArtifacts -Status $status -BlockedReason $blockedReason
+    & (Join-Path $PSScriptRoot "validate-android-ui-snapshot-report.ps1") `
+        -ReportPath (Join-Path $latestRoot "report.md") `
+        -ManifestPath (Join-Path $latestRoot "manifest.json")
+    if ($LASTEXITCODE -ne 0) {
+        throw "Android UI snapshot canonical 7-screen acceptance validation failed."
+    }
     Write-Host "Android UI snapshot artifacts: $runRoot"
     exit 0
 }

@@ -49,6 +49,11 @@ Status legend:
   `DeviceRegistrationPolicyTests.ClaimsPrincipalIdentitySource_ExtractsStableUserIdFromConfiguredClaim`,
   `DeviceRegistrationPolicyTests.ClaimsPrincipalIdentitySource_WhenConfiguredClaimIsMissing_ReturnsNull`,
   `DeviceRegistrationPolicyTests.ConfiguredIdentitySource_WhenClaimsModeIsSelected_IgnoresHeaderStubValue`.
+- [x] Production strict-auth ClaimsPrincipal startup rejects a configured
+  `RequiredAuthenticationScheme` that has no registered authentication handler.
+  Evidence:
+  `DeviceRegistrationPolicyTests.Startup_WhenProductionStrictClaimsPrincipalSchemeHasNoAuthenticationHandler_FailsStartupGuard`,
+  `ServerApiContractDocumentationTests.PublicReleaseDocs_KeepProductionUserAuthOpenUntilAuthenticationHandlerIsConfigured`.
 - [x] Production strict-auth startup rejects the dev/MVP header-stub identity
   provider.
   Evidence:

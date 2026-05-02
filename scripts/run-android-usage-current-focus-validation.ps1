@@ -189,9 +189,11 @@ function Start-WoongApp {
     $activity = "$PackageName/.MainActivity"
     Invoke-AdbChecked -Arguments @(
         "shell",
-        "sh",
-        "-c",
-        "am start -n $activity >/dev/null 2>&1 &"
+        "am",
+        "start",
+        "-W",
+        "-n",
+        $activity
     ) -Description "Launch Woong" | Out-Null
 }
 
@@ -311,6 +313,28 @@ function Get-ForegroundPackage {
     return ""
 }
 
+function Wait-ForForegroundPackage {
+    param(
+        [string]$ExpectedPackageName,
+        [int]$MaxAttempts = 6,
+        [int]$DelaySeconds = 1
+    )
+
+    $lastForegroundPackage = ""
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt += 1) {
+        $lastForegroundPackage = Get-ForegroundPackage
+        $notes.Add("Foreground package attempt $attempt/$MaxAttempts after Woong return: $lastForegroundPackage")
+        if ($lastForegroundPackage -eq $ExpectedPackageName) {
+            return $lastForegroundPackage
+        }
+
+        Start-WoongApp
+        Start-Sleep -Seconds $DelaySeconds
+    }
+
+    return $lastForegroundPackage
+}
+
 try {
     if ($DryRun) {
         $notes.Add("Dry run enabled. The script will emit the command plan and artifacts without requiring a device.")
@@ -391,9 +415,9 @@ try {
     }
 
     Start-WoongApp
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 2
 
-    $foregroundPackage = Get-ForegroundPackage
+    $foregroundPackage = Wait-ForForegroundPackage -ExpectedPackageName $PackageName
     $notes.Add("Foreground package before screenshot: $foregroundPackage")
     if (-not $DryRun -and $foregroundPackage -ne $PackageName) {
         $status = "BLOCKED"

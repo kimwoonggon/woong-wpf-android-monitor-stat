@@ -153,8 +153,12 @@ closed until the owning implementation agents report verified completion:
   and returns no user when that claim is absent. Production strict-auth startup
   now also requires `DeviceRegistrationAuth:RequiredAuthenticationScheme` when
   `ClaimsPrincipal` mode is selected, keeping the mode tied to an explicit
-  upstream authentication boundary. Until real upstream authentication
-  middleware/provider selection is configured and validated,
+  upstream authentication boundary. A runtime guard also fails production
+  strict-auth startup when the configured
+  `DeviceRegistrationAuth:RequiredAuthenticationScheme` does not have a
+  registered authentication handler behind upstream authentication middleware.
+  Until real upstream authentication middleware/provider selection is
+  configured and validated,
   this item must remain an open release blocker and the release checklist must
   not be treated as complete.
   Existing policy coverage proves strict mode rejects missing authenticated
@@ -168,9 +172,10 @@ closed until the owning implementation agents report verified completion:
   production identity boundary), documents provisioning/rotation/incident
   ownership, configures `ClaimsPrincipal` mode with
   `RequiredAuthenticationScheme` behind real authentication middleware or
-  another approved non-`HeaderStub` provider backed by server code, and reruns
-  strict-auth registration plus token-protected endpoint tests with
-  production-equivalent configuration.
+  another approved non-`HeaderStub` provider backed by server code, proves the
+  named scheme has a registered authentication handler through the runtime
+  guard, and reruns strict-auth registration plus token-protected endpoint
+  tests with production-equivalent configuration.
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.

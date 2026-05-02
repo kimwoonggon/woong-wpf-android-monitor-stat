@@ -242,6 +242,12 @@ uploads. Remaining server-side hardening should be split into small slices:
     `UserIdentityProviderMode` until the mode is wired to a concrete
     `IRegistrationUserIdentitySource`. Future provider names such as `Oidc`
     must not silently continue using the header stub.
+  - `ClaimsPrincipal` mode is the current production-safe server boundary after
+    upstream authentication middleware. Production strict-auth startup requires
+    `DeviceRegistrationAuth:RequiredAuthenticationScheme`, and a runtime guard
+    fails startup when that named scheme has no registered authentication
+    handler. This keeps public release blocked until the provider is actually
+    wired, not merely described in config.
   - The real user/session provider selection must remain an open release
     blocker until the provider, provisioning path, token/session validation,
      and operational ownership are documented and validated.

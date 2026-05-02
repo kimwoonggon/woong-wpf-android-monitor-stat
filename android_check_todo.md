@@ -957,3 +957,15 @@ workspace.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [x] Remaining Android visual gap resolved: Dashboard chart/card density was tightened so ranked app content appears earlier and remains readable.
+- [x] Bottom navigation/content clearance hardening added: the main fragment
+  container now keeps a configured buffer above the bottom navigation and
+  Robolectric coverage verifies Dashboard, Sessions, Report, and Settings tabs
+  stay reachable.
+- [x] Android UI snapshot report freshness guard added:
+  `scripts/validate-android-ui-snapshot-report.ps1` requires latest snapshot
+  evidence to be `PASS` and to include all seven canonical Figma screen
+  artifacts before the snapshot script can accept the run.
+- [x] Current-focus validation script hardened after emulator foreground
+  flakiness: Woong launches synchronously with `am start -W`, retries foreground
+  package detection, and passed on `emulator-5554` at
+  `artifacts/android-usage-current-focus/20260502-172024/`.

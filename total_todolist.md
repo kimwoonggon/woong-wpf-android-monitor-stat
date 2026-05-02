@@ -2368,6 +2368,22 @@ milestones below are finished.
   passed / 6 skipped, `dotnet build` 0 warnings / 0 errors, Android Gradle
   `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`,
   and coverage line 87.5%, branch 69.4%.
+- [x] Current multi-agent validation passed after Android disconnect repair,
+  server revoked-device repair, and WPF chart detail aggregation slices:
+  `dotnet test` 596 passed / 6 skipped, `dotnet build` 0 warnings / 0 errors,
+  Android Gradle `testDebugUnitTest assembleDebug` and `assembleRelease`, and
+  coverage line 87.5%, branch 70.1%.
+- [x] Android bottom-navigation/content clearance guard added so Dashboard,
+  Sessions, Report, and Settings tab content keeps a readable buffer above the
+  bottom navigation.
+- [x] Android seven-screen snapshot freshness guard added through
+  `scripts/validate-android-ui-snapshot-report.ps1`.
+- [x] Android current-focus emulator validation script now launches Woong
+  synchronously, retries foreground detection, and produced PASS evidence at
+  `artifacts/android-usage-current-focus/20260502-172024/`.
+- [x] Server production strict-auth ClaimsPrincipal startup now fails when the
+  configured `RequiredAuthenticationScheme` has no registered authentication
+  handler, keeping public release blocked until real upstream auth is wired.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
