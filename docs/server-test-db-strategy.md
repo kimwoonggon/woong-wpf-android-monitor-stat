@@ -47,6 +47,18 @@ The validation applies EF Core migrations through Npgsql, verifies the legacy
 required, checks PostgreSQL relational constraints, and verifies concurrent
 duplicate focus/web/raw/location uploads return idempotent statuses.
 
+Current availability check:
+
+- `tests/Woong.MonitorStack.Server.Tests` references
+  `Testcontainers.PostgreSql` and includes the `PostgresFactAttribute` gate.
+- Routine `dotnet test` skips PostgreSQL tests unless
+  `WOONG_MONITOR_RUN_POSTGRES_TESTS=1` is set, so Docker capacity remains an
+  explicit validation choice.
+- User-auth response-policy tests are HTTP contract tests and do not claim
+  PostgreSQL-specific relational behavior. Any future relationship, unique
+  index, migration, or idempotency proof must use SQLite relational tests at
+  minimum and PostgreSQL/Testcontainers for production-readiness evidence.
+
 Latest local artifact:
 
 - `artifacts/server-postgres-validation/20260430-190958`

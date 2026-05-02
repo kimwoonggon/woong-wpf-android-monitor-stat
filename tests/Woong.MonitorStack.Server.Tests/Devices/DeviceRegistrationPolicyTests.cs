@@ -117,7 +117,7 @@ public sealed class DeviceRegistrationPolicyTests
     }
 
     [Fact]
-    public async Task UploadFocusSessions_WhenStrictModeAuthenticatedUserDoesNotOwnDevice_ReturnsUnauthorizedAndPersistsNoRows()
+    public async Task UploadFocusSessions_WhenStrictModeDeviceTokenIsInvalid_ReturnsUnauthorizedAndPersistsNoRows()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
         using HttpClient client = factory.CreateClient();
@@ -129,11 +129,35 @@ public sealed class DeviceRegistrationPolicyTests
 
         HttpResponseMessage response = await PostFocusUploadAsync(
             client,
+            authenticatedUserId: "user-a",
+            registration.DeviceId,
+            "not-the-issued-device-token");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Empty(await dbContext.FocusSessions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task UploadFocusSessions_WhenStrictModeAuthenticatedUserDoesNotOwnValidToken_ReturnsForbiddenAndPersistsNoRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistrationResponse registration = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "payload-user-a",
+            deviceKey: "user-a-android-device-key-forbidden");
+
+        HttpResponseMessage response = await PostFocusUploadAsync(
+            client,
             authenticatedUserId: "user-b",
             registration.DeviceId,
             registration.DeviceToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
         using IServiceScope scope = factory.Services.CreateScope();
         MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();

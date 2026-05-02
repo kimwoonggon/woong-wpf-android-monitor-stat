@@ -2316,6 +2316,11 @@ milestones below are finished.
 - [x] Latest Android Dashboard recent-session visibility evidence: `artifacts/android-ui-snapshots/20260502-132522/` with Dashboard overview, chart, recent sessions, and safe location/scroll states.
 - [x] Server strict-mode device token checks now validate authenticated user ownership for token-protected endpoints; a token issued to user A cannot upload as user B when `DeviceRegistrationAuth:RequireAuthenticatedUser=true`.
 - [x] Server registration policy tests now prove the same device key can produce separate devices for separate authenticated users and payload `userId` cannot steal another user's device token.
+- [x] Server token-protected endpoint response policy is now explicit in code/tests/docs: missing, malformed, revoked, or wrong tokens return `401 Unauthorized`, while a valid token presented by a different authenticated user returns `403 Forbidden` and persists no upload rows.
+- [x] Android Dashboard Current Focus now suppresses NexusLauncher/SystemUI-only
+  noise and shows `No app` / `No package` instead of a misleading current app.
+- [x] Latest Android launcher-noise evidence:
+  `artifacts/android-ui-snapshots/20260502-141105/`.
 - [x] Validation passed for the Android Dashboard visibility + server strict ownership slice: full solution `dotnet test` (571 passed / 6 skipped), full solution `dotnet build`, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage collection.
 - [x] Latest coverage after this slice: line 87.7%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 
@@ -2335,6 +2340,11 @@ milestones below are finished.
 - [x] Validation passed for Android disconnect/revocation UX: focused Settings/sync tests, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
 - [x] Latest coverage after disconnect/taskbar slice: line 87.6%, branch 69.3%, report at `artifacts/coverage/SummaryGithub.md`.
 - [ ] Add Android token refresh/re-registration behavior tests for auth-required status: Register/Repair replaces the old token, clears auth-required status, and does not enqueue sync until registration succeeds.
+- [x] Current multi-agent validation passed after Android launcher-noise and
+  server 401/403 policy slices: `dotnet test` 577 passed / 6 skipped,
+  `dotnet build` 0 warnings / 0 errors, Android Gradle
+  `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`,
+  and coverage line 87.5%, branch 69.4%.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
@@ -2412,4 +2422,4 @@ milestones below are finished.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
-- [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, and strict-mode ownership checks have focused coverage; production user/session provider selection and environment-specific retention alerting values still need release policy.
+- [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, and token-protected 401/403 response policy have focused coverage; production user/session provider selection and environment-specific retention alerting values still need release policy.

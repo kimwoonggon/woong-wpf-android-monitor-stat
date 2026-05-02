@@ -368,6 +368,31 @@ class MainActivityTest {
     }
 
     @Test
+    fun dashboardCurrentFocusDoesNotReportNexusLauncherWhenOnlyLauncherNoiseWasCollected() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        clearMonitorDatabase(context)
+        MainActivity.usageImmediateCollectorFactory = {
+            FakeOnlyLauncherNoiseImmediateCollector(context)
+        }
+
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        assertEquals(
+            "No app",
+            activity.findViewById<TextView>(R.id.currentAppText).text.toString()
+        )
+        assertEquals(
+            "No package",
+            activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+        )
+    }
+
+    @Test
     fun dashboardLatestPersistedSessionsStillRenderInRecentSessions() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -1247,6 +1272,29 @@ class MainActivityTest {
                 isIdle = false,
                 source = "fake_immediate_usage"
             )
+        }
+    }
+
+    private class FakeOnlyLauncherNoiseImmediateCollector(
+        private val context: Context
+    ) : AndroidRecentUsageCollector {
+        override fun collectRecentUsage(): Int {
+            val timezoneId = ZoneId.systemDefault()
+            val now = System.currentTimeMillis()
+            MonitorDatabase.getInstance(context).focusSessionDao().insert(
+                FocusSessionEntity(
+                    clientSessionId = "fake-only-nexuslauncher",
+                    packageName = "com.google.android.apps.nexuslauncher",
+                    startedAtUtcMillis = now - 120_000L,
+                    endedAtUtcMillis = now,
+                    durationMs = 120_000L,
+                    localDate = LocalDate.now(timezoneId).toString(),
+                    timezoneId = timezoneId.id,
+                    isIdle = false,
+                    source = "fake_immediate_usage"
+                )
+            )
+            return 1
         }
     }
 

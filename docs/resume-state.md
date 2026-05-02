@@ -5468,3 +5468,12 @@ Validation completed for disconnect/taskbar slice:
 - Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
 - Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
 - Coverage collection passed: line 87.6%, branch 69.3%, report at `artifacts/coverage/SummaryGithub.md`.
+## 2026-05-02 Android Launcher-Noise Current Focus And Server Token Response Policy
+
+- Android Dashboard Current Focus now suppresses NexusLauncher/SystemUI-only UsageStats noise. If no meaningful foreground app can be proven and only launcher noise exists, the UI shows `No app` / `No package` rather than a misleading current app.
+- Server token-protected endpoint policy is explicit: missing, malformed, revoked, or wrong tokens return `401 Unauthorized`; a valid device token presented by a different authenticated user returns `403 Forbidden` and persists no upload rows.
+- Documentation updated in `android_check_todo.md`, `total_todolist.md`, `docs/android-server-sync-hardening-plan.md`, and `docs/server-test-db-strategy.md`.
+- Validation passed: focused Android Current Focus test, focused server token-policy tests, full `dotnet test` (577 passed / 6 skipped), full `dotnet build` (0 warnings / 0 errors), Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage generation.
+- Latest coverage: line 87.5%, branch 69.4%, report at `artifacts/coverage/SummaryGithub.md`.
+- Latest Android UI snapshot evidence after launcher-noise fix: `artifacts/android-ui-snapshots/20260502-141105/`.
+- Remaining high-priority queue: Android token refresh/re-registration after auth-required status, production user/session provider policy, Android signing/Play publishing decision, and environment-specific server retention alerting release policy.

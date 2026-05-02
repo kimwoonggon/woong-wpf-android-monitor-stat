@@ -20,14 +20,27 @@ public sealed class DeviceTokenAuthenticationService
         string deviceId,
         string? deviceToken,
         CancellationToken cancellationToken = default)
-        => await IsAuthorizedAsync(
+        => await AuthenticateAsync(
             deviceId,
             deviceToken,
             authenticatedUserId: null,
             requireAuthenticatedUser: false,
-            cancellationToken);
+            cancellationToken) == DeviceTokenAuthenticationStatus.Authorized;
 
     public async Task<bool> IsAuthorizedAsync(
+        string deviceId,
+        string? deviceToken,
+        string? authenticatedUserId,
+        bool requireAuthenticatedUser,
+        CancellationToken cancellationToken = default)
+        => await AuthenticateAsync(
+            deviceId,
+            deviceToken,
+            authenticatedUserId,
+            requireAuthenticatedUser,
+            cancellationToken) == DeviceTokenAuthenticationStatus.Authorized;
+
+    public async Task<DeviceTokenAuthenticationStatus> AuthenticateAsync(
         string deviceId,
         string? deviceToken,
         string? authenticatedUserId,
@@ -37,7 +50,7 @@ public sealed class DeviceTokenAuthenticationService
         if (string.IsNullOrWhiteSpace(deviceToken) ||
             !Guid.TryParseExact(deviceId, "N", out Guid parsedDeviceId))
         {
-            return false;
+            return DeviceTokenAuthenticationStatus.Unauthorized;
         }
 
         DeviceTokenVerifier? verifier = await _dbContext.Devices
@@ -47,23 +60,27 @@ public sealed class DeviceTokenAuthenticationService
 
         if (verifier is null || string.IsNullOrWhiteSpace(verifier.DeviceTokenHash))
         {
-            return false;
+            return DeviceTokenAuthenticationStatus.Unauthorized;
+        }
+
+        string actualHash = DeviceTokenFactory.HashToken(deviceToken);
+        if (!FixedTimeEquals(verifier.DeviceTokenHash, actualHash))
+        {
+            return DeviceTokenAuthenticationStatus.Unauthorized;
         }
 
         if (requireAuthenticatedUser && string.IsNullOrWhiteSpace(authenticatedUserId))
         {
-            return false;
+            return DeviceTokenAuthenticationStatus.Unauthorized;
         }
 
         if (!string.IsNullOrWhiteSpace(authenticatedUserId) &&
             !string.Equals(verifier.UserId, authenticatedUserId, StringComparison.Ordinal))
         {
-            return false;
+            return DeviceTokenAuthenticationStatus.Forbidden;
         }
 
-        string actualHash = DeviceTokenFactory.HashToken(deviceToken);
-
-        return FixedTimeEquals(verifier.DeviceTokenHash, actualHash);
+        return DeviceTokenAuthenticationStatus.Authorized;
     }
 
     private static bool FixedTimeEquals(string expected, string actual)
@@ -76,4 +93,11 @@ public sealed class DeviceTokenAuthenticationService
     }
 
     private sealed record DeviceTokenVerifier(string UserId, string DeviceTokenHash);
+}
+
+public enum DeviceTokenAuthenticationStatus
+{
+    Authorized,
+    Unauthorized,
+    Forbidden
 }

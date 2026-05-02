@@ -106,9 +106,10 @@ class DashboardFragment : Fragment() {
         val latestSession = state.latestMeaningfulTrackedSession(requireContext().packageName)
         val latestExternalSession = state.latestExternalTrackedSession(requireContext().packageName)
         val currentAppName = latestSession?.appName
-            ?: topApp
+            ?: latestExternalSession?.appName
+            ?: getString(R.string.no_top_app)
         val currentPackageName = latestSession?.packageName
-            ?: state.topAppPackageName
+            ?: latestExternalSession?.packageName
             ?: getString(R.string.no_package)
         val latestExternalAppName = latestExternalSession?.appName ?: getString(R.string.no_top_app)
         val latestExternalPackageName = latestExternalSession?.packageName ?: getString(R.string.no_package)
@@ -211,8 +212,7 @@ class DashboardFragment : Fragment() {
         )
 
         return recentSessions.firstOrNull { session -> session.packageName !in noisyPackages }
-            ?: recentSessions.firstOrNull { session -> session.packageName != monitorPackageName }
-            ?: recentSessions.firstOrNull()
+            ?: recentSessions.firstOrNull { session -> session.packageName == monitorPackageName }
     }
 
     private fun DashboardUiState.latestExternalTrackedSession(

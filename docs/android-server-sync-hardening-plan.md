@@ -210,18 +210,32 @@ uploads. Remaining server-side hardening should be split into small slices:
      `POST /api/devices/{deviceId}/token/rotate`: current token required, old
      token invalidated, new token returned, and existing focus/web/raw/location
      rows preserved.
-   - Remaining: add explicit revocation/cross-device management semantics after
-     user-auth policy is decided.
+   - Server token revocation is implemented at
+     `POST /api/devices/{deviceId}/token/revoke`: current token required, the
+     token hash is cleared, future upload/rotation/revoke attempts with the old
+     token return `401 Unauthorized`, and existing stored rows are preserved.
+   - Remaining: add cross-device management semantics after user-auth policy is
+     decided.
 
 2. Registration policy and user auth:
-   - Decide whether registration is allowed with device credentials only or
-     must require a user auth/session token.
+   - Current strict-mode behavior is option-gated by
+     `DeviceRegistrationAuth:RequireAuthenticatedUser`. When enabled,
+     registration requires `X-Woong-User-Id`; that authenticated user id
+     overrides the payload `userId`.
+   - Token-protected upload/rotation/revoke endpoints use this response policy:
+     missing, malformed, revoked, or wrong device tokens return
+     `401 Unauthorized`; a valid device token presented with a different
+     authenticated user returns `403 Forbidden`; `404 Not Found` is reserved
+     for post-auth missing resources such as a race after authorization.
+   - Decide whether production registration is allowed with device credentials
+     only or must require a real user auth/session token.
    - Define who owns a device record and how a user can revoke or replace an
      Android device.
    - Keep first registration explicit and visible to the client user.
-   - Add tests for unauthenticated registration rejection once user auth exists,
-     while preserving idempotent registration for the same user/platform/device
-     key.
+   - Existing tests cover unauthenticated strict-mode registration rejection,
+     authenticated-user override, separate devices for separate users with the
+     same device key, token theft prevention through payload `userId`, and
+     strict-mode `403 Forbidden` for valid-token cross-user upload attempts.
 
 3. Endpoint filter cleanup:
    - Replace repeated minimal-API auth checks with a shared endpoint filter or

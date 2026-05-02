@@ -248,13 +248,18 @@ static async Task<IResult?> RejectUnauthorizedDeviceTokenAsync(
     var registrationAuthOptions = httpRequest.HttpContext.RequestServices.GetRequiredService<IOptions<DeviceRegistrationAuthOptions>>();
     string? authenticatedUserId = registrationUserIdentity.GetAuthenticatedUserId(httpRequest);
 
-    return await deviceTokens.IsAuthorizedAsync(
+    DeviceTokenAuthenticationStatus status = await deviceTokens.AuthenticateAsync(
         deviceId,
         deviceToken,
         authenticatedUserId,
-        registrationAuthOptions.Value.RequireAuthenticatedUser)
-        ? null
-        : Results.Unauthorized();
+        registrationAuthOptions.Value.RequireAuthenticatedUser);
+
+    return status switch
+    {
+        DeviceTokenAuthenticationStatus.Authorized => null,
+        DeviceTokenAuthenticationStatus.Forbidden => Results.StatusCode(StatusCodes.Status403Forbidden),
+        _ => Results.Unauthorized()
+    };
 }
 
 app.MapGet("/api/statistics/range", async (
