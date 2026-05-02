@@ -259,6 +259,32 @@ Remaining URL hardening:
 - Decide whether release builds allow user-entered endpoints or require a
   pinned/managed endpoint policy.
 
+### Production Endpoint Policy
+
+Release builds must not silently fall back to a local, blank, or example
+endpoint. If the production endpoint is unset, Android/server sync remains
+disabled, Settings must surface configuration-required status, and queued
+workers must fail closed without upload attempts.
+
+Approved endpoint sources, in priority order:
+
+1. A release-managed production endpoint supplied by signed build/release
+   configuration.
+2. An explicit advanced/manual configuration path for internal operators or
+   testers.
+3. Local developer loopback endpoints for development builds and emulator
+   validation only.
+
+Release builds may accept user-entered endpoints only as an explicit
+advanced/manual configuration path. They must not make arbitrary endpoint entry
+look like the default production flow, and they must clearly distinguish
+operator/test configuration from the normal local-only sync-off state.
+
+Local developer HTTP endpoints are limited to loopback hosts: `localhost`,
+`127.0.0.1`, and `::1`. Any local HTTP endpoint must be labeled nonproduction.
+Non-loopback production sync endpoints require HTTPS, no embedded credentials,
+and no broad cleartext network policy.
+
 ### Retry And Backoff
 
 WorkManager and outbox retries must be explicit:
@@ -343,7 +369,7 @@ Future implementation should proceed by vertical TDD slices.
   title, typed text, clipboard, screenshot, or touch-coordinate fields exist.
 - [x] Server integration tests cover Android focus-session upload with
   Windows-only fields omitted.
-- [ ] Settings shows sync/registration/auth state without making sync appear
+- [x] Settings shows sync/registration/auth state without making sync appear
   enabled by default.
 - [x] Production network policy tests reject broad cleartext traffic.
 

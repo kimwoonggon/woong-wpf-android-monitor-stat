@@ -67,12 +67,17 @@ class AndroidSyncWorker @JvmOverloads constructor(
                 )
             }
         } catch (_: AndroidSyncAuthenticationException) {
+            val message = "Android sync authorization failed. Register this device again."
+            syncSettings.recordSyncStatus(
+                status = STATUS_AUTH_REQUIRED,
+                message = message
+            )
             Result.failure(
                 workDataOf(
                     KEY_SYNCED_COUNT to 0,
                     KEY_FAILED_COUNT to 0,
                     KEY_SYNC_STATUS to STATUS_AUTH_REQUIRED,
-                    KEY_SYNC_MESSAGE to "Android sync authorization failed. Register this device again."
+                    KEY_SYNC_MESSAGE to message
                 )
             )
         } catch (_: AndroidSyncValidationException) {

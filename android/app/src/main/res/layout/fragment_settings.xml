@@ -241,6 +241,13 @@
                     android:text="@string/sync_local_only_status" />
 
                 <TextView
+                    android:id="@+id/syncDeviceRegistrationStatusText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sync_device_unregistered_status" />
+
+                <TextView
                     android:id="@+id/notificationPermissionGuidanceText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"

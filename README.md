@@ -348,6 +348,12 @@ labeling, user-auth/device-registration policy, secure device-token storage,
 token rotation/revocation, and Android Play signing/publishing approval. Current
 APK artifacts are for internal validation.
 
+For Android/server sync, release builds must not silently fall back to a local,
+blank, or example endpoint. If a production endpoint is unset, sync remains
+disabled. Release builds may accept user-entered endpoints only as explicit
+advanced/manual configuration for internal operators or testers; local HTTP is
+limited to labeled nonproduction loopback endpoints.
+
 Local release workflow contract validation:
 
 ```powershell

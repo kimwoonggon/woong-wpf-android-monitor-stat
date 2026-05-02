@@ -8,6 +8,9 @@ interface AndroidSyncSettings {
     fun serverBaseUrl(): String = ""
     fun deviceId(): String = ""
     fun deviceToken(): String = ""
+    fun lastSyncStatus(): String = ""
+    fun recordSyncStatus(status: String, message: String) = Unit
+    fun clearSyncStatus() = Unit
 }
 
 class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
@@ -79,6 +82,26 @@ class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
         preferences.edit()
             .putString(KeyDeviceId, deviceId.trim())
             .remove(KeyDeviceToken)
+            .remove(KeyLastSyncStatus)
+            .remove(KeyLastSyncMessage)
+            .apply()
+    }
+
+    override fun lastSyncStatus(): String {
+        return preferences.getString(KeyLastSyncStatus, "").orEmpty()
+    }
+
+    override fun recordSyncStatus(status: String, message: String) {
+        preferences.edit()
+            .putString(KeyLastSyncStatus, status.trim())
+            .putString(KeyLastSyncMessage, message.trim())
+            .apply()
+    }
+
+    override fun clearSyncStatus() {
+        preferences.edit()
+            .remove(KeyLastSyncStatus)
+            .remove(KeyLastSyncMessage)
             .apply()
     }
 
@@ -89,6 +112,8 @@ class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
             .remove(KeyServerBaseUrl)
             .remove(KeyDeviceId)
             .remove(KeyDeviceToken)
+            .remove(KeyLastSyncStatus)
+            .remove(KeyLastSyncMessage)
             .apply()
     }
 
@@ -99,6 +124,8 @@ class SharedPreferencesAndroidSyncSettings @JvmOverloads constructor(
         private const val KeyDeviceId = "device_id"
         private const val KeyDeviceKey = "device_key"
         private const val KeyDeviceToken = "device_token"
+        private const val KeyLastSyncStatus = "last_sync_status"
+        private const val KeyLastSyncMessage = "last_sync_message"
 
         fun defaultTokenStoreFactory(): (Context) -> AndroidSyncTokenStore = {
             AndroidKeystoreSyncTokenStore(it)

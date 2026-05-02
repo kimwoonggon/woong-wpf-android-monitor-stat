@@ -110,6 +110,13 @@ class SettingsFragment : Fragment() {
             } else {
                 getString(R.string.sync_local_only_status)
             }
+            binding.syncDeviceRegistrationStatusText.text = when {
+                settings.lastSyncStatus() == AndroidSyncWorker.STATUS_AUTH_REQUIRED ->
+                    getString(R.string.sync_auth_required_status)
+                settings.deviceId().isNotBlank() && settings.deviceToken().isNotBlank() ->
+                    getString(R.string.sync_device_registered_status)
+                else -> getString(R.string.sync_device_unregistered_status)
+            }
         }
 
         binding.autoSyncSwitch.isChecked = settings.isSyncEnabled()
@@ -196,6 +203,8 @@ class SettingsFragment : Fragment() {
                         deviceToken = registration.deviceToken
                     )
                     currentBinding.syncDeviceIdEditText.setText(registration.deviceId)
+                    currentBinding.syncDeviceRegistrationStatusText.text =
+                        getString(R.string.sync_device_registered_status)
                     currentBinding.syncStatusText.text =
                         getString(R.string.sync_registration_success_status)
                 }.onFailure {

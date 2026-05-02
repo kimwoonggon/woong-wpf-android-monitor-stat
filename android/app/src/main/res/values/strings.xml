@@ -34,6 +34,9 @@
     <string name="sync_registration_failed_status">Device registration failed. Data remains local.</string>
     <string name="sync_register_repair_device">Register / repair device</string>
     <string name="sync_manual_queued_status">Manual sync queued for configured server.</string>
+    <string name="sync_device_unregistered_status">Device not registered. Register / repair is available after sync is turned on.</string>
+    <string name="sync_device_registered_status">Device registered for sync.</string>
+    <string name="sync_auth_required_status">Sync authorization failed. Register / repair this device before syncing again.</string>
     <string name="sync_failure_status">Sync failed for %1$d queued items: %2$s. Data remains local and will retry.</string>
 
     <string name="dashboard_title">Dashboard</string>

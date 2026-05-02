@@ -1,6 +1,6 @@
 # Total TODO List: Woong Monitor Stack
 
-Updated: 2026-04-30
+Updated: 2026-05-02
 
 This file is the durable source of truth for the full PRD. Every agent must keep
 it current before and after work. A TODO is complete only when relevant tests
@@ -2300,9 +2300,12 @@ milestones below are finished.
 - [x] Android production network policy rejects broad cleartext traffic while allowing only explicit loopback HTTP for local development.
 - [x] Android device tokens now use a token-store abstraction with Android Keystore AES-GCM runtime storage; ordinary `woong_monitor_settings` no longer stores plaintext `device_token`, and legacy plaintext tokens are migrated/removed.
 - [x] Server device-token rotation is implemented: current token required, old token invalidated, new token works, and existing sync rows are preserved.
-- [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, auth-required repair prompting, production endpoint discovery/policy, Play signing/publishing policy, user-auth registration policy, and device revocation policy stay open before release use.
-- [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices and whether user auth is required, document approved production endpoint source and local-dev exceptions, define Android auth-repair UX, and decide Android Play signing/publishing requirements.
+- [x] Production endpoint release behavior is documented and statically guarded: unset production endpoint keeps sync disabled, release builds do not silently fall back to local/blank/example endpoints, loopback HTTP is local-dev nonproduction only, and user-entered release endpoints are advanced/manual configuration only.
+- [x] Settings now shows sync/registration/auth state without making sync appear enabled by default; worker auth-required status is persisted and surfaces as a repair-needed Settings state.
+- [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, production endpoint source/config implementation, Play signing/publishing policy, user-auth registration policy, and device revocation policy stay open before release use.
+- [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices and whether user auth is required, implement the approved production endpoint source/config path, and decide Android Play signing/publishing requirements.
 - [x] Secure token storage implementation plan completed: tests prove `device_token` is absent from `woong_monitor_settings`, legacy plaintext token is migrated/cleared, Settings/Register/Manual Sync behavior stays unchanged, and runtime storage uses Android Keystore-backed AES-GCM without adding AndroidX security-crypto.
+- [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-093843/`.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 

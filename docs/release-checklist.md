@@ -127,6 +127,10 @@ closed until the owning implementation agents report verified completion:
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.
+  Release builds must not silently fall back to a local, blank, or example
+  endpoint. If the production endpoint is unset, sync must remain disabled.
+  Release builds may accept a user-entered endpoint only as explicit
+  advanced/manual configuration, not as the default production path.
 - [ ] Android Play signing/publishing: configure real `ANDROID_KEYSTORE_*`
   secrets, versioning, Play Console track, artifact retention, and release
   approval requirements before distribution beyond internal CI artifacts.

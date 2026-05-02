@@ -128,6 +128,30 @@ class SharedPreferencesAndroidSyncSettingsTest {
     }
 
     @Test
+    fun syncStatusPersistsForSettingsAndRegistrationClearsIt() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.getSharedPreferences(
+            SharedPreferencesAndroidSyncSettings.PreferenceName,
+            Context.MODE_PRIVATE
+        ).edit().clear().commit()
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+
+        settings.recordSyncStatus(
+            status = "auth_required",
+            message = "Register again."
+        )
+
+        assertEquals("auth_required", SharedPreferencesAndroidSyncSettings(context).lastSyncStatus())
+
+        settings.persistRegisteredDevice(
+            deviceId = "server-device-id",
+            deviceToken = "device-token-secret"
+        )
+
+        assertEquals("", SharedPreferencesAndroidSyncSettings(context).lastSyncStatus())
+    }
+
+    @Test
     fun clearSyncConfigurationClearsServerUrlDeviceIdTokenAndDisablesSync() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences(
@@ -141,6 +165,10 @@ class SharedPreferencesAndroidSyncSettingsTest {
             deviceId = "server-device-id",
             deviceToken = "device-token-secret"
         )
+        settings.recordSyncStatus(
+            status = "auth_required",
+            message = "Register again."
+        )
 
         settings.clearSyncConfiguration()
 
@@ -149,6 +177,7 @@ class SharedPreferencesAndroidSyncSettingsTest {
         assertEquals("", reloaded.serverBaseUrl())
         assertEquals("", reloaded.deviceId())
         assertEquals("", reloaded.deviceToken())
+        assertEquals("", reloaded.lastSyncStatus())
     }
 
     private class FakeAndroidSyncTokenStore : AndroidSyncTokenStore {

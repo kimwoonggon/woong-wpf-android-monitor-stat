@@ -127,9 +127,10 @@ class AndroidSyncWorkerTest {
                 message = "Focus session upload failed with HTTP 401."
             )
         )
+        val syncSettings = FakeAndroidSyncSettings(isEnabled = true)
         val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
             .setInputData(syncInputData())
-            .setWorkerFactory(FakeWorkerFactory(runner))
+            .setWorkerFactory(FakeWorkerFactory(runner, syncSettings))
             .build()
 
         val result = worker.startWork().get()
@@ -146,6 +147,11 @@ class AndroidSyncWorkerTest {
                 )
             ),
             result
+        )
+        assertEquals(AndroidSyncWorker.STATUS_AUTH_REQUIRED, syncSettings.recordedStatus)
+        assertEquals(
+            "Android sync authorization failed. Register this device again.",
+            syncSettings.recordedMessage
         )
     }
 
@@ -478,8 +484,18 @@ class AndroidSyncWorkerTest {
         private val isEnabled: Boolean,
         private val deviceToken: String = "device-token-secret"
     ) : AndroidSyncSettings {
+        var recordedStatus: String? = null
+            private set
+        var recordedMessage: String? = null
+            private set
+
         override fun isSyncEnabled(): Boolean = isEnabled
         override fun deviceToken(): String = deviceToken
+
+        override fun recordSyncStatus(status: String, message: String) {
+            recordedStatus = status
+            recordedMessage = message
+        }
     }
 
     private class ProcessorBackedAndroidSyncRunner(

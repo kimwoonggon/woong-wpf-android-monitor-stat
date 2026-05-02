@@ -8,8 +8,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
+import com.woong.monitorstack.sync.AndroidSyncWorker
+import com.google.android.material.switchmaterial.SwitchMaterial
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -48,6 +51,71 @@ class SettingsFragmentManualSyncTest {
         SettingsFragment.manualSyncLauncherFactory = SettingsFragment.defaultManualSyncLauncherFactory()
         SettingsFragment.deviceRegistrationLauncherFactory =
             SettingsFragment.defaultDeviceRegistrationLauncherFactory()
+    }
+
+    @Test
+    fun defaultSyncStateShowsLocalOnlyUnregisteredAndVisibleRepairAction() {
+        val activity = launchSettingsFragment()
+
+        assertFalse(activity.findViewById<SwitchMaterial>(R.id.autoSyncSwitch).isChecked)
+        assertEquals(
+            "Sync is off. Data stays on this Android device.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Device not registered. Register / repair is available after sync is turned on.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertTrue(findButtonByText(activity, "Register / repair device").isShown)
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun authRequiredSyncStateShowsRepairNeededWithoutDisablingOptIn() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "expired-device-token"
+        )
+        settings.recordSyncStatus(
+            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+            message = "Android sync authorization failed. Register this device again."
+        )
+
+        val activity = launchSettingsFragment()
+
+        assertTrue(activity.findViewById<SwitchMaterial>(R.id.autoSyncSwitch).isChecked)
+        assertEquals(
+            "Sync is on. Manual sync will use configured server settings.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Sync authorization failed. Register / repair this device before syncing again.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertTrue(findButtonByText(activity, "Register / repair device").isShown)
+    }
+
+    @Test
+    fun registeredDeviceStateIsVisibleWithoutTurningSyncOnByDefault() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
+
+        val activity = launchSettingsFragment()
+
+        assertFalse(activity.findViewById<SwitchMaterial>(R.id.autoSyncSwitch).isChecked)
+        assertEquals(
+            "Sync is off. Data stays on this Android device.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Device registered for sync.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
     }
 
     @Test
@@ -181,6 +249,35 @@ class SettingsFragmentManualSyncTest {
             activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
         )
         assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun registerRepairSuccessClearsAuthRequiredDeviceState() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.recordSyncStatus(
+            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+            message = "Android sync authorization failed. Register this device again."
+        )
+        registrationLauncher.response = DeviceRegistrationResult(
+            deviceId = "server-device-id",
+            deviceToken = "replacement-device-token"
+        )
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("https://server.example")
+        findButtonByText(activity, "Register / repair device").performClick()
+
+        assertEquals("", SharedPreferencesAndroidSyncSettings(context).lastSyncStatus())
+        assertEquals(
+            "Device registered for sync.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertEquals(
+            "Device registered. Manual sync can now run.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
     }
 
     @Test

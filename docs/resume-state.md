@@ -2,13 +2,27 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Android Secure Token Connected Evidence
+
+- Emulator available: `emulator-5554`.
+- Added connected test `AndroidKeystoreSyncTokenStoreInstrumentedTest` proving
+  `AndroidKeystoreSyncTokenStore` saves, reloads, and clears a trimmed device
+  token on emulator without writing plaintext `device_token` into ordinary
+  `woong_monitor_settings` preferences.
+- Ran
+  `android\gradlew.bat "-Pandroid.testInstrumentationRunnerArguments.class=com.woong.monitorstack.settings.AndroidKeystoreSyncTokenStoreInstrumentedTest" connectedDebugAndroidTest --no-daemon --stacktrace`.
+- Result: PASS, `tests=1`, `failures=0`, `errors=0`.
+- Evidence paths:
+  `android/app/build/outputs/androidTest-results/connected/debug/` and
+  `android/app/build/reports/androidTests/connected/debug/`.
+
 ## 2026-05-02 Android Settings Sync Snapshot Evidence
 
 - Emulator available: `emulator-5554`.
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-091350/` and
+  `artifacts/android-ui-snapshots/20260502-093843/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Settings/sync evidence includes `figma-07-settings.png`, `settings.png`,
   `05-settings-privacy-sync.png`, and
