@@ -97,6 +97,44 @@ class AndroidSyncClientTest {
     }
 
     @Test
+    fun uploadFocusSessionsClassifiesBadRequestAsValidationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 400)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
+        )
+
+        val exception = assertThrows(AndroidSyncValidationException::class.java) {
+            syncClient.uploadFocusSessions(focusSessionUploadRequest())
+        }
+
+        assertEquals(400, exception.statusCode)
+    }
+
+    @Test
+    fun uploadLocationContextsClassifiesUnprocessableEntityAsValidationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 422)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
+        )
+
+        val exception = assertThrows(AndroidSyncValidationException::class.java) {
+            syncClient.uploadLocationContexts(locationContextUploadRequest())
+        }
+
+        assertEquals(422, exception.statusCode)
+    }
+
+    @Test
     fun uploadFocusSessionsPostsContractPayloadAndParsesBatchResult() {
         val interceptor = CapturingInterceptor(
             responseJson = """{"items":[{"clientId":"session-1","status":1,"errorMessage":null}]}"""

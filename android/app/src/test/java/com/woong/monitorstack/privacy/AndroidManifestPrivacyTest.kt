@@ -23,6 +23,40 @@ class AndroidManifestPrivacyTest {
     }
 
     @Test
+    fun manifestUsesNetworkSecurityConfigThatDeniesBroadCleartextAndNamesLoopbackDevHosts() {
+        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val manifest = documentBuilder.parse(Path.of("src/main/AndroidManifest.xml").toFile())
+        val application = manifest.getElementsByTagName("application").item(0)
+        val networkSecurityConfig = application.attributes
+            .getNamedItem("android:networkSecurityConfig")
+            .nodeValue
+
+        assertEquals("@xml/network_security_config", networkSecurityConfig)
+        assertFalse(application.attributes.getNamedItem("android:usesCleartextTraffic")?.nodeValue == "true")
+
+        val config = documentBuilder.parse(Path.of("src/main/res/xml/network_security_config.xml").toFile())
+        val baseConfig = config.getElementsByTagName("base-config").item(0)
+        assertEquals(
+            "false",
+            baseConfig.attributes.getNamedItem("cleartextTrafficPermitted").nodeValue,
+        )
+
+        val cleartextDomains = (0 until config.getElementsByTagName("domain-config").length)
+            .map { index -> config.getElementsByTagName("domain-config").item(index) }
+            .filter { node ->
+                node.attributes.getNamedItem("cleartextTrafficPermitted")?.nodeValue == "true"
+            }
+            .flatMap { node ->
+                (0 until node.childNodes.length)
+                    .map { index -> node.childNodes.item(index) }
+                    .filter { child -> child.nodeName == "domain" }
+                    .map { child -> child.textContent.trim() }
+            }
+
+        assertEquals(listOf("localhost", "127.0.0.1", "::1"), cleartextDomains)
+    }
+
+    @Test
     fun manifestUsesForegroundLocationPermissionsOnlyForOptionalLocationContext() {
         val manifest = DocumentBuilderFactory.newInstance()
             .newDocumentBuilder()

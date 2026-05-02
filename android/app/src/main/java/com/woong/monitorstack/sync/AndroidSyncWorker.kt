@@ -75,6 +75,15 @@ class AndroidSyncWorker @JvmOverloads constructor(
                     KEY_SYNC_MESSAGE to "Android sync authorization failed. Register this device again."
                 )
             )
+        } catch (_: AndroidSyncValidationException) {
+            Result.failure(
+                workDataOf(
+                    KEY_SYNCED_COUNT to 0,
+                    KEY_FAILED_COUNT to 0,
+                    KEY_SYNC_STATUS to STATUS_VALIDATION_FAILED,
+                    KEY_SYNC_MESSAGE to "Android sync payload was rejected by the server. Data remains local."
+                )
+            )
         } catch (_: IOException) {
             Result.retry()
         }
@@ -108,6 +117,7 @@ class AndroidSyncWorker @JvmOverloads constructor(
         const val STATUS_MISSING_CONFIGURATION = "missing_configuration"
         const val STATUS_MISSING_TOKEN = "missing_token"
         const val STATUS_AUTH_REQUIRED = "auth_required"
+        const val STATUS_VALIDATION_FAILED = "validation_failed"
         const val DEFAULT_PENDING_LIMIT = 50
     }
 }

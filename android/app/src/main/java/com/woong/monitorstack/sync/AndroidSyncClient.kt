@@ -111,6 +111,9 @@ class AndroidSyncClient(
         if (statusCode == 401 || statusCode == 403) {
             throw AndroidSyncAuthenticationException(statusCode, message)
         }
+        if (statusCode == 400 || statusCode == 422) {
+            throw AndroidSyncValidationException(statusCode, message)
+        }
         throw IOException(message)
     }
 }

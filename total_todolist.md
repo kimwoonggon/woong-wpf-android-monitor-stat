@@ -2295,8 +2295,12 @@ milestones below are finished.
 - [x] Settings now rejects invalid sync server URLs before enqueueing Manual Sync work: production URLs require HTTPS, loopback HTTP is allowed for local development, and embedded credentials are rejected.
 - [x] Android upload calls now attach the persisted server-issued `X-Device-Token` header and classify missing-token/auth-required failures explicitly.
 - [x] Settings now includes a visible Register/Repair device flow; Manual Sync with sync on but no registered device/token shows registration required and does not enqueue work.
+- [x] Android sync now treats IO failures as retryable, auth/validation failures as nonretrying, server duplicate results as idempotent success, and duplicate outbox enqueue no longer resets synced rows.
+- [x] Server integration tests now cover Android `android_usage_stats` focus-session uploads with Windows-only fields omitted/null.
+- [x] Android production network policy rejects broad cleartext traffic while allowing only explicit loopback HTTP for local development.
 - [ ] Remaining Android sync hardening: secure production token storage, token refresh/re-registration behavior, auth-required repair prompting, and production endpoint policy stay open before release use.
 - [ ] Release blockers before public Android/server sync: move device tokens out of SharedPreferences to secure Android storage, define token rotation/revocation, decide registration policy/user auth requirements, document production endpoint discovery/policy, and decide Android Play signing/publishing requirements.
+- [ ] Secure token storage implementation plan: add RED tests proving `device_token` is absent from `woong_monitor_settings`, migrate/clear any legacy plaintext token, keep Settings/Register/Manual Sync behavior unchanged, then implement Android Keystore-backed token storage; treat AndroidX `security-crypto` as a version-pinned/deprecation-risk fallback only.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 

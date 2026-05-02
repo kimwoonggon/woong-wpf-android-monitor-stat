@@ -699,6 +699,13 @@ workspace.
 - [x] Settings now includes a visible Register/Repair device action; Manual
   Sync with sync on but no registered device/token shows registration required
   and does not enqueue work.
+- [x] Android sync now treats IO failures as retryable, auth/validation
+  failures as nonretrying, server duplicate results as idempotent success, and
+  duplicate outbox enqueue no longer resets synced rows.
+- [x] Server integration tests now cover Android `android_usage_stats`
+  focus-session uploads with Windows-only fields omitted/null.
+- [x] Android production network policy rejects broad cleartext traffic while
+  allowing only explicit loopback HTTP for local development.
 - [ ] Remaining Android sync hardening: secure production token storage,
   token refresh/re-registration behavior, auth-required repair prompting, and
   production endpoint policy remain open before release use.
@@ -707,6 +714,12 @@ workspace.
   policy/user auth decision, production endpoint discovery/policy, and Android
   Play signing/publishing requirements if distribution moves beyond internal
   artifacts.
+- [ ] Secure token storage TDD plan: first add behavior tests proving
+  registration persists a usable token without writing plaintext
+  `device_token` to `woong_monitor_settings`, clear/disconnect removes the
+  token, and any legacy plaintext token is migrated or cleared; then implement
+  Android Keystore-backed storage while keeping Settings/Register/Manual Sync
+  behavior unchanged.
 
 ## 2026-05-01 Android Dashboard Period Filters And Room-Backed Charts
 

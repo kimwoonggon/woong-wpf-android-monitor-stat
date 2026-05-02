@@ -102,6 +102,55 @@ public sealed class FocusSessionUploadApiTests
         Assert.Null(persisted.WindowTitle);
     }
 
+    [Fact]
+    public async Task UploadFocusSessions_WhenAndroidUsageStatsPayloadOmitsWindowsFields_PersistsAndMarksDuplicateRetry()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistration registration = await RegisterDeviceAsync(
+            client,
+            deviceKey: "android-focus-upload-key",
+            platform: Platform.Android,
+            deviceName: "Android Phone");
+        var session = new FocusSessionUploadItem(
+            clientSessionId: "android-session-1",
+            platformAppKey: "com.android.chrome",
+            startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 5, 0, TimeSpan.Zero),
+            durationMs: 300_000,
+            localDate: new DateOnly(2026, 4, 28),
+            timezoneId: "Asia/Seoul",
+            isIdle: false,
+            source: "android_usage_stats");
+        var request = new UploadFocusSessionsRequest(registration.DeviceId, [session]);
+
+        client.DefaultRequestHeaders.Add(DeviceTokenHeaderName, registration.DeviceToken);
+        HttpResponseMessage firstResponse = await client.PostAsJsonAsync("/api/focus-sessions/upload", request);
+        HttpResponseMessage secondResponse = await client.PostAsJsonAsync("/api/focus-sessions/upload", request);
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+        using JsonDocument firstJson = await JsonDocument.ParseAsync(await firstResponse.Content.ReadAsStreamAsync());
+        using JsonDocument secondJson = await JsonDocument.ParseAsync(await secondResponse.Content.ReadAsStreamAsync());
+        Assert.Equal((int)UploadItemStatus.Accepted, firstJson.RootElement.GetProperty("items")[0].GetProperty("status").GetInt32());
+        Assert.Equal((int)UploadItemStatus.Duplicate, secondJson.RootElement.GetProperty("items")[0].GetProperty("status").GetInt32());
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        FocusSessionEntity persisted = Assert.Single(await dbContext.FocusSessions.ToListAsync());
+        Assert.Equal(Guid.Parse(registration.DeviceId), persisted.DeviceId);
+        Assert.Equal("android-session-1", persisted.ClientSessionId);
+        Assert.Equal("com.android.chrome", persisted.PlatformAppKey);
+        Assert.Equal("android_usage_stats", persisted.Source);
+        Assert.Equal(300_000, persisted.DurationMs);
+        Assert.False(persisted.IsIdle);
+        Assert.Null(persisted.ProcessId);
+        Assert.Null(persisted.ProcessName);
+        Assert.Null(persisted.ProcessPath);
+        Assert.Null(persisted.WindowHandle);
+        Assert.Null(persisted.WindowTitle);
+    }
+
     private static FocusSessionUploadItem CreateFocusSession()
         => new(
             clientSessionId: "client-session-1",
@@ -121,13 +170,15 @@ public sealed class FocusSessionUploadApiTests
 
     private static async Task<DeviceRegistration> RegisterDeviceAsync(
         HttpClient client,
-        string deviceKey = "windows-upload-key")
+        string deviceKey = "windows-upload-key",
+        Platform platform = Platform.Windows,
+        string deviceName = "Windows Workstation")
     {
         var registrationRequest = new RegisterDeviceRequest(
             userId: "user-1",
-            platform: Platform.Windows,
+            platform,
             deviceKey,
-            deviceName: "Windows Workstation",
+            deviceName,
             timezoneId: "Asia/Seoul");
 
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/devices/register", registrationRequest);

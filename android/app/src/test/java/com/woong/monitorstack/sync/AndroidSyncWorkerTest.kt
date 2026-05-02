@@ -88,6 +88,37 @@ class AndroidSyncWorkerTest {
     }
 
     @Test
+    fun doWorkRetriesAndLeavesOutboxPendingWhenFocusUploadThrowsIOException() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val outbox = FakeSyncOutboxStore(
+            listOf(focusOutboxItem("focus-outbox-1", "focus-session-1"))
+        )
+        val syncApi = ThrowingFocusAndroidSyncApi(IOException("socket closed"))
+        val runner = ProcessorBackedAndroidSyncRunner(
+            processor = AndroidOutboxSyncProcessor(
+                deviceId = "device-1",
+                outbox = outbox,
+                syncApi = syncApi,
+                clock = { 9_000L }
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
+            .setWorkerFactory(FakeWorkerFactory(runner, FakeAndroidSyncSettings(isEnabled = true)))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(ListenableWorker.Result.retry(), result)
+        assertEquals(
+            "focus-session-1",
+            requireNotNull(syncApi.focusRequest).sessions.single().clientSessionId
+        )
+        assertEquals(emptyList<String>(), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+    }
+
+    @Test
     fun doWorkFailsWithAuthRequiredStatusWhenUploadIsUnauthorized() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val runner = ThrowingAndroidSyncRunner(
@@ -112,6 +143,37 @@ class AndroidSyncWorkerTest {
                     AndroidSyncWorker.KEY_SYNC_STATUS to AndroidSyncWorker.STATUS_AUTH_REQUIRED,
                     AndroidSyncWorker.KEY_SYNC_MESSAGE to
                         "Android sync authorization failed. Register this device again."
+                )
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun doWorkFailsWithValidationStatusWhenUploadPayloadIsRejected() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = ThrowingAndroidSyncRunner(
+            AndroidSyncValidationException(
+                statusCode = 422,
+                message = "Focus session upload failed with HTTP 422."
+            )
+        )
+        val worker = TestListenableWorkerBuilder.from(context, AndroidSyncWorker::class.java)
+            .setInputData(syncInputData())
+            .setWorkerFactory(FakeWorkerFactory(runner))
+            .build()
+
+        val result = worker.startWork().get()
+
+        assertEquals(AndroidSyncWorker.DEFAULT_PENDING_LIMIT, runner.limit)
+        assertEquals(
+            ListenableWorker.Result.failure(
+                workDataOf(
+                    AndroidSyncWorker.KEY_SYNCED_COUNT to 0,
+                    AndroidSyncWorker.KEY_FAILED_COUNT to 0,
+                    AndroidSyncWorker.KEY_SYNC_STATUS to AndroidSyncWorker.STATUS_VALIDATION_FAILED,
+                    AndroidSyncWorker.KEY_SYNC_MESSAGE to
+                        "Android sync payload was rejected by the server. Data remains local."
                 )
             ),
             result
@@ -476,12 +538,60 @@ class AndroidSyncWorkerTest {
         }
     }
 
+    private class ThrowingFocusAndroidSyncApi(
+        private val exception: IOException
+    ) : AndroidSyncApi {
+        var focusRequest: SyncFocusSessionUploadRequest? = null
+            private set
+
+        override fun uploadFocusSessions(
+            request: SyncFocusSessionUploadRequest
+        ): SyncUploadBatchResult {
+            focusRequest = request
+            throw exception
+        }
+
+        override fun uploadLocationContexts(
+            request: SyncLocationContextUploadRequest
+        ): SyncUploadBatchResult {
+            throw AssertionError("Location context upload is not expected in this test.")
+        }
+    }
+
     private class FakeLocationSettings(
         private val isLocationEnabled: Boolean
     ) : AndroidLocationSettings {
         override fun isLocationCaptureEnabled(): Boolean = isLocationEnabled
         override fun isPreciseLatitudeLongitudeEnabled(): Boolean = false
         override fun isApproximateLocationPreferred(): Boolean = true
+    }
+
+    private fun focusOutboxItem(
+        clientItemId: String,
+        clientSessionId: String
+    ): SyncOutboxEntity {
+        return SyncOutboxEntity(
+            clientItemId = clientItemId,
+            aggregateType = AndroidOutboxSyncProcessor.FocusSessionAggregateType,
+            payloadJson = """
+                {
+                  "clientSessionId": "$clientSessionId",
+                  "platformAppKey": "com.android.chrome",
+                  "startedAtUtc": "2026-04-28T00:00:00Z",
+                  "endedAtUtc": "2026-04-28T00:15:00Z",
+                  "durationMs": 900000,
+                  "localDate": "2026-04-28",
+                  "timezoneId": "Asia/Seoul",
+                  "isIdle": false,
+                  "source": "usage_stats"
+                }
+            """.trimIndent(),
+            status = SyncOutboxStatus.Pending,
+            retryCount = 0,
+            lastError = null,
+            createdAtUtcMillis = 1_000,
+            updatedAtUtcMillis = 1_000
+        )
     }
 
     private fun locationOutboxItem(

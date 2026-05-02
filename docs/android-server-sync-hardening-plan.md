@@ -115,6 +115,84 @@ production endpoint policy are finished.
 - Define token rotation, invalid-token handling, and sign-out/disconnect
   behavior.
 
+### Secure Token Storage TDD Plan
+
+Current inspected Android shape:
+
+- `android/app/gradle/libs.versions.toml` has no AndroidX Security/Crypto,
+  DataStore, Tink, or other secure-storage dependency.
+- `SharedPreferencesAndroidSyncSettings` stores sync opt-in, server URL,
+  device ID, stable device key, and `device_token` in the normal
+  `woong_monitor_settings` SharedPreferences file.
+- Existing tests cover observable behavior through `AndroidSyncSettings`,
+  `persistRegisteredDevice`, Settings Register/Repair, Manual Sync gating, and
+  `AndroidSyncWorker` missing-token failures.
+
+Preferred implementation direction:
+
+- Keep nonsecret sync state in `SharedPreferencesAndroidSyncSettings`.
+- Move `deviceToken` behind a small token-store abstraction used by
+  `SharedPreferencesAndroidSyncSettings` or its successor:
+  `readDeviceToken`, `writeDeviceToken`, `clearDeviceToken`.
+- Default production token store should be Android Keystore-backed. Avoid a
+  broad new dependency unless it is explicitly accepted after validation.
+- Candidate dependency: `androidx.security:security-crypto:1.1.0` provides
+  `EncryptedSharedPreferences`, but AndroidX release notes mark these crypto
+  APIs deprecated in favor of platform APIs/direct Android Keystore use. Treat
+  this as a dependency risk, not the automatic choice.
+- Safer long-term option: store an AES-GCM key in Android Keystore and encrypt
+  only the device-token value into a private app file or dedicated preferences
+  file. This avoids storing plaintext tokens and avoids depending on deprecated
+  AndroidX crypto APIs, at the cost of a little more local code and
+  instrumentation coverage.
+
+Vertical TDD slices:
+
+1. RED: update `SharedPreferencesAndroidSyncSettingsTest` to prove
+   `persistRegisteredDevice` does not write `device-token-secret` into
+   `woong_monitor_settings` while `deviceToken()` still returns the token after
+   reloading settings. GREEN: introduce an injectable token store and keep a
+   fake/in-memory test store for JVM tests.
+2. RED: prove `clearSyncConfiguration` clears the secure token store as well as
+   ordinary sync fields. GREEN: route token removal through the token store.
+3. RED: add a Robolectric or instrumentation contract proving existing
+   Settings Register/Repair and Manual Sync behavior still works through the
+   public UI/state: registration persists a token, Manual Sync can run after
+   registration, missing token still shows registration required. GREEN:
+   preserve the `AndroidSyncSettings.deviceToken()` interface.
+4. RED: add a focused Android instrumentation test for the production token
+   store proving process-recreated settings can read the token and that the
+   plaintext token is absent from the normal preferences XML. GREEN: implement
+   Keystore-backed storage. If emulator Keystore behavior is flaky, keep this
+   as `connectedDebugAndroidTest` evidence and do not claim release readiness
+   from Robolectric alone.
+5. RED: add migration behavior for any existing plaintext `device_token`: on
+   first read or registration repair, copy it into secure storage and remove it
+   from `woong_monitor_settings`; never log the token during migration. GREEN:
+   implement one-time migration and cleanup.
+
+Test strategy and validation commands:
+
+- JVM/Robolectric behavior gate:
+  `cd android; .\gradlew.bat testDebugUnitTest --tests com.woong.monitorstack.settings.* --tests com.woong.monitorstack.sync.AndroidSyncWorkerTest --no-daemon --stacktrace`
+- Connected/emulator secure-store gate:
+  `cd android; .\gradlew.bat connectedDebugAndroidTest --no-daemon --stacktrace`
+- Architecture/docs guardrail: add or update a script/architecture test only
+  if it can verify the dependency decision without coupling to private
+  implementation details.
+
+Acceptance for closing this blocker:
+
+- No new registration stores `deviceToken` in `woong_monitor_settings`.
+- Existing plaintext `device_token` values are migrated or cleared safely.
+- `AndroidSyncWorker` and upload clients still receive the server-issued token
+  only through the settings/token-store interface.
+- Clear/disconnect removes the token from secure storage.
+- Tests prove behavior without logging or exposing token values.
+- Dependency decision is documented: direct Android Keystore preferred;
+  AndroidX `security-crypto` only accepted with an explicit deprecation-risk
+  note and version pin.
+
 ### Server Auth Follow-Up Plan
 
 The current server shape issues a device token during registration and enforces
@@ -200,7 +278,8 @@ Production sync must be retry-safe:
 Production sync expectations:
 
 - HTTPS is required outside local developer mode.
-- Android network security config must not allow broad cleartext traffic.
+- Android network security config denies broad cleartext traffic by default and
+  allows only explicit local loopback HTTP hosts for developer use.
 - Certificate errors must fail closed and never be silently bypassed.
 - Local emulator/dev endpoints must be explicitly documented as nonproduction.
 - Timeout policy should be finite and tested.
@@ -237,21 +316,25 @@ Future implementation should proceed by vertical TDD slices.
   `AndroidSyncClient` after registration.
 - [x] Auth failure marks sync as configuration/auth required, not as a generic
   retry loop.
-- [ ] Retryable network failures return WorkManager retry and preserve pending
+- [ ] Device tokens are stored in Android Keystore-backed secure storage, not
+  plaintext `woong_monitor_settings` SharedPreferences.
+- [ ] Existing plaintext `device_token` values are migrated or removed without
+  logging token contents.
+- [x] Retryable network failures return WorkManager retry and preserve pending
   outbox rows.
-- [ ] Nonretryable validation/auth failures do not spin indefinitely.
-- [ ] Repeated focus-session uploads with the same `clientSessionId` are
+- [x] Nonretryable validation/auth failures do not spin indefinitely.
+- [x] Repeated focus-session uploads with the same `clientSessionId` are
   treated as idempotent success when the server returns `Duplicate`.
-- [ ] Repeated location-context uploads with the same `clientContextId` are
+- [x] Repeated location-context uploads with the same `clientContextId` are
   treated as idempotent success when the server returns `Duplicate`.
-- [ ] Outbox duplicate enqueue never resets a synced row to pending.
+- [x] Outbox duplicate enqueue never resets a synced row to pending.
 - [ ] Android sync payload tests prove no forbidden browser URL/path, page
   title, typed text, clipboard, screenshot, or touch-coordinate fields exist.
-- [ ] Server integration tests cover Android focus-session upload with
+- [x] Server integration tests cover Android focus-session upload with
   Windows-only fields omitted.
 - [ ] Settings shows sync/registration/auth state without making sync appear
   enabled by default.
-- [ ] Production network policy tests reject broad cleartext traffic.
+- [x] Production network policy tests reject broad cleartext traffic.
 
 ## Suggested Validation Commands
 
