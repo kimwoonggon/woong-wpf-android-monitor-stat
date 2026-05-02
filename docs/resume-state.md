@@ -5693,3 +5693,10 @@ Validation update:
 - The X/system-close path still hides to the notification area; the tray menu exit path closes the registered WPF window and disposes the tray icon.
 - Focused validation passed for `WindowsTrayLifecycleServiceTests`.
 - Validation note: focused tray lifecycle tests passed and solution build passed. A full solution `dotnet test` attempt completed every project test assembly with zero assertion failures, then the test host terminated from an existing WPF Dispatcher `VerifyAccess` shutdown exception after the Architecture test assembly; this remains a test-host cleanup issue rather than a tray-menu behavior failure.
+
+## 2026-05-03 WPF Chart Detail Stability Follow-Up
+
+- Fixed app/domain detail windows being too short for ten horizontal bars plus the detail table.
+- `ChartDetailsWindow` now opens wider/taller (`1040x860`) with `MinHeight=760`, and the detail chart uses `MinHeight=520`.
+- The detail table under the chart remains in place.
+- Focused validation passed: `ChartDetailsWindowTests` and WPF app project build.

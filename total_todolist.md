@@ -2761,3 +2761,14 @@ milestones below are finished.
 - [x] Preserved X/system-close behavior as hide-to-notification-area, not app
   shutdown.
 - [x] Added focused unit coverage for tray-icon exit request behavior.
+
+## 2026-05-03 WPF Chart Detail Stability Follow-Up
+
+- [x] Enlarged app/domain chart detail windows so top-10 horizontal bars are
+  not squeezed by the detail table underneath.
+- [x] Increased chart detail minimum height to keep all ten category labels
+  visible and stable after LiveCharts layout refresh.
+- [x] Preserved the label/duration detail table below the chart.
+- [x] Strengthened `ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace`
+  so the window default height, minimum height, and chart minimum height stay
+  large enough for top-10 details.

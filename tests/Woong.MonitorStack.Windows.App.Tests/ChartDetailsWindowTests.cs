@@ -261,7 +261,13 @@ public sealed class ChartDetailsWindowTests
 
                 var chart = FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart");
                 Assert.True(
-                    chart.MinHeight >= 360,
+                    window.MinHeight >= 760,
+                    "The detail window itself must be tall enough that the top-10 chart is not squeezed by the table below.");
+                Assert.True(
+                    window.Height >= 820,
+                    "Top-10 detail windows should open tall by default instead of relying on the user to resize before labels become stable.");
+                Assert.True(
+                    chart.MinHeight >= 520,
                     "Top-10 detail charts need enough height to avoid overlapping forced Y-axis labels.");
             }
             finally
