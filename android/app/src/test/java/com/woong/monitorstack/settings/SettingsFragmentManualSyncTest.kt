@@ -11,6 +11,7 @@ import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.data.local.SyncOutboxEntity
 import com.woong.monitorstack.data.local.SyncOutboxStatus
+import com.woong.monitorstack.sync.AndroidSyncAuthenticationException
 import com.woong.monitorstack.sync.AndroidSyncWorker
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.junit.After
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.concurrent.FutureTask
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
@@ -241,6 +243,65 @@ class SettingsFragmentManualSyncTest {
             activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
         )
         assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun disconnectAuthFailureKeepsRegistrationMarksRepairRequiredAndPreservesPendingOutbox() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "expired-device-token"
+        )
+        disconnectLauncher.result = Result.failure(
+            AndroidSyncAuthenticationException(
+                statusCode = 401,
+                message = "Device token revocation failed with HTTP 401."
+            )
+        )
+        runDatabaseTask {
+            val database = MonitorDatabase.getInstance(context)
+            database.clearAllTables()
+            database.syncOutboxDao().insert(
+                SyncOutboxEntity(
+                    clientItemId = "pending-focus-outbox",
+                    aggregateType = "focus_session",
+                    payloadJson = """{"clientSessionId":"focus-session-1"}""",
+                    status = SyncOutboxStatus.Pending,
+                    retryCount = 0,
+                    lastError = null,
+                    createdAtUtcMillis = 1_000L,
+                    updatedAtUtcMillis = 1_000L
+                )
+            )
+        }
+        val activity = launchSettingsFragment()
+
+        findButtonByText(activity, "Disconnect device").performClick()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertTrue(reloaded.isSyncEnabled())
+        assertEquals("android-device-1", reloaded.deviceId())
+        assertEquals("expired-device-token", reloaded.deviceToken())
+        assertEquals(AndroidSyncWorker.STATUS_AUTH_REQUIRED, reloaded.lastSyncStatus())
+        assertEquals(
+            "Device disconnect needs Register / repair. Local registration and pending data are unchanged.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Sync authorization failed. Register / repair this device before syncing again.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+        runDatabaseTask {
+            val pending = MonitorDatabase.getInstance(context)
+                .syncOutboxDao()
+                .queryPending(10)
+            assertEquals(1, pending.size)
+            assertEquals("pending-focus-outbox", pending.single().clientItemId)
+            assertEquals(SyncOutboxStatus.Pending, pending.single().status)
+        }
     }
 
     @Test
@@ -526,7 +587,7 @@ class SettingsFragmentManualSyncTest {
             message = "Android sync authorization failed. Register this device again."
         )
         registrationLauncher.result = Result.failure(IllegalStateException("server offline"))
-        Thread {
+        runDatabaseTask {
             val database = MonitorDatabase.getInstance(context)
             database.clearAllTables()
             database.syncOutboxDao().insert(
@@ -541,7 +602,7 @@ class SettingsFragmentManualSyncTest {
                     updatedAtUtcMillis = 1_000L
                 )
             )
-        }.also { it.start(); it.join() }
+        }
         val activity = launchSettingsFragment()
 
         findButtonByText(activity, "Register / repair device").performClick()
@@ -559,14 +620,14 @@ class SettingsFragmentManualSyncTest {
             activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
         )
         assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
-        Thread {
+        runDatabaseTask {
             val pending = MonitorDatabase.getInstance(context)
                 .syncOutboxDao()
                 .queryPending(10)
             assertEquals(1, pending.size)
             assertEquals("pending-focus-outbox", pending.single().clientItemId)
             assertEquals(SyncOutboxStatus.Pending, pending.single().status)
-        }.also { it.start(); it.join() }
+        }
     }
 
     @Test
@@ -671,6 +732,15 @@ class SettingsFragmentManualSyncTest {
             }
         }
         return null
+    }
+
+    private fun <T> runDatabaseTask(block: () -> T): T {
+        val task = FutureTask<T> { block() }
+        Thread(task).also { thread ->
+            thread.start()
+            thread.join()
+        }
+        return task.get()
     }
 
     private class RecordingManualSyncLauncher : SettingsFragment.ManualSyncLauncher {

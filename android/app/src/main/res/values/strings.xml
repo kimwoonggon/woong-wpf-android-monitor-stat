@@ -43,6 +43,7 @@
     <string name="sync_disconnect_in_progress_status">Disconnecting this Android device from sync.</string>
     <string name="sync_disconnect_success_status">Device disconnected. Sync is off and local usage data remains on this Android device.</string>
     <string name="sync_disconnect_failed_status">Device disconnect failed. Local registration is unchanged and usage data remains local.</string>
+    <string name="sync_disconnect_auth_required_status">Device disconnect needs Register / repair. Local registration and pending data are unchanged.</string>
     <string name="sync_manual_queued_status">Manual sync queued for configured server.</string>
     <string name="sync_device_unregistered_status">Device not registered. Register / repair is available after sync is turned on.</string>
     <string name="sync_device_registered_status">Device registered for sync.</string>

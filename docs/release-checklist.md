@@ -124,6 +124,12 @@ closed until the owning implementation agents report verified completion:
 - [x] Server token rotation; current token is required, old token is
   invalidated, new token works, and existing sync rows are preserved.
 - [ ] Device revocation and Android invalid-token recovery policy.
+  Server-side revoked-device repair semantics are covered: the same
+  authenticated owner can re-register the same platform/device key to recover
+  the same device id with a new token while old tokens remain unauthorized and
+  existing rows are preserved; another authenticated user receives a separate
+  device. This remains open until Android invalid-token recovery and public
+  cross-device management policy are release-complete.
 - [ ] User-auth/registration policy: decide who may register or re-register an
   Android device, whether first registration requires a user/session token, and
   how revocation or replacement works.

@@ -53,6 +53,13 @@ Status legend:
   provider.
   Evidence:
   `DeviceRegistrationPolicyTests.Startup_WhenProductionStrictAuthUsesDefaultHeaderStubProvider_FailsConfigurationValidation`.
+- [x] Revoked-device repair is owner-scoped: the same authenticated owner can
+  re-register the same platform/device key to receive a new token for the same
+  device id while existing rows are preserved, but a different authenticated
+  user receives a separate device and cannot recover the revoked owner's token.
+  Evidence:
+  `DeviceRegistrationPolicyTests.RegisterDevice_AfterTokenRevocation_SameAuthenticatedOwnerReissuesTokenForSameDeviceAndPreservesRows`,
+  `DeviceRegistrationPolicyTests.RegisterDevice_AfterTokenRevocation_DifferentAuthenticatedUserDoesNotRecoverOtherUsersDevice`.
 
 ## Focus Session Upload
 

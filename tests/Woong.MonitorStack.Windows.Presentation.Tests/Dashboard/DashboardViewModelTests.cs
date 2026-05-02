@@ -587,6 +587,57 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void ShowDomainFocusDetailsCommand_OpensChartDetailsWithTopTenAggregatedDomainPoints()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        WebSession[] webSessions =
+        [
+            ..Enumerable.Range(1, 10)
+                .Select(index => WebSession.FromUtc(
+                    $"web-domain-{index}",
+                    "Chrome",
+                    $"https://domain-{index}.example/",
+                    $"Domain {index}",
+                    now.AddMinutes(-index),
+                    now.AddMinutes(-index).AddMinutes(11 - index))),
+            WebSession.FromUtc(
+                "web-chatgpt-1",
+                "Chrome",
+                "https://chatgpt.com/",
+                "ChatGPT",
+                now.AddMinutes(-20),
+                now.AddMinutes(-15)),
+            WebSession.FromUtc(
+                "web-chatgpt-2",
+                "Chrome",
+                "https://chatgpt.com/",
+                "ChatGPT",
+                now.AddMinutes(-25),
+                now.AddMinutes(-20))
+        ];
+        var presenter = new RecordingChartDetailsPresenter();
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource([], webSessions),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"),
+            chartDetailsPresenter: presenter);
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+        viewModel.ShowDomainFocusDetailsCommand.Execute(null);
+
+        DashboardChartDetailsRequest request = Assert.Single(presenter.Requests);
+        Assert.Equal("Domain focus details", request.Title);
+        Assert.Equal("Domains", request.SeriesName);
+        Assert.Equal(10, request.Points.Count);
+        Assert.Equal(600_000, request.Points.Single(point => point.Label == "chatgpt.com").ValueMs);
+        Assert.DoesNotContain("domain-10.example", request.Points.Select(point => point.Label));
+        Assert.Equal(
+            request.Points.Count,
+            request.Points.Select(point => point.Label).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(DetailsTab.WebSessions, viewModel.SelectedDetailsTab);
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesRecentSessionRows()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

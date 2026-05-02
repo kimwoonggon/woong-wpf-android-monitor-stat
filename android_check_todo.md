@@ -835,6 +835,9 @@ workspace.
   revokes via the protected device-token endpoint before clearing local
   registration, and revoke failures keep local registration with a
   local-data-safe failure status.
+- [x] Android disconnect auth failure handling implemented: revoke `401/403`
+  is classified as auth-required repair, local device ID/token and pending
+  outbox rows are preserved, and sync opt-in state is unchanged until repair.
 - [x] Android auth-required repair behavior implemented: Manual Sync does not
   enqueue work while auth repair is required, Register/Repair success replaces
   the expired device/token and clears auth-required state, and Register/Repair

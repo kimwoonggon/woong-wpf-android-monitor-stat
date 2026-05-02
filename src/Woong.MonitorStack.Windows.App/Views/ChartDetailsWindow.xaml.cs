@@ -10,11 +10,6 @@ public partial class ChartDetailsWindow : Window
         ArgumentNullException.ThrowIfNull(request);
 
         InitializeComponent();
-        DataContext = new ChartDetailsWindowViewModel(
-            request.Title,
-            DashboardLiveChartsMapper.BuildHorizontalBarChart(
-                request.SeriesName,
-                request.Points,
-                maxCategoryLabelLength: null));
+        DataContext = ChartDetailsWindowViewModel.FromRequest(request);
     }
 }

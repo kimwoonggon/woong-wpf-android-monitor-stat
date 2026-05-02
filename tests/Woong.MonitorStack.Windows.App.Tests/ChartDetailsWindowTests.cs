@@ -32,7 +32,38 @@ public sealed class ChartDetailsWindowTests
                 var title = FindByAutomationId<TextBlock>(window, "ChartDetailsTitleText");
                 Assert.Equal("App focus details", title.Text);
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
-                Assert.Equal(["app-1", "app-2", "app-3", "app-4", "app-5", "app-6", "app-7", "app-8", "app-9", "app-10"], viewModel.Chart.Labels);
+                Assert.Equal(["app-10", "app-9", "app-8", "app-7", "app-6", "app-5", "app-4", "app-3", "app-2", "app-1"], viewModel.Chart.Labels);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void ChartDetailsWindow_ShowsFullLabelsAndDurationValuesForTopTenDetails()
+        => RunOnStaThread(() =>
+        {
+            const string longDomain = "very-long-domain-name-for-review.example.com";
+            var request = new DashboardChartDetailsRequest(
+                "Domain focus details",
+                "Domains",
+                [
+                    new DashboardChartPoint(longDomain, 600_000),
+                    new DashboardChartPoint("chatgpt.com", 3_661_000)
+                ]);
+            var window = new ChartDetailsWindow(request);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                Assert.NotNull(FindByAutomationId<ListView>(window, "ChartDetailsRowsList"));
+                var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
+                Assert.Equal(["chatgpt.com", longDomain], viewModel.DetailRows.Select(row => row.Label));
+                Assert.Equal("1h 01m 01s", viewModel.DetailRows[0].DurationText);
+                Assert.Equal("10m", viewModel.DetailRows[1].DurationText);
             }
             finally
             {

@@ -23,6 +23,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock AutomationProperties.AutomationId="ChartDetailsTitleText"
@@ -36,6 +37,25 @@
                                 Series="{Binding Chart.Series}"
                                 XAxes="{Binding Chart.XAxes}"
                                 YAxes="{Binding Chart.YAxes}" />
+        </Border>
+
+        <Border Grid.Row="2"
+                Margin="0,14,0,0"
+                Style="{StaticResource DashboardCardBorderStyle}">
+            <ListView AutomationProperties.AutomationId="ChartDetailsRowsList"
+                      ItemsSource="{Binding DetailRows}"
+                      MaxHeight="190">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Label"
+                                        Width="560"
+                                        DisplayMemberBinding="{Binding Label}" />
+                        <GridViewColumn Header="Duration"
+                                        Width="160"
+                                        DisplayMemberBinding="{Binding DurationText}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Border>
     </Grid>
 </Window>

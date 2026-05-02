@@ -79,6 +79,13 @@ Each checked feature should have:
 | W43 | Windows smoke tool | `tools/Woong.MonitorStack.Windows.Smoke` | real foreground metadata only |
 | W44 | Docs/resume/TODO hygiene | doc checks/manual review | docs updated after each slice |
 
+Recent WPF chart hardening:
+
+- [x] App/domain usage detail points aggregate duplicate labels before applying
+  the top-10 detail cutoff, while dashboard charts remain limited to top 3.
+- [x] Chart details windows expose full labels and human-readable duration
+  values in a read-only details list alongside the horizontal chart.
+
 ## Runtime Modes To Verify
 
 | Mode | Purpose | Expected evidence |

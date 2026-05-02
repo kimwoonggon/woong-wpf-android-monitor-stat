@@ -125,6 +125,8 @@ milestones below are finished.
 - [x] Test DashboardViewModel publishes chart points.
 - [x] Test LiveCharts2 mapper behavior.
 - [x] Test DashboardViewModel publishes LiveCharts2 series.
+- [x] Harden WPF app/domain chart details so duplicate labels aggregate before
+  top-N cutoff and detail windows show full labels with duration values.
 - [x] Test DashboardViewModel publishes recent app session rows.
 - [x] Test DashboardViewModel publishes web session rows.
 - [x] Test DashboardViewModel publishes live event log rows.

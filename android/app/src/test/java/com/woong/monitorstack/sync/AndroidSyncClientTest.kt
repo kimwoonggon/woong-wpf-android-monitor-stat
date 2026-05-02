@@ -79,6 +79,44 @@ class AndroidSyncClientTest {
     }
 
     @Test
+    fun revokeDeviceTokenClassifiesUnauthorizedAsAuthenticationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 401)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "expired-token"
+        )
+
+        val exception = assertThrows(AndroidSyncAuthenticationException::class.java) {
+            syncClient.revokeDeviceToken("android-device-1")
+        }
+
+        assertEquals(401, exception.statusCode)
+    }
+
+    @Test
+    fun revokeDeviceTokenClassifiesForbiddenAsAuthenticationFailure() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 403)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "forbidden-token"
+        )
+
+        val exception = assertThrows(AndroidSyncAuthenticationException::class.java) {
+            syncClient.revokeDeviceToken("android-device-1")
+        }
+
+        assertEquals(403, exception.statusCode)
+    }
+
+    @Test
     fun uploadFocusSessionsClassifiesUnauthorizedAsAuthenticationFailure() {
         val interceptor = CapturingInterceptor(responseJson = "", responseCode = 401)
         val httpClient = OkHttpClient.Builder()

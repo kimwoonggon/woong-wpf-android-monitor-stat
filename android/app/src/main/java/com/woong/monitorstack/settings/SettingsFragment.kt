@@ -19,6 +19,7 @@ import androidx.work.workDataOf
 import com.woong.monitorstack.R
 import com.woong.monitorstack.databinding.FragmentSettingsBinding
 import com.woong.monitorstack.summary.NotificationPermissionController
+import com.woong.monitorstack.sync.AndroidSyncAuthenticationException
 import com.woong.monitorstack.sync.AndroidSyncClient
 import com.woong.monitorstack.sync.AndroidSyncWorker
 import com.woong.monitorstack.sync.SyncDeviceRegistrationRequest
@@ -304,8 +305,19 @@ class SettingsFragment : Fragment() {
                     currentBinding.syncStatusText.text =
                         getString(R.string.sync_disconnect_success_status)
                 }.onFailure {
-                    currentBinding.syncStatusText.text =
-                        getString(R.string.sync_disconnect_failed_status)
+                    if (it is AndroidSyncAuthenticationException) {
+                        settings.recordSyncStatus(
+                            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+                            message = getString(R.string.sync_auth_required_status)
+                        )
+                        currentBinding.syncStatusText.text =
+                            getString(R.string.sync_disconnect_auth_required_status)
+                        currentBinding.syncDeviceRegistrationStatusText.text =
+                            getString(R.string.sync_auth_required_status)
+                    } else {
+                        currentBinding.syncStatusText.text =
+                            getString(R.string.sync_disconnect_failed_status)
+                    }
                 }
             }
         }

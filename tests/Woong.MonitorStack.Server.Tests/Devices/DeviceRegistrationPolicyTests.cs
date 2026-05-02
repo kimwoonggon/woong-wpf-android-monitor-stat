@@ -122,6 +122,109 @@ public sealed class DeviceRegistrationPolicyTests
     }
 
     [Fact]
+    public async Task RegisterDevice_AfterTokenRevocation_SameAuthenticatedOwnerReissuesTokenForSameDeviceAndPreservesRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistrationResponse registration = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "payload-user-a",
+            deviceKey: "revoked-repair-device-key");
+        await UploadFocusAsync(
+            client,
+            authenticatedUserId: "user-a",
+            registration.DeviceId,
+            registration.DeviceToken,
+            clientSessionId: "focus-before-repair");
+
+        HttpResponseMessage revokeResponse = await RevokeTokenAsync(
+            client,
+            authenticatedUserId: "user-a",
+            registration.DeviceId,
+            registration.DeviceToken);
+        Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+        HttpResponseMessage oldTokenResponse = await PostFocusUploadAsync(
+            client,
+            authenticatedUserId: "user-a",
+            registration.DeviceId,
+            registration.DeviceToken,
+            clientSessionId: "focus-with-revoked-token");
+        Assert.Equal(HttpStatusCode.Unauthorized, oldTokenResponse.StatusCode);
+
+        DeviceRegistrationResponse repair = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "payload-user-a",
+            deviceKey: "revoked-repair-device-key");
+
+        Assert.Equal(registration.DeviceId, repair.DeviceId);
+        Assert.False(repair.IsNew);
+        Assert.NotEqual(registration.DeviceToken, repair.DeviceToken);
+
+        HttpResponseMessage oldTokenAfterRepairResponse = await PostFocusUploadAsync(
+            client,
+            authenticatedUserId: "user-a",
+            repair.DeviceId,
+            registration.DeviceToken,
+            clientSessionId: "focus-with-old-token-after-repair");
+        Assert.Equal(HttpStatusCode.Unauthorized, oldTokenAfterRepairResponse.StatusCode);
+
+        await UploadFocusAsync(
+            client,
+            authenticatedUserId: "user-a",
+            repair.DeviceId,
+            repair.DeviceToken,
+            clientSessionId: "focus-after-repair");
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Equal(2, await dbContext.FocusSessions.CountAsync());
+        List<FocusSessionEntity> focusSessions = await dbContext.FocusSessions.ToListAsync();
+        Assert.Contains(focusSessions, session => session.ClientSessionId == "focus-before-repair");
+        Assert.Contains(focusSessions, session => session.ClientSessionId == "focus-after-repair");
+        DeviceEntity device = Assert.Single(await dbContext.Devices.ToListAsync());
+        Assert.Equal(Guid.ParseExact(registration.DeviceId, "N"), device.Id);
+    }
+
+    [Fact]
+    public async Task RegisterDevice_AfterTokenRevocation_DifferentAuthenticatedUserDoesNotRecoverOtherUsersDevice()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistrationResponse original = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "user-a",
+            deviceKey: "revoked-shared-device-key");
+
+        HttpResponseMessage revokeResponse = await RevokeTokenAsync(
+            client,
+            authenticatedUserId: "user-a",
+            original.DeviceId,
+            original.DeviceToken);
+        Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+        DeviceRegistrationResponse otherUserRegistration = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-b",
+            payloadUserId: "user-a",
+            deviceKey: "revoked-shared-device-key");
+
+        Assert.NotEqual(original.DeviceId, otherUserRegistration.DeviceId);
+        Assert.NotEqual(original.DeviceToken, otherUserRegistration.DeviceToken);
+        Assert.Equal("user-b", otherUserRegistration.UserId);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Equal(2, await dbContext.Devices.CountAsync());
+        List<DeviceEntity> devices = await dbContext.Devices.ToListAsync();
+        Assert.Contains(devices, device => device.UserId == "user-a");
+        Assert.Contains(devices, device => device.UserId == "user-b");
+    }
+
+    [Fact]
     public async Task UploadFocusSessions_WhenStrictModeDeviceTokenIsInvalid_ReturnsUnauthorizedAndPersistsNoRows()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
@@ -341,7 +444,8 @@ public sealed class DeviceRegistrationPolicyTests
         HttpClient client,
         string authenticatedUserId,
         string deviceId,
-        string deviceToken)
+        string deviceToken,
+        string clientSessionId = "cross-user-focus-session")
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/focus-sessions/upload")
         {
@@ -349,7 +453,7 @@ public sealed class DeviceRegistrationPolicyTests
                 deviceId,
                 [
                     new FocusSessionUploadItem(
-                        clientSessionId: "cross-user-focus-session",
+                        clientSessionId: clientSessionId,
                         platformAppKey: "com.android.chrome",
                         startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
                         endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 5, 0, TimeSpan.Zero),
@@ -360,6 +464,36 @@ public sealed class DeviceRegistrationPolicyTests
                         source: "android_usage_stats")
                 ]))
         };
+        request.Headers.Add(AuthenticatedUserHeaderName, authenticatedUserId);
+        request.Headers.Add(DeviceTokenAuthenticationService.HeaderName, deviceToken);
+
+        return await client.SendAsync(request);
+    }
+
+    private static async Task UploadFocusAsync(
+        HttpClient client,
+        string authenticatedUserId,
+        string deviceId,
+        string deviceToken,
+        string clientSessionId)
+    {
+        HttpResponseMessage response = await PostFocusUploadAsync(
+            client,
+            authenticatedUserId,
+            deviceId,
+            deviceToken,
+            clientSessionId);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    private static async Task<HttpResponseMessage> RevokeTokenAsync(
+        HttpClient client,
+        string authenticatedUserId,
+        string deviceId,
+        string deviceToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/devices/{deviceId}/token/revoke");
         request.Headers.Add(AuthenticatedUserHeaderName, authenticatedUserId);
         request.Headers.Add(DeviceTokenAuthenticationService.HeaderName, deviceToken);
 

@@ -214,6 +214,12 @@ uploads. Remaining server-side hardening should be split into small slices:
      `POST /api/devices/{deviceId}/token/revoke`: current token required, the
      token hash is cleared, future upload/rotation/revoke attempts with the old
      token return `401 Unauthorized`, and existing stored rows are preserved.
+   - Server revoked-device repair is implemented through registration: the same
+     authenticated owner re-registering the same platform/device key receives
+     the same device id with a newly issued token, the old token remains
+     unauthorized, and existing rows stay attached to the device. A different
+     authenticated user registering the same platform/device key receives a
+     separate device and cannot recover the revoked owner's token.
    - Remaining: add cross-device management semantics after user-auth policy is
      decided.
 
@@ -400,6 +406,8 @@ Future implementation should proceed by vertical TDD slices.
   `AndroidSyncClient` after registration.
 - [x] Auth failure marks sync as configuration/auth required, not as a generic
   retry loop.
+- [x] Disconnect revoke `401/403` marks Android sync as auth-required repair
+  without clearing local registration or pending outbox rows.
 - [x] Device tokens are stored in Android Keystore-backed secure storage, not
   plaintext `woong_monitor_settings` SharedPreferences.
 - [x] Existing plaintext `device_token` values are migrated or removed without

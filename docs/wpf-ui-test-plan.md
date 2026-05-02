@@ -55,8 +55,8 @@ correctly to user-like interaction.
   the correct `DashboardPeriod` command parameter.
 - Refreshing with sample dashboard data renders the expected summary card labels
   and values.
-- The chart area exposes Activity, Apps, and Domains sections with two
-  Cartesian charts and one pie chart.
+- The chart area exposes Activity, Apps, and Domains sections with three
+  Cartesian charts: one hourly column chart and two horizontal bar charts.
 - The App Sessions tab exposes `App`, `Started`, `Duration`, and `Idle`
   columns bound to `RecentSessions`.
 - The Web Sessions tab exposes `Domain`, `Page`, `Started`, and `Duration`
