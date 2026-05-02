@@ -2304,8 +2304,12 @@ milestones below are finished.
 - [x] Production endpoint release behavior is documented and statically guarded: unset production endpoint keeps sync disabled, release builds do not silently fall back to local/blank/example endpoints, loopback HTTP is local-dev nonproduction only, and user-entered release endpoints are advanced/manual configuration only.
 - [x] Android production endpoint source/config path implemented: `BuildConfig.PRODUCTION_SYNC_BASE_URL` is populated by `woongProductionSyncBaseUrl` or `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`, defaults blank, rejects local/example/invalid endpoints, and preserves explicit user-entered advanced endpoints.
 - [x] Settings now shows sync/registration/auth state without making sync appear enabled by default; worker auth-required status is persisted and surfaces as a repair-needed Settings state.
-- [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, Play signing/publishing policy, and client-side device revocation UX stay open before release use.
-- [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices for public release, decide the production user/session provider, and decide Android Play signing/publishing requirements.
+- [ ] Remaining Android sync hardening: Play signing/publishing policy,
+  public user-auth registration/re-registration ownership policy, and
+  server/user cross-device management policy stay open before release use.
+- [ ] Release blockers before public Android/server sync: decide the production
+  user/session provider, define public cross-device management ownership, and
+  decide Android Play signing/publishing requirements.
 - [x] Secure token storage implementation plan completed: tests prove `device_token` is absent from `woong_monitor_settings`, legacy plaintext token is migrated/cleared, Settings/Register/Manual Sync behavior stays unchanged, and runtime storage uses Android Keystore-backed AES-GCM without adding AndroidX security-crypto.
 - [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-131615/`.
 - [x] Server registration now has an option-gated authenticated-user identity path: `X-Woong-User-Id` overrides payload `userId`, strict mode returns 401 when identity is missing, and dev/MVP payload behavior remains compatible by default.
