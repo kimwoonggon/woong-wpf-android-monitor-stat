@@ -1,6 +1,7 @@
 package com.woong.monitorstack
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
@@ -222,7 +223,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun mainShellKeepsBottomNavigationButtonsAboveSystemBarWithoutDoubleInset() {
+    fun mainShellKeepsBottomNavigationCompactAtBottomWhenGestureNavigationHasLargeInset() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
@@ -237,20 +238,36 @@ class MainActivityTest {
         )
         val insets = WindowInsetsCompat.Builder()
             .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 96))
+            .setInsets(WindowInsetsCompat.Type.tappableElement(), Insets.of(0, 0, 0, 0))
             .build()
 
         val returnedInsets = ViewCompat.dispatchApplyWindowInsets(root, insets)
 
         assertEquals(
-            "Bottom navigation needs exactly one system-bar padding so buttons remain visible above Android navigation.",
-            96,
+            "Bottom navigation should stay compact at the bottom of the app instead of expanding into a large white safe-area panel.",
+            0,
             bottomNavigation.paddingBottom
         )
-        assertEquals(compactHeight + 96, bottomNavigation.layoutParams.height)
-        assertEquals(compactHeight + 96, activity.fragmentContainerMargins().bottomMargin)
+        assertEquals(compactHeight, bottomNavigation.layoutParams.height)
+        assertEquals(compactHeight, activity.fragmentContainerMargins().bottomMargin)
         assertTrue(
             "The root listener should consume handled navigation insets so child views do not add their own extra bottom padding.",
             returnedInsets.isConsumed
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun mainShellDisablesNavigationBarContrastScrimSoBottomTabsStayReadable() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+
+        assertEquals(Color.TRANSPARENT, activity.window.navigationBarColor)
+        assertFalse(
+            "Android navigation-bar contrast scrim makes bottom tab labels look faded when the shell draws at the bottom.",
+            activity.window.isNavigationBarContrastEnforced
         )
     }
 

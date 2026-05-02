@@ -5569,3 +5569,26 @@ Verified so far:
 - `MainActivity` consumes the handled root insets so Material child views do not add a second blank navigation area.
 - Added/updated Robolectric tests around safe inset behavior and fragment bottom margins.
 - Validation passed: focused inset tests, full Android `:app:testDebugUnitTest`, `:app:assembleDebug`, `:app:installDebug`, and emulator screenshot evidence at `artifacts/android-ui-regression/latest/android-dashboard-bottom-nav-safe-inset.png`.
+
+## 2026-05-02 Android Bottom Navigation Floor Follow-Up
+
+- Fixed the follow-up visual regression where Dashboard/Sessions/Report/Settings appeared either missing or floating above a large white safe-area panel.
+- Bottom navigation now stays compact at the bottom of the app; fragment content reserves the compact bar height instead of turning navigation insets into an in-app blank area.
+- Focused RED/GREEN tests passed for `SystemInsetsLayoutCalculator` and `MainActivity` compact-bottom behavior.
+- Android validation passed: `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug`, `.\gradlew.bat :app:installDebug`, and emulator screenshot evidence at `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.
+
+## 2026-05-02 Android Bottom Navigation Floor Contrast Follow-Up
+
+- Replaced the too-naive compact-bottom fix with a tappable-inset policy: gesture navigation with a large visual navigation inset keeps the bottom bar compact, while required tappable system insets can still be applied when present.
+- Disabled Android navigation-bar contrast enforcement for the shell so Dashboard/Sessions/Report/Settings labels stay readable at the screen floor.
+- Focused tests passed: `SystemInsetsLayoutCalculatorTest.calculateAddsOnlyRequiredTappableInsetToBottomNavigation`, `MainActivityTest.mainShellKeepsBottomNavigationCompactAtBottomWhenGestureNavigationHasLargeInset`, and `MainActivityTest.mainShellDisablesNavigationBarContrastScrimSoBottomTabsStayReadable`.
+- Android validation passed: `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug`, `.\gradlew.bat :app:installDebug`, and emulator screenshot evidence at `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.
+
+## 2026-05-02 Integrated Dashboard Acceptance Evidence
+
+- Added `scripts/run-integrated-dashboard-acceptance.ps1` with Help/DryRun modes and hard failures for Playwright screenshot errors.
+- Added architecture tests requiring the script to seed synthetic Windows WPF, Android UsageStats, browser domain, and opted-in coarse location metadata through server APIs before checking `/api/dashboard/integrated` and `/dashboard`.
+- Added Figma-importable design SVG at `artifacts/blazor-dashboard-design/integrated-dashboard-design.svg`.
+- Actual acceptance passed after installing Playwright Chromium runtime locally with `npx playwright install chromium`.
+- Latest evidence: `artifacts/integrated-dashboard-acceptance/latest/dashboard-1440.png`, `dashboard-390.png`, `api-dashboard.json`, `dashboard.html`, `manifest.json`, and `report.md`.
+- Privacy guard verifies rendered dashboard HTML does not expose device tokens, passwords, clipboard, or typed text markers.

@@ -2525,8 +2525,10 @@ milestones below are finished.
   splits overlapping focus/web durations at the requested range boundary.
 - [ ] Follow-up: add authenticated production user/session provider before
   exposing the dashboard beyond local/dev use.
-- [ ] Follow-up: add browser/Playwright screenshot evidence for the Blazor
-  dashboard after the first UI shell stabilizes.
+- [x] Follow-up completed: added
+  `scripts/run-integrated-dashboard-acceptance.ps1`, architecture coverage,
+  Figma-importable design SVG, and Playwright screenshots for the Blazor
+  dashboard with seeded PostgreSQL Windows + Android data.
 
 ## 2026-05-02 Docker PostgreSQL Local Server Flow
 
@@ -2551,8 +2553,9 @@ milestones below are finished.
   `dotnet test` passed 616 tests / 6 PostgreSQL-environment skips,
   `dotnet build` passed with 0 warnings and 0 errors, and coverage refreshed at
   line 87.9% / branch 70.8%.
-- [ ] Follow-up: add browser/Playwright screenshot evidence for `/dashboard`
-  with seeded PostgreSQL data.
+- [x] Follow-up completed: browser/Playwright screenshot evidence for
+  `/dashboard` with seeded PostgreSQL data exists at
+  `artifacts/integrated-dashboard-acceptance/latest/`.
 
 ## 2026-05-02 Android Bottom Navigation Safe-Inset Regression
 
@@ -2571,3 +2574,17 @@ milestones below are finished.
   `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug`.
 - [x] Install the fixed debug build on `emulator-5554` and capture evidence at
   `artifacts/android-ui-regression/latest/android-dashboard-bottom-nav-safe-inset.png`.
+- [x] Follow-up bottom-navigation floor regression fixed after visual review:
+  the bar stays compact and attached to the bottom of the app instead of
+  expanding into a large white safe-area panel.
+- [x] RED/GREEN tests updated for compact bottom navigation with system insets:
+  `SystemInsetsLayoutCalculatorTest.calculateAddsOnlyRequiredTappableInsetToBottomNavigation`
+  and
+  `MainActivityTest.mainShellKeepsBottomNavigationCompactAtBottomWhenGestureNavigationHasLargeInset`.
+- [x] Disabled the Android navigation-bar contrast scrim for the main shell so
+  bottom tab labels stay readable at the screen floor.
+- [x] Android unit/build validation passed:
+  `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug`.
+- [x] Installed the fixed debug APK on `emulator-5554` and captured visual
+  evidence at
+  `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.

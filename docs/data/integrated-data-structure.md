@@ -160,4 +160,6 @@ flowchart LR
   Android visit intervals should sync separately from raw location contexts.
 - Add authenticated user/session provider before public dashboard use.
 - Add dashboard filters for Today/1h/6h/24h/custom date range.
-- Add Playwright/browser screenshot evidence for the Blazor dashboard.
+- Harden production dashboard ownership/authentication before public exposure.
+- Add richer Blazor filters for Today/1h/6h/24h/custom ranges once product UX
+  decisions are finalized.

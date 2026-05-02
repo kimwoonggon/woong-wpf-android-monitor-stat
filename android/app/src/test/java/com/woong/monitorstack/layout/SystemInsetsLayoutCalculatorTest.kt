@@ -5,7 +5,7 @@ import org.junit.Test
 
 class SystemInsetsLayoutCalculatorTest {
     @Test
-    fun calculateKeepsBottomNavigationContentAboveSystemNavigationBar() {
+    fun calculateAddsOnlyRequiredTappableInsetToBottomNavigation() {
         val calculator = SystemInsetsLayoutCalculator(
             baseBottomNavigationHeightPx = 56,
             contentBottomClearancePx = 0
@@ -33,7 +33,7 @@ class SystemInsetsLayoutCalculatorTest {
     }
 
     @Test
-    fun calculateKeepsContentMarginAlignedToCompactBottomNavigation() {
+    fun calculateKeepsContentMarginAlignedToVisibleBottomNavigation() {
         val calculator = SystemInsetsLayoutCalculator(
             baseBottomNavigationHeightPx = 56,
             contentBottomClearancePx = 0
@@ -42,7 +42,7 @@ class SystemInsetsLayoutCalculatorTest {
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
         assertEquals(
-            "The main shell content should reserve exactly the visible bottom navigation height, including the one required system-navigation safe inset.",
+            "The main shell content should reserve exactly the visible bottom navigation height.",
             layout.bottomNavigationHeightPx,
             layout.fragmentBottomMarginPx
         )

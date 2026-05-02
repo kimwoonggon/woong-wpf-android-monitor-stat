@@ -32,6 +32,7 @@ artifacts/android-emulator-stable-run/
 artifacts/android-performance-manual/
 artifacts/android-manual-run/
 artifacts/chrome-native-acceptance/
+artifacts/integrated-dashboard-acceptance/
 artifacts/external-blockers/
 artifacts/server-postgres-validation/
 .cache/chrome-for-testing/

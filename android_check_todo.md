@@ -997,3 +997,16 @@ workspace.
   flakiness: Woong launches synchronously with `am start -W`, retries foreground
   package detection, and passed on `emulator-5554` at
   `artifacts/android-usage-current-focus/20260502-172024/`.
+- [x] Bottom navigation floor regression fixed: Dashboard/Sessions/Report/
+  Settings stay in a compact bottom bar attached to the bottom of the app
+  instead of disappearing or creating a large white safe-area panel.
+- [x] Focused RED/GREEN tests:
+  `SystemInsetsLayoutCalculatorTest.calculateAddsOnlyRequiredTappableInsetToBottomNavigation`
+  and
+  `MainActivityTest.mainShellKeepsBottomNavigationCompactAtBottomWhenGestureNavigationHasLargeInset`.
+- [x] Navigation-bar contrast scrim disabled with focused coverage
+  `MainActivityTest.mainShellDisablesNavigationBarContrastScrimSoBottomTabsStayReadable`,
+  so bottom tab labels stay readable when Android 15 edge-to-edge draws at the
+  screen floor.
+- [x] Emulator evidence captured at
+  `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.

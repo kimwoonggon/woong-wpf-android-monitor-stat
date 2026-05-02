@@ -1,6 +1,8 @@
 package com.woong.monitorstack
 
 import android.content.Context
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        configureSystemNavigationBar()
         rememberFragmentContainerChromeMargins()
         setSupportActionBar(binding.topAppBar)
         applySystemBarInsets()
@@ -193,7 +196,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainRoot) { _, insets ->
-            val bottomInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val bottomInset = insets.getInsets(WindowInsetsCompat.Type.tappableElement()).bottom
             val layout = layoutCalculator.calculate(bottomInset)
 
             binding.bottomNavigation.layoutParams = binding.bottomNavigation.layoutParams.apply {
@@ -206,6 +209,14 @@ class MainActivity : AppCompatActivity() {
             applyFragmentContainerChromeMargins()
 
             WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun configureSystemNavigationBar() {
+        window.navigationBarColor = Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
         }
     }
 

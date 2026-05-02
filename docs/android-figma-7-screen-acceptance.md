@@ -137,6 +137,20 @@ figma-07-settings.png
 These screenshots are local developer evidence only. They are not product
 telemetry and must not screenshot other apps as monitoring data.
 
+## Bottom Navigation Placement
+
+The main shell bottom navigation should stay visually attached to the bottom of
+the app instead of expanding into a large white safe-area panel. The fragment
+content reserves the compact bottom-navigation height, and the
+`BottomNavigationView` itself remains compact so Dashboard, Sessions, Report,
+and Settings are always visible at the floor of the screen.
+
+Regression evidence for this behavior is captured at:
+
+```text
+artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png
+```
+
 Before launching screenshot instrumentation, the local snapshot script clears
 external Android UI interference so stale browser ANR/system dialogs do not
 cover the Woong Monitor screenshots. This cleanup is scoped to local QA:

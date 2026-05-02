@@ -83,20 +83,29 @@ flowchart LR
     Page --> Reviewer
 ```
 
-## Future Screenshot And Playwright Acceptance Plan
+## Playwright Acceptance
 
-Do not automate screenshots until the dashboard contract settles. The first
-acceptance slice should add Playwright or equivalent browser evidence that:
+Local screenshot and API acceptance is now automated by:
 
-- Uses a synthetic PostgreSQL fixture or isolated test database.
-- Opens `/api/dashboard/integrated` and verifies totals for Windows, Android,
-  apps, domains, location empty/coarse state, and devices.
-- Opens `/dashboard` and captures only the dashboard page.
-- Stores artifacts under a clearly named local evidence path such as
-  `artifacts/blazor-dashboard-local/latest/`.
-- Includes desktop and narrow viewport screenshots.
-- Fails if forbidden privacy strings such as device tokens, full private URLs,
-  clipboard, typed text, screenshots, or page contents appear in the HTML.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run-integrated-dashboard-acceptance.ps1
+```
+
+The script uses synthetic PostgreSQL data, opens
+`/api/dashboard/integrated`, verifies Windows/Android/app/domain/location/device
+content, opens `/dashboard`, captures only the Woong Monitor Stack dashboard
+page, and stores evidence under:
+
+```text
+artifacts/integrated-dashboard-acceptance/latest/
+```
+
+The expected screenshot files are `dashboard-1440.png` and
+`dashboard-390.png`. The script fails if forbidden privacy markers such as
+device tokens, passwords, clipboard, or typed text appear in the rendered HTML.
+
+See `docs/integrated-dashboard-acceptance.md` for the full command contract,
+artifact list, and dry-run mode.
 
 ## Notes For Reviewers
 
