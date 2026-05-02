@@ -5658,3 +5658,21 @@ Validation update:
 - Android debug build passed: `.\gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 --stacktrace`.
 - .NET full test passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` with 631 passed and 6 PostgreSQL-environment skips.
 - .NET full build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+
+## 2026-05-03 WPF Detail Label And Android Map Evidence Follow-Up
+
+- WPF detail charts now lower the category-axis text size when showing full top-10 labels and give the details chart a minimum height, reducing the label overlap seen in the screenshot.
+- Android `LocationMiniMapView` now draws a stronger local-only map preview: colored blocks, grid, prominent roads, outlined visit points, and timestamp labels. This remains a no-network preview and does not use external map tiles.
+- Android map labels normalize dotted time text such as `16.48` to `16:48`. Room-backed location visits are covered with an Asia/Seoul UTC conversion test expecting `16:48`.
+- Latest emulator evidence: `artifacts/android-map-evidence/latest/dashboard-location-map.png`.
+- Focused Android screenshot flow note: `run-android-ui-snapshots.ps1` pulled Dashboard screenshots but still hit an existing Report instrumentation crash after App Detail. A focused ADB screenshot was captured for this map fix.
+
+Validation update:
+
+- WPF presentation chart tests passed: `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --filter "FullyQualifiedName~DashboardLiveChartsMapperTests" --no-restore -v minimal`.
+- WPF app detail-window tests passed: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --filter "FullyQualifiedName~ChartDetailsWindowTests" --no-restore -v minimal`.
+- Android focused map/time tests passed and Android unit XML summary was 218 tests, 0 failures, 0 errors, 0 skipped.
+- Android debug build passed: `.\gradlew.bat :app:assembleDebug --no-daemon --max-workers=1 --stacktrace "-Dkotlin.compiler.execution.strategy=in-process"`.
+- .NET full test passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+- .NET full build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+- Focused instrumentation screenshot evidence also passed: `adb shell am instrument -w -e class com.woong.monitorstack.snapshots.LocationMapSnapshotEvidenceTest com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner`; pulled screenshot to `artifacts/android-map-evidence/latest-instrumentation/dashboard-location-map.png`.

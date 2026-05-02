@@ -39,6 +39,18 @@ class LocationMiniMapViewTest {
             "Empty location state should still show the local map preview grid/background, not a blank panel.",
             bitmap.getPixel(84, 30) != Color.WHITE
         )
+        assertTrue(
+            "Accessibility evidence should name the visible no-network roads, blocks, and grid map context.",
+            view.contentDescription.toString().contains("roads, blocks, and grid")
+        )
+        assertTrue(
+            "Local map preview should be visibly map-like in screenshots, with substantial non-white roads/blocks/grid.",
+            countNonWhitePixels(bitmap) > 12_000
+        )
+        assertTrue(
+            "A central road should be prominent enough to read as map context behind points.",
+            contrastFromWhite(bitmap.getPixel(80, 86)) > 50
+        )
     }
 
     @Test
@@ -75,5 +87,45 @@ class LocationMiniMapViewTest {
         assertTrue(view.contentDescription.toString().contains("45m"))
     }
 
+    @Test
+    fun setPointsNormalizesDottedHourMinuteLabelsToHhMmForScreenshots() {
+        val view = LocationMiniMapView(context())
+
+        view.setPoints(
+            listOf(
+                LocationMapPoint(
+                    latitude = 37.5665,
+                    longitude = 126.9780,
+                    durationMs = 1,
+                    sampleCount = 1,
+                    capturedAtLocalText = "16.48"
+                )
+            )
+        )
+
+        assertTrue(view.contentDescription.toString().contains("16:48"))
+        assertTrue(!view.contentDescription.toString().contains("16.48"))
+    }
+
     private fun context(): Context = ApplicationProvider.getApplicationContext()
+
+    private fun countNonWhitePixels(bitmap: Bitmap): Int {
+        var count = 0
+        for (x in 0 until bitmap.width) {
+            for (y in 0 until bitmap.height) {
+                if (contrastFromWhite(bitmap.getPixel(x, y)) > 12) {
+                    count++
+                }
+            }
+        }
+        return count
+    }
+
+    private fun contrastFromWhite(color: Int): Int {
+        return maxOf(
+            255 - Color.red(color),
+            255 - Color.green(color),
+            255 - Color.blue(color)
+        )
+    }
 }

@@ -2711,3 +2711,23 @@ milestones below are finished.
   tests, full solution `dotnet test`, full solution `dotnet build`, Android
   focused location/inset tests, Android full `:app:testDebugUnitTest`, and
   Android `:app:assembleDebug`.
+
+## 2026-05-03 WPF Detail Label And Android Map Evidence Follow-Up
+
+- [x] WPF: reduced full-label detail chart category text size and kept a
+  minimum chart height so top-10 horizontal bar labels no longer pile on top of
+  each other.
+- [x] Android: strengthened `LocationMiniMapView` so the location card renders
+  visible no-network map context with roads, blocks, grid, point outlines, and
+  timestamp labels instead of looking like isolated blue dots.
+- [x] Android: normalized dotted hour-minute labels such as `16.48` to `16:48`
+  and added Room repository coverage proving UTC location visits display as
+  Asia/Seoul `HH:mm` labels for Korean review evidence.
+- [x] Android: captured emulator evidence at
+  `artifacts/android-map-evidence/latest/dashboard-location-map.png`.
+- [x] Android: added and ran focused instrumentation evidence test
+  `LocationMapSnapshotEvidenceTest`, producing
+  `artifacts/android-map-evidence/latest-instrumentation/dashboard-location-map.png`.
+- [x] Validation passed: WPF detail chart tests, Android location map/time
+  focused tests, full solution `dotnet test`, full solution `dotnet build`,
+  Android full `:app:testDebugUnitTest`, and Android `:app:assembleDebug`.

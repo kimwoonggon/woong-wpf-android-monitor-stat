@@ -241,4 +241,32 @@ public sealed class ChartDetailsWindowTests
                 window.Close();
             }
         });
+
+    [Fact]
+    public void ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace()
+        => RunOnStaThread(() =>
+        {
+            var request = new DashboardChartDetailsRequest(
+                "App focus details",
+                "Apps",
+                Enumerable.Range(1, 10)
+                    .Select(index => new DashboardChartPoint($"app-{index}", (11 - index) * 60_000))
+                    .ToList());
+            var window = new ChartDetailsWindow(request);
+
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var chart = FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart");
+                Assert.True(
+                    chart.MinHeight >= 360,
+                    "Top-10 detail charts need enough height to avoid overlapping forced Y-axis labels.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
 }

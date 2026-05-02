@@ -25,6 +25,7 @@ import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.TimeZone
 import com.woong.monitorstack.usage.UsageCollectionScheduleResult
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -34,6 +35,7 @@ import org.junit.runner.RunWith
 class SnapshotCaptureTest {
     @Test
     fun captureDashboardSettingsSessionsAndDailySummaryScreens() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"))
         val context = ApplicationProvider.getApplicationContext<Context>()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val device = UiDevice.getInstance(instrumentation)

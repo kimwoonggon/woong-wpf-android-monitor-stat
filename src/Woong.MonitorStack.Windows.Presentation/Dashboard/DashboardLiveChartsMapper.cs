@@ -49,11 +49,22 @@ public static class DashboardLiveChartsMapper
         };
         string[] labels = pointList.Select(point => point.Label).ToArray();
 
+        var categoryAxis = new Axis
+        {
+            Labels = labels,
+            MinStep = 1,
+            ForceStepToMin = true
+        };
+        if (maxCategoryLabelLength is null)
+        {
+            categoryAxis.TextSize = 11;
+        }
+
         return new DashboardLiveChartsData(
             [series],
             labels,
             [new Axis { MinLimit = 0, Labeler = FormatMillisecondsAsMinutes }],
-            [new Axis { Labels = labels, MinStep = 1, ForceStepToMin = true }],
+            [categoryAxis],
             pointList.Count == 0 ? "No data for selected period" : "");
     }
 

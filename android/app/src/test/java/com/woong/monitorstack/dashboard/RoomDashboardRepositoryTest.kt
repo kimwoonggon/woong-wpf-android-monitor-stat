@@ -14,6 +14,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -215,6 +216,48 @@ class RoomDashboardRepositoryTest {
         assertEquals(45 * 60_000L, snapshot.locationContext.mapPoints[0].durationMs)
         assertEquals(3, snapshot.locationContext.mapPoints[0].sampleCount)
         assertEquals("09:45", snapshot.locationContext.mapPoints[0].capturedAtLocalText)
+    }
+
+    @Test
+    fun loadTodayFormatsLocationPointTimesAsAsiaSeoulHourMinuteFromUtcInstants() {
+        val visitDao = database.locationVisitDao()
+        val firstCapturedAtUtcMillis = Instant.parse("2026-04-28T07:03:00Z").toEpochMilli()
+        val lastCapturedAtUtcMillis = Instant.parse("2026-04-28T07:48:00Z").toEpochMilli()
+        visitDao.insert(
+            LocationVisitEntity(
+                id = "seoul-time-visit",
+                deviceId = "android-device-1",
+                locationKey = "37.5665,126.9780",
+                latitude = 37.5665,
+                longitude = 126.9780,
+                coordinatePrecisionDecimals = 4,
+                firstCapturedAtUtcMillis = firstCapturedAtUtcMillis,
+                lastCapturedAtUtcMillis = lastCapturedAtUtcMillis,
+                durationMs = 45 * 60_000L,
+                sampleCount = 3,
+                accuracyMeters = 25.0f,
+                permissionState = LocationPermissionState.GrantedPrecise,
+                captureMode = LocationCaptureMode.AppUsageContext,
+                createdAtUtcMillis = firstCapturedAtUtcMillis,
+                updatedAtUtcMillis = lastCapturedAtUtcMillis
+            )
+        )
+        val repository = RoomDashboardRepository(
+            dao = database.focusSessionDao(),
+            locationVisitDao = visitDao,
+            deviceId = "android-device-1",
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) }
+        )
+
+        val label = repository.load(DashboardPeriod.Today)
+            .locationContext
+            .mapPoints
+            .single()
+            .capturedAtLocalText
+
+        assertEquals("16:48", label)
+        assertFalse("Map labels must use HH:mm, not dotted time text.", label.contains("."))
     }
 
     @Test

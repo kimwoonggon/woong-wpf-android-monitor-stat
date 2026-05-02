@@ -22,6 +22,7 @@ artifacts/wpf-check/
 artifacts/windows-app/
 artifacts/windows-msix/
 artifacts/android-ui-snapshots/
+artifacts/android-map-evidence/
 artifacts/android-ui-regression/
 artifacts/android-resource-measurements/
 artifacts/android-usage-current-focus/

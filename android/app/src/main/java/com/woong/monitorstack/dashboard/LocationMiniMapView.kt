@@ -19,8 +19,9 @@ class LocationMiniMapView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private val points = mutableListOf<LocationMapPoint>()
     private val bounds = RectF()
+    private val labelBounds = RectF()
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = Color.rgb(241, 248, 244)
         style = Paint.Style.FILL
     }
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -29,15 +30,20 @@ class LocationMiniMapView @JvmOverloads constructor(
         strokeWidth = 1.5f
     }
     private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.wms_border)
+        color = Color.rgb(150, 166, 184)
         style = Paint.Style.STROKE
-        strokeWidth = 1f
-        alpha = 140
+        strokeWidth = 2f
+        alpha = 235
     }
     private val pointPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.wms_primary)
         style = Paint.Style.FILL
         alpha = 210
+    }
+    private val pointOutlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.wms_text_muted)
@@ -45,20 +51,36 @@ class LocationMiniMapView @JvmOverloads constructor(
         textSize = 14f * resources.displayMetrics.scaledDensity
     }
     private val pointLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.wms_text_secondary)
+        color = ContextCompat.getColor(context, R.color.wms_text_primary)
         textAlign = Paint.Align.CENTER
-        textSize = 10f * resources.displayMetrics.scaledDensity
+        textSize = 12f * resources.displayMetrics.scaledDensity
+        isFakeBoldText = true
+    }
+    private val pointLabelBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.FILL
+        alpha = 235
     }
     private val roadPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.wms_border)
+        color = Color.rgb(104, 121, 145)
+        style = Paint.Style.STROKE
+        strokeWidth = 16f
+        strokeCap = Paint.Cap.ROUND
+    }
+    private val roadCenterPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
         style = Paint.Style.STROKE
         strokeWidth = 5f
-        alpha = 170
+        strokeCap = Paint.Cap.ROUND
+        alpha = 235
     }
     private val blockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.wms_background)
+        color = Color.rgb(199, 235, 211)
         style = Paint.Style.FILL
-        alpha = 230
+    }
+    private val waterBlockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.rgb(204, 226, 255)
+        style = Paint.Style.FILL
     }
 
     val pointCount: Int
@@ -66,7 +88,7 @@ class LocationMiniMapView @JvmOverloads constructor(
 
     init {
         minimumHeight = (132f * resources.displayMetrics.density).roundToInt()
-        contentDescription = "No location statistics. Local map preview, no network map tiles."
+        contentDescription = EmptyContentDescription
     }
 
     fun setPoints(newPoints: List<LocationMapPoint>) {
@@ -107,14 +129,6 @@ class LocationMiniMapView @JvmOverloads constructor(
         val right = bounds.right - 18f
         val bottom = bounds.bottom - 18f
 
-        repeat(3) { index ->
-            val fraction = (index + 1) / 4f
-            val x = left + ((right - left) * fraction)
-            val y = top + ((bottom - top) * fraction)
-            canvas.drawLine(x, top, x, bottom, gridPaint)
-            canvas.drawLine(left, y, right, y, gridPaint)
-        }
-
         val blockWidth = (right - left) / 5f
         val blockHeight = (bottom - top) / 3f
         canvas.drawRoundRect(
@@ -139,8 +153,43 @@ class LocationMiniMapView @JvmOverloads constructor(
             10f,
             blockPaint
         )
-        canvas.drawLine(left, bottom - blockHeight * 0.7f, right, top + blockHeight * 0.65f, roadPaint)
-        canvas.drawLine(left + blockWidth * 2.2f, top, left + blockWidth * 3.0f, bottom, roadPaint)
+        canvas.drawRoundRect(
+            RectF(
+                left + blockWidth * 2.1f,
+                top + blockHeight * 0.35f,
+                left + blockWidth * 3.15f,
+                top + blockHeight * 1.2f
+            ),
+            10f,
+            10f,
+            waterBlockPaint
+        )
+        canvas.drawRoundRect(
+            RectF(
+                left + blockWidth * 0.7f,
+                bottom - blockHeight * 0.95f,
+                left + blockWidth * 2.0f,
+                bottom - blockHeight * 0.2f
+            ),
+            10f,
+            10f,
+            waterBlockPaint
+        )
+        repeat(5) { index ->
+            val fraction = (index + 1) / 6f
+            val x = left + ((right - left) * fraction)
+            val y = top + ((bottom - top) * fraction)
+            canvas.drawLine(x, top, x, bottom, gridPaint)
+            canvas.drawLine(left, y, right, y, gridPaint)
+        }
+        drawRoad(canvas, left, bottom - blockHeight * 0.7f, right, top + blockHeight * 0.65f)
+        drawRoad(canvas, left + blockWidth * 2.2f, top, left + blockWidth * 3.0f, bottom)
+        drawRoad(canvas, left, top + blockHeight * 1.45f, right, top + blockHeight * 1.2f)
+    }
+
+    private fun drawRoad(canvas: Canvas, startX: Float, startY: Float, endX: Float, endY: Float) {
+        canvas.drawLine(startX, startY, endX, endY, roadPaint)
+        canvas.drawLine(startX, startY, endX, endY, roadCenterPaint)
     }
 
     private fun drawPoints(canvas: Canvas) {
@@ -160,19 +209,32 @@ class LocationMiniMapView @JvmOverloads constructor(
             val x = left + (((point.longitude - minLongitude) / longitudeRange).toFloat() * width)
             val y = top + height - (((point.latitude - minLatitude) / latitudeRange).toFloat() * height)
             val radius = 7f + (18f * (point.durationMs / maxDuration).toFloat())
+            canvas.drawCircle(x, y, radius + 2f, pointOutlinePaint)
             canvas.drawCircle(x, y, radius, pointPaint)
-            canvas.drawText(
-                point.capturedAtLocalText,
-                x,
-                (y - radius - 6f).coerceAtLeast(bounds.top + 18f),
-                pointLabelPaint
-            )
+            drawPointLabel(canvas, normalizeTimeLabel(point.capturedAtLocalText), x, y, radius)
         }
+    }
+
+    private fun drawPointLabel(canvas: Canvas, label: String, x: Float, y: Float, radius: Float) {
+        val labelY = (y - radius - 8f).coerceAtLeast(bounds.top + 20f)
+        val labelWidth = pointLabelPaint.measureText(label)
+        val labelCenterX = x.coerceIn(
+            bounds.left + (labelWidth / 2f) + 12f,
+            bounds.right - (labelWidth / 2f) - 12f
+        )
+        labelBounds.set(
+            labelCenterX - (labelWidth / 2f) - 8f,
+            labelY + pointLabelPaint.ascent() - 4f,
+            labelCenterX + (labelWidth / 2f) + 8f,
+            labelY + pointLabelPaint.descent() + 4f
+        )
+        canvas.drawRoundRect(labelBounds, 8f, 8f, pointLabelBackgroundPaint)
+        canvas.drawText(label, labelCenterX, labelY, pointLabelPaint)
     }
 
     private fun buildContentDescription(): String {
         if (points.isEmpty()) {
-            return "No location statistics. Local map preview, no network map tiles."
+            return EmptyContentDescription
         }
 
         val topPoint = points.maxWith(
@@ -182,7 +244,7 @@ class LocationMiniMapView @JvmOverloads constructor(
         val pointLabels = points
             .sortedBy { it.capturedAtLocalText }
             .joinToString(separator = ". ") { point ->
-                "Point ${point.capturedAtLocalText}: %.4f, %.4f, %s, %d samples".format(
+                "Point ${normalizeTimeLabel(point.capturedAtLocalText)}: %.4f, %.4f, %s, %d samples".format(
                     point.latitude,
                     point.longitude,
                     formatDuration(point.durationMs),
@@ -191,7 +253,7 @@ class LocationMiniMapView @JvmOverloads constructor(
             }
 
         return (
-            "${points.size} location visits. Local map preview, no network map tiles. " +
+            "${points.size} location visits. Local map preview with roads, blocks, and grid; no network map tiles. " +
                 "Top location %.4f, %.4f - %s. %s"
             ).format(
             topPoint.latitude,
@@ -210,5 +272,20 @@ class LocationMiniMapView @JvmOverloads constructor(
         } else {
             "${minutes}m"
         }
+    }
+
+    private fun normalizeTimeLabel(label: String): String {
+        val trimmed = label.trim()
+        val dottedHourMinute = Regex("""^(\d{1,2})\.(\d{2})$""").matchEntire(trimmed)
+        if (dottedHourMinute != null) {
+            val hour = dottedHourMinute.groupValues[1].padStart(2, '0')
+            return "$hour:${dottedHourMinute.groupValues[2]}"
+        }
+        return trimmed
+    }
+
+    private companion object {
+        const val EmptyContentDescription =
+            "No location statistics. Local map preview with roads, blocks, and grid; no network map tiles."
     }
 }

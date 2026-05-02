@@ -66,6 +66,7 @@
                 Margin="0,18,0,0"
                 Style="{StaticResource DashboardCardBorderStyle}">
             <lvc:CartesianChart AutomationProperties.AutomationId="ChartDetailsHorizontalBarChart"
+                                Style="{StaticResource ChartDetailsHorizontalBarChartStyle}"
                                 Series="{Binding Chart.Series}"
                                 XAxes="{Binding Chart.XAxes}"
                                 YAxes="{Binding Chart.YAxes}" />

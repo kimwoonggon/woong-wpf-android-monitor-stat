@@ -172,4 +172,20 @@ public sealed class DashboardLiveChartsMapperTests
         Assert.Equal(1, yAxis.MinStep);
         Assert.True(yAxis.ForceStepToMin);
     }
+
+    [Fact]
+    public void BuildHorizontalBarChart_ForDetailsUsesSmallerCategoryLabelText()
+    {
+        DashboardChartPoint[] points = Enumerable.Range(1, 10)
+            .Select(index => new DashboardChartPoint($"domain-{index}.example", (11 - index) * 60_000))
+            .ToArray();
+
+        DashboardLiveChartsData chart = DashboardLiveChartsMapper.BuildHorizontalBarChart(
+            "Domains",
+            points,
+            maxCategoryLabelLength: null);
+
+        Axis yAxis = Assert.Single(chart.YAxes);
+        Assert.Equal(11, yAxis.TextSize);
+    }
 }

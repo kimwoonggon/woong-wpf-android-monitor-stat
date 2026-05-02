@@ -11,6 +11,7 @@ import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.RoomDashboardRepository
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.TimeZone
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +20,7 @@ import org.junit.runner.RunWith
 class SnapshotSeedTest {
     @Test
     fun seedDeterministicUsageSessionsForLocalScreenshots() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"))
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val database = MonitorDatabase.getInstance(context)
         val zone = ZoneId.systemDefault()
