@@ -25,15 +25,14 @@ $requiredSnippets = @(
     "ANDROID_KEYSTORE_PASSWORD",
     "ANDROID_KEY_ALIAS",
     "ANDROID_KEY_PASSWORD",
-    "Android signing secrets are missing",
+    "Fail when Android release signing secrets are missing",
+    "Android releases require ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD.",
     "apksigner",
     "apksigner verify --verbose",
     "app-release-unsigned.apk",
-    "woong-monitor-android-debug.apk",
-    "woong-monitor-android-test.apk",
-    "woong-monitor-android-release-unsigned.apk",
-    'woong-monitor-android-apks-${{ github.ref_name }}',
-    "artifacts/android-release/*.apk",
+    '$env:RUNNER_TEMP/android-release-aligned.apk',
+    "woong-monitor-android-release-signed.apk",
+    "artifacts/android-release/woong-monitor-android-release-signed.apk",
     "woong-monitor-android-release",
     "softprops/action-gh-release@v2",
     "startsWith(github.ref, 'refs/tags/')"
@@ -46,7 +45,14 @@ foreach ($snippet in $requiredSnippets) {
 }
 
 $forbiddenSnippets = @(
-    "*.jks"
+    "*.jks",
+    "woong-monitor-android-debug.apk",
+    "woong-monitor-android-test.apk",
+    "woong-monitor-android-release-unsigned.apk",
+    "artifacts/android-release/woong-monitor-android-release-aligned.apk",
+    'woong-monitor-android-apks-${{ github.ref_name }}',
+    "steps.signing.outputs.enabled",
+    "The release workflow will publish the installable debug APK and unsigned release APK"
 )
 
 foreach ($snippet in $forbiddenSnippets) {

@@ -61,6 +61,78 @@ $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
 $notes = New-Object System.Collections.Generic.List[string]
+$beginnerReviewAliases = @(
+    [ordered]@{
+        Name = "Splash before"
+        SourceFileName = "figma-01-splash.png"
+        FileName = "01-splash-before.png"
+    },
+    [ordered]@{
+        Name = "Splash after"
+        SourceFileName = "figma-01-splash.png"
+        FileName = "01-splash-after.png"
+    },
+    [ordered]@{
+        Name = "Permission before"
+        SourceFileName = "figma-02-permission.png"
+        FileName = "02-permission-before.png"
+    },
+    [ordered]@{
+        Name = "Permission after"
+        SourceFileName = "figma-02-permission.png"
+        FileName = "02-permission-after.png"
+    },
+    [ordered]@{
+        Name = "Dashboard before"
+        SourceFileName = "figma-03-dashboard.png"
+        FileName = "03-dashboard-before.png"
+    },
+    [ordered]@{
+        Name = "Dashboard after"
+        SourceFileName = "figma-03-dashboard.png"
+        FileName = "03-dashboard-after.png"
+    },
+    [ordered]@{
+        Name = "Sessions before"
+        SourceFileName = "figma-04-sessions.png"
+        FileName = "04-sessions-before.png"
+    },
+    [ordered]@{
+        Name = "Sessions after"
+        SourceFileName = "figma-04-sessions.png"
+        FileName = "04-sessions-after.png"
+    },
+    [ordered]@{
+        Name = "App Detail before"
+        SourceFileName = "figma-05-app-detail.png"
+        FileName = "05-app-detail-before.png"
+    },
+    [ordered]@{
+        Name = "App Detail after"
+        SourceFileName = "figma-05-app-detail.png"
+        FileName = "05-app-detail-after.png"
+    },
+    [ordered]@{
+        Name = "Report before"
+        SourceFileName = "figma-06-report.png"
+        FileName = "06-report-before.png"
+    },
+    [ordered]@{
+        Name = "Report after"
+        SourceFileName = "figma-06-report.png"
+        FileName = "06-report-after.png"
+    },
+    [ordered]@{
+        Name = "Settings before"
+        SourceFileName = "figma-07-settings.png"
+        FileName = "07-settings-before.png"
+    },
+    [ordered]@{
+        Name = "Settings after"
+        SourceFileName = "figma-07-settings.png"
+        FileName = "07-settings-after.png"
+    }
+)
 $screenTargets = @(
     [ordered]@{
         Name = "Figma Splash"
@@ -297,6 +369,28 @@ function Get-AndroidCanonicalScreenStatuses {
     return $statuses
 }
 
+function Copy-AndroidBeginnerReviewAliases {
+    foreach ($alias in $beginnerReviewAliases) {
+        $aliasName = $alias["Name"]
+        $sourceFileName = $alias["SourceFileName"]
+        $aliasFileName = $alias["FileName"]
+        $sourcePath = Join-Path $runRoot $sourceFileName
+        $destinationPath = Join-Path $runRoot $aliasFileName
+        if (-not (Test-Path $sourcePath)) {
+            throw "Expected canonical screenshot was not found for beginner review alias: $sourcePath"
+        }
+
+        Copy-Item -Force -Path $sourcePath -Destination $destinationPath
+        $notes.Add("Copied $sourceFileName to beginner-review evidence alias $aliasFileName.")
+        $script:screenshots += [pscustomobject]@{
+            name = $aliasName
+            fileName = $aliasFileName
+            path = $destinationPath
+            capture = "Canonical Woong UI screenshot copy"
+        }
+    }
+}
+
 function Write-AndroidSnapshotArtifacts {
     param(
         [string]$Status,
@@ -387,6 +481,7 @@ function Write-AndroidSnapshotArtifacts {
         featureScreens = $featureScreens
         screenStatuses = $canonicalScreenStatuses
         expectedLocationChecks = $expectedLocationChecks
+        beginnerReviewAliases = $beginnerReviewAliases
         screenshots = $screenshots
         blockedReason = $BlockedReason
     }
@@ -397,6 +492,7 @@ function Write-AndroidSnapshotArtifacts {
         "",
         "Review the Android dashboard/settings/sessions/daily summary screenshots in this folder when they exist.",
         "Start with the canonical Figma 7-screen parity captures: figma-01-splash.png through figma-07-settings.png.",
+        "Beginner-review before/after aliases 01-splash-before.png through 07-settings-after.png are local copies of the canonical Woong UI screenshots.",
         "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Main shell screenshots include Dashboard, Sessions, Report, and Settings tab states.",
         "Screenshots 16 and 17 show selected-period states after changing Dashboard to 1h and Sessions to 6h.",
@@ -502,6 +598,7 @@ try {
             capture = $target.Capture
         }
     }
+    Copy-AndroidBeginnerReviewAliases
     Write-AndroidSnapshotArtifacts -Status $status -BlockedReason $blockedReason
     Write-Host "Android UI snapshot artifacts: $runRoot"
     exit 0

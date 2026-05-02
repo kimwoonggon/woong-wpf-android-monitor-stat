@@ -2273,8 +2273,8 @@ milestones below are finished.
 - [x] Local equivalent Android CI command passed: `android\gradlew.bat testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace`.
 - [x] Added Android release workflow `.github/workflows/android-release.yml`.
 - [x] Added release workflow validator `scripts/validate-android-release-workflow.ps1` and focused architecture coverage `AndroidReleaseWorkflowTests.cs`.
-- [x] Android release workflow runs from `android/`, uses the Gradle wrapper, uploads APK/test artifacts, and does not require connected/emulator tests.
-- [x] Signed release APK creation requires `ANDROID_KEYSTORE_*` secrets; unsigned release artifacts are CI/testing only.
+- [x] Android release workflow runs from `android/`, uses the Gradle wrapper, and does not require connected/emulator tests.
+- [x] Tag-based Android release publishing requires `ANDROID_KEYSTORE_*` secrets and publishes only the signed release APK; unsigned/debug/test APKs remain CI artifacts, not release assets.
 - [x] Validation passed: local release workflow validator, focused architecture tests, and Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`.
 - [x] Android manual emulator workflow added for optional `connectedDebugAndroidTest` evidence; it stays manual/opt-in rather than a required release gate.
 - [ ] Next Android release TODO: configure real `ANDROID_KEYSTORE_*` signing secrets and Play Store publishing only after explicit release requirements are defined.
@@ -2305,7 +2305,10 @@ milestones below are finished.
 - [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, production endpoint source/config implementation, Play signing/publishing policy, user-auth registration policy, and device revocation policy stay open before release use.
 - [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices and whether user auth is required, implement the approved production endpoint source/config path, and decide Android Play signing/publishing requirements.
 - [x] Secure token storage implementation plan completed: tests prove `device_token` is absent from `woong_monitor_settings`, legacy plaintext token is migrated/cleared, Settings/Register/Manual Sync behavior stays unchanged, and runtime storage uses Android Keystore-backed AES-GCM without adding AndroidX security-crypto.
-- [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-093843/`.
+- [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-100659/`.
+- [x] Settings now renders real Usage Access granted/missing state and persists the background collection switch through the Android collection settings abstraction.
+- [x] Android UI snapshot automation now creates beginner-review before/after aliases for the seven canonical Woong UI screens without capturing other apps.
+- [x] Server device-token revocation endpoint requires the current token, invalidates future upload/rotation attempts with the revoked token, and preserves existing stored sessions.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 

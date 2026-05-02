@@ -71,6 +71,25 @@ app.MapPost("/api/devices/{deviceId}/token/rotate", async (
         : Results.Ok(response);
 });
 
+app.MapPost("/api/devices/{deviceId}/token/revoke", async (
+    string deviceId,
+    HttpRequest httpRequest,
+    DeviceTokenAuthenticationService deviceTokens,
+    DeviceRegistrationService registrations) =>
+{
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, deviceId, deviceTokens);
+    if (unauthorized is not null)
+    {
+        return unauthorized;
+    }
+
+    bool revoked = await registrations.RevokeTokenAsync(deviceId);
+
+    return revoked
+        ? Results.NoContent()
+        : Results.NotFound();
+});
+
 app.MapPost("/api/focus-sessions/upload", async (
     HttpRequest httpRequest,
     UploadFocusSessionsRequest request,

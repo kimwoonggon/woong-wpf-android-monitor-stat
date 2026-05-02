@@ -7,7 +7,7 @@ public sealed class AndroidReleaseWorkflowTests
     private static readonly string RepositoryRoot = FindRepositoryRoot();
 
     [Fact]
-    public void AndroidReleaseWorkflow_BuildsTestsSignsWhenPossibleAndUploadsApkArtifacts()
+    public void AndroidReleaseWorkflow_BuildsTestsRequiresSigningSecretsAndPublishesOnlySignedReleaseApk()
     {
         string workflowPath = Path.Combine(RepositoryRoot, ".github", "workflows", "android-release.yml");
         string validationScriptPath = Path.Combine(RepositoryRoot, "scripts", "validate-android-release-workflow.ps1");
@@ -29,12 +29,12 @@ public sealed class AndroidReleaseWorkflowTests
         Assert.Contains("chmod +x ./gradlew", workflow, StringComparison.Ordinal);
         Assert.Contains("./gradlew testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace", workflow, StringComparison.Ordinal);
         Assert.Contains("working-directory: android", workflow, StringComparison.Ordinal);
+        Assert.Contains("Fail when Android release signing secrets are missing", workflow, StringComparison.Ordinal);
+        Assert.Contains("throw \"Android releases require ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD.\"", workflow, StringComparison.Ordinal);
         Assert.Contains("app-release-unsigned.apk", workflow, StringComparison.Ordinal);
-        Assert.Contains("woong-monitor-android-debug.apk", workflow, StringComparison.Ordinal);
-        Assert.Contains("woong-monitor-android-test.apk", workflow, StringComparison.Ordinal);
-        Assert.Contains("woong-monitor-android-release-unsigned.apk", workflow, StringComparison.Ordinal);
-        Assert.Contains("woong-monitor-android-apks-${{ github.ref_name }}", workflow, StringComparison.Ordinal);
-        Assert.Contains("artifacts/android-release/*.apk", workflow, StringComparison.Ordinal);
+        Assert.Contains("$env:RUNNER_TEMP/android-release-aligned.apk", workflow, StringComparison.Ordinal);
+        Assert.Contains("woong-monitor-android-release-signed.apk", workflow, StringComparison.Ordinal);
+        Assert.Contains("artifacts/android-release/woong-monitor-android-release-signed.apk", workflow, StringComparison.Ordinal);
         Assert.Contains("woong-monitor-android-release-${{ github.ref_name }}", workflow, StringComparison.Ordinal);
         Assert.Contains("android/app/build/reports/tests/testDebugUnitTest/**", workflow, StringComparison.Ordinal);
         Assert.Contains("softprops/action-gh-release@v2", workflow, StringComparison.Ordinal);
@@ -43,8 +43,12 @@ public sealed class AndroidReleaseWorkflowTests
         Assert.Contains("ANDROID_KEYSTORE_PASSWORD", workflow, StringComparison.Ordinal);
         Assert.Contains("ANDROID_KEY_ALIAS", workflow, StringComparison.Ordinal);
         Assert.Contains("ANDROID_KEY_PASSWORD", workflow, StringComparison.Ordinal);
-        Assert.Contains("Android signing secrets are missing", workflow, StringComparison.Ordinal);
         Assert.Contains("apksigner verify --verbose", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("woong-monitor-android-debug.apk", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("woong-monitor-android-test.apk", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("woong-monitor-android-release-unsigned.apk", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("artifacts/android-release/woong-monitor-android-release-aligned.apk", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("steps.signing.outputs.enabled", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("*.jks", workflow, StringComparison.OrdinalIgnoreCase);
     }
 

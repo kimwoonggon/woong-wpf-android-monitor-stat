@@ -18,6 +18,53 @@ public sealed class DeviceRegistrationApiTests
     private const string DeviceTokenHeaderName = "X-Device-Token";
 
     [Fact]
+    public async Task RevokeDeviceToken_InvalidatesTokenForUploadsRotationAndRepeatedRevocationWithoutDeletingRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistrationResponse registration = await RegisterDeviceAsync(
+            client,
+            platform: Platform.Android,
+            deviceKey: "android-revoke-token-key",
+            deviceName: "Android Phone");
+
+        await UploadFocusAsync(client, registration.DeviceId, registration.DeviceToken, "focus-before-rotate");
+        await UploadWebAsync(client, registration.DeviceId, registration.DeviceToken, "web-before-rotate", "focus-before-rotate");
+        await UploadRawAsync(client, registration.DeviceId, registration.DeviceToken, "raw-before-rotate");
+        await UploadLocationAsync(client, registration.DeviceId, registration.DeviceToken, "location-before-rotate");
+        PersistedUploadIds beforeIds = await GetPersistedUploadIdsAsync(factory);
+
+        HttpResponseMessage revokeResponse = await RevokeTokenAsync(
+            client,
+            registration.DeviceId,
+            registration.DeviceToken);
+
+        Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+        HttpResponseMessage uploadWithRevokedTokenResponse = await PostFocusAsync(
+            client,
+            registration.DeviceId,
+            registration.DeviceToken,
+            "focus-after-revoke");
+        Assert.Equal(HttpStatusCode.Unauthorized, uploadWithRevokedTokenResponse.StatusCode);
+
+        HttpResponseMessage rotateWithRevokedTokenResponse = await RotateTokenAsync(
+            client,
+            registration.DeviceId,
+            registration.DeviceToken);
+        Assert.Equal(HttpStatusCode.Unauthorized, rotateWithRevokedTokenResponse.StatusCode);
+
+        HttpResponseMessage repeatedRevokeResponse = await RevokeTokenAsync(
+            client,
+            registration.DeviceId,
+            registration.DeviceToken);
+        Assert.Equal(HttpStatusCode.Unauthorized, repeatedRevokeResponse.StatusCode);
+
+        PersistedUploadIds afterIds = await GetPersistedUploadIdsAsync(factory);
+        Assert.Equal(beforeIds, afterIds);
+    }
+
+    [Fact]
     public async Task RotateDeviceToken_InvalidatesOldTokenReturnsNewTokenAndPreservesUploadedRows()
     {
         await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase();
@@ -34,11 +81,10 @@ public sealed class DeviceRegistrationApiTests
         await UploadLocationAsync(client, registration.DeviceId, registration.DeviceToken, "location-before-rotate");
         PersistedUploadIds beforeIds = await GetPersistedUploadIdsAsync(factory);
 
-        using var rotateRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"/api/devices/{registration.DeviceId}/token/rotate");
-        rotateRequest.Headers.Add(DeviceTokenHeaderName, registration.DeviceToken);
-        HttpResponseMessage rotateResponse = await client.SendAsync(rotateRequest);
+        HttpResponseMessage rotateResponse = await RotateTokenAsync(
+            client,
+            registration.DeviceId,
+            registration.DeviceToken);
 
         Assert.Equal(HttpStatusCode.OK, rotateResponse.StatusCode);
         DeviceTokenRotationResponse rotation =
@@ -215,6 +261,32 @@ public sealed class DeviceRegistrationApiTests
         response.EnsureSuccessStatusCode();
 
         return (await response.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+    }
+
+    private static async Task<HttpResponseMessage> RotateTokenAsync(
+        HttpClient client,
+        string deviceId,
+        string deviceToken)
+    {
+        using var rotateRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/devices/{deviceId}/token/rotate");
+        rotateRequest.Headers.Add(DeviceTokenHeaderName, deviceToken);
+
+        return await client.SendAsync(rotateRequest);
+    }
+
+    private static async Task<HttpResponseMessage> RevokeTokenAsync(
+        HttpClient client,
+        string deviceId,
+        string deviceToken)
+    {
+        using var revokeRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/devices/{deviceId}/token/revoke");
+        revokeRequest.Headers.Add(DeviceTokenHeaderName, deviceToken);
+
+        return await client.SendAsync(revokeRequest);
     }
 
     private static async Task UploadFocusAsync(

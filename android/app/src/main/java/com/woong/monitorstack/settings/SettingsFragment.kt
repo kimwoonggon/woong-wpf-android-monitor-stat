@@ -1,5 +1,6 @@
 package com.woong.monitorstack.settings
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -21,6 +22,8 @@ import com.woong.monitorstack.summary.NotificationPermissionController
 import com.woong.monitorstack.sync.AndroidSyncClient
 import com.woong.monitorstack.sync.AndroidSyncWorker
 import com.woong.monitorstack.sync.SyncDeviceRegistrationRequest
+import com.woong.monitorstack.usage.AndroidUsageAccessPermissionReader
+import com.woong.monitorstack.usage.UsageAccessPermissionChecker
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 import com.google.android.material.button.MaterialButton
 import java.util.TimeZone
@@ -44,6 +47,14 @@ class SettingsFragment : Fragment() {
         fragmentBinding.openUsageAccessSettingsButton.setOnClickListener {
             startActivity(usageAccessSettings.createIntent())
         }
+        renderPermissionSettings(
+            fragmentBinding,
+            usageAccessStatusReaderFactory(requireContext())
+        )
+        renderCollectionSettings(
+            fragmentBinding,
+            SharedPreferencesAndroidUsageCollectionSettings(requireContext())
+        )
 
         val hostActivity = requireActivity() as AppCompatActivity
         val notificationPermissionController = NotificationPermissionController(hostActivity)
@@ -61,9 +72,41 @@ class SettingsFragment : Fragment() {
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding?.let { fragmentBinding ->
+            renderPermissionSettings(
+                fragmentBinding,
+                usageAccessStatusReaderFactory(requireContext())
+            )
+        }
+    }
+
     override fun onDestroyView() {
         binding = null
         super.onDestroyView()
+    }
+
+    private fun renderPermissionSettings(
+        binding: FragmentSettingsBinding,
+        usageAccessStatusReader: UsageAccessStatusReader
+    ) {
+        val statusText = if (usageAccessStatusReader.hasUsageAccess(requireContext().packageName)) {
+            R.string.usage_access_status_granted
+        } else {
+            R.string.usage_access_status_missing
+        }
+        binding.usageAccessStatusRow.text = getString(statusText)
+    }
+
+    private fun renderCollectionSettings(
+        binding: FragmentSettingsBinding,
+        settings: SharedPreferencesAndroidUsageCollectionSettings
+    ) {
+        binding.backgroundCollectionSwitch.isChecked = settings.isCollectionEnabled()
+        binding.backgroundCollectionSwitch.setOnCheckedChangeListener { _, isChecked ->
+            settings.setCollectionEnabled(isChecked)
+        }
     }
 
     private fun renderLocationSettings(
@@ -274,6 +317,22 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    interface UsageAccessStatusReader {
+        fun hasUsageAccess(packageName: String): Boolean
+    }
+
+    private class AndroidUsageAccessStatusReader(
+        context: Context
+    ) : UsageAccessStatusReader {
+        private val checker = UsageAccessPermissionChecker(
+            AndroidUsageAccessPermissionReader(context.applicationContext)
+        )
+
+        override fun hasUsageAccess(packageName: String): Boolean {
+            return checker.hasUsageAccess(packageName)
+        }
+    }
+
     data class DeviceRegistrationRequest(
         val baseUrl: String,
         val userId: String,
@@ -335,12 +394,19 @@ class SettingsFragment : Fragment() {
                 AndroidSyncClientDeviceRegistrationLauncher()
             }
 
+        fun defaultUsageAccessStatusReaderFactory(): (android.content.Context) -> UsageAccessStatusReader = {
+            AndroidUsageAccessStatusReader(it)
+        }
+
         var manualSyncLauncherFactory: (android.content.Context) -> ManualSyncLauncher =
             defaultManualSyncLauncherFactory()
 
         var deviceRegistrationLauncherFactory:
             (android.content.Context) -> DeviceRegistrationLauncher =
             defaultDeviceRegistrationLauncherFactory()
+
+        var usageAccessStatusReaderFactory: (android.content.Context) -> UsageAccessStatusReader =
+            defaultUsageAccessStatusReaderFactory()
     }
 }
 

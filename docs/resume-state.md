@@ -22,7 +22,7 @@ Updated: 2026-05-02
 - Ran Woong-only Android UI snapshot automation with
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - Result: PASS. Fresh evidence at
-  `artifacts/android-ui-snapshots/20260502-093843/` and
+  `artifacts/android-ui-snapshots/20260502-100659/` and
   `artifacts/android-ui-snapshots/latest/`.
 - Settings/sync evidence includes `figma-07-settings.png`, `settings.png`,
   `05-settings-privacy-sync.png`, and
@@ -5361,3 +5361,12 @@ Validation completed:
 Remaining priorities:
 
 - Continue Android UI parity work for Sessions/Report/Settings and reduce dashboard padding/clipping against the supplied wireframes.
+
+## 2026-05-02 Coordinator Queue Slice
+
+- Committed and pushed `aa01f5c` for Android sync/auth state before starting this queue.
+- Added server device-token revocation behavior: current token required, revoked token cannot upload or rotate, existing rows are preserved.
+- Hardened Android release workflow so tag release publishing requires signing secrets and publishes only the signed release APK.
+- Settings now displays real Usage Access status and persists background collection through the Android collection settings abstraction.
+- Android snapshot automation now copies the seven canonical Woong UI screenshots to beginner-review before/after aliases, without capturing Chrome or other apps.
+- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-100659/` and `artifacts/android-ui-snapshots/latest/`.

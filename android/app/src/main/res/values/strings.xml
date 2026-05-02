@@ -112,6 +112,8 @@
 
     <string name="permissions_title">Permissions</string>
     <string name="usage_access_status_placeholder">Usage Access permission    Check in Android Settings</string>
+    <string name="usage_access_status_granted">Usage Access permission: Granted</string>
+    <string name="usage_access_status_missing">Usage Access permission: Missing</string>
     <string name="collection_title">Collection</string>
     <string name="background_collection">Background collection</string>
     <string name="collection_interval_value">Inactive gap detection    15 minutes</string>

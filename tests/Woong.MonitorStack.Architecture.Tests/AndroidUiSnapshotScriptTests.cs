@@ -128,6 +128,44 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotScript_CopiesCanonicalScreensToBeginnerReviewBeforeAfterNames()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        string[] beginnerReviewScreens =
+        [
+            "01-splash-before.png",
+            "01-splash-after.png",
+            "02-permission-before.png",
+            "02-permission-after.png",
+            "03-dashboard-before.png",
+            "03-dashboard-after.png",
+            "04-sessions-before.png",
+            "04-sessions-after.png",
+            "05-app-detail-before.png",
+            "05-app-detail-after.png",
+            "06-report-before.png",
+            "06-report-after.png",
+            "07-settings-before.png",
+            "07-settings-after.png"
+        ];
+
+        foreach (string screen in beginnerReviewScreens)
+        {
+            Assert.Contains(screen, script);
+        }
+
+        Assert.Contains("beginnerReviewAliases", script);
+        Assert.Contains("Copy-AndroidBeginnerReviewAliases", script);
+        Assert.Contains("copy", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Privacy Boundary", script);
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_ClearsExternalSystemDialogsBeforeCapture()
     {
         string repoRoot = FindRepositoryRoot();
@@ -307,7 +345,21 @@ exit /b 0
                 "11-main-shell-settings.png",
                 "12-main-shell-report.png",
                 "13-permission-onboarding.png",
-                "14-app-detail.png"
+                "14-app-detail.png",
+                "01-splash-before.png",
+                "01-splash-after.png",
+                "02-permission-before.png",
+                "02-permission-after.png",
+                "03-dashboard-before.png",
+                "03-dashboard-after.png",
+                "04-sessions-before.png",
+                "04-sessions-after.png",
+                "05-app-detail-before.png",
+                "05-app-detail-after.png",
+                "06-report-before.png",
+                "06-report-after.png",
+                "07-settings-before.png",
+                "07-settings-after.png"
             ];
             foreach (string screenshot in expectedScreenshots)
             {
@@ -330,6 +382,9 @@ exit /b 0
             Assert.Contains("12-main-shell-report.png", manifestText);
             Assert.Contains("13-permission-onboarding.png", manifestText);
             Assert.Contains("14-app-detail.png", manifestText);
+            Assert.Contains("beginnerReviewAliases", manifestText);
+            Assert.Contains("01-splash-before.png", manifestText);
+            Assert.Contains("07-settings-after.png", manifestText);
 
             string report = File.ReadAllText(Path.Combine(latest, "report.md"));
             Assert.Contains("## Canonical Figma Screen Status", report);

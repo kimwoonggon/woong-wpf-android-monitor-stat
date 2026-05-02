@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-093843/
+artifacts/android-ui-snapshots/20260502-100659/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -100,11 +100,14 @@ Product boundary reminder:
   `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
 - [x] Snapshot report status: `PASS`.
 - [x] Evidence paths:
-  - `artifacts/android-ui-snapshots/20260502-093843/`
+  - `artifacts/android-ui-snapshots/20260502-100659/`
   - `artifacts/android-ui-snapshots/latest/`
-  - `artifacts/android-ui-snapshots/20260502-093843/figma-07-settings.png`
-  - `artifacts/android-ui-snapshots/20260502-093843/05-settings-privacy-sync.png`
-  - `artifacts/android-ui-snapshots/20260502-093843/06-settings-location-permission.png`
+  - `artifacts/android-ui-snapshots/20260502-100659/figma-07-settings.png`
+  - `artifacts/android-ui-snapshots/20260502-100659/05-settings-privacy-sync.png`
+  - `artifacts/android-ui-snapshots/20260502-100659/06-settings-location-permission.png`
+- [x] Beginner-review aliases are copied after canonical capture:
+  `01-splash-before.png`/`01-splash-after.png` through
+  `07-settings-before.png`/`07-settings-after.png`.
 - [x] Privacy boundary repeated: screenshots are local developer artifacts only,
   captured inside Woong Monitor UI; no other-app content, typed text,
   passwords, form contents, clipboard contents, browser/page contents, or
@@ -195,7 +198,7 @@ Product boundary reminder:
   copy.
 - [x] Keep shell toolbar and bottom navigation hidden on Splash.
 - [x] Keep Android 12+ system splash branding consistent with the in-app Splash.
-- [ ] Capture `01-splash-before.png` and `01-splash-after.png`.
+- [x] Capture `01-splash-before.png` and `01-splash-after.png`.
 - [ ] Ensure Splash does not delay normal relaunch longer than necessary after
   process death.
 
@@ -280,8 +283,8 @@ Product boundary reminder:
 - [x] Add/verify tests that Settings shows permissions, collection, sync,
   privacy, location, and storage sections.
 - [x] Match Figma Settings card grouping and spacing.
-- [ ] Usage Access permission status must be visible.
-- [ ] Background/periodic collection setting must be visible and explain
+- [x] Usage Access permission status must be visible.
+- [x] Background/periodic collection setting must be visible and explain
   WorkManager-based collection.
 - [x] Sync enabled must default off and show local-only status.
 - [x] Manual sync must skip upload while sync is off and show a clear result.
@@ -802,9 +805,10 @@ workspace.
 - [x] Added release workflow validator `scripts/validate-android-release-workflow.ps1`.
 - [x] Added focused architecture coverage `AndroidReleaseWorkflowTests.cs`.
 - [x] Android release workflow runs from `android/`, uses the Gradle wrapper,
-  and uploads APK/test artifacts.
-- [x] Signed release APK creation requires `ANDROID_KEYSTORE_*` secrets;
-  unsigned release artifacts are CI/testing only.
+  and does not require connected/emulator tests.
+- [x] Tag-based Android release publishing requires `ANDROID_KEYSTORE_*`
+  secrets and publishes only the signed release APK; unsigned/debug/test APKs
+  remain CI artifacts, not release assets.
 - [x] Connected/emulator tests are not required in the Android release workflow.
 - [x] Validation passed: local release workflow validator, focused Android
   release workflow architecture tests, and Android Gradle

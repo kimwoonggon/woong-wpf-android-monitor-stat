@@ -42,6 +42,9 @@ class SettingsFragmentManualSyncTest {
         registrationLauncher = RecordingDeviceRegistrationLauncher()
         SettingsFragment.manualSyncLauncherFactory = { launcher }
         SettingsFragment.deviceRegistrationLauncherFactory = { registrationLauncher }
+        SettingsFragment.usageAccessStatusReaderFactory = {
+            FakeUsageAccessStatusReader(hasUsageAccess = false)
+        }
     }
 
     @After
@@ -51,6 +54,31 @@ class SettingsFragmentManualSyncTest {
         SettingsFragment.manualSyncLauncherFactory = SettingsFragment.defaultManualSyncLauncherFactory()
         SettingsFragment.deviceRegistrationLauncherFactory =
             SettingsFragment.defaultDeviceRegistrationLauncherFactory()
+        SettingsFragment.usageAccessStatusReaderFactory =
+            SettingsFragment.defaultUsageAccessStatusReaderFactory()
+    }
+
+    @Test
+    fun usageAccessStatusReflectsCurrentPermissionState() {
+        SettingsFragment.usageAccessStatusReaderFactory = {
+            FakeUsageAccessStatusReader(hasUsageAccess = false)
+        }
+        val missingActivity = launchSettingsFragment()
+
+        assertEquals(
+            "Usage Access permission: Missing",
+            missingActivity.findViewById<TextView>(R.id.usageAccessStatusRow).text.toString()
+        )
+
+        SettingsFragment.usageAccessStatusReaderFactory = {
+            FakeUsageAccessStatusReader(hasUsageAccess = true)
+        }
+        val grantedActivity = launchSettingsFragment()
+
+        assertEquals(
+            "Usage Access permission: Granted",
+            grantedActivity.findViewById<TextView>(R.id.usageAccessStatusRow).text.toString()
+        )
     }
 
     @Test
@@ -116,6 +144,26 @@ class SettingsFragmentManualSyncTest {
             "Device registered for sync.",
             activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
         )
+    }
+
+    @Test
+    fun backgroundCollectionSwitchLoadsAndPersistsCollectionSetting() {
+        SharedPreferencesAndroidUsageCollectionSettings(context)
+            .setCollectionEnabled(false)
+        val activity = launchSettingsFragment()
+        val backgroundCollectionSwitch = activity.findViewById<SwitchMaterial>(
+            R.id.backgroundCollectionSwitch
+        )
+
+        assertFalse(backgroundCollectionSwitch.isChecked)
+
+        backgroundCollectionSwitch.performClick()
+
+        assertTrue(SharedPreferencesAndroidUsageCollectionSettings(context).isCollectionEnabled())
+
+        backgroundCollectionSwitch.performClick()
+
+        assertFalse(SharedPreferencesAndroidUsageCollectionSettings(context).isCollectionEnabled())
     }
 
     @Test
@@ -430,6 +478,12 @@ class SettingsFragmentManualSyncTest {
         override fun clearDeviceToken() {
             token = ""
         }
+    }
+
+    private class FakeUsageAccessStatusReader(
+        private val hasUsageAccess: Boolean
+    ) : SettingsFragment.UsageAccessStatusReader {
+        override fun hasUsageAccess(packageName: String): Boolean = hasUsageAccess
     }
 
     companion object {

@@ -77,13 +77,19 @@ public sealed class AndroidProductionEndpointPolicyTests
 
         Assert.Single(cleartextDomainConfigs);
 
-        string[] cleartextDomains = cleartextDomainConfigs[0]
+        XElement[] cleartextDomainElements = cleartextDomainConfigs[0]
             .Elements("domain")
+            .ToArray();
+
+        string[] cleartextDomains = cleartextDomainElements
             .Select(domain => domain.Value.Trim())
             .Order(StringComparer.Ordinal)
             .ToArray();
 
         Assert.Equal(["127.0.0.1", "::1", "localhost"], cleartextDomains);
+        Assert.All(
+            cleartextDomainElements,
+            domain => Assert.Equal("true", domain.Attribute("includeSubdomains")?.Value));
     }
 
     private static string FindRepositoryRoot()

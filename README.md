@@ -330,17 +330,18 @@ GitHub Actions uploads:
 - `woong-monitor-android-test-apk`
 - `woong-monitor-android-unit-test-report`
 
-The release APK artifact is not a Play Store release. It is a CI-built package
-artifact for local verification until Android release signing and store
-publishing are explicitly configured.
+The Android CI release APK artifact is not a Play Store release. It is a
+CI-built unsigned package artifact for local verification only.
 
 The Android release workflow runs from `android/` and uses the checked-in
-Gradle wrapper. It builds and uploads APK/test artifacts without requiring
-connected emulator/device tests in that workflow. A signed release APK is
-created only when `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
-`ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` repository secrets are
-configured. Unsigned release artifacts are CI/testing outputs only and must not
-be treated as Play Store-ready packages.
+Gradle wrapper. It builds unit-test/debug/release/androidTest outputs without
+requiring connected emulator/device tests in that workflow, but tag-based
+release publishing requires `ANDROID_KEYSTORE_BASE64`,
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`.
+If any signing secret is missing, the Android release workflow fails before
+publishing. The release archive contains the signed release APK only; unsigned,
+debug, and androidTest APKs remain CI artifacts from the non-release Android CI
+workflow and must not be treated as Play Store-ready packages.
 
 Android/server sync is also not a public release path until these policies are
 closed: production endpoint discovery/configuration, local-development endpoint

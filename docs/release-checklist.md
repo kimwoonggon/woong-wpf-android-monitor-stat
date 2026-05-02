@@ -134,3 +134,6 @@ closed until the owning implementation agents report verified completion:
 - [ ] Android Play signing/publishing: configure real `ANDROID_KEYSTORE_*`
   secrets, versioning, Play Console track, artifact retention, and release
   approval requirements before distribution beyond internal CI artifacts.
+  Tag-based Android release publishing must fail when signing secrets are
+  missing and must publish only the signed release APK, never debug,
+  androidTest, or unsigned APKs as release assets.
