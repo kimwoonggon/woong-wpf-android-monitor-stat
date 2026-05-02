@@ -284,6 +284,36 @@ class SettingsFragmentManualSyncTest {
     }
 
     @Test
+    fun loopbackHttpEndpointShowsLocalDevelopmentNonProductionLabel() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setServerBaseUrl("http://10.0.2.2:5080")
+
+        val activity = launchSettingsFragment()
+
+        assertEquals(
+            "Local development endpoint. Not for production sync.",
+            activity.findViewById<TextView>(R.id.syncLocalDevelopmentEndpointText).text.toString()
+        )
+        assertTrue(activity.findViewById<TextView>(R.id.syncLocalDevelopmentEndpointText).isShown)
+        assertFalse(activity.findViewById<SwitchMaterial>(R.id.autoSyncSwitch).isChecked)
+    }
+
+    @Test
+    fun httpsProductionEndpointDoesNotShowLocalDevelopmentLabel() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setServerBaseUrl("https://sync.example")
+
+        val activity = launchSettingsFragment()
+
+        assertEquals(
+            "",
+            activity.findViewById<TextView>(R.id.syncLocalDevelopmentEndpointText).text.toString()
+        )
+        assertFalse(activity.findViewById<TextView>(R.id.syncLocalDevelopmentEndpointText).isShown)
+        assertFalse(activity.findViewById<SwitchMaterial>(R.id.autoSyncSwitch).isChecked)
+    }
+
+    @Test
     fun manualSyncWhenSyncOffShowsLocalOnlySkippedAndDoesNotLaunchWorker() {
         val activity = launchSettingsFragment()
 

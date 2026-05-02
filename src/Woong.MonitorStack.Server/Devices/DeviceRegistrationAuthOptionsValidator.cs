@@ -44,6 +44,16 @@ public sealed class DeviceRegistrationAuthOptionsValidator : IValidateOptions<De
                 "DeviceRegistrationAuth:AuthenticatedUserClaimType is required when UserIdentityProviderMode=ClaimsPrincipal.");
         }
 
+        if (_environment.IsProduction() &&
+            options.RequireAuthenticatedUser &&
+            isClaimsPrincipal &&
+            string.IsNullOrWhiteSpace(options.RequiredAuthenticationScheme))
+        {
+            return ValidateOptionsResult.Fail(
+                "DeviceRegistrationAuth:RequiredAuthenticationScheme is required when " +
+                "Production strict-auth uses UserIdentityProviderMode=ClaimsPrincipal.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

@@ -13,7 +13,7 @@ object AndroidSyncServerUrlValidator {
 
         return when (scheme) {
             "https" -> true
-            "http" -> host == "localhost" || host == "127.0.0.1" || host == "::1"
+            "http" -> isLoopbackHost(host)
             else -> false
         }
     }
@@ -40,8 +40,22 @@ object AndroidSyncServerUrlValidator {
         }
     }
 
+    fun isLocalDevelopmentEndpoint(serverBaseUrl: String): Boolean {
+        val uri = runCatching { URI(serverBaseUrl.trim()) }.getOrNull() ?: return false
+        val scheme = uri.scheme?.lowercase() ?: return false
+        val host = uri.host?.lowercase()?.trim('[', ']') ?: return false
+        if (uri.rawUserInfo != null) {
+            return false
+        }
+
+        return scheme == "http" && isLoopbackHost(host)
+    }
+
     private fun isLoopbackHost(host: String): Boolean {
-        return host == "localhost" || host == "127.0.0.1" || host == "::1"
+        return host == "localhost" ||
+            host == "127.0.0.1" ||
+            host == "10.0.2.2" ||
+            host == "::1"
     }
 
     private fun isExampleHost(host: String): Boolean {

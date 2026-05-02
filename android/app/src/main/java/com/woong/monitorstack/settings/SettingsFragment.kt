@@ -168,10 +168,12 @@ class SettingsFragment : Fragment() {
         binding.syncServerUrlEditText.setText(settings.serverBaseUrl())
         binding.syncDeviceIdEditText.setText(settings.deviceId())
         binding.manualSyncButton.isEnabled = true
+        renderLocalDevelopmentEndpointLabel(binding)
         renderStatus(binding.autoSyncSwitch.isChecked)
 
         binding.syncServerUrlEditText.doAfterTextChanged { value ->
             settings.setServerBaseUrl(value?.toString().orEmpty())
+            renderLocalDevelopmentEndpointLabel(binding)
         }
         binding.syncDeviceIdEditText.doAfterTextChanged { value ->
             settings.setDeviceId(value?.toString().orEmpty())
@@ -319,6 +321,23 @@ class SettingsFragment : Fragment() {
         binding.syncDeviceIdEditText.setText("")
         binding.syncDeviceRegistrationStatusText.text =
             getString(R.string.sync_device_unregistered_status)
+        renderLocalDevelopmentEndpointLabel(binding)
+    }
+
+    private fun renderLocalDevelopmentEndpointLabel(binding: FragmentSettingsBinding) {
+        val isLocalDevelopment = AndroidSyncServerUrlValidator.isLocalDevelopmentEndpoint(
+            binding.syncServerUrlEditText.text?.toString().orEmpty()
+        )
+        binding.syncLocalDevelopmentEndpointText.visibility = if (isLocalDevelopment) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+        binding.syncLocalDevelopmentEndpointText.text = if (isLocalDevelopment) {
+            getString(R.string.sync_local_development_endpoint)
+        } else {
+            ""
+        }
     }
 
     private fun ensureRegisterRepairButton(binding: FragmentSettingsBinding): MaterialButton {

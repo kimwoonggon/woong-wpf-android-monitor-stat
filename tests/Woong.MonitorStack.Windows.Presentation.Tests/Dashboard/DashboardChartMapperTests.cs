@@ -81,6 +81,54 @@ public sealed class DashboardChartMapperTests
         Assert.Equal(600_000, domainPoint.ValueMs);
     }
 
+    [Fact]
+    public void BuildAppUsagePoints_GroupsDuplicateLabelsBeforeSorting()
+    {
+        var summary = new DailySummary(
+            new DateOnly(2026, 4, 28),
+            TotalActiveMs: 1_420_000,
+            TotalIdleMs: 0,
+            TotalWebMs: 0,
+            TopApps:
+            [
+                new UsageTotal("Code.exe", 700_000),
+                new UsageTotal("Chrome", 360_000),
+                new UsageTotal("Terminal", 300_000),
+                new UsageTotal("Chrome", 60_000)
+            ],
+            TopDomains: []);
+
+        IReadOnlyList<DashboardChartPoint> points = DashboardChartMapper.BuildAppUsagePoints(summary);
+
+        Assert.Equal(["Code.exe", "Chrome", "Terminal"], points.Select(point => point.Label));
+        Assert.Equal(420_000, points.Single(point => point.Label == "Chrome").ValueMs);
+        Assert.Equal(points.Count, points.Select(point => point.Label).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void BuildDomainUsagePoints_GroupsDuplicateLabelsBeforeSorting()
+    {
+        var summary = new DailySummary(
+            new DateOnly(2026, 4, 28),
+            TotalActiveMs: 0,
+            TotalIdleMs: 0,
+            TotalWebMs: 1_080_000,
+            TopApps: [],
+            TopDomains:
+            [
+                new UsageTotal("github.com", 540_000),
+                new UsageTotal("chatgpt.com", 240_000),
+                new UsageTotal("learn.example", 180_000),
+                new UsageTotal("chatgpt.com", 120_000)
+            ]);
+
+        IReadOnlyList<DashboardChartPoint> points = DashboardChartMapper.BuildDomainUsagePoints(summary);
+
+        Assert.Equal(["github.com", "chatgpt.com", "learn.example"], points.Select(point => point.Label));
+        Assert.Equal(360_000, points.Single(point => point.Label == "chatgpt.com").ValueMs);
+        Assert.Equal(points.Count, points.Select(point => point.Label).Distinct(StringComparer.Ordinal).Count());
+    }
+
     private static FocusSession Session(
         string clientSessionId,
         DateTimeOffset startedAtUtc,

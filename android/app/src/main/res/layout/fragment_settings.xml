@@ -232,6 +232,14 @@
                     android:text="@string/sync_configuration_help" />
 
                 <TextView
+                    android:id="@+id/syncLocalDevelopmentEndpointText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sync_local_development_endpoint"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/syncStatusText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

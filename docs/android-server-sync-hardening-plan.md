@@ -314,7 +314,8 @@ look like the default production flow, and they must clearly distinguish
 operator/test configuration from the normal local-only sync-off state.
 
 Local developer HTTP endpoints are limited to loopback hosts: `localhost`,
-`127.0.0.1`, and `::1`. Any local HTTP endpoint must be labeled nonproduction.
+`127.0.0.1`, Android emulator host alias `10.0.2.2`, and `::1`. Any local HTTP
+endpoint must be labeled nonproduction.
 Non-loopback production sync endpoints require HTTPS, no embedded credentials,
 and no broad cleartext network policy.
 
@@ -328,8 +329,8 @@ Current implementation:
 - User-entered advanced endpoints remain explicit and are still validated:
   HTTPS is required outside loopback local development and embedded credentials
   are rejected.
-- `localhost`, `127.0.0.1`, and `::1` HTTP endpoints remain local-development
-  only.
+- `localhost`, `127.0.0.1`, `10.0.2.2`, and `::1` HTTP endpoints remain
+  local-development only and show visible nonproduction Settings labeling.
 
 ### Retry And Backoff
 
@@ -388,8 +389,8 @@ Future implementation should proceed by vertical TDD slices.
   default and stores no auth token until registration/auth succeeds.
 - [x] Settings rejects invalid production base URLs before enqueueing
   `AndroidSyncWorker`.
-- [ ] Local developer mode allows only explicit loopback HTTP endpoints; visible
-  nonproduction labeling in Settings remains open.
+- [x] Local developer mode allows only explicit loopback HTTP endpoints and
+  visible nonproduction labeling in Settings.
 - [x] Manual Sync with sync off remains local-only and enqueues no worker.
 - [x] Manual Sync with sync on but no registered device shows registration
   required and enqueues no worker.

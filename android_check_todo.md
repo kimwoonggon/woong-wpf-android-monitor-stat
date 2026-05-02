@@ -819,6 +819,9 @@ workspace.
   silently fall back to local/blank/example endpoints, loopback HTTP is
   local-dev nonproduction only, and user-entered release endpoints are
   advanced/manual configuration only.
+- [x] Settings visibly labels local-development HTTP endpoints
+  (`localhost`, `127.0.0.1`, `10.0.2.2`, and `::1`) as nonproduction while
+  HTTPS production endpoints do not show that label.
 - [x] Settings now shows sync/registration/auth state without making sync appear
   enabled by default; worker auth-required status is persisted and surfaces as
   a repair-needed Settings state.

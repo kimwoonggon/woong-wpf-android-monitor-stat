@@ -13,4 +13,6 @@ public sealed class DeviceRegistrationAuthOptions
     public string AuthenticatedUserHeaderName { get; set; } = "X-Woong-User-Id";
 
     public string AuthenticatedUserClaimType { get; set; } = "sub";
+
+    public string RequiredAuthenticationScheme { get; set; } = string.Empty;
 }

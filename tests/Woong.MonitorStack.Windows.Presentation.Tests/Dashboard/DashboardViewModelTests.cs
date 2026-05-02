@@ -491,6 +491,71 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectPeriod_AggregatesDuplicateAppAndDomainLabelsBeforeDetailTopTen()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions =
+        [
+            ..Enumerable.Range(1, 10)
+                .Select(index => Session(
+                    $"session-app-{index}",
+                    $"app-{index}",
+                    now.AddMinutes(-index),
+                    now.AddMinutes(-index).AddMinutes(11 - index),
+                    isIdle: false)),
+            Session("session-chrome-1", "Chrome", now.AddMinutes(-20), now.AddMinutes(-15), isIdle: false),
+            Session("session-chrome-2", "Chrome", now.AddMinutes(-25), now.AddMinutes(-20), isIdle: false)
+        ];
+        WebSession[] webSessions =
+        [
+            ..Enumerable.Range(1, 10)
+                .Select(index => WebSession.FromUtc(
+                    $"web-domain-{index}",
+                    "Chrome",
+                    $"https://domain-{index}.example/",
+                    $"Domain {index}",
+                    now.AddMinutes(-index),
+                    now.AddMinutes(-index).AddMinutes(11 - index))),
+            WebSession.FromUtc(
+                "web-chatgpt-1",
+                "Chrome",
+                "https://chatgpt.com/",
+                "ChatGPT",
+                now.AddMinutes(-20),
+                now.AddMinutes(-15)),
+            WebSession.FromUtc(
+                "web-chatgpt-2",
+                "Chrome",
+                "https://chatgpt.com/",
+                "ChatGPT",
+                now.AddMinutes(-25),
+                now.AddMinutes(-20))
+        ];
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, webSessions),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Equal(["Chrome", "app-1", "app-2"], viewModel.AppUsagePoints.Select(point => point.Label));
+        Assert.Equal(10, viewModel.AppUsageDetailPoints.Count);
+        Assert.Equal(600_000, viewModel.AppUsageDetailPoints.Single(point => point.Label == "Chrome").ValueMs);
+        Assert.DoesNotContain("app-10", viewModel.AppUsageDetailPoints.Select(point => point.Label));
+        Assert.Equal(
+            viewModel.AppUsageDetailPoints.Count,
+            viewModel.AppUsageDetailPoints.Select(point => point.Label).Distinct(StringComparer.Ordinal).Count());
+
+        Assert.Equal(["chatgpt.com", "domain-1.example", "domain-2.example"], viewModel.DomainUsagePoints.Select(point => point.Label));
+        Assert.Equal(10, viewModel.DomainUsageDetailPoints.Count);
+        Assert.Equal(600_000, viewModel.DomainUsageDetailPoints.Single(point => point.Label == "chatgpt.com").ValueMs);
+        Assert.DoesNotContain("domain-10.example", viewModel.DomainUsageDetailPoints.Select(point => point.Label));
+        Assert.Equal(
+            viewModel.DomainUsageDetailPoints.Count,
+            viewModel.DomainUsageDetailPoints.Select(point => point.Label).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
     public void ShowAppFocusDetailsCommand_OpensChartDetailsWithTopTenAppPoints()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

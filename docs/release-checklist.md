@@ -144,8 +144,11 @@ closed until the owning implementation agents report verified completion:
   `DeviceRegistrationAuth:UserIdentityProviderMode=ClaimsPrincipal`; it reads
   the stable user id from the configured authenticated `HttpContext.User`
   claim, defaults to claim type `sub`, ignores the header stub in claims mode,
-  and returns no user when that claim is absent. Until real upstream
-  authentication middleware/provider selection is configured and validated,
+  and returns no user when that claim is absent. Production strict-auth startup
+  now also requires `DeviceRegistrationAuth:RequiredAuthenticationScheme` when
+  `ClaimsPrincipal` mode is selected, keeping the mode tied to an explicit
+  upstream authentication boundary. Until real upstream authentication
+  middleware/provider selection is configured and validated,
   this item must remain an open release blocker and the release checklist must
   not be treated as complete.
   Existing policy coverage proves strict mode rejects missing authenticated
@@ -157,10 +160,11 @@ closed until the owning implementation agents report verified completion:
   This must stay unchecked until the release owner selects the real provider
   (for example OIDC, first-party account session, or another approved
   production identity boundary), documents provisioning/rotation/incident
-  ownership, configures `ClaimsPrincipal` mode behind real authentication
-  middleware or another approved non-`HeaderStub` provider backed by server
-  code, and reruns strict-auth registration plus token-protected endpoint tests
-  with production-equivalent configuration.
+  ownership, configures `ClaimsPrincipal` mode with
+  `RequiredAuthenticationScheme` behind real authentication middleware or
+  another approved non-`HeaderStub` provider backed by server code, and reruns
+  strict-auth registration plus token-protected endpoint tests with
+  production-equivalent configuration.
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.

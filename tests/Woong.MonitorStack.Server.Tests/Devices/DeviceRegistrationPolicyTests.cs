@@ -206,10 +206,27 @@ public sealed class DeviceRegistrationPolicyTests
         {
             RequireAuthenticatedUser = true,
             UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
-            AuthenticatedUserClaimType = "sub"
+            AuthenticatedUserClaimType = "sub",
+            RequiredAuthenticationScheme = "Bearer"
         });
 
         Assert.False(result.Failed, GetFailureMessage(result));
+    }
+
+    [Fact]
+    public void Startup_WhenProductionStrictAuthUsesClaimsPrincipalWithoutAuthenticationScheme_FailsConfigurationValidation()
+    {
+        ValidateOptionsResult result = ValidateProductionAuthOptions(new DeviceRegistrationAuthOptions
+        {
+            RequireAuthenticatedUser = true,
+            UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+            AuthenticatedUserClaimType = "sub"
+        });
+        string failureMessage = GetFailureMessage(result);
+
+        Assert.True(result.Failed);
+        Assert.Contains("RequiredAuthenticationScheme", failureMessage, StringComparison.Ordinal);
+        Assert.Contains("ClaimsPrincipal", failureMessage, StringComparison.Ordinal);
     }
 
     [Fact]
