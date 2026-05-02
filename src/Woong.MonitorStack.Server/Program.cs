@@ -244,8 +244,15 @@ static async Task<IResult?> RejectUnauthorizedDeviceTokenAsync(
     DeviceTokenAuthenticationService deviceTokens)
 {
     string? deviceToken = httpRequest.Headers[DeviceTokenAuthenticationService.HeaderName].SingleOrDefault();
+    var registrationUserIdentity = httpRequest.HttpContext.RequestServices.GetRequiredService<IRegistrationUserIdentitySource>();
+    var registrationAuthOptions = httpRequest.HttpContext.RequestServices.GetRequiredService<IOptions<DeviceRegistrationAuthOptions>>();
+    string? authenticatedUserId = registrationUserIdentity.GetAuthenticatedUserId(httpRequest);
 
-    return await deviceTokens.IsAuthorizedAsync(deviceId, deviceToken)
+    return await deviceTokens.IsAuthorizedAsync(
+        deviceId,
+        deviceToken,
+        authenticatedUserId,
+        registrationAuthOptions.Value.RequireAuthenticatedUser)
         ? null
         : Results.Unauthorized();
 }

@@ -20,6 +20,19 @@ public sealed class DeviceTokenAuthenticationService
         string deviceId,
         string? deviceToken,
         CancellationToken cancellationToken = default)
+        => await IsAuthorizedAsync(
+            deviceId,
+            deviceToken,
+            authenticatedUserId: null,
+            requireAuthenticatedUser: false,
+            cancellationToken);
+
+    public async Task<bool> IsAuthorizedAsync(
+        string deviceId,
+        string? deviceToken,
+        string? authenticatedUserId,
+        bool requireAuthenticatedUser,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(deviceToken) ||
             !Guid.TryParseExact(deviceId, "N", out Guid parsedDeviceId))
@@ -27,19 +40,30 @@ public sealed class DeviceTokenAuthenticationService
             return false;
         }
 
-        string? expectedHash = await _dbContext.Devices
+        DeviceTokenVerifier? verifier = await _dbContext.Devices
             .Where(device => device.Id == parsedDeviceId)
-            .Select(device => device.DeviceTokenHash)
+            .Select(device => new DeviceTokenVerifier(device.UserId, device.DeviceTokenHash))
             .SingleOrDefaultAsync(cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(expectedHash))
+        if (verifier is null || string.IsNullOrWhiteSpace(verifier.DeviceTokenHash))
+        {
+            return false;
+        }
+
+        if (requireAuthenticatedUser && string.IsNullOrWhiteSpace(authenticatedUserId))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(authenticatedUserId) &&
+            !string.Equals(verifier.UserId, authenticatedUserId, StringComparison.Ordinal))
         {
             return false;
         }
 
         string actualHash = DeviceTokenFactory.HashToken(deviceToken);
 
-        return FixedTimeEquals(expectedHash, actualHash);
+        return FixedTimeEquals(verifier.DeviceTokenHash, actualHash);
     }
 
     private static bool FixedTimeEquals(string expected, string actual)
@@ -50,4 +74,6 @@ public sealed class DeviceTokenAuthenticationService
         return expectedBytes.Length == actualBytes.Length &&
             CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes);
     }
+
+    private sealed record DeviceTokenVerifier(string UserId, string DeviceTokenHash);
 }

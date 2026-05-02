@@ -16,8 +16,6 @@ namespace Woong.MonitorStack.Server.Tests.Devices;
 public sealed class DeviceRegistrationPolicyTests
 {
     private const string AuthenticatedUserHeaderName = "X-Woong-User-Id";
-    private const string MissingServerUserAuthStack =
-        "Public-release registration policy is not implemented yet: add server user/session auth first, then require registration to derive user identity from auth context instead of trusting payload userId.";
 
     [Fact]
     public async Task RegisterDevice_WhenUserSessionAuthIsMissingAndStrictModeIsEnabled_ReturnsUnauthorized()
@@ -70,13 +68,129 @@ public sealed class DeviceRegistrationPolicyTests
         Assert.Equal("authenticated-user", device.UserId);
     }
 
-    [Fact(Skip = MissingServerUserAuthStack)]
-    public Task RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentUsers_CreatesSeparateDevices()
-        => Task.CompletedTask;
+    [Fact]
+    public async Task RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentAuthenticatedUsers_CreatesSeparateDevices()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
 
-    [Fact(Skip = MissingServerUserAuthStack)]
-    public Task RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken()
-        => Task.CompletedTask;
+        DeviceRegistrationResponse first = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "payload-user-a",
+            deviceKey: "shared-android-device-key");
+        DeviceRegistrationResponse second = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-b",
+            payloadUserId: "payload-user-a",
+            deviceKey: "shared-android-device-key");
+
+        Assert.NotEqual(first.DeviceId, second.DeviceId);
+        Assert.Equal("user-a", first.UserId);
+        Assert.Equal("user-b", second.UserId);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Equal(2, await dbContext.Devices.CountAsync());
+    }
+
+    [Fact]
+    public async Task RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
+
+        DeviceRegistrationResponse first = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "user-a",
+            deviceKey: "shared-android-device-key");
+        DeviceRegistrationResponse second = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-b",
+            payloadUserId: "user-a",
+            deviceKey: "shared-android-device-key");
+
+        Assert.NotEqual(first.DeviceId, second.DeviceId);
+        Assert.NotEqual(first.DeviceToken, second.DeviceToken);
+        Assert.Equal("user-b", second.UserId);
+    }
+
+    [Fact]
+    public async Task UploadFocusSessions_WhenStrictModeAuthenticatedUserDoesNotOwnDevice_ReturnsUnauthorizedAndPersistsNoRows()
+    {
+        await using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(requireAuthenticatedUser: true);
+        using HttpClient client = factory.CreateClient();
+        DeviceRegistrationResponse registration = await RegisterDeviceAsync(
+            client,
+            authenticatedUserId: "user-a",
+            payloadUserId: "payload-user-a",
+            deviceKey: "user-a-android-device-key");
+
+        HttpResponseMessage response = await PostFocusUploadAsync(
+            client,
+            authenticatedUserId: "user-b",
+            registration.DeviceId,
+            registration.DeviceToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        using IServiceScope scope = factory.Services.CreateScope();
+        MonitorDbContext dbContext = scope.ServiceProvider.GetRequiredService<MonitorDbContext>();
+        Assert.Empty(await dbContext.FocusSessions.ToListAsync());
+    }
+
+    private static async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
+        HttpClient client,
+        string authenticatedUserId,
+        string payloadUserId,
+        string deviceKey)
+    {
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/devices/register")
+        {
+            Content = JsonContent.Create(new RegisterDeviceRequest(
+                userId: payloadUserId,
+                platform: Platform.Android,
+                deviceKey: deviceKey,
+                deviceName: "Phone",
+                timezoneId: "Asia/Seoul"))
+        };
+        httpRequest.Headers.Add(AuthenticatedUserHeaderName, authenticatedUserId);
+
+        HttpResponseMessage response = await client.SendAsync(httpRequest);
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<DeviceRegistrationResponse>())!;
+    }
+
+    private static async Task<HttpResponseMessage> PostFocusUploadAsync(
+        HttpClient client,
+        string authenticatedUserId,
+        string deviceId,
+        string deviceToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/focus-sessions/upload")
+        {
+            Content = JsonContent.Create(new UploadFocusSessionsRequest(
+                deviceId,
+                [
+                    new FocusSessionUploadItem(
+                        clientSessionId: "cross-user-focus-session",
+                        platformAppKey: "com.android.chrome",
+                        startedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 0, 0, TimeSpan.Zero),
+                        endedAtUtc: new DateTimeOffset(2026, 4, 27, 15, 5, 0, TimeSpan.Zero),
+                        durationMs: 300_000,
+                        localDate: new DateOnly(2026, 4, 28),
+                        timezoneId: "Asia/Seoul",
+                        isIdle: false,
+                        source: "android_usage_stats")
+                ]))
+        };
+        request.Headers.Add(AuthenticatedUserHeaderName, authenticatedUserId);
+        request.Headers.Add(DeviceTokenAuthenticationService.HeaderName, deviceToken);
+
+        return await client.SendAsync(request);
+    }
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase(bool requireAuthenticatedUser)
         => new WebApplicationFactory<Program>()

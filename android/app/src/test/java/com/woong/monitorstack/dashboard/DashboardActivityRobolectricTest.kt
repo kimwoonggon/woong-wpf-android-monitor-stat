@@ -43,6 +43,18 @@ class DashboardActivityRobolectricTest {
                     "Current Focus",
                     activity.findViewById<TextView>(R.id.currentFocusTitle).text.toString()
                 )
+                assertEquals(
+                    "Usage OK",
+                    activity.findViewById<TextView>(R.id.usageAccessStatusChip).text.toString()
+                )
+                assertEquals(
+                    "Sync Off",
+                    activity.findViewById<TextView>(R.id.syncStatusChip).text.toString()
+                )
+                assertEquals(
+                    "Privacy Safe",
+                    activity.findViewById<TextView>(R.id.privacyStatusChip).text.toString()
+                )
                 assertNotNull(activity.findViewById<View>(R.id.hourlyFocusChartCard))
                 assertNotNull(activity.findViewById<View>(R.id.topAppsCard))
             }

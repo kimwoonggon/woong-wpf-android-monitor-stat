@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-131615/
+artifacts/android-ui-snapshots/20260502-132522/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -133,6 +133,25 @@ Product boundary reminder:
 - [x] Privacy boundary repeated: no Chrome screenshots or Chrome UI hierarchy
   dumps were captured; no typed text, passwords, form contents, clipboard
   contents, browser/page contents, other-app screenshots, or global touch
+  coordinates were captured.
+
+### 2026-05-02 Android Dashboard Recent Sessions Visibility Polish
+
+- [x] Added RED/GREEN Dashboard layout coverage proving recent sessions follow
+  core app-usage analytics before optional location context.
+- [x] Moved the optional location context below recent sessions so usage rows
+  are not pushed under the bottom navigation path.
+- [x] Kept the location card safe by default: opt-in/permission-aware,
+  disabled-state copy only, and not required for core Room-backed usage
+  tracking.
+- [x] Snapshot automation passed on `emulator-5554`; fresh Dashboard evidence:
+  `artifacts/android-ui-snapshots/20260502-132522/01-dashboard-overview.png`,
+  `artifacts/android-ui-snapshots/20260502-132522/03-dashboard-charts.png`,
+  `artifacts/android-ui-snapshots/20260502-132522/04-dashboard-recent-sessions.png`,
+  and `artifacts/android-ui-snapshots/20260502-132522/02-dashboard-summary-location.png`.
+- [x] Privacy boundary repeated: screenshots are local developer artifacts only
+  from Woong Monitor UI; no other-app screenshots, typed text, passwords, form
+  contents, clipboard contents, browser/page contents, or global touch
   coordinates were captured.
 
 ### 2026-05-02 Android Sessions/Report Snapshot Expansion Evidence
@@ -289,11 +308,11 @@ Product boundary reminder:
 - [x] If Woong Monitor itself is foreground immediately after return, Dashboard
   must make that state explicit and not incorrectly show stale Chrome as if it
   is still active.
-- [ ] Add a clear copy distinction between `current foreground app`, `latest
+- [x] Add a clear copy distinction between `current foreground app`, `latest
   collected external app`, and `last collection time` if Android cannot provide
   true live foreground state while Woong is open.
-- [ ] Match Figma status chips: Usage OK, Sync Off, Privacy Safe.
-- [ ] Match Figma Current Focus card: app icon placeholder, app label, package,
+- [x] Match Figma status chips: Usage OK, Sync Off, Privacy Safe.
+- [x] Match Figma Current Focus card: app icon placeholder, app label, package,
   session duration, last collected time.
 - [x] Summary cards must show Active Focus, Screen On/Foreground, Idle/Gap, and
   local sync state.
@@ -302,10 +321,10 @@ Product boundary reminder:
 - [x] Hourly chart must show meaningful labels and non-broken empty state.
 - [x] Top apps list must show readable ranked app rows with proportional bars or
   an equivalent visual cue.
-- [ ] Recent sessions must be visible without bottom navigation clipping.
-- [ ] Optional location card must appear only when enabled or as a clear safe
+- [x] Recent sessions must be visible without bottom navigation clipping.
+- [x] Optional location card must appear only when enabled or as a clear safe
   disabled state.
-- [ ] Capture dashboard top, chart, recent sessions, and scrolled states.
+- [x] Capture dashboard top, chart, recent sessions, and scrolled states.
 
 ### E. Sessions Screen Parity
 

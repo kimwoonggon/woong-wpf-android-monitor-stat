@@ -62,6 +62,35 @@ class DashboardFirstViewportLayoutTest {
         )
     }
 
+    @Test
+    fun dashboardKeepsRecentSessionsAheadOfOptionalLocationContext() {
+        val context = ContextThemeWrapper(
+            ApplicationProvider.getApplicationContext<Context>(),
+            R.style.Theme_WoongMonitor
+        )
+        val binding = FragmentDashboardBinding.inflate(LayoutInflater.from(context))
+        val density = context.resources.displayMetrics.density
+        val content = binding.dashboardContent
+
+        val topAppsIndex = content.indexOfChild(binding.topAppsCard)
+        val recentSessionsIndex = content.indexOfChild(binding.recentSessionsCard)
+        val locationIndex = content.indexOfChild(binding.locationContextCard)
+
+        assertTrue(
+            "Recent sessions should follow core app-usage analytics before optional location context.",
+            topAppsIndex < recentSessionsIndex
+        )
+        assertTrue(
+            "Recent sessions should not be pushed below the optional location context.",
+            recentSessionsIndex < locationIndex
+        )
+        assertTrue(
+            "Recent sessions need bottom spacing so rows are not clipped by the shell navigation.",
+            (binding.recentSessionsCard.layoutParams as ViewGroup.MarginLayoutParams)
+                .bottomMargin >= 32.dp(density)
+        )
+    }
+
     private fun ViewGroup.indexOfChild(child: View): Int {
         return (0 until childCount).firstOrNull { index -> getChildAt(index) == child } ?: -1
     }

@@ -2304,14 +2304,34 @@ milestones below are finished.
 - [x] Production endpoint release behavior is documented and statically guarded: unset production endpoint keeps sync disabled, release builds do not silently fall back to local/blank/example endpoints, loopback HTTP is local-dev nonproduction only, and user-entered release endpoints are advanced/manual configuration only.
 - [x] Android production endpoint source/config path implemented: `BuildConfig.PRODUCTION_SYNC_BASE_URL` is populated by `woongProductionSyncBaseUrl` or `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`, defaults blank, rejects local/example/invalid endpoints, and preserves explicit user-entered advanced endpoints.
 - [x] Settings now shows sync/registration/auth state without making sync appear enabled by default; worker auth-required status is persisted and surfaces as a repair-needed Settings state.
-- [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, Play signing/publishing policy, cross-user registration policy, and client-side device revocation UX stay open before release use.
-- [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices, finish cross-user registration isolation tests, and decide Android Play signing/publishing requirements.
+- [ ] Remaining Android sync hardening: Android token refresh/re-registration behavior, Play signing/publishing policy, and client-side device revocation UX stay open before release use.
+- [ ] Release blockers before public Android/server sync: decide who may register/re-register/revoke devices for public release, decide the production user/session provider, and decide Android Play signing/publishing requirements.
 - [x] Secure token storage implementation plan completed: tests prove `device_token` is absent from `woong_monitor_settings`, legacy plaintext token is migrated/cleared, Settings/Register/Manual Sync behavior stays unchanged, and runtime storage uses Android Keystore-backed AES-GCM without adding AndroidX security-crypto.
 - [x] Connected-emulator secure token evidence passed with `AndroidKeystoreSyncTokenStoreInstrumentedTest`, and Settings sync/auth UI screenshot evidence refreshed at `artifacts/android-ui-snapshots/20260502-131615/`.
 - [x] Server registration now has an option-gated authenticated-user identity path: `X-Woong-User-Id` overrides payload `userId`, strict mode returns 401 when identity is missing, and dev/MVP payload behavior remains compatible by default.
 - [x] Settings now renders real Usage Access granted/missing state and persists the background collection switch through the Android collection settings abstraction.
 - [x] Android UI snapshot automation now creates beginner-review before/after aliases for the seven canonical Woong UI screens without capturing other apps.
 - [x] Server device-token revocation endpoint requires the current token, invalidates future upload/rotation attempts with the revoked token, and preserves existing stored sessions.
+- [x] Dashboard recent sessions are now kept before optional location context so core Room-backed usage rows remain visible before non-critical location metadata.
+- [x] Latest Android Dashboard recent-session visibility evidence: `artifacts/android-ui-snapshots/20260502-132522/` with Dashboard overview, chart, recent sessions, and safe location/scroll states.
+- [x] Server strict-mode device token checks now validate authenticated user ownership for token-protected endpoints; a token issued to user A cannot upload as user B when `DeviceRegistrationAuth:RequireAuthenticatedUser=true`.
+- [x] Server registration policy tests now prove the same device key can produce separate devices for separate authenticated users and payload `userId` cannot steal another user's device token.
+- [x] Validation passed for the Android Dashboard visibility + server strict ownership slice: full solution `dotnet test` (571 passed / 6 skipped), full solution `dotnet build`, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage collection.
+- [x] Latest coverage after this slice: line 87.7%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+
+## 2026-05-02 WPF Runtime Exception Logging Hardening
+
+- [x] Extracted WPF runtime exception logging into a testable `RuntimeExceptionLogger`.
+- [x] Dispatcher, AppDomain, and unobserved task exceptions route through `IDashboardRuntimeLogSink` when available.
+- [x] Runtime exception logging now has a non-throwing fallback diagnostic path if the sink is unavailable or throws.
+- [x] Removed the empty crash-logging catch from `App.xaml.cs` without moving business logic into code-behind.
+- [x] Validation passed: focused WPF App runtime logger/composition tests, WPF App build, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
+- [ ] Next WPF hardening slice: extract close-to-taskbar/tray lifecycle into a testable service, prove X close keeps the app available, explicit Exit really exits, and lifecycle events are logged.
+
+## Next Android Production Sync Queue
+
+- [ ] Add client-side device disconnect/revocation UX in Settings with TDD: sync stays opt-in/off by default, current token is sent only as `X-Device-Token`, local token/device state clears only after success, and failure keeps local registration plus a clear status.
+- [ ] Add Android token refresh/re-registration behavior tests for auth-required status: Register/Repair replaces the old token, clears auth-required status, and does not enqueue sync until registration succeeds.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery
 
@@ -2389,4 +2409,4 @@ milestones below are finished.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
-- [ ] Remaining server production hardening: device token issuance/enforcement is active pending integration validation, token rotation/revocation and registration policy/user auth remain open, and environment-specific retention alerting values still need release policy.
+- [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, and strict-mode ownership checks have focused coverage; production user/session provider selection and environment-specific retention alerting values still need release policy.

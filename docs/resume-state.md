@@ -5419,3 +5419,30 @@ Remaining priorities:
 - Settings now displays real Usage Access status and persists background collection through the Android collection settings abstraction.
 - Android snapshot automation now copies the seven canonical Woong UI screenshots to beginner-review before/after aliases, without capturing Chrome or other apps.
 - Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-131615/` and `artifacts/android-ui-snapshots/latest/`.
+## 2026-05-02 Android Dashboard Visibility, Server Strict Ownership, And WPF Runtime Logging
+
+- Android Dashboard now keeps Recent Sessions before optional location context, so core Room-backed app-usage rows are visible before non-critical location metadata.
+- Added Dashboard layout/Robolectric coverage for recent-session ordering, bottom spacing, and status chips: Usage OK, Sync Off, Privacy Safe.
+- Fresh Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-132522/`.
+- WPF runtime exception handling now delegates Dispatcher/AppDomain/unobserved task exceptions to a testable `RuntimeExceptionLogger` with a non-throwing diagnostic fallback if the runtime log sink fails.
+- Server strict-mode token checks now validate authenticated user ownership on token-protected endpoints; user B cannot upload with user A's valid device token when `DeviceRegistrationAuth:RequireAuthenticatedUser=true`.
+- Server registration policy tests now cover same device key across different authenticated users and payload-user targeting without leaking an existing device token.
+
+Focused validation completed:
+
+- Android Dashboard focused unit/Robolectric tests passed.
+- WPF App runtime logger/composition focused tests passed.
+- Server device registration policy and device-focused tests passed.
+
+Next queue:
+
+- Android: client-side device disconnect/revocation UX and token refresh/re-registration behavior.
+- WPF: tray/close lifecycle reliability.
+- Server: production user/session provider decision and retention alerting policy.
+Validation completed for this slice:
+
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 571 passed / 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Coverage collection passed: line 87.7%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- Android UI snapshot report `artifacts/android-ui-snapshots/20260502-132522/report.md` is PASS.
