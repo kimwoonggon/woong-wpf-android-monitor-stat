@@ -122,6 +122,38 @@ public sealed class IntegratedDashboardQueryService
                 TopAppsForPlatform(total.Platform),
                 TopDomainsForPlatform(total.Platform)))
             .ToList();
+        List<IntegratedCurrentApp> currentApps = devices
+            .Select(device => new
+            {
+                Device = device,
+                Session = focusSessions
+                    .Where(session => session.DeviceId == device.Id)
+                    .OrderByDescending(session => session.EndedAtUtc)
+                    .ThenByDescending(session => session.StartedAtUtc)
+                    .FirstOrDefault()
+            })
+            .Where(item => item.Session is not null)
+            .GroupBy(item => ToPlatformKey(item.Device.Platform))
+            .OrderBy(group => PlatformSortOrder(group.Key))
+            .Select(group =>
+            {
+                var latest = group
+                    .OrderByDescending(item => item.Session!.EndedAtUtc)
+                    .ThenByDescending(item => item.Session!.StartedAtUtc)
+                    .First();
+                FocusSessionEntity session = latest.Session!;
+
+                return new IntegratedCurrentApp(
+                    ToPlatformKey(latest.Device.Platform),
+                    latest.Device.DeviceName,
+                    AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey),
+                    session.PlatformAppKey,
+                    session.StartedAtUtc,
+                    session.EndedAtUtc,
+                    OverlapDurationMs(session.StartedAtUtc, session.EndedAtUtc, rangeStartUtc, rangeEndUtc),
+                    session.IsIdle);
+            })
+            .ToList();
         List<IntegratedLocationRoutePoint> locationRoute = locationContexts
             .OrderBy(context => context.CapturedAtUtc)
             .ThenBy(context => context.ClientContextId, StringComparer.Ordinal)
@@ -149,6 +181,7 @@ public sealed class IntegratedDashboardQueryService
             topDomains,
             topLocations,
             platformUsage,
+            currentApps,
             locationRoute);
 
         long FocusDuration(FocusSessionEntity session)
@@ -238,6 +271,7 @@ public sealed record IntegratedDashboardSnapshot(
     IReadOnlyList<IntegratedUsageTotal> TopDomains,
     IReadOnlyList<IntegratedLocationTotal> TopLocations,
     IReadOnlyList<IntegratedPlatformUsage> PlatformUsage,
+    IReadOnlyList<IntegratedCurrentApp> CurrentApps,
     IReadOnlyList<IntegratedLocationRoutePoint> LocationRoute);
 
 public sealed record IntegratedDeviceSummary(
@@ -266,6 +300,16 @@ public sealed record IntegratedPlatformUsage(
     long WebMs,
     IReadOnlyList<IntegratedUsageTotal> TopApps,
     IReadOnlyList<IntegratedUsageTotal> TopDomains);
+
+public sealed record IntegratedCurrentApp(
+    string Platform,
+    string DeviceName,
+    string AppLabel,
+    string PlatformAppKey,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset EndedAtUtc,
+    long DurationMs,
+    bool IsIdle);
 
 public sealed record IntegratedLocationRoutePoint(
     string ClientContextId,

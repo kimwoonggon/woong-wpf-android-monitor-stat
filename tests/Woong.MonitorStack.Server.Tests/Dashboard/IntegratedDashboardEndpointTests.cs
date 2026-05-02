@@ -30,6 +30,10 @@ public sealed class IntegratedDashboardEndpointTests
         Assert.Equal(900_000, root.GetProperty("totalWebMs").GetInt64());
         Assert.Equal("windows", root.GetProperty("platformTotals")[0].GetProperty("platform").GetString());
         Assert.Equal("android", root.GetProperty("platformTotals")[1].GetProperty("platform").GetString());
+        Assert.Equal("windows", root.GetProperty("currentApps")[0].GetProperty("platform").GetString());
+        Assert.Equal("Chrome", root.GetProperty("currentApps")[0].GetProperty("appLabel").GetString());
+        Assert.Equal("android", root.GetProperty("currentApps")[1].GetProperty("platform").GetString());
+        Assert.Equal("Chrome", root.GetProperty("currentApps")[1].GetProperty("appLabel").GetString());
     }
 
     [Fact]
@@ -45,6 +49,9 @@ public sealed class IntegratedDashboardEndpointTests
         Assert.Contains("Integrated Device Dashboard", html, StringComparison.Ordinal);
         Assert.Contains("Windows + Android", html, StringComparison.Ordinal);
         Assert.Contains("Active Focus", html, StringComparison.Ordinal);
+        Assert.Contains("Current synced app", html, StringComparison.Ordinal);
+        Assert.Contains("Windows current app", html, StringComparison.Ordinal);
+        Assert.Contains("Android current app", html, StringComparison.Ordinal);
         Assert.Contains("Chrome", html, StringComparison.Ordinal);
         Assert.Contains("github.com", html, StringComparison.Ordinal);
     }

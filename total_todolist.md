@@ -2803,3 +2803,11 @@ milestones below are finished.
 - [x] Focused WPF tests added for maximized opening behavior and detail Custom
   range application.
 - [x] Full WPF/dotnet validation passed for this slice.
+
+## 2026-05-03 Blazor Current App Cards Follow-Up
+
+- [x] Integrated dashboard snapshot now includes latest synced current app summaries per platform.
+- [x] `/api/dashboard/integrated` returns `currentApps` with platform, device, app label, app key, duration, and idle state.
+- [x] Blazor `/dashboard` renders Windows current app and Android current app cards near the top of the combined view.
+- [x] Labels clarify these are PostgreSQL/API-backed latest synced app facts, preserving the local DB -> bridge -> server -> dashboard flow.
+- [x] Focused server dashboard API/page tests cover the current app data and rendered card labels.

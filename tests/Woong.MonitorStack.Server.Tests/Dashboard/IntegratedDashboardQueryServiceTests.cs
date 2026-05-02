@@ -48,6 +48,22 @@ public sealed class IntegratedDashboardQueryServiceTests
         Assert.Equal(1_800_000, snapshot.TotalWebMs);
         Assert.Equal(2, snapshot.Devices.Count);
         Assert.Collection(
+            snapshot.CurrentApps,
+            windows =>
+            {
+                Assert.Equal("windows", windows.Platform);
+                Assert.Equal("Chrome", windows.AppLabel);
+                Assert.Equal("chrome.exe", windows.PlatformAppKey);
+                Assert.Equal("Windows PC", windows.DeviceName);
+            },
+            android =>
+            {
+                Assert.Equal("android", android.Platform);
+                Assert.Equal("Chrome", android.AppLabel);
+                Assert.Equal("com.android.chrome", android.PlatformAppKey);
+                Assert.Equal("Android Phone", android.DeviceName);
+            });
+        Assert.Collection(
             snapshot.PlatformTotals,
             windows =>
             {

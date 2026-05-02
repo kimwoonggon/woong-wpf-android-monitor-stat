@@ -78,6 +78,30 @@
                     <small>Registered devices in this range</small>
                 </article>
             </div>
+
+            <div class="current-app-grid" aria-label="Current synced app by platform">
+                @foreach (IntegratedCurrentApp currentApp in OrderedCurrentApps)
+                {
+                    <article class="current-app-card @currentApp.Platform">
+                        <span>@CurrentAppTitle(currentApp.Platform)</span>
+                        <strong>@currentApp.AppLabel</strong>
+                        <small>@currentApp.DeviceName / @currentApp.PlatformAppKey</small>
+                        <div class="current-app-meta">
+                            <span>@(currentApp.IsIdle ? "Idle latest session" : "Active latest session")</span>
+                            <span>@FormatDuration(currentApp.DurationMs)</span>
+                            <span>Synced @currentApp.EndedAtUtc.ToString("HH:mm", CultureInfo.InvariantCulture) UTC</span>
+                        </div>
+                    </article>
+                }
+                @if (OrderedCurrentApps.Count == 0)
+                {
+                    <article class="current-app-card empty">
+                        <span>Current synced app</span>
+                        <strong>No synced app yet</strong>
+                        <small>Run the local bridge after WPF/Android sessions are persisted.</small>
+                    </article>
+                }
+            </div>
         </section>
 
         <section class="platform-grid" aria-label="Platform usage split">
@@ -416,6 +440,59 @@
         margin-top: 14px;
     }
 
+    .current-app-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 14px;
+    }
+
+    .current-app-card {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+    }
+
+    .current-app-card.windows {
+        border-color: #bfdbfe;
+        box-shadow: inset 4px 0 0 #0f6bde;
+    }
+
+    .current-app-card.android {
+        border-color: #bbf7d0;
+        box-shadow: inset 4px 0 0 #16a34a;
+    }
+
+    .current-app-card span,
+    .current-app-card small {
+        color: var(--muted);
+        display: block;
+    }
+
+    .current-app-card strong {
+        display: block;
+        font-size: 24px;
+        margin: 8px 0 4px;
+    }
+
+    .current-app-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .current-app-meta span {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 9px;
+    }
+
     .metric-card {
         padding: 18px;
     }
@@ -628,6 +705,10 @@
         .metric-grid {
             grid-template-columns: 1fr;
         }
+
+        .current-app-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -671,6 +752,11 @@
         => _snapshot is null
             ? Array.Empty<IntegratedPlatformUsage>()
             : _snapshot.PlatformUsage.OrderBy(PlatformSortOrder).ToList();
+
+    private IReadOnlyList<IntegratedCurrentApp> OrderedCurrentApps
+        => _snapshot is null
+            ? Array.Empty<IntegratedCurrentApp>()
+            : _snapshot.CurrentApps.OrderBy(CurrentAppSortOrder).ToList();
 
     private string LocationPolylinePoints
         => _snapshot is null
@@ -719,6 +805,13 @@
                 ? "Android View"
                 : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(platform);
 
+    private static string CurrentAppTitle(string platform)
+        => platform.Equals("windows", StringComparison.OrdinalIgnoreCase)
+            ? "Windows current app"
+            : platform.Equals("android", StringComparison.OrdinalIgnoreCase)
+                ? "Android current app"
+                : $"{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(platform)} current app";
+
     private static string PlatformSourceLabel(string platform)
         => platform.Equals("windows", StringComparison.OrdinalIgnoreCase)
             ? "WPF / SQLite / Sync"
@@ -740,6 +833,14 @@
 
     private static int PlatformSortOrder(IntegratedPlatformUsage usage)
         => usage.Platform switch
+        {
+            "windows" => 0,
+            "android" => 1,
+            _ => 2
+        };
+
+    private static int CurrentAppSortOrder(IntegratedCurrentApp currentApp)
+        => currentApp.Platform switch
         {
             "windows" => 0,
             "android" => 1,

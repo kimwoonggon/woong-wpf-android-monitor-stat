@@ -5717,3 +5717,11 @@ Validation update:
 - Updated `docs/local-integrated-dashboard.md` and `docs/blazor-integrated-dashboard-wireflow.md` with the corrected Mermaid flow: WPF SQLite / Android Room snapshots -> `LocalDashboardBridge` -> API DTO upload -> PostgreSQL -> Blazor polling `/api/dashboard/integrated`.
 - The Blazor dashboard remains PostgreSQL/API-backed with selectable polling Off, 1s, 5s, 10s, and 1h; it does not poll raw local SQLite/Room DBs.
 - Full validation passed after the WPF opening/detail Custom range changes: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -v minimal` (187 passed), `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (637 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+
+## 2026-05-03 Blazor Current App Cards Follow-Up
+
+- Added `IntegratedCurrentApp` to the server dashboard snapshot so each platform can expose its latest synced focus session as current app state.
+- `/api/dashboard/integrated` now serializes `currentApps`; Windows and Android cards are derived from uploaded focus sessions in PostgreSQL, not from raw local SQLite/Room polling.
+- `/dashboard` now renders `Windows current app` and `Android current app` cards with app label, source device, platform app key, duration, idle flag, and sync time.
+- Focused validation passed: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~IntegratedDashboard" -v minimal`.
+- Full validation passed after the Blazor current app cards change: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (637 passed, 6 PostgreSQL-environment skips) and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
