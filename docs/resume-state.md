@@ -5700,3 +5700,11 @@ Validation update:
 - `ChartDetailsWindow` now opens wider/taller (`1040x860`) with `MinHeight=760`, and the detail chart uses `MinHeight=520`.
 - The detail table under the chart remains in place.
 - Focused validation passed: `ChartDetailsWindowTests` and WPF app project build.
+
+## 2026-05-03 Local Integrated Dashboard Bridge Test Slice
+
+- Added `tests/Woong.MonitorStack.LocalDashboardBridge.Tests` to cover the existing bridge with temp SQLite files only.
+- The WPF reader test proves `focus_session` and `web_session` metadata become server API DTO upload items without page contents, typed text, clipboard, or screenshots.
+- The Android reader test proves Room-like `focus_sessions` and `location_context_snapshots` become focus/location DTOs and caught a timezone bug: location local dates are now calculated with the requested dashboard timezone.
+- Updated `docs/local-integrated-dashboard.md` and `docs/blazor-integrated-dashboard-wireflow.md` with the corrected Mermaid flow: WPF SQLite / Android Room snapshots -> `LocalDashboardBridge` -> API DTO upload -> PostgreSQL -> Blazor polling `/api/dashboard/integrated`.
+- The Blazor dashboard remains PostgreSQL/API-backed with selectable polling Off, 1s, 5s, 10s, and 1h; it does not poll raw local SQLite/Room DBs.

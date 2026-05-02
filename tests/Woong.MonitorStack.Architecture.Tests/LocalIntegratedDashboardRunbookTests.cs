@@ -31,6 +31,14 @@ public sealed class LocalIntegratedDashboardRunbookTests
         Assert.Contains("Android emulator Room", docs, StringComparison.Ordinal);
         Assert.Contains("PostgreSQL", docs, StringComparison.Ordinal);
         Assert.Contains("Blazor", docs, StringComparison.Ordinal);
+        Assert.Contains("```mermaid", docs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("LocalDashboardBridge", docs, StringComparison.Ordinal);
+        Assert.Contains("Blazor does", docs, StringComparison.Ordinal);
+        Assert.Contains("not poll WPF SQLite or Android Room directly", docs, StringComparison.Ordinal);
+        Assert.Contains("1s", docs, StringComparison.Ordinal);
+        Assert.Contains("5s", docs, StringComparison.Ordinal);
+        Assert.Contains("10s", docs, StringComparison.Ordinal);
+        Assert.Contains("1h", docs, StringComparison.Ordinal);
         Assert.Contains("does not read typed text", docs, StringComparison.OrdinalIgnoreCase);
     }
 

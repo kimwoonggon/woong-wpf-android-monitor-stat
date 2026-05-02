@@ -25,15 +25,22 @@ flowchart LR
     WSQLite["Windows SQLite\nfocus_session / web_session / outbox"]
     Android["Android Kotlin XML\nUsageStats + optional location"]
     Room["Android Room\nfocus_sessions / location_context / outbox"]
+    Bridge["LocalDashboardBridge\nlocal review ingestion"]
     API["ASP.NET Core Sync APIs"]
     PG["PostgreSQL\nIntegrated facts"]
-    Query["IntegratedDashboardQueryService"]
-    Blazor["Blazor Dashboard"]
+    Query["IntegratedDashboardQueryService\n/api/dashboard/integrated"]
+    Blazor["Blazor Dashboard\npolls Off / 1s / 5s / 10s / 1h"]
 
-    WPF --> WSQLite --> API
-    Android --> Room --> API
+    WPF --> WSQLite --> Bridge
+    Android --> Room --> Bridge
+    Bridge --> API
     API --> PG --> Query --> Blazor
 ```
+
+For the local integrated dashboard workflow, Android emulator Room data may be
+copied with `adb` into a temporary artifact first. The bridge reads that copied
+SQLite snapshot and the WPF SQLite file, then uploads through server API DTOs.
+Blazor never reads either local database directly.
 
 ## Required Dashboard Views
 

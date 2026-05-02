@@ -2772,3 +2772,18 @@ milestones below are finished.
 - [x] Strengthened `ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace`
   so the window default height, minimum height, and chart minimum height stay
   large enough for top-10 details.
+
+## 2026-05-03 Local Integrated Dashboard Bridge Test Slice
+
+- [x] Add temp SQLite/Room-like bridge tests for WPF focus/web metadata and
+  Android UsageStats/location metadata ingestion.
+- [x] Fix Android Room location snapshot local-date conversion so bridge
+  uploads use the requested dashboard timezone, not the machine local timezone.
+- [x] Document the corrected local dashboard flow with Mermaid:
+  WPF SQLite and Android Room snapshots -> `LocalDashboardBridge` -> server API
+  DTOs -> PostgreSQL -> Blazor polling API.
+- [x] Reaffirm that Blazor polls PostgreSQL-derived server APIs at selectable
+  Off/1s/5s/10s/1h intervals and never reads WPF SQLite or Android Room
+  directly.
+- [x] Keep tests on temp databases only; no production or user local DBs are
+  read by the test slice.

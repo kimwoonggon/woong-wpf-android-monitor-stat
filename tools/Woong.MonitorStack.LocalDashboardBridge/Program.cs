@@ -476,10 +476,12 @@ public static class AndroidRoomReader
         while (reader.Read())
         {
             DateTimeOffset capturedAtUtc = DateTimeOffset.FromUnixTimeMilliseconds(reader.GetInt64(1));
+            DateOnly localDate = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTime(capturedAtUtc, ResolveTimeZone(fallbackTimezoneId)).DateTime);
             contexts.Add(new LocationContextUploadItem(
                 clientContextId: reader.GetString(0),
                 capturedAtUtc: capturedAtUtc,
-                localDate: DateOnly.FromDateTime(capturedAtUtc.LocalDateTime),
+                localDate: localDate,
                 timezoneId: fallbackTimezoneId,
                 latitude: reader.IsDBNull(2) ? null : reader.GetDouble(2),
                 longitude: reader.IsDBNull(3) ? null : reader.GetDouble(3),
@@ -498,6 +500,22 @@ public static class AndroidRoomReader
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name";
         command.Parameters.AddWithValue("$name", tableName);
         return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+    }
+
+    private static TimeZoneInfo ResolveTimeZone(string timezoneId)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.Utc;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return TimeZoneInfo.Utc;
+        }
     }
 
     private static string? ReadOptionalString(SqliteDataReader reader, int ordinal)

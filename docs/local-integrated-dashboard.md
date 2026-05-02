@@ -33,6 +33,31 @@ The bridge is local-only developer tooling. It does not make Windows SQLite
 and Android Room know about each other; it reads each local database and sends
 approved metadata to the server APIs, where PostgreSQL performs integration.
 
+## Corrected Local Dashboard Architecture
+
+```mermaid
+flowchart LR
+    WPF["Windows WPF app\nvisible local collection"]
+    WpfDb["WPF SQLite\nfocus_session + web_session"]
+    Android["Android XML app\nUsageStats + opted-in location"]
+    Room["Android Room SQLite\nfocus_sessions + location snapshots"]
+    Adb["adb pull/copy\nemulator Room snapshot"]
+    Bridge["LocalDashboardBridge\nmetadata-only uploader"]
+    Api["ASP.NET Core API DTOs\nregister + upload"]
+    Pg["PostgreSQL\nintegrated server database"]
+    Query["Dashboard API\n/api/dashboard/integrated"]
+    Blazor["Blazor /dashboard\npolling Off / 1s / 5s / 10s / 1h"]
+
+    WPF --> WpfDb --> Bridge
+    Android --> Room --> Adb --> Bridge
+    Bridge --> Api --> Pg --> Query --> Blazor
+```
+
+The bridge is the only local integrated dashboard ingestion step. Blazor does
+not poll WPF SQLite or Android Room directly; it polls the server dashboard API,
+which reads PostgreSQL-derived integrated facts. The page exposes user-selected
+polling intervals of Off, 1s, 5s, 10s, and 1h.
+
 ## Run
 
 ```powershell
