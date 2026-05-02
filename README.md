@@ -351,7 +351,11 @@ The release archive also contains `release-readiness.json`, a provenance
 manifest that records `versionCode`, `versionName`, the signed APK SHA-256,
 whether a production sync endpoint was configured, that sync default opt-in
 remains false, that Play publishing is manual, and that an emulator evidence
-path is required before any public release promotion.
+path is required before any public release promotion. Set repository variable
+`ANDROID_EMULATOR_EVIDENCE_PATH` to the accepted emulator evidence folder before
+tagging; the manifest records both `emulatorEvidenceStatus` and
+`emulatorEvidencePath` so operators can see whether concrete evidence was
+provided.
 
 Android Play publishing remains an operator-controlled step. Before creating an
 `android-v*` release tag, configure the signing secrets
@@ -362,8 +366,8 @@ the GitHub Release archive, verify `woong-monitor-android-release-signed.apk`
 is the only release APK, compare `release-readiness.json` against the signed APK
 SHA-256 and endpoint/sync policy, upload the signed APK to the approved Play
 Console track, and record the GitHub tag, artifact name, Play track, release
-approver, and emulator evidence path. Unsigned, debug, and androidTest APKs are
-internal validation artifacts only.
+approver, emulator evidence status, and emulator evidence path. Unsigned, debug,
+and androidTest APKs are internal validation artifacts only.
 
 Android/server sync is also not a public release path until these policies are
 closed: production endpoint discovery/configuration, local-development endpoint

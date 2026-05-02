@@ -42,6 +42,20 @@ When Docker is available, run:
 powershell -ExecutionPolicy Bypass -File scripts\run-server-postgres-validation.ps1
 ```
 
+The script writes `artifacts/server-postgres-validation/<timestamp>/` and
+refreshes `artifacts/server-postgres-validation/latest/`. Its status values are
+intentionally split:
+
+- `PASS` / exit `0`: Docker was available and the PostgreSQL/Testcontainers
+  validation passed.
+- `BLOCKED` / exit `2`: Docker/Testcontainers capacity was unavailable before
+  the PostgreSQL tests ran. This is environment evidence, not a product failure.
+- `FAIL` / exit `1`: Docker was available but the PostgreSQL validation command failed,
+  or the script hit an unexpected error.
+
+`WOONG_MONITOR_RUN_POSTGRES_TESTS=1` is set only inside the validation process
+and the previous environment value is restored afterward.
+
 The validation applies EF Core migrations through Npgsql, verifies the legacy
 `web_sessions.ClientSessionId` backfill path before the unique index becomes
 required, checks PostgreSQL relational constraints, and verifies concurrent

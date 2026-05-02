@@ -201,7 +201,9 @@ closed until the owning implementation agents report verified completion:
   `woong-monitor-android-release-signed.apk` is the only release APK, compare
   `release-readiness.json` with the artifact and release decision, upload the
   signed APK to the approved Play Console track, and record the GitHub tag,
-  artifact name, Play track, release approver, and emulator evidence path.
+  artifact name, Play track, release approver, emulator evidence status, and
+  emulator evidence path. Set `ANDROID_EMULATOR_EVIDENCE_PATH` before tagging so
+  the readiness manifest records the accepted emulator evidence folder.
   The readiness manifest must record `versionCode`, `versionName`, the signed
   APK SHA-256, whether a production sync endpoint was configured, that sync
   default opt-in remains false, that Play publishing is manual, and that

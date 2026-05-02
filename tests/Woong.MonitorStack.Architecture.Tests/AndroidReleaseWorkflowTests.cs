@@ -52,6 +52,9 @@ public sealed class AndroidReleaseWorkflowTests
         Assert.Contains("syncDefaultOptIn", workflow, StringComparison.Ordinal);
         Assert.Contains("playPublishingMode", workflow, StringComparison.Ordinal);
         Assert.Contains("emulatorEvidenceRequiredBeforePublicRelease", workflow, StringComparison.Ordinal);
+        Assert.Contains("emulatorEvidenceStatus", workflow, StringComparison.Ordinal);
+        Assert.Contains("emulatorEvidencePath", workflow, StringComparison.Ordinal);
+        Assert.Contains("ANDROID_EMULATOR_EVIDENCE_PATH", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-debug.apk", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-test.apk", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("woong-monitor-android-release-unsigned.apk", workflow, StringComparison.Ordinal);
@@ -95,6 +98,8 @@ public sealed class AndroidReleaseWorkflowTests
             Assert.Contains("signed APK SHA-256", document, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("sync default opt-in remains false", document, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("emulator evidence path", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("emulator evidence status", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("ANDROID_EMULATOR_EVIDENCE_PATH", document, StringComparison.Ordinal);
         }
     }
 

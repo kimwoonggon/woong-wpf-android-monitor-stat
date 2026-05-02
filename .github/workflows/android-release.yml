@@ -21,6 +21,7 @@ jobs:
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL: ${{ vars.WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL }}
+      ANDROID_EMULATOR_EVIDENCE_PATH: ${{ vars.ANDROID_EMULATOR_EVIDENCE_PATH }}
 
     steps:
       - name: Checkout
@@ -115,6 +116,8 @@ jobs:
             syncDefaultOptIn = $false
             playPublishingMode = "manual"
             emulatorEvidenceRequiredBeforePublicRelease = $true
+            emulatorEvidenceStatus = if ([string]::IsNullOrWhiteSpace($env:ANDROID_EMULATOR_EVIDENCE_PATH)) { "missing" } else { "provided" }
+            emulatorEvidencePath = $env:ANDROID_EMULATOR_EVIDENCE_PATH
           }
 
           $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $readiness -Encoding utf8

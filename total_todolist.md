@@ -2281,7 +2281,10 @@ milestones below are finished.
 - [x] Validation passed: local release workflow validator, focused architecture tests, and Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`.
 - [x] Android manual emulator workflow added for optional `connectedDebugAndroidTest` evidence; it stays manual/opt-in rather than a required release gate.
 - [ ] Next Android release TODO: configure real `ANDROID_KEYSTORE_*` signing secrets and Play Store publishing only after explicit release requirements are defined.
-- [x] Android release workflow now writes `artifacts/android-release/release-readiness.json` beside the signed APK, recording version, signed APK SHA-256, endpoint configuration state, sync default opt-in=false, manual Play publishing mode, and emulator-evidence requirement before public promotion.
+- [x] Android release workflow now writes `artifacts/android-release/release-readiness.json` beside the signed APK, recording version, signed APK SHA-256, endpoint configuration state, sync default opt-in=false, manual Play publishing mode, emulator-evidence requirement, and concrete `emulatorEvidenceStatus`/`emulatorEvidencePath` fields before public promotion.
+- [x] Android release readiness manifest now records concrete emulator evidence
+  state through `ANDROID_EMULATOR_EVIDENCE_PATH`,
+  `emulatorEvidenceStatus`, and `emulatorEvidencePath`.
 - [x] Validation passed for Android release readiness manifest slice: local release workflow validator, focused `AndroidReleaseWorkflowTests`, Android Gradle `testDebugUnitTest assembleRelease`, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
 - [x] Current-focus validation screenshot timing/retry follow-up is superseded by the 2026-05-02 foreground validation pass at `artifacts/android-usage-current-focus/20260502-012243/`.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
@@ -2463,4 +2466,8 @@ milestones below are finished.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
+- [x] Server PostgreSQL validation runner now distinguishes environment
+  capacity blockers (`BLOCKED`/exit 2) from validation failures (`FAIL`/exit
+  1), removes stale test output on blocked runs, and restores
+  `WOONG_MONITOR_RUN_POSTGRES_TESTS` after execution.
 - [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, token-protected 401/403 response policy, and runtime retention alert delivery have focused coverage; production user/session provider selection still needs implementation/validation.

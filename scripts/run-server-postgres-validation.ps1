@@ -17,6 +17,8 @@ New-Item -ItemType Directory -Force -Path $latestRoot | Out-Null
 
 $testOutputPath = Join-Path $runRoot "dotnet-test-output.txt"
 $status = "PASS"
+$classification = "passed"
+$blockedReason = ""
 $notes = New-Object System.Collections.Generic.List[string]
 $previousValue = $env:WOONG_MONITOR_RUN_POSTGRES_TESTS
 
@@ -27,24 +29,32 @@ try {
     $dockerExitCode = $LASTEXITCODE
     $ErrorActionPreference = $previousErrorActionPreference
     if ($dockerExitCode -ne 0) {
-        throw "Docker daemon is unavailable. docker info output: $($dockerInfo -join "`n")"
+        $status = "BLOCKED"
+        $classification = "docker-unavailable"
+        $blockedReason = "Docker daemon unavailable. docker info output: $($dockerInfo -join "`n")"
+        $notes.Add($blockedReason)
+    } else {
+        $env:WOONG_MONITOR_RUN_POSTGRES_TESTS = "1"
+        $notes.Add("Enabled WOONG_MONITOR_RUN_POSTGRES_TESTS=1 for this process only.")
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        $testOutput = dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~PostgresMonitorDbContextTests" -maxcpucount:1 -v minimal 2>&1
+        $testExitCode = $LASTEXITCODE
+        $ErrorActionPreference = $previousErrorActionPreference
+        $testOutput | Set-Content -Path $testOutputPath -Encoding UTF8
+        if ($testExitCode -ne 0) {
+            $status = "FAIL"
+            $classification = "postgres-tests-failed"
+            $blockedReason = "PostgreSQL/Testcontainers validation failed with dotnet test exit code $testExitCode."
+            $notes.Add($blockedReason)
+        } else {
+            $notes.Add("PostgreSQL/Testcontainers validation passed.")
+        }
     }
-
-    $env:WOONG_MONITOR_RUN_POSTGRES_TESTS = "1"
-    $notes.Add("Enabled WOONG_MONITOR_RUN_POSTGRES_TESTS=1 for this process only.")
-    $previousErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    $testOutput = dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~PostgresMonitorDbContextTests" -maxcpucount:1 -v minimal 2>&1
-    $testExitCode = $LASTEXITCODE
-    $ErrorActionPreference = $previousErrorActionPreference
-    $testOutput | Set-Content -Path $testOutputPath -Encoding UTF8
-    if ($testExitCode -ne 0) {
-        throw "PostgreSQL/Testcontainers validation failed with dotnet test exit code $testExitCode."
-    }
-
-    $notes.Add("PostgreSQL/Testcontainers validation passed.")
 } catch {
     $status = "FAIL"
+    $classification = "script-error"
+    $blockedReason = $_.Exception.Message
     $notes.Add($_.Exception.Message)
 } finally {
     if ($null -eq $previousValue) {
@@ -54,7 +64,13 @@ try {
     }
 }
 
-$reportLines = @(
+$artifactNames = @("report.md", "manifest.json")
+if (Test-Path $testOutputPath) {
+    $artifactNames = @("dotnet-test-output.txt") + $artifactNames
+}
+
+$reportLines = New-Object System.Collections.Generic.List[string]
+@(
     "# Server PostgreSQL Validation Report",
     "",
     "Status: $status",
@@ -69,24 +85,28 @@ $reportLines = @(
     "- Does not use EF InMemory as proof of PostgreSQL behavior.",
     "",
     "## Artifacts",
-    "",
-    "- dotnet-test-output.txt",
-    "",
-    "## Notes"
-)
+    ""
+) | ForEach-Object { $reportLines.Add($_) }
+foreach ($artifactName in $artifactNames) {
+    $reportLines.Add("- $artifactName")
+}
+$reportLines.Add("")
+$reportLines.Add("## Notes")
 foreach ($note in $notes) {
-    $reportLines += "- $note"
+    $reportLines.Add("- $note")
 }
 
 Set-Content -Path (Join-Path $runRoot "report.md") -Value $reportLines -Encoding UTF8
 
 $manifest = [ordered]@{
     status = $status
+    classification = $classification
+    blockedReason = $blockedReason
     generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
     output = $runRoot
     testProject = "tests/Woong.MonitorStack.Server.Tests/Woong.MonitorStack.Server.Tests.csproj"
     filter = "FullyQualifiedName~PostgresMonitorDbContextTests"
-    artifacts = @("dotnet-test-output.txt", "report.md", "manifest.json")
+    artifacts = $artifactNames
     notes = $notes
 }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -Path (Join-Path $runRoot "manifest.json") -Encoding UTF8
@@ -95,12 +115,18 @@ Copy-Item -Path (Join-Path $runRoot "report.md") -Destination (Join-Path $latest
 Copy-Item -Path (Join-Path $runRoot "manifest.json") -Destination (Join-Path $latestRoot "manifest.json") -Force
 if (Test-Path $testOutputPath) {
     Copy-Item -Path $testOutputPath -Destination (Join-Path $latestRoot "dotnet-test-output.txt") -Force
+} else {
+    Remove-Item -Path (Join-Path $latestRoot "dotnet-test-output.txt") -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "Server PostgreSQL validation artifacts: $runRoot"
 Write-Host "Status: $status"
 
-if ($status -ne "PASS") {
+if ($status -eq "BLOCKED") {
+    exit 2
+}
+
+if ($status -eq "FAIL") {
     exit 1
 }
 

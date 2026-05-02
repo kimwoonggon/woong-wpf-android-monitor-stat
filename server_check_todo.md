@@ -223,6 +223,12 @@ Status legend:
   race-safe idempotency.
   Evidence: `scripts/run-server-postgres-validation.ps1`,
   artifact `artifacts/server-postgres-validation/20260430-190958`.
+- [x] PostgreSQL validation runner distinguishes environment capacity blockers
+  from validation failures.
+  Evidence:
+  `ServerProductionMigrationRunbookTests.ServerPostgresValidationScript_WhenDockerIsUnavailable_WritesBlockedArtifactsAndDoesNotRunTests`,
+  `ServerProductionMigrationRunbookTests.ServerPostgresValidationScript_WhenPostgresTestsFail_WritesFailArtifacts`,
+  `ServerProductionMigrationRunbookTests.ServerPostgresValidationScript_ScopesPostgresOptInEnvironmentVariable`.
 
 ## Focused Server Commands
 
