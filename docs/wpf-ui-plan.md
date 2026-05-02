@@ -799,6 +799,12 @@ This WPF UI slice is complete only when:
 - App/Web grids and Live Event Log are readable.
 - Settings privacy controls are readable.
 - UI remains usable at 1920, 1366, and 1024 widths.
+- MainWindow opens maximized by default so a normal launch starts in the
+  readable dashboard layout instead of requiring manual resizing.
+- App/domain detail windows open maximized, keep the top-10 chart and detail
+  rows visible together, and support Today/1h/6h/24h/Custom range filtering.
+- Detail Custom range uses start/end date plus HH:mm time fields and reloads
+  SQLite-backed detail points through the dashboard range builder.
 - Dashboard values come from SQLite-backed aggregation.
 - Fake TrackingPipeline acceptance shows VS Code, Chrome, `github.com`, and
   `chatgpt.com`.

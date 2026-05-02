@@ -5701,6 +5701,14 @@ Validation update:
 - The detail table under the chart remains in place.
 - Focused validation passed: `ChartDetailsWindowTests` and WPF app project build.
 
+## 2026-05-03 WPF Opening Size And Detail Custom Range Follow-Up
+
+- MainWindow now opens maximized with a larger normal restore size (`1600x1000`) so the dashboard starts in a readable state without manual resizing.
+- App/domain detail windows now open maximized with a larger restore size and retain the chart plus detail table in one review surface.
+- Detail windows now include a Custom range editor with start/end date pickers, HH:mm time fields, and an Apply command.
+- `DashboardChartDetailsRequest` can carry a SQLite-backed custom range point provider; app/domain detail requests now pass the existing dashboard range builders so Custom recalculates from persisted data.
+- Focused validation passed for the new WPF opening and detail Custom range behaviors: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~ChartDetailsWindow_CustomPeriodShowsRangeEditorAndAppliesCustomRange|FullyQualifiedName~ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace|FullyQualifiedName~MainWindow_ExposesDashboardControlsAndCommandBindings" -v minimal`.
+
 ## 2026-05-03 Local Integrated Dashboard Bridge Test Slice
 
 - Added `tests/Woong.MonitorStack.LocalDashboardBridge.Tests` to cover the existing bridge with temp SQLite files only.
@@ -5708,3 +5716,4 @@ Validation update:
 - The Android reader test proves Room-like `focus_sessions` and `location_context_snapshots` become focus/location DTOs and caught a timezone bug: location local dates are now calculated with the requested dashboard timezone.
 - Updated `docs/local-integrated-dashboard.md` and `docs/blazor-integrated-dashboard-wireflow.md` with the corrected Mermaid flow: WPF SQLite / Android Room snapshots -> `LocalDashboardBridge` -> API DTO upload -> PostgreSQL -> Blazor polling `/api/dashboard/integrated`.
 - The Blazor dashboard remains PostgreSQL/API-backed with selectable polling Off, 1s, 5s, 10s, and 1h; it does not poll raw local SQLite/Room DBs.
+- Full validation passed after the WPF opening/detail Custom range changes: `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore -v minimal` (187 passed), `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (637 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.

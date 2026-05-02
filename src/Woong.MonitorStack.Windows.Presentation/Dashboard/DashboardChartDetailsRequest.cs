@@ -1,3 +1,5 @@
+using Woong.MonitorStack.Domain.Common;
+
 namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
 
 public sealed class DashboardChartDetailsRequest
@@ -7,7 +9,9 @@ public sealed class DashboardChartDetailsRequest
         string SeriesName,
         IReadOnlyList<DashboardChartPoint> Points,
         DashboardPeriod SelectedPeriod = DashboardPeriod.Today,
-        IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>? PeriodPoints = null)
+        IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>? PeriodPoints = null,
+        Func<TimeRange, IReadOnlyList<DashboardChartPoint>>? CustomRangePointsProvider = null,
+        string TimeZoneId = "Asia/Seoul")
     {
         this.Title = Title;
         this.SeriesName = SeriesName;
@@ -17,6 +21,8 @@ public sealed class DashboardChartDetailsRequest
         {
             [SelectedPeriod] = Points
         };
+        this.CustomRangePointsProvider = CustomRangePointsProvider;
+        this.TimeZoneId = TimeZoneId;
     }
 
     public string Title { get; }
@@ -28,4 +34,8 @@ public sealed class DashboardChartDetailsRequest
     public DashboardPeriod SelectedPeriod { get; }
 
     public IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>> PeriodPoints { get; }
+
+    public Func<TimeRange, IReadOnlyList<DashboardChartPoint>>? CustomRangePointsProvider { get; }
+
+    public string TimeZoneId { get; }
 }

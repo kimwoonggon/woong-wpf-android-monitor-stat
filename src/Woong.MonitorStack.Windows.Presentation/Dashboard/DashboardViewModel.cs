@@ -289,7 +289,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             "Apps",
             AppUsageDetailPoints,
             SelectedPeriod,
-            BuildPeriodPointSets(BuildAppUsageDetailPoints)));
+            BuildPeriodPointSets(BuildAppUsageDetailPoints),
+            BuildAppUsageDetailPoints,
+            _timeZone.Id));
     }
 
     [RelayCommand]
@@ -301,7 +303,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             "Domains",
             DomainUsageDetailPoints,
             SelectedPeriod,
-            BuildPeriodPointSets(BuildDomainUsageDetailPoints)));
+            BuildPeriodPointSets(BuildDomainUsageDetailPoints),
+            BuildDomainUsageDetailPoints,
+            _timeZone.Id));
     }
 
     [RelayCommand]

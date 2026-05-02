@@ -5,10 +5,11 @@
         Title="Woong Monitor Stack"
         Icon="{DynamicResource WoongAppIconImage}"
         AutomationProperties.AutomationId="MainWindow"
-        Width="1180"
-        Height="780"
+        Width="1600"
+        Height="1000"
         MinWidth="1024"
         MinHeight="768"
+        WindowState="Maximized"
         ShowInTaskbar="True"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackgroundBrush}">

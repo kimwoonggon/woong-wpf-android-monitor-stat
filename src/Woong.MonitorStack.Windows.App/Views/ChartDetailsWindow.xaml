@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         Title="{Binding Title}"
-        Width="1040"
-        Height="860"
+        Width="1280"
+        Height="940"
         MinWidth="860"
-        MinHeight="760"
+        MinHeight="820"
+        WindowState="Maximized"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackgroundBrush}">
     <Window.Resources>
@@ -14,14 +15,17 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Typography.xaml" />
+                <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Buttons.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Cards.xaml" />
                 <ResourceDictionary Source="/Woong.MonitorStack.Windows.App;component/Styles/Tabs.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </Window.Resources>
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -63,6 +67,50 @@
         </StackPanel>
 
         <Border Grid.Row="2"
+                AutomationProperties.AutomationId="ChartDetailsCustomRangePanel"
+                Margin="0,12,0,0"
+                Padding="12"
+                Style="{StaticResource CompactSurfaceBorderStyle}"
+                Visibility="{Binding IsCustomRangeEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <WrapPanel VerticalAlignment="Center">
+                <TextBlock Text="Custom range"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource BodyTextStyle}" />
+                <DatePicker AutomationProperties.AutomationId="ChartDetailsCustomStartDatePicker"
+                            SelectedDate="{Binding CustomStartDate, Mode=TwoWay}"
+                            Width="140"
+                            Margin="0,0,8,0" />
+                <TextBox AutomationProperties.AutomationId="ChartDetailsCustomStartTimeTextBox"
+                         Text="{Binding CustomStartTimeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="72"
+                         Margin="0,0,12,0" />
+                <TextBlock Text="to"
+                           Margin="0,0,12,0"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource MutedTextStyle}" />
+                <DatePicker AutomationProperties.AutomationId="ChartDetailsCustomEndDatePicker"
+                            SelectedDate="{Binding CustomEndDate, Mode=TwoWay}"
+                            Width="140"
+                            Margin="0,0,8,0" />
+                <TextBox AutomationProperties.AutomationId="ChartDetailsCustomEndTimeTextBox"
+                         Text="{Binding CustomEndTimeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Width="72"
+                         Margin="0,0,12,0" />
+                <Button AutomationProperties.AutomationId="ChartDetailsApplyCustomRangeButton"
+                        Content="Apply"
+                        Command="{Binding ApplyCustomRangeCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        MinWidth="72"
+                        Margin="0,0,12,0" />
+                <TextBlock AutomationProperties.AutomationId="ChartDetailsCustomRangeStatusText"
+                           Text="{Binding CustomRangeStatusText}"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource MutedTextStyle}" />
+            </WrapPanel>
+        </Border>
+
+        <Border Grid.Row="3"
                 Margin="0,18,0,0"
                 Style="{StaticResource DashboardCardBorderStyle}">
             <lvc:CartesianChart AutomationProperties.AutomationId="ChartDetailsHorizontalBarChart"
@@ -72,7 +120,7 @@
                                 YAxes="{Binding Chart.YAxes}" />
         </Border>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Margin="0,14,0,0"
                 Style="{StaticResource DashboardCardBorderStyle}">
             <ListView AutomationProperties.AutomationId="ChartDetailsRowsList"

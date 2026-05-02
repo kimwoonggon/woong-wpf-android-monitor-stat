@@ -29,6 +29,7 @@ public sealed class MainWindowUiExpectationTests
                 Assert.True(window.Width >= 1024);
                 Assert.True(window.MinWidth >= 1024);
                 Assert.True(window.MinHeight >= 768);
+                Assert.Equal(WindowState.Maximized, window.WindowState);
                 Assert.Same(dashboard.ViewModel, window.DataContext);
                 Assert.NotNull(FindByAutomationId<DashboardView>(window, "DashboardView"));
 

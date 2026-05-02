@@ -2787,3 +2787,19 @@ milestones below are finished.
   directly.
 - [x] Keep tests on temp databases only; no production or user local DBs are
   read by the test slice.
+
+## 2026-05-03 WPF Opening Size And Detail Custom Range Follow-Up
+
+- [x] WPF main window now opens maximized with a larger restore size so the
+  dashboard is visible immediately without requiring the user to drag-resize
+  the window first.
+- [x] App/domain detail windows now open maximized and keep the top-10 chart
+  plus the detail table visible in one review surface.
+- [x] Detail windows now expose a Custom range editor with start/end date and
+  HH:mm time inputs.
+- [x] Detail Custom range applies through the same SQLite-backed point provider
+  used by the dashboard, so app/domain detail rows recalculate for the selected
+  range rather than showing static data.
+- [x] Focused WPF tests added for maximized opening behavior and detail Custom
+  range application.
+- [x] Full WPF/dotnet validation passed for this slice.
