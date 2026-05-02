@@ -5,15 +5,21 @@ namespace Woong.MonitorStack.Windows.App;
 
 public sealed class WpfDashboardApplicationLifetime : IDashboardApplicationLifetime
 {
+    private readonly IWindowsTrayLifecycleService _trayLifecycle;
+
+    public WpfDashboardApplicationLifetime(IWindowsTrayLifecycleService trayLifecycle)
+    {
+        _trayLifecycle = trayLifecycle;
+    }
+
     public void RequestExit()
     {
         if (Application.Current?.MainWindow is MainWindow mainWindow)
         {
-            mainWindow.Close();
+            _trayLifecycle.RequestExplicitExit(new WpfTrayLifecycleWindow(mainWindow));
             return;
         }
 
-        Application.Current?.Shutdown();
+        _trayLifecycle.RequestExplicitExit(window: null);
     }
 }
-

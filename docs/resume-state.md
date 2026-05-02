@@ -5446,3 +5446,25 @@ Validation completed for this slice:
 - Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
 - Coverage collection passed: line 87.7%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 - Android UI snapshot report `artifacts/android-ui-snapshots/20260502-132522/report.md` is PASS.
+## 2026-05-02 Android Disconnect UX And WPF Taskbar Close Lifecycle
+
+- Android Settings now includes a `Disconnect device` action.
+- Sync-off disconnect clears local device/token configuration, keeps sync off, and does not enqueue upload work.
+- Sync-on disconnect revokes through `POST /api/devices/{deviceId}/token/revoke` with the current token in `X-Device-Token`, then clears local registration only on success.
+- Revoke failure keeps the local registration intact and shows a local-data-safe failure state.
+- WPF X/system close now minimizes the window while keeping it visible in the taskbar; explicit Exit is the only real quit path.
+- WPF close/restore/explicit-exit behavior is routed through a testable lifecycle service with runtime-log fallback that does not throw.
+- WinForms tray dependency was removed from this slice because the product requirement is taskbar availability after X close.
+
+Focused validation completed:
+
+- Android Settings/sync focused tests passed.
+- Android `assembleDebug` passed.
+- WPF App tray/taskbar lifecycle focused tests passed.
+- WPF App build passed after cleaning stale WPF temp build output.
+Validation completed for disconnect/taskbar slice:
+
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 576 passed / 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Coverage collection passed: line 87.6%, branch 69.3%, report at `artifacts/coverage/SummaryGithub.md`.

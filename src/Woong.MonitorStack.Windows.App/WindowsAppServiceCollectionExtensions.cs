@@ -26,6 +26,8 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(new WindowsLocalDatabaseState(options.LocalDatabasePath));
         services.AddSingleton(options.DashboardOptions);
         services.AddSingleton<IDashboardRuntimeLogSink>(new FileDashboardRuntimeLogSink(options.RuntimeLogPath));
+        services.AddSingleton<IWindowsTrayIcon, NoopWindowsTrayIcon>();
+        services.AddSingleton<IWindowsTrayLifecycleService, WindowsTrayLifecycleService>();
         services.AddSingleton<IDashboardApplicationLifetime, WpfDashboardApplicationLifetime>();
         services.AddDashboardPresentation();
         services.AddWindowsInfrastructure();
@@ -42,7 +44,8 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(provider => new MainWindow(
             provider.GetRequiredService<DashboardViewModel>(),
             new MainWindowStartupOptions(provider.GetRequiredService<WindowsAppOptions>().AutoStartTracking),
-            provider.GetRequiredService<ITrackingTicker>()));
+            provider.GetRequiredService<ITrackingTicker>(),
+            provider.GetRequiredService<IWindowsTrayLifecycleService>()));
         services.AddSingleton<IWindowsAppStartupService, WindowsAppStartupService>();
 
         return services;

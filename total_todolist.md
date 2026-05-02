@@ -2326,11 +2326,14 @@ milestones below are finished.
 - [x] Runtime exception logging now has a non-throwing fallback diagnostic path if the sink is unavailable or throws.
 - [x] Removed the empty crash-logging catch from `App.xaml.cs` without moving business logic into code-behind.
 - [x] Validation passed: focused WPF App runtime logger/composition tests, WPF App build, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
-- [ ] Next WPF hardening slice: extract close-to-taskbar/tray lifecycle into a testable service, prove X close keeps the app available, explicit Exit really exits, and lifecycle events are logged.
+- [x] WPF close-to-taskbar lifecycle is now extracted into a testable service: X/system close minimizes the window and keeps it visible in the taskbar, explicit Exit closes/shuts down, restore activates the window, and lifecycle logging has a non-throwing fallback.
+- [x] Validation passed for WPF taskbar close lifecycle: focused WPF App lifecycle tests, WPF App build after cleaning stale temp output, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
 
 ## Next Android Production Sync Queue
 
-- [ ] Add client-side device disconnect/revocation UX in Settings with TDD: sync stays opt-in/off by default, current token is sent only as `X-Device-Token`, local token/device state clears only after success, and failure keeps local registration plus a clear status.
+- [x] Added client-side device disconnect/revocation UX in Settings with TDD: sync stays opt-in/off by default, current token is sent only as `X-Device-Token`, local token/device state clears only after success or local sync-off disconnect, and failure keeps local registration plus a clear local-data-safe status.
+- [x] Validation passed for Android disconnect/revocation UX: focused Settings/sync tests, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
+- [x] Latest coverage after disconnect/taskbar slice: line 87.6%, branch 69.3%, report at `artifacts/coverage/SummaryGithub.md`.
 - [ ] Add Android token refresh/re-registration behavior tests for auth-required status: Register/Repair replaces the old token, clears auth-required status, and does not enqueue sync until registration succeeds.
 
 ## 2026-05-01 Windows WebSession Flush And MSIX Install Recovery

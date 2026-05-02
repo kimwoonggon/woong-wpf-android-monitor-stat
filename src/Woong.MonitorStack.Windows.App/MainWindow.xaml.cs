@@ -10,6 +10,8 @@ public partial class MainWindow : Window
     private const int ScClose = 0xF060;
 
     private readonly ITrackingTicker _trackingTicker;
+    private readonly IWindowsTrayLifecycleService _trayLifecycle;
+    private readonly ITrayLifecycleWindow _trayWindow;
     private readonly DashboardViewModel _viewModel;
     private readonly MainWindowStartupOptions _startupOptions;
     private HwndSource? _windowMessageSource;
@@ -42,11 +44,25 @@ public partial class MainWindow : Window
         DashboardViewModel viewModel,
         MainWindowStartupOptions startupOptions,
         ITrackingTicker trackingTicker)
+        : this(viewModel, startupOptions, trackingTicker, new WindowsTrayLifecycleService(
+            new NoopWindowsTrayIcon(),
+            new NullDashboardRuntimeLogSink()))
+    {
+    }
+
+    public MainWindow(
+        DashboardViewModel viewModel,
+        MainWindowStartupOptions startupOptions,
+        ITrackingTicker trackingTicker,
+        IWindowsTrayLifecycleService trayLifecycle)
     {
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _startupOptions = startupOptions ?? throw new ArgumentNullException(nameof(startupOptions));
         _trackingTicker = trackingTicker ?? throw new ArgumentNullException(nameof(trackingTicker));
+        _trayLifecycle = trayLifecycle ?? throw new ArgumentNullException(nameof(trayLifecycle));
+        _trayWindow = new WpfTrayLifecycleWindow(this);
+        _trayLifecycle.RegisterWindow(_trayWindow);
         DataContext = viewModel;
         _trackingTicker.Tick += OnTrackingTickerTick;
         SourceInitialized += OnSourceInitialized;
@@ -75,8 +91,7 @@ public partial class MainWindow : Window
     {
         if (message == WmSysCommand && ((wParam.ToInt64() & 0xFFF0) == ScClose))
         {
-            WindowState = WindowState.Minimized;
-            ShowInTaskbar = true;
+            _trayLifecycle.MinimizeToTaskbar(_trayWindow);
             handled = true;
         }
 

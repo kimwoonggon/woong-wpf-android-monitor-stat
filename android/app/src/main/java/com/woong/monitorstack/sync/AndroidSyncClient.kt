@@ -47,6 +47,23 @@ class AndroidSyncClient(
         }
     }
 
+    fun revokeDeviceToken(deviceId: String) {
+        val httpRequest = Request.Builder()
+            .url("$normalizedBaseUrl/api/devices/${deviceId.trim()}/token/revoke")
+            .post(ByteArray(0).toRequestBody(JsonMediaType))
+            .addDeviceTokenHeader()
+            .build()
+
+        httpClient.newCall(httpRequest).execute().use { response ->
+            if (!response.isSuccessful) {
+                throwUploadFailure(
+                    operation = "Device token revocation",
+                    statusCode = response.code
+                )
+            }
+        }
+    }
+
     override fun uploadFocusSessions(request: SyncFocusSessionUploadRequest): SyncUploadBatchResult {
         val httpRequest = Request.Builder()
             .url("$normalizedBaseUrl/api/focus-sessions/upload")

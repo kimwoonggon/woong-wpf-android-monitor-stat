@@ -145,7 +145,9 @@ class SettingsFragment : Fragment() {
     ) {
         val manualSyncLauncher = manualSyncLauncherFactory(requireContext())
         val deviceRegistrationLauncher = deviceRegistrationLauncherFactory(requireContext())
+        val deviceDisconnectLauncher = deviceDisconnectLauncherFactory(requireContext())
         val registerRepairButton = ensureRegisterRepairButton(binding)
+        val disconnectButton = ensureDisconnectButton(binding)
 
         fun renderStatus(enabled: Boolean) {
             binding.syncStatusText.text = if (enabled) {
@@ -256,6 +258,61 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+
+        disconnectButton.setOnClickListener {
+            val serverBaseUrl = binding.syncServerUrlEditText.text.toString().trim()
+            val deviceId = binding.syncDeviceIdEditText.text.toString().trim()
+            val deviceToken = settings.deviceToken()
+
+            if (!settings.isSyncEnabled()) {
+                clearLocalSyncRegistration(settings, binding)
+                binding.syncStatusText.text =
+                    getString(R.string.sync_disconnect_local_success_status)
+                return@setOnClickListener
+            }
+
+            if (serverBaseUrl.isBlank() || deviceId.isBlank() || deviceToken.isBlank()) {
+                clearLocalSyncRegistration(settings, binding)
+                binding.syncStatusText.text =
+                    getString(R.string.sync_disconnect_local_success_status)
+                return@setOnClickListener
+            }
+            if (!AndroidSyncServerUrlValidator.isValid(serverBaseUrl)) {
+                binding.syncStatusText.text = getString(R.string.sync_invalid_server_url_status)
+                return@setOnClickListener
+            }
+
+            binding.syncStatusText.text = getString(R.string.sync_disconnect_in_progress_status)
+            deviceDisconnectLauncher.disconnect(
+                DeviceDisconnectRequest(
+                    baseUrl = serverBaseUrl,
+                    deviceId = deviceId,
+                    deviceToken = deviceToken
+                )
+            ) { result ->
+                val currentBinding = this.binding ?: return@disconnect
+                result.onSuccess {
+                    clearLocalSyncRegistration(settings, currentBinding)
+                    currentBinding.syncStatusText.text =
+                        getString(R.string.sync_disconnect_success_status)
+                }.onFailure {
+                    currentBinding.syncStatusText.text =
+                        getString(R.string.sync_disconnect_failed_status)
+                }
+            }
+        }
+    }
+
+    private fun clearLocalSyncRegistration(
+        settings: SharedPreferencesAndroidSyncSettings,
+        binding: FragmentSettingsBinding
+    ) {
+        settings.clearSyncConfiguration()
+        binding.autoSyncSwitch.isChecked = false
+        binding.syncServerUrlEditText.setText("")
+        binding.syncDeviceIdEditText.setText("")
+        binding.syncDeviceRegistrationStatusText.text =
+            getString(R.string.sync_device_unregistered_status)
     }
 
     private fun ensureRegisterRepairButton(binding: FragmentSettingsBinding): MaterialButton {
@@ -268,6 +325,28 @@ class SettingsFragment : Fragment() {
         val button = MaterialButton(requireContext()).apply {
             tag = RegisterRepairButtonTag
             text = getString(R.string.sync_register_repair_device)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(44)
+            ).apply {
+                topMargin = dpToPx(8)
+            }
+        }
+        val manualSyncIndex = parent.indexOfChild(binding.manualSyncButton)
+        parent.addView(button, manualSyncIndex)
+        return button
+    }
+
+    private fun ensureDisconnectButton(binding: FragmentSettingsBinding): MaterialButton {
+        val parent = binding.manualSyncButton.parent as ViewGroup
+        val existingButton = parent.findViewWithTag<MaterialButton>(DisconnectButtonTag)
+        if (existingButton != null) {
+            return existingButton
+        }
+
+        val button = MaterialButton(requireContext()).apply {
+            tag = DisconnectButtonTag
+            text = getString(R.string.sync_disconnect_device)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dpToPx(44)
@@ -349,6 +428,13 @@ class SettingsFragment : Fragment() {
         )
     }
 
+    interface DeviceDisconnectLauncher {
+        fun disconnect(
+            request: DeviceDisconnectRequest,
+            callback: (Result<Unit>) -> Unit
+        )
+    }
+
     private class AndroidSyncClientDeviceRegistrationLauncher : DeviceRegistrationLauncher {
         private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -380,8 +466,31 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private class AndroidSyncClientDeviceDisconnectLauncher : DeviceDisconnectLauncher {
+        private val mainHandler = Handler(Looper.getMainLooper())
+
+        override fun disconnect(
+            request: DeviceDisconnectRequest,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            Thread(
+                {
+                    val result = runCatching {
+                        AndroidSyncClient(
+                            baseUrl = request.baseUrl,
+                            deviceToken = request.deviceToken
+                        ).revokeDeviceToken(request.deviceId)
+                    }
+                    mainHandler.post { callback(result) }
+                },
+                "AndroidSyncDeviceDisconnect"
+            ).start()
+        }
+    }
+
     companion object {
         private const val RegisterRepairButtonTag = "sync_register_repair_button"
+        private const val DisconnectButtonTag = "sync_disconnect_button"
         private const val LocalAndroidUserId = "local-android-user"
         private const val AndroidPlatformCode = 2
 
@@ -392,6 +501,11 @@ class SettingsFragment : Fragment() {
         fun defaultDeviceRegistrationLauncherFactory():
             (android.content.Context) -> DeviceRegistrationLauncher = {
                 AndroidSyncClientDeviceRegistrationLauncher()
+            }
+
+        fun defaultDeviceDisconnectLauncherFactory():
+            (android.content.Context) -> DeviceDisconnectLauncher = {
+                AndroidSyncClientDeviceDisconnectLauncher()
             }
 
         fun defaultUsageAccessStatusReaderFactory(): (android.content.Context) -> UsageAccessStatusReader = {
@@ -405,10 +519,20 @@ class SettingsFragment : Fragment() {
             (android.content.Context) -> DeviceRegistrationLauncher =
             defaultDeviceRegistrationLauncherFactory()
 
+        var deviceDisconnectLauncherFactory:
+            (android.content.Context) -> DeviceDisconnectLauncher =
+            defaultDeviceDisconnectLauncherFactory()
+
         var usageAccessStatusReaderFactory: (android.content.Context) -> UsageAccessStatusReader =
             defaultUsageAccessStatusReaderFactory()
     }
 }
+
+data class DeviceDisconnectRequest(
+    val baseUrl: String,
+    val deviceId: String,
+    val deviceToken: String
+)
 
 data class DeviceRegistrationResult(
     val deviceId: String,

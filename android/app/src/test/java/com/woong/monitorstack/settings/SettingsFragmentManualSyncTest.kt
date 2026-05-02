@@ -27,6 +27,7 @@ class SettingsFragmentManualSyncTest {
     private lateinit var context: Context
     private lateinit var launcher: RecordingManualSyncLauncher
     private lateinit var registrationLauncher: RecordingDeviceRegistrationLauncher
+    private lateinit var disconnectLauncher: RecordingDeviceDisconnectLauncher
     private lateinit var tokenStore: FakeAndroidSyncTokenStore
 
     @Before
@@ -40,8 +41,10 @@ class SettingsFragmentManualSyncTest {
         SharedPreferencesAndroidSyncSettings.tokenStoreFactory = { tokenStore }
         launcher = RecordingManualSyncLauncher()
         registrationLauncher = RecordingDeviceRegistrationLauncher()
+        disconnectLauncher = RecordingDeviceDisconnectLauncher()
         SettingsFragment.manualSyncLauncherFactory = { launcher }
         SettingsFragment.deviceRegistrationLauncherFactory = { registrationLauncher }
+        SettingsFragment.deviceDisconnectLauncherFactory = { disconnectLauncher }
         SettingsFragment.usageAccessStatusReaderFactory = {
             FakeUsageAccessStatusReader(hasUsageAccess = false)
         }
@@ -54,6 +57,8 @@ class SettingsFragmentManualSyncTest {
         SettingsFragment.manualSyncLauncherFactory = SettingsFragment.defaultManualSyncLauncherFactory()
         SettingsFragment.deviceRegistrationLauncherFactory =
             SettingsFragment.defaultDeviceRegistrationLauncherFactory()
+        SettingsFragment.deviceDisconnectLauncherFactory =
+            SettingsFragment.defaultDeviceDisconnectLauncherFactory()
         SettingsFragment.usageAccessStatusReaderFactory =
             SettingsFragment.defaultUsageAccessStatusReaderFactory()
     }
@@ -144,6 +149,95 @@ class SettingsFragmentManualSyncTest {
             "Device registered for sync.",
             activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
         )
+    }
+
+    @Test
+    fun disconnectWhenSyncOffClearsLocalDeviceStateAndKeepsSyncOff() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
+        val activity = launchSettingsFragment()
+
+        findButtonByText(activity, "Disconnect device").performClick()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertFalse(reloaded.isSyncEnabled())
+        assertEquals("", reloaded.deviceId())
+        assertEquals("", reloaded.deviceToken())
+        assertEquals(
+            "Device disconnected locally. Sync is off and data remains on this Android device.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Device not registered. Register / repair is available after sync is turned on.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun disconnectWhenSyncOnRevokesTokenThenClearsLocalRegistrationState() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
+        val activity = launchSettingsFragment()
+
+        findButtonByText(activity, "Disconnect device").performClick()
+
+        assertEquals(
+            listOf(
+                DeviceDisconnectRequest(
+                    baseUrl = "https://server.example",
+                    deviceId = "android-device-1",
+                    deviceToken = "device-token-secret"
+                )
+            ),
+            disconnectLauncher.requests
+        )
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertFalse(reloaded.isSyncEnabled())
+        assertEquals("", reloaded.deviceId())
+        assertEquals("", reloaded.deviceToken())
+        assertEquals(
+            "Device disconnected. Sync is off and local usage data remains on this Android device.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun disconnectRevokeFailureKeepsLocalRegistrationAndShowsSafeFailureStatus() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "android-device-1",
+            deviceToken = "device-token-secret"
+        )
+        disconnectLauncher.result = Result.failure(IllegalStateException("revoked elsewhere"))
+        val activity = launchSettingsFragment()
+
+        findButtonByText(activity, "Disconnect device").performClick()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertTrue(reloaded.isSyncEnabled())
+        assertEquals("android-device-1", reloaded.deviceId())
+        assertEquals("device-token-secret", reloaded.deviceToken())
+        assertEquals(
+            "Device disconnect failed. Local registration is unchanged and usage data remains local.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Device registered for sync.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
     }
 
     @Test
@@ -463,6 +557,19 @@ class SettingsFragmentManualSyncTest {
         ) {
             requests += request
             callback(Result.success(response))
+        }
+    }
+
+    private class RecordingDeviceDisconnectLauncher : SettingsFragment.DeviceDisconnectLauncher {
+        val requests = mutableListOf<DeviceDisconnectRequest>()
+        var result: Result<Unit> = Result.success(Unit)
+
+        override fun disconnect(
+            request: DeviceDisconnectRequest,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            requests += request
+            callback(result)
         }
     }
 

@@ -118,6 +118,27 @@ public sealed class WindowsAppCompositionTests
         });
 
     [Fact]
+    public void AddWindowsApp_RegistersTrayLifecycleService()
+        => RunOnStaThread(() =>
+        {
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new DashboardOptions("Asia/Seoul"));
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+            var window = provider.GetRequiredService<MainWindow>();
+
+            try
+            {
+                Assert.IsType<WindowsTrayLifecycleService>(
+                    provider.GetRequiredService<IWindowsTrayLifecycleService>());
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
     public void AddWindowsApp_RegistersWindowsTrackingCoordinatorAndSqliteDashboardDataSource()
     {
         string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");

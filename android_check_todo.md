@@ -814,9 +814,14 @@ workspace.
   `woongProductionSyncBaseUrl` or `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`,
   defaults blank, rejects local/example/invalid endpoints, and preserves
   explicit user-entered advanced endpoints.
+- [x] Android Settings client disconnect UX implemented: sync-off disconnect
+  clears local device/token state without enqueueing sync, sync-on disconnect
+  revokes via the protected device-token endpoint before clearing local
+  registration, and revoke failures keep local registration with a
+  local-data-safe failure status.
 - [ ] Remaining Android sync hardening: Android token refresh/re-registration
   behavior, Play signing/publishing policy, user-auth registration policy, and
-  device revocation policy remain open before release use.
+  server/user device revocation policy remain open before release use.
 - [ ] Release blockers before public Android/server sync: decide who may
   register/re-register/revoke devices and whether user auth is required,
   and define Android Play signing/publishing requirements if distribution moves

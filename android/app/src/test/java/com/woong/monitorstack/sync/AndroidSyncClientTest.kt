@@ -59,6 +59,26 @@ class AndroidSyncClientTest {
     }
 
     @Test
+    fun revokeDeviceTokenPostsProtectedEndpointWithTokenHeaderOnly() {
+        val interceptor = CapturingInterceptor(responseJson = "", responseCode = 204)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
+        )
+
+        syncClient.revokeDeviceToken("android-device-1")
+
+        assertEquals("POST", interceptor.method)
+        assertEquals("/api/devices/android-device-1/token/revoke", interceptor.path)
+        assertEquals("device-token-secret", interceptor.deviceTokenHeader)
+        assertTrue("Device token must not be sent in the request body.", !interceptor.body.contains("device-token-secret"))
+    }
+
+    @Test
     fun uploadFocusSessionsClassifiesUnauthorizedAsAuthenticationFailure() {
         val interceptor = CapturingInterceptor(responseJson = "", responseCode = 401)
         val httpClient = OkHttpClient.Builder()
@@ -199,6 +219,9 @@ class AndroidSyncClientTest {
         var path: String? = null
             private set
 
+        var method: String? = null
+            private set
+
         var body: String = ""
             private set
 
@@ -209,6 +232,7 @@ class AndroidSyncClientTest {
             val request = chain.request()
             val buffer = Buffer()
             request.body?.writeTo(buffer)
+            method = request.method
             path = request.url.encodedPath
             body = buffer.readUtf8()
             deviceTokenHeader = request.header("X-Device-Token")
