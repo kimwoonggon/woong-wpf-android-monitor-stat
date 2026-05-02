@@ -124,6 +124,14 @@ closed until the owning implementation agents report verified completion:
 - [ ] User-auth/registration policy: decide who may register or re-register an
   Android device, whether first registration requires a user/session token, and
   how revocation or replacement works.
+  Device registration currently uses dev/MVP payload `userId`; before public
+  release this must be replaced by authenticated user/session identity. The
+  skipped policy tests that become active when server auth exists are:
+  `RegisterDevice_WhenUserSessionAuthIsMissing_ReturnsUnauthorized`,
+  `RegisterDevice_UsesAuthenticatedUserIdInsteadOfPayloadUserId`,
+  `RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentUsers_CreatesSeparateDevices`,
+  and
+  `RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken`.
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.
@@ -137,3 +145,12 @@ closed until the owning implementation agents report verified completion:
   Tag-based Android release publishing must fail when signing secrets are
   missing and must publish only the signed release APK, never debug,
   androidTest, or unsigned APKs as release assets.
+  Required secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+  `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`.
+  Before tagging, confirm `versionCode`, `versionName`, approved Play Console
+  track, and release approver.
+  After the tag release, download the GitHub Release archive, verify
+  `woong-monitor-android-release-signed.apk` is the only release APK, upload
+  the signed APK to the approved Play Console track, and record the GitHub tag,
+  artifact name, Play track, and release approver.
+  unsigned, debug, and androidTest APKs are internal validation artifacts only.

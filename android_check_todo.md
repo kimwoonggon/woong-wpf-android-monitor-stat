@@ -25,7 +25,7 @@ artifacts/android-check/20260430-155023/
 Latest Android UI screenshot evidence:
 
 ```text
-artifacts/android-ui-snapshots/20260502-102036/
+artifacts/android-ui-snapshots/20260502-103650/
 ```
 
 Latest Android UsageStats current-focus evidence:
@@ -106,6 +106,27 @@ Product boundary reminder:
   dumps were captured; Chrome participation is represented by foreground and
   process text evidence plus Room metadata rows, with Woong-only screenshots
   captured after return.
+
+### 2026-05-02 Android Sessions/Report Snapshot Expansion Evidence
+
+- [x] Emulator available: `emulator-5554`.
+- [x] Ran Woong-only snapshot automation:
+  `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
+- [x] Snapshot report status: `PASS`.
+- [x] Evidence paths:
+  - `artifacts/android-ui-snapshots/20260502-103650/`
+  - `artifacts/android-ui-snapshots/latest/`
+  - `artifacts/android-ui-snapshots/20260502-103650/18-sessions-default.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/19-sessions-filtered.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/20-report-7d.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/21-report-30d.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/22-report-90d.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/23-report-custom-valid.png`
+  - `artifacts/android-ui-snapshots/20260502-103650/24-report-custom-invalid.png`
+- [x] Privacy boundary repeated: screenshots are local developer artifacts only,
+  captured inside Woong Monitor UI; no Chrome/other-app content, typed text,
+  passwords, form contents, clipboard contents, browser/page contents, or
+  global touch coordinates were captured as product telemetry.
 
 ### 2026-05-02 Android Settings Sync Snapshot Evidence
 
@@ -267,8 +288,10 @@ Product boundary reminder:
   active/idle state without clipping.
 - [x] Tapping a session row must open the selected app detail screen.
 - [x] Add empty-state copy for no sessions in the selected period.
-- [ ] Capture Sessions default, filtered, empty-state if possible, and row-tap
-  screenshots.
+- [x] Capture Sessions default and filtered screenshots:
+  `artifacts/android-ui-snapshots/20260502-103650/18-sessions-default.png`
+  and `artifacts/android-ui-snapshots/20260502-103650/19-sessions-filtered.png`.
+- [ ] Capture Sessions empty-state if possible and row-tap screenshots.
 
 ### F. App Detail Screen Parity
 
@@ -290,7 +313,9 @@ Product boundary reminder:
 - [x] Trend chart must use Room-backed aggregate data and readable day labels.
 - [x] Top apps list must show ranked apps with readable labels/durations and
   proportional usage bars.
-- [ ] Capture Report 7d, 30d/90d, Custom valid, and Custom invalid states.
+- [x] Capture Report 7d, 30d, 90d, Custom valid, and Custom invalid states:
+  `artifacts/android-ui-snapshots/20260502-103650/20-report-7d.png`
+  through `artifacts/android-ui-snapshots/20260502-103650/24-report-custom-invalid.png`.
 
 ### H. Settings Screen Parity
 

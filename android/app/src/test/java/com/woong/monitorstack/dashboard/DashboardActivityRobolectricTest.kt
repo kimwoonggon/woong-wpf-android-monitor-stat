@@ -1,14 +1,22 @@
 package com.woong.monitorstack.dashboard
 
+import android.content.Context
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
+import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.data.local.MonitorDatabase
+import java.time.Instant
+import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -74,5 +82,104 @@ class DashboardActivityRobolectricTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun dashboardSeparatesCurrentForegroundLatestExternalAndCollectionTime() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val timezoneId = ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        Thread {
+            val database = MonitorDatabase.getInstance(context)
+            database.clearAllTables()
+            database.focusSessionDao().insert(
+                focusSession(
+                    clientSessionId = "dashboard-runtime-chrome",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = now - 900_000L,
+                    endedAtUtcMillis = now - 420_000L,
+                    timezoneId = timezoneId
+                )
+            )
+            database.focusSessionDao().insert(
+                focusSession(
+                    clientSessionId = "dashboard-runtime-monitor",
+                    packageName = "com.woong.monitorstack",
+                    startedAtUtcMillis = now - 120_000L,
+                    endedAtUtcMillis = now,
+                    timezoneId = timezoneId
+                )
+            )
+        }.also { it.start(); it.join() }
+
+        ActivityScenario.launch(DashboardActivity::class.java).use { scenario ->
+            waitForDashboardRender()
+            scenario.onActivity { activity ->
+                assertEquals(
+                    "Current foreground app",
+                    activity.findViewById<TextView>(R.id.currentForegroundLabel).text.toString()
+                )
+                assertEquals(
+                    "Woong Monitor",
+                    activity.findViewById<TextView>(R.id.currentAppText).text.toString()
+                )
+                assertEquals(
+                    "com.woong.monitorstack",
+                    activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
+                )
+                assertEquals(
+                    "Latest collected external app",
+                    activity.findViewById<TextView>(R.id.latestCollectedExternalLabel).text.toString()
+                )
+                assertEquals(
+                    "Chrome",
+                    activity.findViewById<TextView>(R.id.latestCollectedExternalAppText).text.toString()
+                )
+                assertEquals(
+                    "com.android.chrome",
+                    activity.findViewById<TextView>(R.id.latestCollectedExternalPackageText).text.toString()
+                )
+                assertTrue(
+                    activity.findViewById<TextView>(R.id.lastCollectedText)
+                        .text
+                        .toString()
+                        .startsWith("Last collection time: ")
+                )
+                assertTrue(
+                    activity.findViewById<TextView>(R.id.currentForegroundEvidenceText)
+                        .text
+                        .toString()
+                        .contains("cannot prove a live external foreground")
+                )
+            }
+        }
+    }
+
+    private fun waitForDashboardRender() {
+        Thread.sleep(500)
+        shadowOf(Looper.getMainLooper()).idle()
+    }
+
+    private fun focusSession(
+        clientSessionId: String,
+        packageName: String,
+        startedAtUtcMillis: Long,
+        endedAtUtcMillis: Long,
+        timezoneId: ZoneId
+    ): FocusSessionEntity {
+        return FocusSessionEntity(
+            clientSessionId = clientSessionId,
+            packageName = packageName,
+            startedAtUtcMillis = startedAtUtcMillis,
+            endedAtUtcMillis = endedAtUtcMillis,
+            durationMs = endedAtUtcMillis - startedAtUtcMillis,
+            localDate = Instant.ofEpochMilli(startedAtUtcMillis)
+                .atZone(timezoneId)
+                .toLocalDate()
+                .toString(),
+            timezoneId = timezoneId.id,
+            isIdle = false,
+            source = "test"
+        )
     }
 }

@@ -59,6 +59,33 @@ public sealed class AndroidReleaseWorkflowTests
             "-NoProfile -ExecutionPolicy Bypass -File scripts\\validate-android-release-workflow.ps1 -WorkflowPath .github\\workflows\\android-release.yml");
     }
 
+    [Fact]
+    public void AndroidReleaseDocs_DistinguishInternalArtifactsFromPlayPublishingAndListOperatorSteps()
+    {
+        string readme = NormalizeWhitespace(File.ReadAllText(Path.Combine(RepositoryRoot, "README.md")));
+        string releaseChecklist = NormalizeWhitespace(File.ReadAllText(Path.Combine(
+            RepositoryRoot,
+            "docs",
+            "release-checklist.md")));
+
+        foreach (string document in new[] { readme, releaseChecklist })
+        {
+            Assert.Contains("ANDROID_KEYSTORE_BASE64", document, StringComparison.Ordinal);
+            Assert.Contains("ANDROID_KEYSTORE_PASSWORD", document, StringComparison.Ordinal);
+            Assert.Contains("ANDROID_KEY_ALIAS", document, StringComparison.Ordinal);
+            Assert.Contains("ANDROID_KEY_PASSWORD", document, StringComparison.Ordinal);
+            Assert.Contains("unsigned, debug, and androidTest APKs", document, StringComparison.Ordinal);
+            Assert.Contains("internal validation", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Play Console track", document, StringComparison.Ordinal);
+            Assert.Contains("versionCode", document, StringComparison.Ordinal);
+            Assert.Contains("versionName", document, StringComparison.Ordinal);
+            Assert.Contains("download the GitHub Release archive", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("verify `woong-monitor-android-release-signed.apk`", document, StringComparison.Ordinal);
+            Assert.Contains("upload the signed APK to the approved Play Console track", document, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("record the GitHub tag, artifact name, Play track, and release approver", document, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     private static void RunPowerShell(string arguments)
     {
         using Process process = Process.Start(new ProcessStartInfo(
@@ -96,4 +123,9 @@ public sealed class AndroidReleaseWorkflowTests
 
         throw new InvalidOperationException("Could not locate repository root.");
     }
+
+    private static string NormalizeWhitespace(string value)
+        => string.Join(
+            " ",
+            value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 }

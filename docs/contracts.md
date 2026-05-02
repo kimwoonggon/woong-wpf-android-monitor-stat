@@ -18,11 +18,24 @@ Updated: 2026-04-29
 - `Platform` is limited to `Windows` and `Android` for MVP.
 - `Device.DeviceKey` and `RegisterDeviceRequest.DeviceKey` are stable client
   identifiers and must not be empty.
+- Device registration currently uses dev/MVP payload `userId` to associate a
+  device with a user. Before public release, registration must replace payload
+  `userId` trust with authenticated user/session identity supplied by the
+  server auth layer.
 - Windows and Android local stores keep only their own device data.
 - Cross-device integration happens only through the server API and PostgreSQL.
 - Android UsageStats app intervals sync through the same `FocusSession`
   contract as Windows foreground app intervals. See
   `docs/android-app-usage-contract-decision.md`.
+
+The server test suite keeps the public-release registration policy as skipped
+tests until user/session auth exists. These tests become active when that auth
+source is implemented:
+
+- `RegisterDevice_WhenUserSessionAuthIsMissing_ReturnsUnauthorized`
+- `RegisterDevice_UsesAuthenticatedUserIdInsteadOfPayloadUserId`
+- `RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentUsers_CreatesSeparateDevices`
+- `RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken`
 
 ## Upload Idempotency
 

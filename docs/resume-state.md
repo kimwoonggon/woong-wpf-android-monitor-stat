@@ -2,6 +2,22 @@
 
 Updated: 2026-05-02
 
+## 2026-05-02 Android Sessions/Report Snapshot Expansion Evidence
+
+- Emulator available: `emulator-5554`.
+- Ran Woong-only Android UI snapshot automation with
+  `powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial emulator-5554`.
+- Result: PASS. Fresh evidence at
+  `artifacts/android-ui-snapshots/20260502-103650/` and
+  `artifacts/android-ui-snapshots/latest/`.
+- Added explicit evidence files for Sessions default/filtered and Report 7d,
+  30d, 90d, Custom valid, and Custom invalid states:
+  `18-sessions-default.png` through `24-report-custom-invalid.png`.
+- Privacy boundary: screenshots are local developer artifacts only, captured
+  inside Woong Monitor UI. No Chrome/other-app content, typed text, passwords,
+  form contents, clipboard contents, browser/page contents, or global touch
+  coordinates were captured as product telemetry.
+
 ## 2026-05-02 Android App-Switch QA Fresh Evidence
 
 - Emulator available: `emulator-5554`.

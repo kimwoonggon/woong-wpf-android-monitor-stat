@@ -46,9 +46,16 @@ $featureScreens = @(
     "sessions list",
     "dashboard 1h selected",
     "sessions 6h selected",
+    "sessions default",
+    "sessions filtered",
     "main shell settings",
     "main shell report",
     "report custom range",
+    "report 7d",
+    "report 30d",
+    "report 90d",
+    "report custom valid",
+    "report custom invalid",
     "permission onboarding",
     "app detail",
     "daily summary"
@@ -250,6 +257,16 @@ $screenTargets = @(
         Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
+        Name = "sessions default"
+        FileName = "18-sessions-default.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "sessions filtered"
+        FileName = "19-sessions-filtered.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
         Name = "main shell settings"
         FileName = "11-main-shell-settings.png"
         Capture = "SnapshotCaptureTest"
@@ -262,6 +279,31 @@ $screenTargets = @(
     [ordered]@{
         Name = "report custom range"
         FileName = "15-report-custom-range.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "report 7d"
+        FileName = "20-report-7d.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "report 30d"
+        FileName = "21-report-30d.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "report 90d"
+        FileName = "22-report-90d.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "report custom valid"
+        FileName = "23-report-custom-valid.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "report custom invalid"
+        FileName = "24-report-custom-invalid.png"
         Capture = "SnapshotCaptureTest"
     },
     [ordered]@{
@@ -496,7 +538,9 @@ function Write-AndroidSnapshotArtifacts {
         "Feature screenshots are numbered 01 through 08 so each product surface can be reviewed independently.",
         "Main shell screenshots include Dashboard, Sessions, Report, and Settings tab states.",
         "Screenshots 16 and 17 show selected-period states after changing Dashboard to 1h and Sessions to 6h.",
+        "Screenshots 18 and 19 show Sessions default and filtered states.",
         "Report custom range screenshot 15 shows the yyyy-MM-dd start/end inputs and applied Room-backed range state.",
+        "Screenshots 20 through 24 show Report 7d, 30d, 90d, custom valid, and custom invalid validation states.",
         "Permission onboarding screenshot 13 shows the Usage Access guidance shown when permission is missing.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",
         "Check the Dashboard location card shows seeded opt-in location context when screenshots exist.",

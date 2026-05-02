@@ -20,6 +20,28 @@ public sealed class ServerApiContractDocumentationTests
         Assert.Contains("existing focus session, web session, raw event, and location context rows are preserved", normalizedContracts, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void PublicReleaseDocs_DocumentUserAuthRegistrationBlockerAndSkippedPolicyTests()
+    {
+        string contractsPath = Path.Combine(RepositoryRoot, "docs", "contracts.md");
+        string releaseChecklistPath = Path.Combine(RepositoryRoot, "docs", "release-checklist.md");
+
+        Assert.True(File.Exists(contractsPath), "Public API contract documentation must exist.");
+        Assert.True(File.Exists(releaseChecklistPath), "Release checklist documentation must exist.");
+
+        string combinedDocs = NormalizeWhitespace(
+            File.ReadAllText(contractsPath) + " " + File.ReadAllText(releaseChecklistPath));
+
+        Assert.Contains("device registration currently uses dev/MVP payload userId", StripMarkdownCodeTicks(combinedDocs), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("authenticated user/session identity", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("before public release", combinedDocs, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains("RegisterDevice_WhenUserSessionAuthIsMissing_ReturnsUnauthorized", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("RegisterDevice_UsesAuthenticatedUserIdInsteadOfPayloadUserId", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentUsers_CreatesSeparateDevices", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken", combinedDocs, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);
@@ -42,5 +64,10 @@ public sealed class ServerApiContractDocumentationTests
         return string.Join(
             " ",
             value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static string StripMarkdownCodeTicks(string value)
+    {
+        return value.Replace("`", string.Empty, StringComparison.Ordinal);
     }
 }

@@ -348,6 +348,17 @@ publishing. The release archive contains the signed release APK only; unsigned,
 debug, and androidTest APKs remain CI artifacts from the non-release Android CI
 workflow and must not be treated as Play Store-ready packages.
 
+Android Play publishing remains an operator-controlled step. Before creating an
+`android-v*` release tag, configure the signing secrets
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and
+`ANDROID_KEY_PASSWORD`, confirm the app `versionCode` and `versionName`, and
+choose the approved Play Console track. After the tag release finishes, download
+the GitHub Release archive, verify `woong-monitor-android-release-signed.apk`
+is the only release APK, upload the signed APK to the approved Play Console
+track, and record the GitHub tag, artifact name, Play track, and release
+approver. Unsigned, debug, and androidTest APKs are internal validation
+artifacts only.
+
 Android/server sync is also not a public release path until these policies are
 closed: production endpoint discovery/configuration, local-development endpoint
 labeling, user-auth/device-registration policy, secure device-token storage,

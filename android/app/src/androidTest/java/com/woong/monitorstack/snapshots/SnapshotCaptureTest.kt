@@ -75,6 +75,14 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "17-sessions-6h-selected.png")
         )
+        captureMainShellSessionsDefault(
+            device = device,
+            output = File(outputDir, "18-sessions-default.png")
+        )
+        captureMainShellSessionsFiltered(
+            device = device,
+            output = File(outputDir, "19-sessions-filtered.png")
+        )
         captureMainShellReport(
             device = device,
             output = File(outputDir, "12-main-shell-report.png")
@@ -82,6 +90,29 @@ class SnapshotCaptureTest {
         captureMainShellReportCustomRange(
             device = device,
             output = File(outputDir, "15-report-custom-range.png")
+        )
+        captureMainShellReportPeriod(
+            device = device,
+            output = File(outputDir, "20-report-7d.png"),
+            selectedButtonId = R.id.reportSevenDayButton
+        )
+        captureMainShellReportPeriod(
+            device = device,
+            output = File(outputDir, "21-report-30d.png"),
+            selectedButtonId = R.id.reportThirtyDayButton
+        )
+        captureMainShellReportPeriod(
+            device = device,
+            output = File(outputDir, "22-report-90d.png"),
+            selectedButtonId = R.id.reportNinetyDayButton
+        )
+        captureMainShellReportCustomRange(
+            device = device,
+            output = File(outputDir, "23-report-custom-valid.png")
+        )
+        captureMainShellReportCustomRangeInvalid(
+            device = device,
+            output = File(outputDir, "24-report-custom-invalid.png")
         )
         captureMainShellSettings(
             device = device,
@@ -372,6 +403,20 @@ class SnapshotCaptureTest {
         }
     }
 
+    private fun captureMainShellSessionsDefault(
+        device: UiDevice,
+        output: File
+    ) {
+        captureMainShellSessions(device, output)
+    }
+
+    private fun captureMainShellSessionsFiltered(
+        device: UiDevice,
+        output: File
+    ) {
+        captureMainShellSessionsSixHour(device, output)
+    }
+
     private fun captureMainShellSettings(
         device: UiDevice,
         output: File
@@ -408,6 +453,30 @@ class SnapshotCaptureTest {
         }
     }
 
+    private fun captureMainShellReportPeriod(
+        device: UiDevice,
+        output: File,
+        selectedButtonId: Int
+    ) {
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navReport)
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    activity.supportFragmentManager.executePendingTransactions()
+                    activity.findViewById<View>(selectedButtonId).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
+            }
+        }
+    }
+
     private fun captureMainShellReportCustomRange(
         device: UiDevice,
         output: File
@@ -428,6 +497,38 @@ class SnapshotCaptureTest {
                     activity.findViewById<EditText>(R.id.reportCustomStartDateEditText).setText(today)
                     activity.findViewById<EditText>(R.id.reportCustomEndDateEditText).setText(today)
                     activity.findViewById<View>(R.id.reportApplyCustomRangeButton).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
+            }
+        }
+    }
+
+    private fun captureMainShellReportCustomRangeInvalid(
+        device: UiDevice,
+        output: File
+    ) {
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navReport)
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    activity.supportFragmentManager.executePendingTransactions()
+                    activity.findViewById<View>(R.id.reportCustomButton).performClick()
+                    activity.findViewById<EditText>(R.id.reportCustomStartDateEditText)
+                        .setText("invalid-date")
+                    activity.findViewById<EditText>(R.id.reportCustomEndDateEditText)
+                        .setText("invalid-date")
+                    activity.findViewById<View>(R.id.reportApplyCustomRangeButton).performClick()
+                    assertTrue(
+                        "Expected custom range validation error to be visible.",
+                        activity.findViewById<View>(R.id.reportCustomRangeErrorText).visibility == View.VISIBLE
+                    )
                 }
                 waitForScreen(device)
                 captureScreen(device, output)

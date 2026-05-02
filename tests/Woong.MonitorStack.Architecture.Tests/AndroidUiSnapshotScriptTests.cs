@@ -166,6 +166,53 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotScript_CapturesExpandedSessionsAndReportEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-ui-snapshots.ps1");
+        string captureTestPath = Path.Combine(
+            repoRoot,
+            "android",
+            "app",
+            "src",
+            "androidTest",
+            "java",
+            "com",
+            "woong",
+            "monitorstack",
+            "snapshots",
+            "SnapshotCaptureTest.kt");
+
+        Assert.True(File.Exists(scriptPath), "Android UI snapshot script must exist.");
+        Assert.True(File.Exists(captureTestPath), "Android screenshot capture instrumentation must exist.");
+        string script = File.ReadAllText(scriptPath);
+        string captureTest = File.ReadAllText(captureTestPath);
+
+        string[] expandedEvidenceScreens =
+        [
+            "18-sessions-default.png",
+            "19-sessions-filtered.png",
+            "20-report-7d.png",
+            "21-report-30d.png",
+            "22-report-90d.png",
+            "23-report-custom-valid.png",
+            "24-report-custom-invalid.png"
+        ];
+
+        foreach (string screen in expandedEvidenceScreens)
+        {
+            Assert.Contains(screen, script);
+            Assert.Contains(screen, captureTest);
+        }
+
+        Assert.Contains("sessions default", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("sessions filtered", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("report custom invalid", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("reportCustomRangeErrorText", captureTest, StringComparison.Ordinal);
+        Assert.Contains("invalid-date", captureTest, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_ClearsExternalSystemDialogsBeforeCapture()
     {
         string repoRoot = FindRepositoryRoot();
