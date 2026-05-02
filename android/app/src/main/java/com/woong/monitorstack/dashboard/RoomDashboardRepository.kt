@@ -185,7 +185,8 @@ class RoomDashboardRepository(
         return latest?.toLocationContext(visitSummary)
             ?: DashboardLocationContext(
                 visitStatsText = visitSummary.visitStatsText,
-                topVisitText = visitSummary.topVisitText
+                topVisitText = visitSummary.topVisitText,
+                mapPoints = visitSummary.mapPoints
             )
     }
 
@@ -209,6 +210,21 @@ class RoomDashboardRepository(
                 .thenBy { it.sampleCount }
                 .thenByDescending { it.lastCapturedAtUtcMillis }
         )
+        val mapPoints = visits
+            .sortedWith(
+                compareByDescending<LocationVisitEntity> { it.durationMs }
+                    .thenByDescending { it.sampleCount }
+                    .thenByDescending { it.lastCapturedAtUtcMillis }
+            )
+            .take(10)
+            .map { visit ->
+                LocationMapPoint(
+                    latitude = visit.latitude,
+                    longitude = visit.longitude,
+                    durationMs = visit.durationMs,
+                    sampleCount = visit.sampleCount
+                )
+            }
 
         return LocationVisitSummary(
             visitStatsText = "${visits.size} location visits",
@@ -218,7 +234,8 @@ class RoomDashboardRepository(
                 topVisit.latitude,
                 topVisit.longitude,
                 formatDuration(topVisit.durationMs)
-            )
+            ).replace(" 쨌 ", " - ").replace(" · ", " - "),
+            mapPoints = mapPoints
         )
     }
 
@@ -233,7 +250,8 @@ class RoomDashboardRepository(
         if (!canDisplayCoordinate) {
             return DashboardLocationContext(
                 visitStatsText = visitSummary.visitStatsText,
-                topVisitText = visitSummary.topVisitText
+                topVisitText = visitSummary.topVisitText,
+                mapPoints = visitSummary.mapPoints
             )
         }
 
@@ -246,7 +264,8 @@ class RoomDashboardRepository(
                 .atZone(timezoneId)
                 .format(TimeFormatter),
             visitStatsText = visitSummary.visitStatsText,
-            topVisitText = visitSummary.topVisitText
+            topVisitText = visitSummary.topVisitText,
+            mapPoints = visitSummary.mapPoints
         )
     }
 
@@ -280,5 +299,6 @@ private data class FilteredDashboardSession(
 
 private data class LocationVisitSummary(
     val visitStatsText: String = "No location visits",
-    val topVisitText: String = "No location statistics"
+    val topVisitText: String = "No location statistics",
+    val mapPoints: List<LocationMapPoint> = emptyList()
 )

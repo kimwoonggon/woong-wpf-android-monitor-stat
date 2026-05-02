@@ -5592,3 +5592,12 @@ Verified so far:
 - Actual acceptance passed after installing Playwright Chromium runtime locally with `npx playwright install chromium`.
 - Latest evidence: `artifacts/integrated-dashboard-acceptance/latest/dashboard-1440.png`, `dashboard-390.png`, `api-dashboard.json`, `dashboard.html`, `manifest.json`, and `report.md`.
 - Privacy guard verifies rendered dashboard HTML does not expose device tokens, passwords, clipboard, or typed text markers.
+
+## 2026-05-02 Android Location Mini Map Follow-Up
+
+- Clarified the location-statistics gap: coordinate snapshots show the latest location, but useful "where did time go?" statistics require persisted `location_visits` aggregation.
+- Added Room-backed `LocationMapPoint` data to the dashboard model and repository, plus tests proving visits are ordered and exposed for visualization.
+- Added `LocationMiniMapView`, a local-only bubble map that draws persisted visit points by duration without external map tiles, map API calls, or coordinate upload.
+- Wired `fragment_dashboard.xml`/`DashboardFragment` so the Dashboard location card renders the mini map from Room-backed visit data.
+- Updated Android screenshot seed data and `scripts/run-android-ui-snapshots.ps1` so local UI evidence includes deterministic location visit statistics and `locationMiniMapView`.
+- Validation passed: focused Android RED/GREEN tests, `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`, and emulator UI snapshot acceptance at `artifacts/android-ui-snapshots/20260502-202141/`.

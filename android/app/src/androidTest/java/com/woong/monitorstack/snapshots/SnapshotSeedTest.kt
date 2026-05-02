@@ -6,6 +6,7 @@ import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.LocationCaptureMode
 import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
 import com.woong.monitorstack.data.local.LocationPermissionState
+import com.woong.monitorstack.data.local.LocationVisitEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.RoomDashboardRepository
 import java.time.ZoneId
@@ -105,6 +106,28 @@ class SnapshotSeedTest {
                 createdAtUtcMillis = base.plusMinutes(30).toInstant().toEpochMilli()
             )
         )
+        database.locationVisitDao().insert(
+            locationVisit(
+                id = "snapshot-location-office",
+                locationKey = "37.5665,126.9780",
+                latitude = 37.5665,
+                longitude = 126.9780,
+                startedAt = base.plusMinutes(5),
+                durationMinutes = 45,
+                sampleCount = 3
+            )
+        )
+        database.locationVisitDao().insert(
+            locationVisit(
+                id = "snapshot-location-cafe",
+                locationKey = "37.5700,126.9820",
+                latitude = 37.5700,
+                longitude = 126.9820,
+                startedAt = base.plusHours(2),
+                durationMinutes = 15,
+                sampleCount = 2
+            )
+        )
 
         val reportRows = database.focusSessionDao()
             .queryByLocalDateRange(today.minusDays(6).toString(), today.toString())
@@ -140,6 +163,37 @@ class SnapshotSeedTest {
             timezoneId = startedAt.zone.id,
             isIdle = isIdle,
             source = "snapshot_seed"
+        )
+    }
+
+    private fun locationVisit(
+        id: String,
+        locationKey: String,
+        latitude: Double,
+        longitude: Double,
+        startedAt: ZonedDateTime,
+        durationMinutes: Long,
+        sampleCount: Int
+    ): LocationVisitEntity {
+        val startedAtUtcMillis = startedAt.toInstant().toEpochMilli()
+        val durationMs = durationMinutes * 60_000
+
+        return LocationVisitEntity(
+            id = id,
+            deviceId = RoomDashboardRepository.DefaultDeviceId,
+            locationKey = locationKey,
+            latitude = latitude,
+            longitude = longitude,
+            coordinatePrecisionDecimals = 4,
+            firstCapturedAtUtcMillis = startedAtUtcMillis,
+            lastCapturedAtUtcMillis = startedAtUtcMillis + durationMs,
+            durationMs = durationMs,
+            sampleCount = sampleCount,
+            accuracyMeters = 35.5f,
+            permissionState = LocationPermissionState.GrantedApproximate,
+            captureMode = LocationCaptureMode.AppUsageContext,
+            createdAtUtcMillis = startedAtUtcMillis,
+            updatedAtUtcMillis = startedAtUtcMillis + durationMs
         )
     }
 }

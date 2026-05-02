@@ -36,5 +36,13 @@ data class DashboardLocationContext(
     val accuracyText: String = "Accuracy unavailable",
     val capturedAtLocalText: String = "No location captured",
     val visitStatsText: String = "No location visits",
-    val topVisitText: String = "No location statistics"
+    val topVisitText: String = "No location statistics",
+    val mapPoints: List<LocationMapPoint> = emptyList()
+)
+
+data class LocationMapPoint(
+    val latitude: Double,
+    val longitude: Double,
+    val durationMs: Long,
+    val sampleCount: Int
 )

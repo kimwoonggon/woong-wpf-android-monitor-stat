@@ -163,7 +163,12 @@ class RoomDashboardRepositoryTest {
         val snapshot = repository.load(DashboardPeriod.Today)
 
         assertEquals("2 location visits", snapshot.locationContext.visitStatsText)
-        assertEquals("37.5665, 126.9780 · 45m", snapshot.locationContext.topVisitText)
+        assertEquals("37.5665, 126.9780 - 45m", snapshot.locationContext.topVisitText)
+        assertEquals(2, snapshot.locationContext.mapPoints.size)
+        assertEquals(37.5665, snapshot.locationContext.mapPoints[0].latitude, 0.0001)
+        assertEquals(126.9780, snapshot.locationContext.mapPoints[0].longitude, 0.0001)
+        assertEquals(45 * 60_000L, snapshot.locationContext.mapPoints[0].durationMs)
+        assertEquals(3, snapshot.locationContext.mapPoints[0].sampleCount)
     }
 
     @Test

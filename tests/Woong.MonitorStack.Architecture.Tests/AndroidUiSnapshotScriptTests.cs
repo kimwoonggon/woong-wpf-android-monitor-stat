@@ -37,6 +37,7 @@ public sealed class AndroidUiSnapshotScriptTests
         Assert.Contains("Dashboard location card", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Settings location section", script, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("locationContextCard", script, StringComparison.Ordinal);
+        Assert.Contains("locationMiniMapView", script, StringComparison.Ordinal);
         Assert.Contains("locationContextCheckBox", script, StringComparison.Ordinal);
         Assert.Contains("preciseLatitudeLongitudeCheckBox", script, StringComparison.Ordinal);
         Assert.Contains("requestLocationPermissionButton", script, StringComparison.Ordinal);

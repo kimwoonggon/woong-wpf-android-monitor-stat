@@ -2588,3 +2588,27 @@ milestones below are finished.
 - [x] Installed the fixed debug APK on `emulator-5554` and captured visual
   evidence at
   `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.
+
+## 2026-05-02 Android Location Mini Map Follow-Up
+
+- [x] Answered the location-statistics gap: raw coordinate snapshots alone were
+  not enough; the dashboard needs persisted `location_visits` aggregation for
+  "where did time go?" statistics.
+- [x] Added RED/GREEN repository coverage proving Room-backed location visits
+  produce ordered `LocationMapPoint` data for the dashboard.
+- [x] Added `LocationMiniMapView`, a local-only no-network bubble map that
+  visualizes persisted visit points by duration without external map tiles or
+  map-provider calls.
+- [x] Wired the Android Dashboard location card to pass Room-backed map points
+  into `LocationMiniMapView`.
+- [x] Updated deterministic Android screenshot seeding to include multiple
+  location visit rows, so snapshot evidence can show both text statistics and
+  the local mini map.
+- [x] Updated `scripts/run-android-ui-snapshots.ps1` expected location checks
+  to include `locationMiniMapView`.
+- [x] Added `docs/android-location-statistics.md` documenting why stats may be
+  empty, what metadata is stored, and how a real map could be added later.
+- [x] Validation passed: focused RED/GREEN tests,
+  `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`,
+  and emulator UI snapshot acceptance at
+  `artifacts/android-ui-snapshots/20260502-202141/`.

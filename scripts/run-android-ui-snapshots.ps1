@@ -65,7 +65,7 @@ $featureScreens = @(
     "daily summary"
 )
 $expectedLocationChecks = @(
-    "Dashboard location card: locationContextCard, locationStatusText, locationLatitudeText, locationLongitudeText, locationAccuracyText, locationCapturedAtText",
+    "Dashboard location card: locationContextCard, locationStatusText, locationLatitudeText, locationLongitudeText, locationAccuracyText, locationCapturedAtText, locationMiniMapView",
     "Settings location section: locationContextDefaultText, locationCoordinateBoundaryText, preciseLocationOptInText, locationContextCheckBox, preciseLatitudeLongitudeCheckBox, requestLocationPermissionButton"
 )
 $status = "PASS"

@@ -92,6 +92,9 @@ class DashboardActivityRobolectricTest {
                     activity.getString(R.string.location_captured_at_value, "No location captured"),
                     activity.findViewById<TextView>(R.id.locationCapturedAtText).text.toString()
                 )
+                val miniMap = activity.findViewById<LocationMiniMapView>(R.id.locationMiniMapView)
+                assertNotNull(miniMap)
+                assertEquals(0, miniMap.pointCount)
             }
         }
     }

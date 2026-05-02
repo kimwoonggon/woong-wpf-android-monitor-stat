@@ -166,6 +166,7 @@ class DashboardFragment : Fragment() {
             R.string.location_top_visit_value,
             state.locationContext.topVisitText
         )
+        binding.locationMiniMapView.setPoints(state.locationContext.mapPoints)
         sessionAdapter.submit(state.recentSessions)
         topAppsAdapter.submit(state.chartData.appUsage.take(3))
         renderHourlyChart(state.chartData.hourlyActivity)

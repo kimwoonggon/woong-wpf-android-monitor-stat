@@ -1010,3 +1010,12 @@ workspace.
   screen floor.
 - [x] Emulator evidence captured at
   `artifacts/android-ui-regression/bottom-nav-floor/android-bottom-nav-floor.png`.
+- [x] Location statistics now include Room-backed `mapPoints` from
+  `location_visits`, not only the latest latitude/longitude snapshot.
+- [x] Dashboard location card now includes a local-only `LocationMiniMapView`
+  bubble map; it uses persisted visit points and does not call external map
+  providers or map tile APIs.
+- [x] Snapshot seed data now inserts multiple deterministic location visits so
+  UI evidence can show top-location statistics and the local mini map.
+- [x] Latest location mini-map evidence:
+  `artifacts/android-ui-snapshots/20260502-202141/02-dashboard-summary-location.png`.

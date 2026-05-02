@@ -572,6 +572,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/location_top_visit_not_available" />
+
+                <com.woong.monitorstack.dashboard.LocationMiniMapView
+                    android:id="@+id/locationMiniMapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="144dp"
+                    android:layout_marginTop="12dp"
+                    android:contentDescription="@string/location_map_empty" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
