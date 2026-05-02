@@ -161,6 +161,10 @@
     <string name="location_longitude_value">Longitude   %1$s</string>
     <string name="location_accuracy_value">Accuracy   %1$s</string>
     <string name="location_captured_at_value">Captured   %1$s</string>
+    <string name="location_latitude_default">Latitude   Latitude not stored</string>
+    <string name="location_longitude_default">Longitude   Longitude not stored</string>
+    <string name="location_accuracy_default">Accuracy   Accuracy unavailable</string>
+    <string name="location_captured_at_default">Captured   No location captured</string>
     <string name="location_visit_stats_value">Location visits   %1$s</string>
     <string name="location_top_visit_value">Top location   %1$s</string>
     <string name="location_visits_not_available">Location visits   No location visits</string>

@@ -139,6 +139,47 @@ public sealed class WindowsAppCompositionTests
         });
 
     [Fact]
+    public void AddWindowsApp_RegistersRealNotificationAreaTrayIcon()
+        => RunOnStaThread(() =>
+        {
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new DashboardOptions("Asia/Seoul"));
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+            var window = provider.GetRequiredService<MainWindow>();
+
+            try
+            {
+                Assert.IsType<WindowsNotifyIcon>(
+                    provider.GetRequiredService<IWindowsTrayIcon>());
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void MainWindowAndAppResources_DefineSharedApplicationIcon()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string appXaml = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "App.xaml"));
+        string mainWindowXaml = File.ReadAllText(Path.Combine(
+            repoRoot,
+            "src",
+            "Woong.MonitorStack.Windows.App",
+            "MainWindow.xaml"));
+
+        Assert.Contains("WoongAppIconImage", appXaml, StringComparison.Ordinal);
+        Assert.Contains("DrawingImage", appXaml, StringComparison.Ordinal);
+        Assert.Contains("Icon=\"{DynamicResource WoongAppIconImage}\"", mainWindowXaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AddWindowsApp_RegistersWindowsTrackingCoordinatorAndSqliteDashboardDataSource()
     {
         string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");

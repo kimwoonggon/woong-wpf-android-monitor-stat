@@ -28,6 +28,29 @@ public sealed class IntegratedDashboardBlazorWireflowTests
         Assert.Contains("polyline", page, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void IntegratedDashboardPage_ExposesPollingIntervalControls()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string pagePath = Path.Combine(
+            repoRoot,
+            "src",
+            "Woong.MonitorStack.Server",
+            "Components",
+            "Pages",
+            "IntegratedDashboard.razor");
+
+        string page = File.ReadAllText(pagePath);
+
+        Assert.Contains("Polling interval", page, StringComparison.Ordinal);
+        Assert.Contains("polling=off", page, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("polling=1s", page, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("polling=5s", page, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("polling=10s", page, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("polling=1h", page, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("refresh", page, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

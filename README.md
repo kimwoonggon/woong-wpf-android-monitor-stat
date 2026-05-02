@@ -669,6 +669,32 @@ Open the integrated Blazor dashboard:
 http://localhost:5000/dashboard?userId=user-1&from=2026-04-30&to=2026-04-30&timezoneId=UTC
 ```
 
+### Local WPF + Android Emulator To Blazor Dashboard
+
+For the normal local workflow, you do not need production deployment or Play
+Store signing. Use the WPF app and Android emulator app, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1
+```
+
+That command:
+
+- starts Docker PostgreSQL;
+- starts the ASP.NET Core/Blazor server on `http://127.0.0.1:5087`;
+- reads WPF SQLite from `%LOCALAPPDATA%\WoongMonitorStack\windows-local.db`;
+- pulls Android emulator Room `woong-monitor.db` with `adb`;
+- uploads both local metadata sets through server API DTOs;
+- opens the Blazor dashboard for `local-user`.
+
+If you only want to see what it will do:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 -DryRun
+```
+
+More details are in `docs/local-integrated-dashboard.md`.
+
 Development OpenAPI is exposed by ASP.NET Core when the environment is
 Development.
 

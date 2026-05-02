@@ -536,28 +536,28 @@
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/latitude_not_stored" />
+                    android:text="@string/location_latitude_default" />
 
                 <TextView
                     android:id="@+id/locationLongitudeText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/longitude_not_stored" />
+                    android:text="@string/location_longitude_default" />
 
                 <TextView
                     android:id="@+id/locationAccuracyText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/accuracy_unavailable" />
+                    android:text="@string/location_accuracy_default" />
 
                 <TextView
                     android:id="@+id/locationCapturedAtText"
                     style="@style/WmsKeyValueText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/no_location_captured" />
+                    android:text="@string/location_captured_at_default" />
 
                 <TextView
                     android:id="@+id/locationVisitStatsText"

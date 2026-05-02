@@ -44,5 +44,6 @@ data class LocationMapPoint(
     val latitude: Double,
     val longitude: Double,
     val durationMs: Long,
-    val sampleCount: Int
+    val sampleCount: Int,
+    val capturedAtLocalText: String = "Time unavailable"
 )

@@ -26,7 +26,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton(new WindowsLocalDatabaseState(options.LocalDatabasePath));
         services.AddSingleton(options.DashboardOptions);
         services.AddSingleton<IDashboardRuntimeLogSink>(new FileDashboardRuntimeLogSink(options.RuntimeLogPath));
-        services.AddSingleton<IWindowsTrayIcon, NoopWindowsTrayIcon>();
+        services.AddSingleton<IWindowsTrayIcon, WindowsNotifyIcon>();
         services.AddSingleton<IWindowsTrayLifecycleService, WindowsTrayLifecycleService>();
         services.AddSingleton<IDashboardApplicationLifetime, WpfDashboardApplicationLifetime>();
         services.AddDashboardPresentation();

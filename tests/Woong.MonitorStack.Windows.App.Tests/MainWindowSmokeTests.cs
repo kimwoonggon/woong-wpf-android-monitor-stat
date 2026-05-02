@@ -33,7 +33,7 @@ public sealed class MainWindowSmokeTests
         });
 
     [Fact]
-    public void MainWindow_SystemCloseButton_MinimizesToTaskbarWithoutClosing()
+    public void MainWindow_SystemCloseButton_HidesToNotificationAreaWithoutClosing()
         => RunOnStaThread(() =>
         {
             var viewModel = new DashboardViewModel(
@@ -53,8 +53,8 @@ public sealed class MainWindowSmokeTests
                 window.UpdateLayout();
 
                 Assert.False(closed);
-                Assert.True(window.IsVisible);
-                Assert.True(window.ShowInTaskbar);
+                Assert.False(window.IsVisible);
+                Assert.False(window.ShowInTaskbar);
                 Assert.Equal(WindowState.Minimized, window.WindowState);
             }
             finally

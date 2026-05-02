@@ -1,0 +1,53 @@
+namespace Woong.MonitorStack.Architecture.Tests;
+
+public sealed class LocalIntegratedDashboardRunbookTests
+{
+    [Fact]
+    public void LocalIntegratedDashboardScript_DocumentsRealWpfAndroidToBlazorFlow()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+        string toolProjectPath = Path.Combine(
+            repoRoot,
+            "tools",
+            "Woong.MonitorStack.LocalDashboardBridge",
+            "Woong.MonitorStack.LocalDashboardBridge.csproj");
+        string docsPath = Path.Combine(repoRoot, "docs", "local-integrated-dashboard.md");
+
+        Assert.True(File.Exists(scriptPath), "Local integrated dashboard script must exist.");
+        Assert.True(File.Exists(toolProjectPath), "Local dashboard bridge tool project must exist.");
+        Assert.True(File.Exists(docsPath), "Local integrated dashboard runbook must exist.");
+
+        string script = File.ReadAllText(scriptPath);
+        string docs = File.ReadAllText(docsPath);
+
+        Assert.Contains("start-server-postgres.ps1", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Woong.MonitorStack.LocalDashboardBridge", script, StringComparison.Ordinal);
+        Assert.Contains("adb", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("woong-monitor.db", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("windows-local.db", script, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("/dashboard?userId=", script, StringComparison.Ordinal);
+        Assert.Contains("WPF SQLite", docs, StringComparison.Ordinal);
+        Assert.Contains("Android emulator Room", docs, StringComparison.Ordinal);
+        Assert.Contains("PostgreSQL", docs, StringComparison.Ordinal);
+        Assert.Contains("Blazor", docs, StringComparison.Ordinal);
+        Assert.Contains("does not read typed text", docs, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        DirectoryInfo? directory = new(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Woong.MonitorStack.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not find repository root.");
+    }
+}

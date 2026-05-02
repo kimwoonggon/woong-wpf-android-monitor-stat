@@ -5618,3 +5618,26 @@ Verified so far:
 - Added `docs/blazor-integrated-dashboard-wireflow.md` to document PostgreSQL-only integration, Windows/Android source separation, Android Chrome domain limitations, and opted-in location route rendering.
 - Parallel subagents completed WPF and Android data inventory docs plus Figma-importable SVG artifacts under `docs/data/` and `artifacts/data-diagrams/`.
 - Focused validation passed: `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardBlazorWireflowTests -v minimal` and `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~GetAsync_SeparatesWindowsAndroidAndCombinedUsageAndOrdersLocationRoute -v minimal`.
+
+## 2026-05-02 Local WPF And Android Emulator Integrated Dashboard Flow
+
+- Added local-only bridge tool `tools/Woong.MonitorStack.LocalDashboardBridge` that reads WPF SQLite and Android emulator Room DB files, registers local Windows/Android devices, and uploads focus/web/location metadata through existing server API DTOs.
+- Added `scripts/run-local-integrated-dashboard.ps1` to start Docker PostgreSQL, start the ASP.NET Core/Blazor server on `127.0.0.1:5087`, pull Android emulator `woong-monitor.db` with `adb`, run the bridge, and open `/dashboard` for `local-user`.
+- Added `docs/local-integrated-dashboard.md` and README quick commands for the local workflow. This explicitly ignores deployment/signing/Play Store concerns.
+- Added architecture coverage for the local runbook and verified `-DryRun`, focused architecture test, and bridge project build.
+
+## 2026-05-02 Local UX Follow-Up: WPF, Blazor Polling, Android Map
+
+- WPF now has a shared vector app icon and a real notification-area NotifyIcon; X/system close hides the window from the taskbar and shows the tray icon, while explicit Exit still shuts down.
+- WPF chart/detail behavior remains covered: dashboard app/domain cards use top 3 points, detail requests use top 10 grouped labels, and horizontal bar labels are tested against duplicate app/domain aggregation.
+- Blazor /dashboard now exposes polling controls for Off/1s/5s/10s/1h via polling= query values and uses a metadata refresh tag for selected intervals.
+- Android location context now marks stale captures explicitly, and LocationMiniMapView shows a local no-network map context with timestamped persisted location visit points.
+- Focused validation passed: WPF App tests, WPF Presentation chart tests, Blazor architecture polling tests, Android location/inset/current-focus focused tests, local dashboard bridge build, and local bridge dry-run.
+
+Validation update:
+- Android full unit tests passed: .\gradlew.bat :app:testDebugUnitTest --no-daemon --stacktrace.
+- Android debug build passed: .\gradlew.bat :app:assembleDebug --no-daemon --stacktrace.
+- .NET restore passed: dotnet restore Woong.MonitorStack.sln --configfile NuGet.config.
+- .NET full test passed: dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal (626 passed plus 6 PostgreSQL-environment skips across server tests).
+- .NET full build passed: dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal.
+- Local dashboard dry-run passed: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 -DryRun.

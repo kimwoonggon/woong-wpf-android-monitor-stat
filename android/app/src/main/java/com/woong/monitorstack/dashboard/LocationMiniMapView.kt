@@ -44,13 +44,29 @@ class LocationMiniMapView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
         textSize = 14f * resources.displayMetrics.scaledDensity
     }
+    private val pointLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.wms_text_secondary)
+        textAlign = Paint.Align.CENTER
+        textSize = 10f * resources.displayMetrics.scaledDensity
+    }
+    private val roadPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.wms_border)
+        style = Paint.Style.STROKE
+        strokeWidth = 5f
+        alpha = 170
+    }
+    private val blockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.wms_background)
+        style = Paint.Style.FILL
+        alpha = 230
+    }
 
     val pointCount: Int
         get() = points.size
 
     init {
         minimumHeight = (132f * resources.displayMetrics.density).roundToInt()
-        contentDescription = "No location statistics"
+        contentDescription = "No location statistics. Local map preview, no network map tiles."
     }
 
     fun setPoints(newPoints: List<LocationMapPoint>) {
@@ -81,11 +97,11 @@ class LocationMiniMapView @JvmOverloads constructor(
             return
         }
 
-        drawGrid(canvas)
+        drawLocalMapContext(canvas)
         drawPoints(canvas)
     }
 
-    private fun drawGrid(canvas: Canvas) {
+    private fun drawLocalMapContext(canvas: Canvas) {
         val left = bounds.left + 18f
         val top = bounds.top + 18f
         val right = bounds.right - 18f
@@ -98,6 +114,33 @@ class LocationMiniMapView @JvmOverloads constructor(
             canvas.drawLine(x, top, x, bottom, gridPaint)
             canvas.drawLine(left, y, right, y, gridPaint)
         }
+
+        val blockWidth = (right - left) / 5f
+        val blockHeight = (bottom - top) / 3f
+        canvas.drawRoundRect(
+            RectF(
+                left + blockWidth * 0.3f,
+                top + blockHeight * 0.25f,
+                left + blockWidth * 1.5f,
+                top + blockHeight
+            ),
+            10f,
+            10f,
+            blockPaint
+        )
+        canvas.drawRoundRect(
+            RectF(
+                right - blockWidth * 1.6f,
+                bottom - blockHeight * 1.1f,
+                right - blockWidth * 0.35f,
+                bottom - blockHeight * 0.25f
+            ),
+            10f,
+            10f,
+            blockPaint
+        )
+        canvas.drawLine(left, bottom - blockHeight * 0.7f, right, top + blockHeight * 0.65f, roadPaint)
+        canvas.drawLine(left + blockWidth * 2.2f, top, left + blockWidth * 3.0f, bottom, roadPaint)
     }
 
     private fun drawPoints(canvas: Canvas) {
@@ -118,22 +161,43 @@ class LocationMiniMapView @JvmOverloads constructor(
             val y = top + height - (((point.latitude - minLatitude) / latitudeRange).toFloat() * height)
             val radius = 7f + (18f * (point.durationMs / maxDuration).toFloat())
             canvas.drawCircle(x, y, radius, pointPaint)
+            canvas.drawText(
+                point.capturedAtLocalText,
+                x,
+                (y - radius - 6f).coerceAtLeast(bounds.top + 18f),
+                pointLabelPaint
+            )
         }
     }
 
     private fun buildContentDescription(): String {
         if (points.isEmpty()) {
-            return "No location statistics"
+            return "No location statistics. Local map preview, no network map tiles."
         }
 
         val topPoint = points.maxWith(
             compareBy<LocationMapPoint> { it.durationMs }
                 .thenBy { it.sampleCount }
         )
-        return "${points.size} location visits. Top location %.4f, %.4f - %s".format(
+        val pointLabels = points
+            .sortedBy { it.capturedAtLocalText }
+            .joinToString(separator = ". ") { point ->
+                "Point ${point.capturedAtLocalText}: %.4f, %.4f, %s, %d samples".format(
+                    point.latitude,
+                    point.longitude,
+                    formatDuration(point.durationMs),
+                    point.sampleCount
+                )
+            }
+
+        return (
+            "${points.size} location visits. Local map preview, no network map tiles. " +
+                "Top location %.4f, %.4f - %s. %s"
+            ).format(
             topPoint.latitude,
             topPoint.longitude,
-            formatDuration(topPoint.durationMs)
+            formatDuration(topPoint.durationMs),
+            pointLabels
         )
     }
 

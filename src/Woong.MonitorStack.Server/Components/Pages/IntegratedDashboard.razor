@@ -3,6 +3,12 @@
 @inject IntegratedDashboardQueryService DashboardQuery
 
 <PageTitle>Integrated Device Dashboard</PageTitle>
+@if (PollingRefreshSeconds is not null)
+{
+    <HeadContent>
+        <meta http-equiv="refresh" content="@PollingRefreshSeconds" />
+    </HeadContent>
+}
 
 <section class="dashboard-shell">
     <header class="hero">
@@ -16,6 +22,20 @@
             <span class="status-pill safe">Metadata only</span>
         </div>
     </header>
+
+    <section class="polling-panel" aria-label="Polling interval controls">
+        <div>
+            <strong>Polling interval</strong>
+            <span class="muted">Refresh PostgreSQL-backed dashboard data on this page.</span>
+        </div>
+        <nav class="polling-buttons" aria-label="Dashboard polling interval">
+            <a class="@PollingButtonClass("off")" href="@BuildPollingUrl("off")" data-polling-query="polling=off">Off</a>
+            <a class="@PollingButtonClass("1s")" href="@BuildPollingUrl("1s")" data-polling-query="polling=1s">1s</a>
+            <a class="@PollingButtonClass("5s")" href="@BuildPollingUrl("5s")" data-polling-query="polling=5s">5s</a>
+            <a class="@PollingButtonClass("10s")" href="@BuildPollingUrl("10s")" data-polling-query="polling=10s">10s</a>
+            <a class="@PollingButtonClass("1h")" href="@BuildPollingUrl("1h")" data-polling-query="polling=1h">1h</a>
+        </nav>
+    </section>
 
     @if (_error is not null)
     {
@@ -329,7 +349,8 @@
 
     .message,
     .metric-card,
-    .panel {
+    .panel,
+    .polling-panel {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -348,8 +369,44 @@
     .platform-grid,
     .dashboard-grid,
     .route-panel,
-    .device-panel {
+    .device-panel,
+    .polling-panel {
         margin-top: 14px;
+    }
+
+    .polling-panel {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+    }
+
+    .polling-panel strong,
+    .polling-panel span {
+        display: block;
+    }
+
+    .polling-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .polling-button {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: #334155;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+
+    .polling-button.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
     }
 
     .metric-grid {
@@ -562,7 +619,8 @@
     @@media (max-width: 760px) {
         .hero,
         .section-heading,
-        .platform-title {
+        .platform-title,
+        .polling-panel {
             align-items: flex-start;
             flex-direction: column;
         }
@@ -590,12 +648,24 @@
     [SupplyParameterFromQuery(Name = "timezoneId")]
     public string? TimezoneId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "polling")]
+    public string? Polling { get; set; }
+
     private IntegratedDashboardSnapshot? _snapshot;
     private string? _error;
 
     private string FromDateText => From ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     private string ToDateText => To ?? FromDateText;
     private string ResolvedTimezoneId => string.IsNullOrWhiteSpace(TimezoneId) ? "UTC" : TimezoneId;
+    private string ResolvedPolling => NormalizePolling(Polling);
+    private int? PollingRefreshSeconds => ResolvedPolling switch
+    {
+        "1s" => 1,
+        "5s" => 5,
+        "10s" => 10,
+        "1h" => 3600,
+        _ => null
+    };
 
     private IReadOnlyList<IntegratedPlatformUsage> OrderedPlatformUsage
         => _snapshot is null
@@ -716,4 +786,27 @@
 
     private static string Invariant(double value)
         => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private string PollingButtonClass(string polling)
+        => string.Equals(ResolvedPolling, polling, StringComparison.OrdinalIgnoreCase)
+            ? "polling-button active"
+            : "polling-button";
+
+    private string BuildPollingUrl(string polling)
+        => string.Create(
+            CultureInfo.InvariantCulture,
+            $"/dashboard?userId={Escape(UserId ?? "local-user")}&from={Escape(FromDateText)}&to={Escape(ToDateText)}&timezoneId={Escape(ResolvedTimezoneId)}&polling={Escape(polling)}");
+
+    private static string NormalizePolling(string? polling)
+        => polling?.Trim().ToLowerInvariant() switch
+        {
+            "1s" => "1s",
+            "5s" => "5s",
+            "10s" => "10s",
+            "1h" => "1h",
+            _ => "off"
+        };
+
+    private static string Escape(string value)
+        => Uri.EscapeDataString(value);
 }

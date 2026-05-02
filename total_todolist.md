@@ -2641,3 +2641,50 @@ milestones below are finished.
   `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest`,
   and Android UI snapshot acceptance at
   `artifacts/android-ui-snapshots/20260502-204431/`.
+
+## 2026-05-02 Local WPF + Android Emulator To Blazor Dashboard
+
+- [x] Add RED architecture coverage requiring a local-only runbook/script for
+  WPF SQLite + Android emulator Room -> API DTO upload -> PostgreSQL ->
+  Blazor dashboard.
+- [x] Add `tools/Woong.MonitorStack.LocalDashboardBridge` to register local
+  Windows/Android devices and upload WPF focus/web rows plus Android
+  focus/location rows through the existing server APIs.
+- [x] Add `scripts/run-local-integrated-dashboard.ps1` to start local Docker
+  PostgreSQL, start ASP.NET Core/Blazor, pull Android emulator
+  `woong-monitor.db` with `adb`, upload local metadata, and open `/dashboard`.
+- [x] Add `docs/local-integrated-dashboard.md` and README commands for the
+  local-only workflow.
+- [x] Keep privacy boundaries explicit: the local bridge uploads metadata only
+  and does not read typed text, messages, passwords, clipboard contents, page
+  contents, screenshots, or Android touch coordinates.
+
+## 2026-05-02 Local UX Follow-Up: WPF Charts, Tray, Blazor Polling, Android Map
+
+- [x] WPF: add a suitable application icon and ensure the window/tray use it.
+- [x] WPF: make the top App Focus chart show the top 3 apps when data exists.
+- [x] WPF: make App Focus detail chart/table show up to top 10 labels with one
+  visible label per horizontal bar.
+- [x] WPF: make Domain Focus detail chart/table show up to top 10 labels with
+  one visible label per horizontal bar.
+- [x] WPF: ensure clicking X minimizes to notification-area hidden icons
+  instead of remaining as a visible taskbar button; explicit Exit still shuts
+  down the app.
+- [x] Blazor: add dashboard polling controls for Off/1s/5s/10s/1h and make the
+  page refresh PostgreSQL-backed dashboard data at the selected interval.
+- [x] Android: verify location context continues capturing over time or make
+  the UI show stale-capture status clearly.
+- [x] Android: improve location map so moving locations add visible time-linked
+  points; points expose timestamp and latitude/longitude labels.
+- [x] Android: add a Google-map-like local visual context without uploading
+  screenshots or using invasive tracking; external map tiles must remain
+  explicitly documented if introduced later.
+- [x] Android: keep Dashboard/Sessions/Report/Settings bottom navigation fixed
+  at the screen bottom, with Android system navigation buttons visible beneath
+  the app content where the emulator displays them.
+- [x] Validation passed for this follow-up: WPF App focused tests, WPF
+  Presentation chart tests, Blazor architecture polling tests, Android focused
+  location/inset/current-focus tests, and bridge dry-run/build checks.
+- [x] Full validation passed before commit: `dotnet restore`, `dotnet test`,
+  `dotnet build`, Android `:app:testDebugUnitTest`, Android
+  `:app:assembleDebug`, and `run-local-integrated-dashboard.ps1 -DryRun`.

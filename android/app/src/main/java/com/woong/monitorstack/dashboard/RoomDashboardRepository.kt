@@ -14,6 +14,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -222,7 +223,10 @@ class RoomDashboardRepository(
                     latitude = visit.latitude,
                     longitude = visit.longitude,
                     durationMs = visit.durationMs,
-                    sampleCount = visit.sampleCount
+                    sampleCount = visit.sampleCount,
+                    capturedAtLocalText = Instant.ofEpochMilli(visit.lastCapturedAtUtcMillis)
+                        .atZone(timezoneId)
+                        .format(TimeFormatter)
                 )
             }
 
@@ -230,11 +234,11 @@ class RoomDashboardRepository(
             visitStatsText = "${visits.size} location visits",
             topVisitText = String.format(
                 Locale.US,
-                "%.4f, %.4f · %s",
+                "%.4f, %.4f - %s",
                 topVisit.latitude,
                 topVisit.longitude,
                 formatDuration(topVisit.durationMs)
-            ).replace(" 쨌 ", " - ").replace(" · ", " - "),
+            ),
             mapPoints = mapPoints
         )
     }
@@ -255,18 +259,40 @@ class RoomDashboardRepository(
             )
         }
 
+        val capturedAt = Instant.ofEpochMilli(capturedAtUtcMillis)
+        val now = nowProvider()
+        val statusText = if (isStale(capturedAt, now)) {
+            "Location context stale - last captured ${formatElapsed(capturedAt, now)} ago"
+        } else {
+            "Location context enabled"
+        }
+
         return DashboardLocationContext(
-            statusText = "Location context enabled",
+            statusText = statusText,
             latitudeText = String.format(Locale.US, "%.4f", latitude),
             longitudeText = String.format(Locale.US, "%.4f", longitude),
             accuracyText = accuracyMeters?.let { "±${it.roundToInt()}m" } ?: "Accuracy unavailable",
-            capturedAtLocalText = Instant.ofEpochMilli(capturedAtUtcMillis)
-                .atZone(timezoneId)
-                .format(TimeFormatter),
+            capturedAtLocalText = capturedAt.atZone(timezoneId).format(TimeFormatter),
             visitStatsText = visitSummary.visitStatsText,
             topVisitText = visitSummary.topVisitText,
             mapPoints = visitSummary.mapPoints
         )
+    }
+
+    private fun isStale(capturedAt: Instant, now: Instant): Boolean {
+        return capturedAt.plusMillis(LocationStaleAfterMs).isBefore(now)
+    }
+
+    private fun formatElapsed(from: Instant, to: Instant): String {
+        val elapsedMinutes = ChronoUnit.MINUTES.between(from, to).coerceAtLeast(0)
+        val hours = elapsedMinutes / 60
+        val minutes = elapsedMinutes % 60
+
+        return if (hours > 0) {
+            "${hours}h ${minutes}m"
+        } else {
+            "${minutes}m"
+        }
     }
 
     private fun formatDuration(durationMs: Long): String {
@@ -283,6 +309,7 @@ class RoomDashboardRepository(
 
     companion object {
         const val DefaultDeviceId = "local-android-device"
+        private const val LocationStaleAfterMs = 60 * 60 * 1_000L
         private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }

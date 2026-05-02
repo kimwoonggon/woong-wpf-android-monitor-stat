@@ -119,7 +119,12 @@ class RoomDashboardRepositoryTest {
             locationDao = locationDao,
             deviceId = "android-device-1",
             timezoneId = timezoneId,
-            todayProvider = { LocalDate.of(2026, 4, 28) }
+            todayProvider = { LocalDate.of(2026, 4, 28) },
+            nowProvider = {
+                LocalDateTime.parse("2026-04-28T09:45:00")
+                    .atZone(timezoneId)
+                    .toInstant()
+            }
         )
 
         val snapshot = repository.load(DashboardPeriod.Today)
@@ -129,6 +134,38 @@ class RoomDashboardRepositoryTest {
         assertEquals("126.9780", snapshot.locationContext.longitudeText)
         assertEquals("±36m", snapshot.locationContext.accuracyText)
         assertEquals("09:30", snapshot.locationContext.capturedAtLocalText)
+    }
+
+    @Test
+    fun loadTodayMarksLocationContextStaleWhenLatestCaptureIsNotCurrent() {
+        val locationDao = database.locationContextSnapshotDao()
+        locationDao.insert(
+            locationSnapshot(
+                id = "stale-location",
+                capturedLocal = "2026-04-28T09:30:00",
+                latitude = 37.5665,
+                longitude = 126.9780
+            )
+        )
+        val repository = RoomDashboardRepository(
+            dao = database.focusSessionDao(),
+            locationDao = locationDao,
+            deviceId = "android-device-1",
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) },
+            nowProvider = {
+                LocalDateTime.parse("2026-04-28T11:30:00")
+                    .atZone(timezoneId)
+                    .toInstant()
+            }
+        )
+
+        val snapshot = repository.load(DashboardPeriod.Today)
+
+        assertEquals("Location context stale - last captured 2h 0m ago", snapshot.locationContext.statusText)
+        assertEquals("09:30", snapshot.locationContext.capturedAtLocalText)
+        assertEquals("37.5665", snapshot.locationContext.latitudeText)
+        assertEquals("126.9780", snapshot.locationContext.longitudeText)
     }
 
     @Test
@@ -169,6 +206,7 @@ class RoomDashboardRepositoryTest {
         assertEquals(126.9780, snapshot.locationContext.mapPoints[0].longitude, 0.0001)
         assertEquals(45 * 60_000L, snapshot.locationContext.mapPoints[0].durationMs)
         assertEquals(3, snapshot.locationContext.mapPoints[0].sampleCount)
+        assertEquals("09:45", snapshot.locationContext.mapPoints[0].capturedAtLocalText)
     }
 
     @Test

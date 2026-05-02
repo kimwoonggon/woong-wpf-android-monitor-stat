@@ -32,4 +32,8 @@
     <SolidColorBrush x:Key="MetricAmberBackgroundBrush" Color="#FFF7ED" />
     <SolidColorBrush x:Key="MetricPurpleBrush" Color="#6D5BD0" />
     <SolidColorBrush x:Key="MetricPurpleBackgroundBrush" Color="#F5F3FF" />
+
+    <SolidColorBrush x:Key="AppIconBackgroundBrush" Color="#1F2937" />
+    <SolidColorBrush x:Key="AppIconAccentBrush" Color="#22C55E" />
+    <SolidColorBrush x:Key="AppIconForegroundBrush" Color="#FFFFFF" />
 </ResourceDictionary>

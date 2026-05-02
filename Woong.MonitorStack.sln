@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.Windows.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.ChromeNativeHost", "tools\Woong.MonitorStack.ChromeNativeHost\Woong.MonitorStack.ChromeNativeHost.csproj", "{67CE779F-D05D-4254-9B09-E05AC44306F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Woong.MonitorStack.LocalDashboardBridge", "tools\Woong.MonitorStack.LocalDashboardBridge\Woong.MonitorStack.LocalDashboardBridge.csproj", "{B57D295B-41E0-48A1-842F-FA1675F0B84C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -243,6 +245,18 @@ Global
 		{67CE779F-D05D-4254-9B09-E05AC44306F2}.Release|x64.Build.0 = Release|Any CPU
 		{67CE779F-D05D-4254-9B09-E05AC44306F2}.Release|x86.ActiveCfg = Release|Any CPU
 		{67CE779F-D05D-4254-9B09-E05AC44306F2}.Release|x86.Build.0 = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|x64.Build.0 = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Debug|x86.Build.0 = Debug|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|x64.ActiveCfg = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|x64.Build.0 = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|x86.ActiveCfg = Release|Any CPU
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -256,5 +270,6 @@ Global
 		{D9B6509A-AC95-4389-A044-154E3A77F9C3} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{5F3FF8F9-0103-4DB4-96CF-12926E46F2FD} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{67CE779F-D05D-4254-9B09-E05AC44306F2} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{B57D295B-41E0-48A1-842F-FA1675F0B84C} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal

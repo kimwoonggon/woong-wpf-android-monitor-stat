@@ -6,7 +6,7 @@ namespace Woong.MonitorStack.Windows.App.Tests;
 public sealed class WindowsTrayLifecycleServiceTests
 {
     [Fact]
-    public void MinimizeToTaskbar_KeepsWindowInTaskbarShowsTrayAndWritesLifecycleEvent()
+    public void MinimizeToTaskbar_HidesWindowFromTaskbarShowsTrayAndWritesLifecycleEvent()
     {
         var window = new FakeTrayWindow();
         var trayIcon = new FakeTrayIcon();
@@ -15,12 +15,12 @@ public sealed class WindowsTrayLifecycleServiceTests
 
         service.MinimizeToTaskbar(window);
 
-        Assert.Equal(0, window.HideCallCount);
-        Assert.True(window.ShowInTaskbar);
+        Assert.Equal(1, window.HideCallCount);
+        Assert.False(window.ShowInTaskbar);
         Assert.Equal(WindowState.Minimized, window.WindowState);
         Assert.True(trayIcon.IsVisible);
         DashboardRuntimeLogEvent logEvent = Assert.Single(runtimeLogSink.Events);
-        Assert.Equal("Window minimized to taskbar", logEvent.EventType);
+        Assert.Equal("Window hidden to notification area", logEvent.EventType);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class WindowsTrayLifecycleServiceTests
 
         Assert.Null(thrown);
         string fallbackMessage = Assert.Single(fallbackMessages);
-        Assert.Contains("Window minimized to taskbar", fallbackMessage, StringComparison.Ordinal);
+        Assert.Contains("Window hidden to notification area", fallbackMessage, StringComparison.Ordinal);
         Assert.Contains("Runtime log sink failed", fallbackMessage, StringComparison.Ordinal);
     }
 
