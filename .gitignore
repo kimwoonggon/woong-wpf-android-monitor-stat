@@ -40,6 +40,9 @@ coverage/
 .vs/
 .vscode/
 
+# Local Docker/dev secrets
+.env
+
 # Android
 android/.gradle/
 android/.kotlin/

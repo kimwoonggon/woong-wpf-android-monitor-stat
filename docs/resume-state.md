@@ -5549,3 +5549,14 @@ Verified so far:
 - Focused validation so far: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardQueryServiceTests -v minimal` and `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter FullyQualifiedName~IntegratedDashboardEndpointTests -v minimal`.
 - Known follow-ups: exact timezone-aware cross-midnight splitting for integrated web/location stats, authenticated production dashboard ownership policy, and browser screenshot evidence for the Blazor UI.
 - Full validation after Blazor bootstrap passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed 610 tests with 6 PostgreSQL-environment skips, `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings/errors, and coverage refreshed to line 87.9% / branch 70.4%.
+
+## 2026-05-02 Docker PostgreSQL Local Server Flow
+
+- Added root `docker-compose.yml` for local PostgreSQL using `postgres:16-alpine`, container `woong-monitor-postgres`, named volume `woong_monitor_postgres_data`, health check, and host port `55432`.
+- Added `.env.example`; real `.env` is ignored and was created locally by `scripts\start-server-postgres.ps1`.
+- Added `scripts\start-server-postgres.ps1` and `scripts\stop-server-postgres.ps1`, both with `-DryRun`; start script can apply EF Core migrations and optionally run the server.
+- Updated `appsettings.Development.json` and README to point local server/Blazor dashboard at Docker PostgreSQL `Host=localhost;Port=55432;Database=woong_monitor;Username=woong;Password=woong_dev_password`.
+- Actual local Docker validation passed: `docker info` succeeded, `scripts\start-server-postgres.ps1` started PostgreSQL, waited for health, restored tools, and applied all EF migrations.
+- Integrated dashboard timezone boundary follow-up completed: web/location filtering uses the requested timezone local-date UTC range, and focus/web durations are split at range boundaries.
+- PostgreSQL/Testcontainers validation passed after Docker Compose work: `scripts\run-server-postgres-validation.ps1` wrote PASS artifacts to `artifacts/server-postgres-validation/20260502-191025/`.
+- Full validation after Docker PostgreSQL and subagent dashboard hardening passed: `dotnet test` 616 passed / 6 PostgreSQL-environment skips, `dotnet build` 0 warnings/errors, and coverage line 87.9% / branch 70.8%.

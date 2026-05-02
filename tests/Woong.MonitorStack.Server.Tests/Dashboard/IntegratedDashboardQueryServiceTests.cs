@@ -71,6 +71,125 @@ public sealed class IntegratedDashboardQueryServiceTests
         Assert.Equal(2, snapshot.TopLocations[0].SampleCount);
     }
 
+    [Fact]
+    public async Task GetAsync_FiltersWebSessionsAndLocationSamplesByRequestedTimezoneLocalDate()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid androidDeviceId = Guid.NewGuid();
+
+        database.Context.Devices.Add(
+            Device(androidDeviceId, "user-1", Platform.Android, "android-key", "Android Phone"));
+        database.Context.FocusSessions.AddRange(
+            Focus(
+                androidDeviceId,
+                "focus-kst-may-1",
+                "com.android.chrome",
+                new DateTimeOffset(2026, 4, 30, 15, 30, 0, TimeSpan.Zero),
+                900_000,
+                isIdle: false),
+            Focus(
+                androidDeviceId,
+                "focus-kst-may-2",
+                "com.android.chrome",
+                new DateTimeOffset(2026, 5, 1, 15, 30, 0, TimeSpan.Zero),
+                1_800_000,
+                isIdle: false));
+        database.Context.WebSessions.AddRange(
+            Web(
+                androidDeviceId,
+                "web-kst-may-1",
+                "focus-kst-may-1",
+                "included.example",
+                new DateTimeOffset(2026, 4, 30, 15, 30, 0, TimeSpan.Zero),
+                900_000),
+            Web(
+                androidDeviceId,
+                "web-kst-may-2",
+                "focus-kst-may-2",
+                "excluded.example",
+                new DateTimeOffset(2026, 5, 1, 15, 30, 0, TimeSpan.Zero),
+                1_800_000));
+        database.Context.LocationContexts.AddRange(
+            Location(
+                androidDeviceId,
+                "loc-kst-may-1",
+                new DateTimeOffset(2026, 4, 30, 15, 45, 0, TimeSpan.Zero),
+                37.5665,
+                126.9780),
+            Location(
+                androidDeviceId,
+                "loc-kst-may-2",
+                new DateTimeOffset(2026, 5, 1, 15, 15, 0, TimeSpan.Zero),
+                35.1796,
+                129.0756));
+        await database.Context.SaveChangesAsync();
+        var service = new IntegratedDashboardQueryService(database.Context);
+
+        IntegratedDashboardSnapshot snapshot = await service.GetAsync(
+            "user-1",
+            new DateOnly(2026, 5, 1),
+            new DateOnly(2026, 5, 1),
+            "Asia/Seoul");
+
+        Assert.Equal(900_000, snapshot.TotalWebMs);
+        Assert.Collection(
+            snapshot.TopDomains,
+            domain =>
+            {
+                Assert.Equal("included.example", domain.Label);
+                Assert.Equal(900_000, domain.DurationMs);
+            });
+        Assert.Collection(
+            snapshot.TopLocations,
+            location =>
+            {
+                Assert.Equal("37.5665,126.9780", location.Label);
+                Assert.Equal(1, location.SampleCount);
+            });
+    }
+
+    [Fact]
+    public async Task GetAsync_SplitsFocusAndWebDurationsAtRequestedTimezoneRangeBoundary()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid windowsDeviceId = Guid.NewGuid();
+        DateTimeOffset startUtc = new(2026, 4, 30, 14, 50, 0, TimeSpan.Zero);
+
+        database.Context.Devices.Add(
+            Device(windowsDeviceId, "user-1", Platform.Windows, "windows-key", "Windows PC"));
+        database.Context.FocusSessions.Add(
+            Focus(
+                windowsDeviceId,
+                "focus-cross-midnight",
+                "chrome.exe",
+                startUtc,
+                1_200_000,
+                isIdle: false));
+        database.Context.WebSessions.Add(
+            Web(
+                windowsDeviceId,
+                "web-cross-midnight",
+                "focus-cross-midnight",
+                "github.com",
+                startUtc,
+                1_200_000));
+        await database.Context.SaveChangesAsync();
+        var service = new IntegratedDashboardQueryService(database.Context);
+
+        IntegratedDashboardSnapshot snapshot = await service.GetAsync(
+            "user-1",
+            new DateOnly(2026, 5, 1),
+            new DateOnly(2026, 5, 1),
+            "Asia/Seoul");
+
+        Assert.Equal(600_000, snapshot.TotalActiveMs);
+        Assert.Equal(600_000, snapshot.TotalWebMs);
+        Assert.Equal(600_000, snapshot.TopApps[0].DurationMs);
+        Assert.Equal(600_000, snapshot.TopDomains[0].DurationMs);
+        Assert.Equal(600_000, snapshot.Devices[0].ActiveMs);
+        Assert.Equal(600_000, snapshot.Devices[0].WebMs);
+    }
+
     private static DeviceEntity Device(
         Guid id,
         string userId,

@@ -2520,9 +2520,36 @@ milestones below are finished.
   `dotnet test` passed 610 tests / 6 PostgreSQL-environment tests skipped,
   full solution `dotnet build` passed with 0 warnings and 0 errors, and
   coverage refreshed at line 87.9% / branch 70.4%.
-- [ ] Follow-up: add exact timezone-aware cross-midnight splitting to
-  `IntegratedDashboardQueryService` for web sessions and location samples.
+- [x] Follow-up completed: `IntegratedDashboardQueryService` now filters web
+  sessions/location samples by the requested timezone local-date range and
+  splits overlapping focus/web durations at the requested range boundary.
 - [ ] Follow-up: add authenticated production user/session provider before
   exposing the dashboard beyond local/dev use.
 - [ ] Follow-up: add browser/Playwright screenshot evidence for the Blazor
   dashboard after the first UI shell stabilizes.
+
+## 2026-05-02 Docker PostgreSQL Local Server Flow
+
+- [x] Add RED architecture tests requiring Docker Compose PostgreSQL, local env
+  defaults, start/stop scripts, Development connection string, and README
+  commands for the Blazor dashboard.
+- [x] Add root `docker-compose.yml` with `postgres:16-alpine`,
+  `woong-monitor-postgres`, health check, named volume, and host port `55432`.
+- [x] Add `.env.example` with local-development-only PostgreSQL defaults and
+  keep real `.env` ignored.
+- [x] Add `scripts/start-server-postgres.ps1` with `-DryRun`, optional
+  migration application, health wait, and optional server run.
+- [x] Add `scripts/stop-server-postgres.ps1` with `-DryRun` and guarded
+  `-RemoveVolumes` reset.
+- [x] Update `README.md` and server Development config to use Docker
+  PostgreSQL at `localhost:55432`.
+- [x] Actual local validation: Docker daemon available, PostgreSQL container
+  started, `.env` created from `.env.example`, and EF Core migrations applied.
+- [x] PostgreSQL/Testcontainers validation passed with artifacts at
+  `artifacts/server-postgres-validation/20260502-191025/`.
+- [x] Full validation passed after Docker PostgreSQL and subagent follow-ups:
+  `dotnet test` passed 616 tests / 6 PostgreSQL-environment skips,
+  `dotnet build` passed with 0 warnings and 0 errors, and coverage refreshed at
+  line 87.9% / branch 70.8%.
+- [ ] Follow-up: add browser/Playwright screenshot evidence for `/dashboard`
+  with seeded PostgreSQL data.

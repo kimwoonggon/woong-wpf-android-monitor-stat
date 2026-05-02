@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Blazor integrated dashboard data flow</title>
+  <desc id="desc">PostgreSQL flows through IntegratedDashboardQueryService to the JSON API and Blazor dashboard, with local review and privacy boundaries.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { fill: #0f172a; font: 700 28px Segoe UI, Arial, sans-serif; }
+      .subtitle { fill: #475569; font: 15px Segoe UI, Arial, sans-serif; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 14; }
+      .server { fill: #eff6ff; stroke: #93c5fd; }
+      .page { fill: #ecfdf5; stroke: #86efac; }
+      .privacy { fill: #fff7ed; stroke: #fdba74; }
+      .label { fill: #0f172a; font: 700 18px Segoe UI, Arial, sans-serif; }
+      .small { fill: #475569; font: 14px Segoe UI, Arial, sans-serif; }
+      .tiny { fill: #64748b; font: 12px Segoe UI, Arial, sans-serif; }
+      .line { fill: none; stroke: #2563eb; stroke-width: 3; marker-end: url(#arrow); }
+      .dash { fill: none; stroke: #f97316; stroke-width: 2; stroke-dasharray: 8 6; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1180" height="620" />
+  <text class="title" x="48" y="56">Blazor Integrated Dashboard Flow</text>
+  <text class="subtitle" x="48" y="84">Server-owned review path for Windows + Android metadata in PostgreSQL.</text>
+
+  <rect class="box" x="50" y="165" width="215" height="140" />
+  <text class="label" x="78" y="205">PostgreSQL</text>
+  <text class="small" x="78" y="235">devices</text>
+  <text class="small" x="78" y="258">focus_sessions</text>
+  <text class="small" x="78" y="281">web_sessions, locations</text>
+
+  <rect class="box server" x="355" y="150" width="275" height="170" />
+  <text class="label" x="383" y="195">IntegratedDashboard</text>
+  <text class="label" x="383" y="220">QueryService</text>
+  <text class="small" x="383" y="254">Aggregates by user, date,</text>
+  <text class="small" x="383" y="277">timezone, platform, app,</text>
+  <text class="small" x="383" y="300">domain, and coarse location.</text>
+
+  <rect class="box server" x="735" y="105" width="330" height="125" />
+  <text class="label" x="763" y="148">JSON API</text>
+  <text class="small" x="763" y="179">/api/dashboard/integrated</text>
+  <text class="tiny" x="763" y="205">Snapshot for test and review comparison</text>
+
+  <rect class="box page" x="735" y="285" width="330" height="145" />
+  <text class="label" x="763" y="328">Blazor /dashboard</text>
+  <text class="small" x="763" y="359">Summary cards</text>
+  <text class="small" x="763" y="382">Platform, apps, domains</text>
+  <text class="small" x="763" y="405">Location samples and devices table</text>
+
+  <rect class="box privacy" x="110" y="440" width="960" height="105" />
+  <text class="label" x="138" y="480">Privacy boundary</text>
+  <text class="small" x="138" y="512">Review and screenshots stay inside Woong Monitor Stack pages. No device tokens, typed text, clipboard, messages, page contents, or other-app captures.</text>
+
+  <path class="line" d="M 265 235 C 300 235, 320 235, 355 235" />
+  <path class="line" d="M 630 215 C 675 190, 690 170, 735 168" />
+  <path class="line" d="M 630 255 C 675 285, 690 352, 735 358" />
+
+  <path class="dash" d="M 80 430 L 1100 430" />
+  <text class="tiny" x="80" y="418">Local review evidence must not cross this line into external app/browser screenshots.</text>
+</svg>

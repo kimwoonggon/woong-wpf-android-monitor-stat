@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: woong-monitor-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-woong_monitor}
+      POSTGRES_USER: ${POSTGRES_USER:-woong}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-woong_dev_password}
+    ports:
+      - "${WOONG_POSTGRES_HOST_PORT:-55432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-woong} -d ${POSTGRES_DB:-woong_monitor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - woong_monitor_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  woong_monitor_postgres_data:

@@ -599,21 +599,56 @@ foreground location permission and explicit user setting.
 
 ## ASP.NET Core Server And PostgreSQL
 
-### Local PostgreSQL Connection
+### Local PostgreSQL With Docker
 
-The server reads `ConnectionStrings:MonitorDb`. The default fallback is:
+For local development, run PostgreSQL through Docker Compose from the repository
+root. This keeps the integrated Blazor dashboard and server API on PostgreSQL
+without requiring a manually installed database:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-server-postgres.ps1
+```
+
+The script:
+
+- creates `.env` from `.env.example` when missing;
+- starts `woong-monitor-postgres` from `docker-compose.yml`;
+- maps host port `55432` to container port `5432`;
+- applies EF Core migrations unless `-SkipMigrations` is passed;
+- prints the server and dashboard commands.
+
+Use dry-run mode to see the exact commands without touching Docker:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-server-postgres.ps1 -DryRun
+```
+
+Stop the local database:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\stop-server-postgres.ps1
+```
+
+Delete the local dev PostgreSQL volume only when you intentionally want to reset
+all server data:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\stop-server-postgres.ps1 -RemoveVolumes
+```
+
+The development connection string is:
 
 ```text
-Host=localhost;Database=woong_monitor;Username=postgres;Password=postgres
+Host=localhost;Port=55432;Database=woong_monitor;Username=woong;Password=woong_dev_password
 ```
 
 To set it explicitly in PowerShell:
 
 ```powershell
-$env:ConnectionStrings__MonitorDb='Host=localhost;Database=woong_monitor;Username=postgres;Password=postgres'
+$env:ConnectionStrings__MonitorDb='Host=localhost;Port=55432;Database=woong_monitor;Username=woong;Password=woong_dev_password'
 ```
 
-Apply EF Core migrations to a local PostgreSQL database:
+Apply EF Core migrations manually if you skipped the script migration step:
 
 ```powershell
 dotnet tool restore
@@ -626,6 +661,12 @@ Run the API server:
 
 ```powershell
 dotnet run --project src\Woong.MonitorStack.Server\Woong.MonitorStack.Server.csproj
+```
+
+Open the integrated Blazor dashboard:
+
+```text
+http://localhost:5000/dashboard?userId=user-1&from=2026-04-30&to=2026-04-30&timezoneId=UTC
 ```
 
 Development OpenAPI is exposed by ASP.NET Core when the environment is
