@@ -5560,3 +5560,12 @@ Verified so far:
 - Integrated dashboard timezone boundary follow-up completed: web/location filtering uses the requested timezone local-date UTC range, and focus/web durations are split at range boundaries.
 - PostgreSQL/Testcontainers validation passed after Docker Compose work: `scripts\run-server-postgres-validation.ps1` wrote PASS artifacts to `artifacts/server-postgres-validation/20260502-191025/`.
 - Full validation after Docker PostgreSQL and subagent dashboard hardening passed: `dotnet test` 616 passed / 6 PostgreSQL-environment skips, `dotnet build` 0 warnings/errors, and coverage line 87.9% / branch 70.8%.
+
+## 2026-05-02 Android Bottom Navigation Safe-Inset Regression
+
+- Fixed the Android shell bottom-navigation regression reported from the emulator screenshot.
+- The previous compacting removed too much safe-area handling: Material bottom navigation items could sit inside the Android system navigation area and appear missing/untappable.
+- `SystemInsetsLayoutCalculator` now adds exactly one system-navigation bottom inset to the bottom-navigation height and padding.
+- `MainActivity` consumes the handled root insets so Material child views do not add a second blank navigation area.
+- Added/updated Robolectric tests around safe inset behavior and fragment bottom margins.
+- Validation passed: focused inset tests, full Android `:app:testDebugUnitTest`, `:app:assembleDebug`, `:app:installDebug`, and emulator screenshot evidence at `artifacts/android-ui-regression/latest/android-dashboard-bottom-nav-safe-inset.png`.

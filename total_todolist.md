@@ -2553,3 +2553,21 @@ milestones below are finished.
   line 87.9% / branch 70.8%.
 - [ ] Follow-up: add browser/Playwright screenshot evidence for `/dashboard`
   with seeded PostgreSQL data.
+
+## 2026-05-02 Android Bottom Navigation Safe-Inset Regression
+
+- [x] Reproduce the Android bottom navigation regression with a RED
+  Robolectric test: compacting the bar too far let navigation items drift into
+  the Android system navigation area, making Dashboard/Sessions/Report/Settings
+  look missing or untappable on the emulator.
+- [x] Update `SystemInsetsLayoutCalculator` so the bottom navigation height
+  includes exactly one required system-navigation safe inset while avoiding
+  duplicate Material inset expansion.
+- [x] Consume handled root window insets in `MainActivity` so child Material
+  views do not add a second blank navigation area.
+- [x] Add/adjust tests for safe bottom navigation padding, fragment bottom
+  margin, and system inset consumption.
+- [x] Validate Android unit tests and debug build:
+  `.\gradlew.bat :app:testDebugUnitTest :app:assembleDebug`.
+- [x] Install the fixed debug build on `emulator-5554` and capture evidence at
+  `artifacts/android-ui-regression/latest/android-dashboard-bottom-nav-safe-inset.png`.

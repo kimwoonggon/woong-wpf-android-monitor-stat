@@ -5,7 +5,7 @@ import org.junit.Test
 
 class SystemInsetsLayoutCalculatorTest {
     @Test
-    fun calculateKeepsBottomNavigationCompactWhenRootAlreadyFitsSystemWindows() {
+    fun calculateKeepsBottomNavigationContentAboveSystemNavigationBar() {
         val calculator = SystemInsetsLayoutCalculator(
             baseBottomNavigationHeightPx = 56,
             contentBottomClearancePx = 0
@@ -13,9 +13,9 @@ class SystemInsetsLayoutCalculatorTest {
 
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
-        assertEquals(56, layout.bottomNavigationHeightPx)
-        assertEquals(56, layout.fragmentBottomMarginPx)
-        assertEquals(0, layout.bottomNavigationPaddingBottomPx)
+        assertEquals(80, layout.bottomNavigationHeightPx)
+        assertEquals(80, layout.fragmentBottomMarginPx)
+        assertEquals(24, layout.bottomNavigationPaddingBottomPx)
     }
 
     @Test
@@ -42,7 +42,7 @@ class SystemInsetsLayoutCalculatorTest {
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
         assertEquals(
-            "The main shell already fits system windows, so the content margin should not add a second navigation-bar-sized blank area.",
+            "The main shell content should reserve exactly the visible bottom navigation height, including the one required system-navigation safe inset.",
             layout.bottomNavigationHeightPx,
             layout.fragmentBottomMarginPx
         )

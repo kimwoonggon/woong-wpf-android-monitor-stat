@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity() {
             fragmentBottomMarginWithChrome = layout.fragmentBottomMarginPx
             applyFragmentContainerChromeMargins()
 
-            insets
+            WindowInsetsCompat.CONSUMED
         }
     }
 

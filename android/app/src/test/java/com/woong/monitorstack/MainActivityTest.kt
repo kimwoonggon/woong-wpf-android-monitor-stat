@@ -10,8 +10,12 @@ import android.widget.EditText
 import android.widget.TextView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.dashboard.DashboardFragment
@@ -119,6 +123,26 @@ class MainActivityTest {
     }
 
     @Test
+    fun launcherDoesNotShowSplashWithMainShellAfterRoutingDelay() {
+        MainActivity.splashDelayMillis = 500L
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        shadowOf(Looper.getMainLooper()).idleFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.topAppBar).visibility)
+        assertEquals(View.VISIBLE, activity.findViewById<View>(R.id.bottomNavigation).visibility)
+        assertEquals(
+            "The app must not leave the Splash fragment visible under the main shell; this hides the real Dashboard buttons/content for a visible frame.",
+            DashboardFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+    }
+
+    @Test
     fun shellChromeVisibilityUpdatesFragmentContainerMargins() {
         MainActivity.splashDelayMillis = 500L
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
@@ -195,6 +219,39 @@ class MainActivityTest {
                 activity.fragmentContainerMargins().bottomMargin
             )
         }
+    }
+
+    @Test
+    fun mainShellKeepsBottomNavigationButtonsAboveSystemBarWithoutDoubleInset() {
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val activity = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+            .get()
+        activity.supportFragmentManager.executePendingTransactions()
+        waitForMainThreadWork()
+
+        val root = activity.findViewById<View>(R.id.mainRoot)
+        val bottomNavigation = activity.findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        val compactHeight = activity.resources.getDimensionPixelSize(
+            R.dimen.bottom_navigation_base_height
+        )
+        val insets = WindowInsetsCompat.Builder()
+            .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 96))
+            .build()
+
+        val returnedInsets = ViewCompat.dispatchApplyWindowInsets(root, insets)
+
+        assertEquals(
+            "Bottom navigation needs exactly one system-bar padding so buttons remain visible above Android navigation.",
+            96,
+            bottomNavigation.paddingBottom
+        )
+        assertEquals(compactHeight + 96, bottomNavigation.layoutParams.height)
+        assertEquals(compactHeight + 96, activity.fragmentContainerMargins().bottomMargin)
+        assertTrue(
+            "The root listener should consume handled navigation insets so child views do not add their own extra bottom padding.",
+            returnedInsets.isConsumed
+        )
     }
 
     @Test
