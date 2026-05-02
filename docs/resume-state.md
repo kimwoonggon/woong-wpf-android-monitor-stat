@@ -5477,3 +5477,12 @@ Validation completed for disconnect/taskbar slice:
 - Latest coverage: line 87.5%, branch 69.4%, report at `artifacts/coverage/SummaryGithub.md`.
 - Latest Android UI snapshot evidence after launcher-noise fix: `artifacts/android-ui-snapshots/20260502-141105/`.
 - Remaining high-priority queue: Android token refresh/re-registration after auth-required status, production user/session provider policy, Android signing/Play publishing decision, and environment-specific server retention alerting release policy.
+## 2026-05-02 Android Auth-Required Repair And Production Strict-Auth Release Policy
+
+- Android Settings now blocks Manual Sync while `STATUS_AUTH_REQUIRED` is active. The UI requires Register/Repair before upload work can be enqueued.
+- Register/Repair success replaces the expired device ID/token and clears auth-required state without launching Manual Sync; failure preserves the existing device/token and pending local outbox rows.
+- Public Android/server sync release policy now names two modes: dev/MVP payload mode for local/internal compatibility and production strict-auth mode for release. Production must set `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, select a real user/session provider, and cannot ship with the `X-Woong-User-Id` header stub as the production identity provider.
+- Release checklist and server checklist keep production user/session provider selection open as a blocker until provider/provisioning/validation ownership is decided.
+- Validation passed: focused Android Settings tests, focused architecture release-policy guard, full `dotnet test` (578 passed / 6 skipped), full `dotnet build` (0 warnings / 0 errors), Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage generation.
+- Latest coverage: line 87.5%, branch 69.4%, report at `artifacts/coverage/SummaryGithub.md`.
+- Remaining high-priority queue: Android signing/Play publishing decision, production user/session provider implementation/validation, server environment-specific retention alerting values, and final release-policy evidence.

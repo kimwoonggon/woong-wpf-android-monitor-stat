@@ -34,7 +34,8 @@
     <string name="sync_registration_skipped_status">Turn sync on before registering this device.</string>
     <string name="sync_registration_in_progress_status">Registering this Android device for sync.</string>
     <string name="sync_registration_success_status">Device registered. Manual sync can now run.</string>
-    <string name="sync_registration_failed_status">Device registration failed. Data remains local.</string>
+    <string name="sync_registration_failed_status">Device registration failed. Existing registration and pending local data are unchanged.</string>
+    <string name="sync_auth_required_manual_status">Manual sync needs Register / repair before upload can run.</string>
     <string name="sync_register_repair_device">Register / repair device</string>
     <string name="sync_disconnect_device">Disconnect device</string>
     <string name="sync_disconnect_local_success_status">Device disconnected locally. Sync is off and data remains on this Android device.</string>

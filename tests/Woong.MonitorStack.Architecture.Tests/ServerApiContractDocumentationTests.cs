@@ -42,6 +42,28 @@ public sealed class ServerApiContractDocumentationTests
         Assert.Contains("RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken", combinedDocs, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void PublicReleaseDocs_RequireProductionStrictAuthAndRealUserSessionProviderDecision()
+    {
+        string releaseChecklistPath = Path.Combine(RepositoryRoot, "docs", "release-checklist.md");
+        string hardeningPlanPath = Path.Combine(RepositoryRoot, "docs", "android-server-sync-hardening-plan.md");
+
+        Assert.True(File.Exists(releaseChecklistPath), "Release checklist documentation must exist.");
+        Assert.True(File.Exists(hardeningPlanPath), "Android/server sync hardening plan must exist.");
+
+        string releaseChecklist = NormalizeWhitespace(File.ReadAllText(releaseChecklistPath));
+        string hardeningPlan = NormalizeWhitespace(File.ReadAllText(hardeningPlanPath));
+        string combinedDocs = StripMarkdownCodeTicks($"{releaseChecklist} {hardeningPlan}");
+
+        Assert.Contains("dev/MVP payload mode", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("production strict-auth mode", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("DeviceRegistrationAuth:RequireAuthenticatedUser=true", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("real user/session provider", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("header stub", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("must remain an open release blocker", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("[x] Production user/session provider selected", releaseChecklist, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

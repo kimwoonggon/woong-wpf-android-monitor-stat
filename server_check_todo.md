@@ -27,6 +27,17 @@ Status legend:
 - [x] Duplicate registration updates device name/timezone and `LastSeenAtUtc`
   without creating a second device row.
   Evidence: `DeviceRegistrationApiTests.RegisterDevice_WhenDeviceKeyAlreadyExists_UpdatesNameTimezoneAndLastSeen`.
+- [x] Dev/MVP payload mode and production strict-auth mode are documented as
+  separate release policies.
+  Evidence: `docs/release-checklist.md`,
+  `docs/android-server-sync-hardening-plan.md`,
+  `ServerApiContractDocumentationTests.PublicReleaseDocs_RequireProductionStrictAuthAndRealUserSessionProviderDecision`.
+- [ ] Production user/session provider selected and validated.
+  This remains a public Android/server sync release blocker. Production
+  strict-auth mode must set
+  `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, use a real
+  user/session provider, and not ship with the `X-Woong-User-Id` header stub as
+  the production identity provider.
 
 ## Focus Session Upload
 

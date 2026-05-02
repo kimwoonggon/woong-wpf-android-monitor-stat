@@ -222,6 +222,15 @@ uploads. Remaining server-side hardening should be split into small slices:
      `DeviceRegistrationAuth:RequireAuthenticatedUser`. When enabled,
      registration requires `X-Woong-User-Id`; that authenticated user id
      overrides the payload `userId`.
+   - The current release policy has two named modes. Dev/MVP payload mode keeps
+     payload `userId` registration available for local/internal compatibility.
+     Production strict-auth mode must set
+     `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, must use a real
+     user/session provider, and must not ship with the `X-Woong-User-Id` header
+     stub as the production identity provider.
+   - The real user/session provider selection must remain an open release
+     blocker until the provider, provisioning path, token/session validation,
+     and operational ownership are documented and validated.
    - Token-protected upload/rotation/revoke endpoints use this response policy:
      missing, malformed, revoked, or wrong device tokens return
      `401 Unauthorized`; a valid device token presented with a different

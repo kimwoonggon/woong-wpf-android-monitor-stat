@@ -819,14 +819,18 @@ workspace.
   revokes via the protected device-token endpoint before clearing local
   registration, and revoke failures keep local registration with a
   local-data-safe failure status.
+- [x] Android auth-required repair behavior implemented: Manual Sync does not
+  enqueue work while auth repair is required, Register/Repair success replaces
+  the expired device/token and clears auth-required state, and Register/Repair
+  failure preserves the existing device/token plus pending local outbox rows.
 - [x] Android Dashboard Current Focus no longer reports
   NexusLauncher/SystemUI-only noise as the current app; if only launcher noise
   is collected, it shows the safe `No app` / `No package` state instead.
 - [x] Latest Android UI snapshot evidence after the launcher-noise fix:
   `artifacts/android-ui-snapshots/20260502-141105/`.
-- [ ] Remaining Android sync hardening: Android token refresh/re-registration
-  behavior, Play signing/publishing policy, user-auth registration policy, and
-  server/user device revocation policy remain open before release use.
+- [ ] Remaining Android sync hardening: Play signing/publishing policy,
+  public user-auth registration/re-registration ownership policy, and
+  server/user cross-device management policy remain open before release use.
 - [ ] Release blockers before public Android/server sync: decide who may
   register/re-register/revoke devices and whether user auth is required,
   and define Android Play signing/publishing requirements if distribution moves

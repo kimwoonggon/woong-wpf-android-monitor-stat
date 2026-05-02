@@ -201,6 +201,10 @@ class SettingsFragment : Fragment() {
                     binding.syncStatusText.text = getString(R.string.sync_registration_required_status)
                     return@setOnClickListener
                 }
+                if (settings.lastSyncStatus() == AndroidSyncWorker.STATUS_AUTH_REQUIRED) {
+                    binding.syncStatusText.text = getString(R.string.sync_auth_required_manual_status)
+                    return@setOnClickListener
+                }
 
                 manualSyncLauncher.enqueue(
                     baseUrl = serverBaseUrl,
@@ -255,6 +259,8 @@ class SettingsFragment : Fragment() {
                 }.onFailure {
                     currentBinding.syncStatusText.text =
                         getString(R.string.sync_registration_failed_status)
+                    currentBinding.syncDeviceRegistrationStatusText.text =
+                        getString(R.string.sync_auth_required_status)
                 }
             }
         }

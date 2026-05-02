@@ -8,6 +8,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
+import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.data.local.SyncOutboxEntity
+import com.woong.monitorstack.data.local.SyncOutboxStatus
 import com.woong.monitorstack.sync.AndroidSyncWorker
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.junit.After
@@ -360,6 +363,30 @@ class SettingsFragmentManualSyncTest {
     }
 
     @Test
+    fun manualSyncWhenAuthRequiredDoesNotLaunchWorkerUntilRegisterRepairSucceeds() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "old-device-id",
+            deviceToken = "expired-device-token"
+        )
+        settings.recordSyncStatus(
+            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+            message = "Android sync authorization failed. Register this device again."
+        )
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<Button>(R.id.manualSyncButton).performClick()
+
+        assertEquals(
+            "Manual sync needs Register / repair before upload can run.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
     fun registerRepairWhenSyncOnPersistsDeviceTokenWithoutLaunchingManualSync() {
         val settings = SharedPreferencesAndroidSyncSettings(context)
         settings.setSyncEnabled(true)
@@ -420,6 +447,96 @@ class SettingsFragmentManualSyncTest {
             "Device registered. Manual sync can now run.",
             activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
         )
+    }
+
+    @Test
+    fun registerRepairSuccessReplacesExpiredDeviceAndTokenAndClearsAuthRequiredState() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.persistRegisteredDevice(
+            deviceId = "old-device-id",
+            deviceToken = "expired-device-token"
+        )
+        settings.recordSyncStatus(
+            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+            message = "Android sync authorization failed. Register this device again."
+        )
+        registrationLauncher.response = DeviceRegistrationResult(
+            deviceId = "new-device-id",
+            deviceToken = "replacement-device-token"
+        )
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<EditText>(R.id.syncServerUrlEditText)
+            .setText("https://server.example")
+        findButtonByText(activity, "Register / repair device").performClick()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertEquals("new-device-id", reloaded.deviceId())
+        assertEquals("replacement-device-token", reloaded.deviceToken())
+        assertEquals("", reloaded.lastSyncStatus())
+        assertEquals(
+            "new-device-id",
+            activity.findViewById<EditText>(R.id.syncDeviceIdEditText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+    }
+
+    @Test
+    fun registerRepairFailureKeepsExpiredDeviceTokenAndPendingOutboxSafe() {
+        val settings = SharedPreferencesAndroidSyncSettings(context)
+        settings.setSyncEnabled(true)
+        settings.setServerBaseUrl("https://server.example")
+        settings.persistRegisteredDevice(
+            deviceId = "old-device-id",
+            deviceToken = "expired-device-token"
+        )
+        settings.recordSyncStatus(
+            status = AndroidSyncWorker.STATUS_AUTH_REQUIRED,
+            message = "Android sync authorization failed. Register this device again."
+        )
+        registrationLauncher.result = Result.failure(IllegalStateException("server offline"))
+        Thread {
+            val database = MonitorDatabase.getInstance(context)
+            database.clearAllTables()
+            database.syncOutboxDao().insert(
+                SyncOutboxEntity(
+                    clientItemId = "pending-focus-outbox",
+                    aggregateType = "focus_session",
+                    payloadJson = """{"clientSessionId":"focus-session-1"}""",
+                    status = SyncOutboxStatus.Pending,
+                    retryCount = 0,
+                    lastError = null,
+                    createdAtUtcMillis = 1_000L,
+                    updatedAtUtcMillis = 1_000L
+                )
+            )
+        }.also { it.start(); it.join() }
+        val activity = launchSettingsFragment()
+
+        findButtonByText(activity, "Register / repair device").performClick()
+
+        val reloaded = SharedPreferencesAndroidSyncSettings(context)
+        assertEquals("old-device-id", reloaded.deviceId())
+        assertEquals("expired-device-token", reloaded.deviceToken())
+        assertEquals(AndroidSyncWorker.STATUS_AUTH_REQUIRED, reloaded.lastSyncStatus())
+        assertEquals(
+            "Device registration failed. Existing registration and pending local data are unchanged.",
+            activity.findViewById<TextView>(R.id.syncStatusText).text.toString()
+        )
+        assertEquals(
+            "Sync authorization failed. Register / repair this device before syncing again.",
+            activity.findViewById<TextView>(R.id.syncDeviceRegistrationStatusText).text.toString()
+        )
+        assertEquals(emptyList<ManualSyncLaunchRequest>(), launcher.requests)
+        Thread {
+            val pending = MonitorDatabase.getInstance(context)
+                .syncOutboxDao()
+                .queryPending(10)
+            assertEquals(1, pending.size)
+            assertEquals("pending-focus-outbox", pending.single().clientItemId)
+            assertEquals(SyncOutboxStatus.Pending, pending.single().status)
+        }.also { it.start(); it.join() }
     }
 
     @Test
@@ -550,13 +667,14 @@ class SettingsFragmentManualSyncTest {
             deviceId = "server-device-id",
             deviceToken = "device-token-secret"
         )
+        var result: Result<DeviceRegistrationResult>? = null
 
         override fun register(
             request: SettingsFragment.DeviceRegistrationRequest,
             callback: (Result<DeviceRegistrationResult>) -> Unit
         ) {
             requests += request
-            callback(Result.success(response))
+            callback(result ?: Result.success(response))
         }
     }
 

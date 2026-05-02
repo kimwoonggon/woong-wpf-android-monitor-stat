@@ -124,14 +124,27 @@ closed until the owning implementation agents report verified completion:
 - [ ] User-auth/registration policy: decide who may register or re-register an
   Android device, whether first registration requires a user/session token, and
   how revocation or replacement works.
-  Device registration currently uses dev/MVP payload `userId`; before public
-  release this must be replaced by authenticated user/session identity. The
-  skipped policy tests that become active when server auth exists are:
-  `RegisterDevice_WhenUserSessionAuthIsMissing_ReturnsUnauthorized`,
-  `RegisterDevice_UsesAuthenticatedUserIdInsteadOfPayloadUserId`,
-  `RegisterDevice_WhenSameDeviceKeyIsRegisteredByDifferentUsers_CreatesSeparateDevices`,
-  and
-  `RegisterDevice_WhenPayloadUserIdTargetsAnotherUser_DoesNotReturnExistingDeviceToken`.
+  Current server behavior has two explicitly separate modes:
+  dev/MVP payload mode and production strict-auth mode. Dev/MVP payload mode
+  allows `/api/devices/register` to use the payload `userId` for local and
+  internal compatibility only. Production strict-auth mode must set
+  `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, must use a real
+  user/session provider, and must not treat the current `X-Woong-User-Id`
+  header stub as the production identity provider. Until that real
+  user/session provider is selected, configured, and validated, this item must
+  remain an open release blocker and the release checklist must not be treated
+  as complete.
+  Existing policy coverage proves strict mode rejects missing authenticated
+  users, authenticated identity overrides payload `userId`, the same device key
+  is scoped per authenticated user, payload `userId` cannot steal another
+  user's device token, and a valid device token used by another authenticated
+  user returns `403 Forbidden`.
+- [ ] Production user/session provider selected and validated.
+  This must stay unchecked until the release owner selects the real provider
+  (for example OIDC, first-party account session, or another approved
+  production identity boundary), documents provisioning/rotation/incident
+  ownership, and reruns strict-auth registration plus token-protected endpoint
+  tests with production-equivalent configuration.
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.
