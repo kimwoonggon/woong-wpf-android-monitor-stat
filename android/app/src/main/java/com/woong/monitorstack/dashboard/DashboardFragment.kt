@@ -39,7 +39,8 @@ class DashboardFragment : Fragment() {
         viewModel = DashboardViewModel(
             RoomDashboardRepository(
                 dao = database.focusSessionDao(),
-                locationDao = database.locationContextSnapshotDao()
+                locationDao = database.locationContextSnapshotDao(),
+                locationVisitDao = database.locationVisitDao()
             )
         )
         currentFocusResolver = DashboardCurrentFocusResolver(requireContext().packageName)
@@ -156,6 +157,14 @@ class DashboardFragment : Fragment() {
         binding.locationCapturedAtText.text = getString(
             R.string.location_captured_at_value,
             state.locationContext.capturedAtLocalText
+        )
+        binding.locationVisitStatsText.text = getString(
+            R.string.location_visit_stats_value,
+            state.locationContext.visitStatsText
+        )
+        binding.locationTopVisitText.text = getString(
+            R.string.location_top_visit_value,
+            state.locationContext.topVisitText
         )
         sessionAdapter.submit(state.recentSessions)
         topAppsAdapter.submit(state.chartData.appUsage.take(3))

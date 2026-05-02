@@ -99,6 +99,30 @@ Product boundary reminder:
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
 
+### 2026-05-02 Android Location Visit Statistics And Bottom Nav Compacting
+
+- [x] Added RED/GREEN local Room model for `location_visits` so approved
+  latitude/longitude captures can be summarized as where the user spent time,
+  not only displayed as the latest coordinate.
+- [x] Added `LocationVisitRecorder` merge policy: same rounded coordinate cell
+  within the merge gap updates one visit row with `durationMs` and
+  `sampleCount`, avoiding a statistics row for every poll.
+- [x] `LocationContextCollectionRunner` now records visit statistics when a
+  coordinate snapshot is captured, while sync remains opt-in and local data
+  remains Android-only Room data.
+- [x] Dashboard `Location context` card now shows latest coordinate metadata
+  plus `Location visits` and `Top location` summary rows from Room-backed visit
+  statistics.
+- [x] Bottom navigation was compacted to a 56dp base height with no duplicate
+  system-navigation padding when the root already fits system windows, reducing
+  the excessive blank area under Dashboard/Sessions/Report/Settings.
+- [x] Validation passed: focused location visit DAO/recorder/repository/layout
+  tests, `MainActivityTest`, and Android Gradle
+  `testDebugUnitTest assembleDebug --no-daemon --stacktrace`.
+- [x] Android UI snapshot automation passed on `emulator-5554` after the
+  bottom-nav compaction and Dashboard location-stat rows; latest evidence:
+  `artifacts/android-ui-snapshots/20260502-181343/`.
+
 ### 2026-05-02 Android App-Switch QA Fresh Evidence
 
 - [x] Emulator available: `emulator-5554`.
@@ -697,7 +721,7 @@ workspace.
 
 ## 2026-05-01 Android Immediate Usage Collection And Bottom Navigation Fix
 
-- [x] Compact bottom navigation now uses a 72dp base height plus runtime system navigation inset so Dashboard/Sessions/Report/Settings stay visible without hardcoded extra bottom padding.
+- [x] Historical note superseded on 2026-05-02: compact bottom navigation now uses a 56dp base height and avoids duplicate runtime system-navigation padding because the root already fits system windows.
 - [x] MainActivity now performs a foreground immediate UsageStats collection when Dashboard is shown and Usage Access is granted, then refreshes the Room-backed dashboard after collection.
 - [x] Collection remains metadata-only: package names and foreground intervals from UsageStatsManager; no typed text, screen content, touch coordinates, or page content are captured.
 - [x] Android usage collection defaults to enabled after explicit Usage Access grant while sync remains off/local-only by default.

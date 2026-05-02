@@ -34,5 +34,7 @@ data class DashboardLocationContext(
     val latitudeText: String = "Latitude not stored",
     val longitudeText: String = "Longitude not stored",
     val accuracyText: String = "Accuracy unavailable",
-    val capturedAtLocalText: String = "No location captured"
+    val capturedAtLocalText: String = "No location captured",
+    val visitStatsText: String = "No location visits",
+    val topVisitText: String = "No location statistics"
 )

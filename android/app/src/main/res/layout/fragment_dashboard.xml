@@ -558,6 +558,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/no_location_captured" />
+
+                <TextView
+                    android:id="@+id/locationVisitStatsText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location_visits_not_available" />
+
+                <TextView
+                    android:id="@+id/locationTopVisitText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location_top_visit_not_available" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="bottom_navigation_base_height">72dp</dimen>
-    <dimen name="bottom_navigation_content_clearance">16dp</dimen>
+    <dimen name="bottom_navigation_base_height">56dp</dimen>
+    <dimen name="bottom_navigation_content_clearance">0dp</dimen>
 </resources>

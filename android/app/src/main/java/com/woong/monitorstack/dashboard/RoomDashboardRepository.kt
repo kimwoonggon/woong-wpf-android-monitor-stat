@@ -6,6 +6,8 @@ import com.woong.monitorstack.data.local.LocationCaptureMode
 import com.woong.monitorstack.data.local.LocationContextSnapshotDao
 import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
 import com.woong.monitorstack.data.local.LocationPermissionState
+import com.woong.monitorstack.data.local.LocationVisitDao
+import com.woong.monitorstack.data.local.LocationVisitEntity
 import com.woong.monitorstack.display.AppDisplayNameFormatter
 import java.time.Instant
 import java.time.LocalDate
@@ -18,6 +20,7 @@ import kotlin.math.roundToInt
 class RoomDashboardRepository(
     private val dao: FocusSessionDao,
     private val locationDao: LocationContextSnapshotDao? = null,
+    private val locationVisitDao: LocationVisitDao? = null,
     private val deviceId: String = DefaultDeviceId,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
     private val todayProvider: () -> LocalDate = { LocalDate.now(timezoneId) },
@@ -162,7 +165,6 @@ class RoomDashboardRepository(
     }
 
     private fun loadLocationContext(dateRange: Pair<LocalDate, LocalDate>): DashboardLocationContext {
-        val locationDao = locationDao ?: return DashboardLocationContext()
         val fromUtcMillis = dateRange.first
             .atStartOfDay(timezoneId)
             .toInstant()
@@ -172,24 +174,67 @@ class RoomDashboardRepository(
             .atZone(timezoneId)
             .toInstant()
             .toEpochMilli()
-        val latest = locationDao.queryByCapturedRange(
+        val visitSummary = loadLocationVisitSummary(fromUtcMillis, toUtcMillis)
+        val latest = locationDao?.queryByCapturedRange(
             deviceId = deviceId,
             fromUtcMillis = fromUtcMillis,
             toUtcMillis = toUtcMillis
         )
-            .lastOrNull()
+            ?.lastOrNull()
 
-        return latest?.toLocationContext() ?: DashboardLocationContext()
+        return latest?.toLocationContext(visitSummary)
+            ?: DashboardLocationContext(
+                visitStatsText = visitSummary.visitStatsText,
+                topVisitText = visitSummary.topVisitText
+            )
     }
 
-    private fun LocationContextSnapshotEntity.toLocationContext(): DashboardLocationContext {
+    private fun loadLocationVisitSummary(
+        fromUtcMillis: Long,
+        toUtcMillis: Long
+    ): LocationVisitSummary {
+        val locationVisitDao = locationVisitDao ?: return LocationVisitSummary()
+        val visits = locationVisitDao.queryByRange(
+            deviceId = deviceId,
+            fromUtcMillis = fromUtcMillis,
+            toUtcMillis = toUtcMillis
+        )
+
+        if (visits.isEmpty()) {
+            return LocationVisitSummary()
+        }
+
+        val topVisit = visits.maxWith(
+            compareBy<LocationVisitEntity> { it.durationMs }
+                .thenBy { it.sampleCount }
+                .thenByDescending { it.lastCapturedAtUtcMillis }
+        )
+
+        return LocationVisitSummary(
+            visitStatsText = "${visits.size} location visits",
+            topVisitText = String.format(
+                Locale.US,
+                "%.4f, %.4f · %s",
+                topVisit.latitude,
+                topVisit.longitude,
+                formatDuration(topVisit.durationMs)
+            )
+        )
+    }
+
+    private fun LocationContextSnapshotEntity.toLocationContext(
+        visitSummary: LocationVisitSummary
+    ): DashboardLocationContext {
         val hasCoordinate = latitude != null && longitude != null
         val canDisplayCoordinate = captureMode == LocationCaptureMode.AppUsageContext
             && permissionState != LocationPermissionState.NotGranted
             && hasCoordinate
 
         if (!canDisplayCoordinate) {
-            return DashboardLocationContext()
+            return DashboardLocationContext(
+                visitStatsText = visitSummary.visitStatsText,
+                topVisitText = visitSummary.topVisitText
+            )
         }
 
         return DashboardLocationContext(
@@ -199,7 +244,9 @@ class RoomDashboardRepository(
             accuracyText = accuracyMeters?.let { "±${it.roundToInt()}m" } ?: "Accuracy unavailable",
             capturedAtLocalText = Instant.ofEpochMilli(capturedAtUtcMillis)
                 .atZone(timezoneId)
-                .format(TimeFormatter)
+                .format(TimeFormatter),
+            visitStatsText = visitSummary.visitStatsText,
+            topVisitText = visitSummary.topVisitText
         )
     }
 
@@ -229,4 +276,9 @@ private data class DashboardUtcRange(
 private data class FilteredDashboardSession(
     val entity: FocusSessionEntity,
     val durationMs: Long
+)
+
+private data class LocationVisitSummary(
+    val visitStatsText: String = "No location visits",
+    val topVisitText: String = "No location statistics"
 )

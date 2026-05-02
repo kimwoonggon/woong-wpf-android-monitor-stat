@@ -248,12 +248,18 @@ and feature screenshots for each tab.
   `10-main-shell-sessions.png` after selecting the Sessions bottom-navigation
   item.
 - The launcher shell has been corrected back toward the user-provided XML
-  skeleton: `activity_main.xml` uses a compact 72dp `BottomNavigationView`
+  skeleton: `activity_main.xml` uses a compact 56dp `BottomNavigationView`
   directly under the `FragmentContainerView`, and the temporary oversized
   overlay label row has been removed.
 - `DashboardFragment` now shows the optional local Room-backed
   `Location context` card with labeled `Latitude`, `Longitude`, `Accuracy`,
-  and `Captured` rows when location context is explicitly enabled in test data.
+  `Captured`, `Location visits`, and `Top location` rows when location context
+  is explicitly enabled in test data.
+- Room now has a separate local-only `location_visits` table for location
+  statistics. Runtime location snapshots remain raw capture/sync evidence, but
+  location visits merge repeated snapshots in the same rounded coordinate cell
+  within a short gap so the app can answer where the user spent time without
+  exploding the statistics table with one row per poll.
 - Dashboard fragment ordering now keeps the period filter directly after the
   summary cards before optional location context, preserving the wireframe
   dashboard flow while still including latitude/longitude evidence.
@@ -287,12 +293,10 @@ and feature screenshots for each tab.
   `actionBarSize` to 56dp, `MaterialToolbar` has matching `minHeight`, the title
   uses a 16sp `WmsToolbarTitle`, and start insets are fixed at 16dp to match the
   XML skeleton's compact header intent.
-- The launcher bottom navigation now uses a compact 96dp Material navigation
-  bar with a 48dp system-navigation reserve and a 144dp fragment-content bottom
-  reserve. This keeps Dashboard, Sessions, Report, and Settings labels visible
-  on the emulator without returning to the oversized temporary overlay label
-  row. This follows the XML skeleton direction while preserving Android
-  touch-target and label-readability guidance from `mobile-android-design`.
+- The launcher bottom navigation now uses a compact 56dp base height and does
+  not add a second navigation-bar-sized blank area when the root already fits
+  system windows. Dashboard, Sessions, Report, and Settings remain reachable
+  while the excessive white padding under the labels is avoided.
 - The launcher Dashboard fragment `Current Focus` card now follows the
   user-provided wireframe flow more closely: one compact horizontal runtime row
   contains an app icon placeholder, app/package identity, and right-aligned

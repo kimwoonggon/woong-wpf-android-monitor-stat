@@ -20,13 +20,10 @@ class SystemInsetsLayoutCalculator(
     }
 
     fun calculate(systemNavigationBottomInsetPx: Int): SystemInsetsLayout {
-        val safeBottomInsetPx = systemNavigationBottomInsetPx.coerceAtLeast(0)
-        val adjustedHeightPx = baseBottomNavigationHeightPx + safeBottomInsetPx
-
         return SystemInsetsLayout(
-            bottomNavigationHeightPx = adjustedHeightPx,
-            fragmentBottomMarginPx = adjustedHeightPx + contentBottomClearancePx,
-            bottomNavigationPaddingBottomPx = safeBottomInsetPx
+            bottomNavigationHeightPx = baseBottomNavigationHeightPx,
+            fragmentBottomMarginPx = baseBottomNavigationHeightPx + contentBottomClearancePx,
+            bottomNavigationPaddingBottomPx = 0
         )
     }
 }

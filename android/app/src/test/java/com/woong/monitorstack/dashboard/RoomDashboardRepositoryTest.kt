@@ -6,6 +6,7 @@ import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.LocationCaptureMode
 import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
 import com.woong.monitorstack.data.local.LocationPermissionState
+import com.woong.monitorstack.data.local.LocationVisitEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import java.time.Instant
 import java.time.LocalDate
@@ -131,6 +132,41 @@ class RoomDashboardRepositoryTest {
     }
 
     @Test
+    fun loadTodayShowsLocationVisitStatisticsFromRoom() {
+        val visitDao = database.locationVisitDao()
+        visitDao.insert(
+            locationVisit(
+                id = "office",
+                locationKey = "37.5665,126.9780",
+                firstLocal = "2026-04-28T09:00:00",
+                durationMinutes = 45,
+                sampleCount = 3
+            )
+        )
+        visitDao.insert(
+            locationVisit(
+                id = "cafe",
+                locationKey = "37.5700,126.9820",
+                firstLocal = "2026-04-28T14:00:00",
+                durationMinutes = 15,
+                sampleCount = 2
+            )
+        )
+        val repository = RoomDashboardRepository(
+            dao = database.focusSessionDao(),
+            locationVisitDao = visitDao,
+            deviceId = "android-device-1",
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 28) }
+        )
+
+        val snapshot = repository.load(DashboardPeriod.Today)
+
+        assertEquals("2 location visits", snapshot.locationContext.visitStatsText)
+        assertEquals("37.5665, 126.9780 · 45m", snapshot.locationContext.topVisitText)
+    }
+
+    @Test
     fun loadRecent7DaysBuildsDailyActivityBuckets() {
         val dao = database.focusSessionDao()
         dao.insert(session("chrome-day-1", "com.android.chrome", "2026-04-27T09:00:00", 30, false))
@@ -206,6 +242,41 @@ class RoomDashboardRepositoryTest {
             permissionState = LocationPermissionState.GrantedApproximate,
             captureMode = LocationCaptureMode.AppUsageContext,
             createdAtUtcMillis = capturedAtUtcMillis
+        )
+    }
+
+    private fun locationVisit(
+        id: String,
+        locationKey: String,
+        firstLocal: String,
+        durationMinutes: Long,
+        sampleCount: Int
+    ): LocationVisitEntity {
+        val firstCapturedAtUtcMillis = LocalDateTime.parse(firstLocal)
+            .atZone(timezoneId)
+            .toInstant()
+            .toEpochMilli()
+        val durationMs = durationMinutes * 60_000L
+        val lastCapturedAtUtcMillis = firstCapturedAtUtcMillis + durationMs
+        val latitude = locationKey.substringBefore(",").toDouble()
+        val longitude = locationKey.substringAfter(",").toDouble()
+
+        return LocationVisitEntity(
+            id = id,
+            deviceId = "android-device-1",
+            locationKey = locationKey,
+            latitude = latitude,
+            longitude = longitude,
+            coordinatePrecisionDecimals = 4,
+            firstCapturedAtUtcMillis = firstCapturedAtUtcMillis,
+            lastCapturedAtUtcMillis = lastCapturedAtUtcMillis,
+            durationMs = durationMs,
+            sampleCount = sampleCount,
+            accuracyMeters = 25.0f,
+            permissionState = LocationPermissionState.GrantedPrecise,
+            captureMode = LocationCaptureMode.AppUsageContext,
+            createdAtUtcMillis = firstCapturedAtUtcMillis,
+            updatedAtUtcMillis = lastCapturedAtUtcMillis
         )
     }
 }

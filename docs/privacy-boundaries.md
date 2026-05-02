@@ -66,6 +66,11 @@ desktop or arbitrary screen regions.
   explicit choice. The app must not infer location from other app content,
   screenshots, notifications, messages, browser pages, form input, clipboard
   content, or typed text.
+- Android location statistics must remain metadata-only and storage-conscious:
+  repeated latitude/longitude captures should be merged into local visit
+  intervals or rounded coordinate cells instead of storing an unbounded
+  high-frequency trace. This still requires explicit location opt-in and
+  foreground location permission.
 - Raw events need retention limits and must avoid sensitive content.
 - Windows browser raw events use a 30-day default local retention policy when
   the native-message ingestion flow is configured with the retention service.

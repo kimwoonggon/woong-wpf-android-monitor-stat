@@ -142,10 +142,7 @@ class MainActivityTest {
             dashboardActivity.fragmentContainerMargins().topMargin
         )
         assertEquals(
-            dashboardActivity.findViewById<View>(R.id.bottomNavigation).layoutParams.height +
-                dashboardActivity.resources.getDimensionPixelSize(
-                    R.dimen.bottom_navigation_content_clearance
-                ),
+            dashboardActivity.findViewById<View>(R.id.bottomNavigation).layoutParams.height,
             dashboardActivity.fragmentContainerMargins().bottomMargin
         )
 
@@ -169,7 +166,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun mainTabsKeepContentContainerAboveBottomNavigationWithClearance() {
+    fun mainTabsKeepContentContainerAboveCompactBottomNavigationWithoutExtraBlankSpace() {
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
         val activity = Robolectric.buildActivity(MainActivity::class.java)
             .setup()
@@ -181,10 +178,6 @@ class MainActivityTest {
             activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(
                 R.id.bottomNavigation
             )
-        val expectedClearance = activity.resources.getDimensionPixelSize(
-            R.dimen.bottom_navigation_content_clearance
-        )
-
         listOf(
             R.id.navDashboard,
             R.id.navSessions,
@@ -196,10 +189,10 @@ class MainActivityTest {
             waitForMainThreadWork()
 
             assertEquals(View.VISIBLE, bottomNavigation.visibility)
-            assertTrue(
-                "Main tab content must keep a bottom margin above the navigation bar plus clearance.",
-                activity.fragmentContainerMargins().bottomMargin >=
-                    bottomNavigation.layoutParams.height + expectedClearance
+            assertEquals(
+                "Main tab content should stop above the bottom navigation without adding a second blank navigation-bar area.",
+                bottomNavigation.layoutParams.height,
+                activity.fragmentContainerMargins().bottomMargin
             )
         }
     }

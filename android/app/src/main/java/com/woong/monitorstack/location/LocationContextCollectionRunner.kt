@@ -30,6 +30,7 @@ class LocationContextCollectionRunner(
     private val provider: RuntimeLocationSnapshotProvider,
     private val snapshotDao: LocationContextSnapshotDao,
     private val outbox: SyncOutboxWriter,
+    private val locationVisitWriter: LocationVisitWriter = NoopLocationVisitWriter,
     private val timezoneId: String = TimeZone.getDefault().id,
     private val clock: () -> Long = System::currentTimeMillis
 ) : LocationContextCollector {
@@ -42,6 +43,7 @@ class LocationContextCollectionRunner(
         val snapshot = provider.captureSnapshot(deviceId) ?: return LocationContextCollectionResult.Skipped
 
         snapshotDao.insert(snapshot)
+        locationVisitWriter.record(snapshot)
         outbox.insert(snapshot.toOutboxItem())
 
         return LocationContextCollectionResult.Captured
@@ -89,7 +91,8 @@ class LocationContextCollectionRunner(
                     locationReader = AndroidLastKnownLocationReader.create(appContext)
                 ),
                 snapshotDao = database.locationContextSnapshotDao(),
-                outbox = database.syncOutboxDao()
+                outbox = database.syncOutboxDao(),
+                locationVisitWriter = LocationVisitRecorder(database.locationVisitDao())
             )
         }
     }

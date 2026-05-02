@@ -2476,3 +2476,24 @@ milestones below are finished.
   `AllowServerSync=false`, and avoids launching browsers or capturing external
   app screenshots.
 - [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, token-protected 401/403 response policy, and runtime retention alert delivery have focused coverage; production user/session provider selection still needs implementation/validation.
+
+## 2026-05-02 Android Location Visit Statistics And Bottom Navigation Compacting
+
+- [x] Add RED Android tests for location visit recording and Room persistence.
+- [x] Add local-only `location_visits` Room table/DAO and migration v3 -> v4.
+- [x] Add `LocationVisitRecorder` that merges same rounded coordinate cells
+  within a merge gap instead of producing one statistics row per location poll.
+- [x] Wire `LocationContextCollectionRunner` to record location visits when an
+  opt-in coordinate snapshot exists.
+- [x] Show Room-backed `Location visits` and `Top location` statistics on the
+  Android Dashboard location card.
+- [x] Compact Android bottom navigation to avoid the excessive blank padding
+  below Dashboard/Sessions/Report/Settings.
+- [x] Update Android UI/privacy/TODO documentation with the location-statistics
+  storage policy.
+- [x] Validate with focused Android tests, full Android `testDebugUnitTest`,
+  and `assembleDebug`.
+- [x] Refresh Android emulator UI snapshot evidence after the bottom-navigation
+  and location-statistics changes: `artifacts/android-ui-snapshots/20260502-181343/`.
+- [x] Refresh .NET coverage after this slice: line 87.6%, branch 70.4%,
+  report at `artifacts/coverage/SummaryGithub.md`.

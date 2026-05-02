@@ -5523,3 +5523,18 @@ Validation completed for Android snapshot residual + Server HeaderStub guard sli
 - Validation passed: Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, full solution `dotnet test` (581 passed / 6 skipped), full solution `dotnet build`, and coverage collection.
 - Latest coverage after this integrated slice: line 87.6%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
 - Remaining queue: implement a real production user/session provider, add runtime retention alert delivery or external monitor wiring, and continue WPF/Server hardening.
+
+## 2026-05-02 Android Location Visit Statistics And Bottom Nav Compacting
+
+- Added local-only Android Room `location_visits` storage for opt-in latitude/longitude statistics. It is separate from raw `location_context_snapshots` and merges repeated captures in the same rounded coordinate cell into one visit row with `durationMs` and `sampleCount`.
+- `LocationContextCollectionRunner` now records location visit statistics when a coordinate snapshot is captured. Sync remains opt-in and upload behavior is unchanged.
+- Dashboard `Location context` now includes `Location visits` and `Top location` rows so the UI can answer where the user spent time instead of only showing the latest coordinate.
+- Bottom navigation is compact again: 56dp base height, no duplicate system-navigation padding when the root already fits system windows, reducing the excessive white area under Dashboard/Sessions/Report/Settings.
+
+Verified so far:
+
+- RED focused Android tests failed before `LocationVisit*` production classes existed.
+- Focused location visit DAO/recorder/repository/layout tests passed.
+- `android\gradlew.bat testDebugUnitTest assembleDebug --no-daemon --stacktrace` passed.
+- Android UI snapshot automation passed after the location-statistics/bottom-nav slice on `emulator-5554`, producing `artifacts/android-ui-snapshots/20260502-181343/` with canonical seven-screen PASS evidence.
+- Coverage refreshed after this slice: line 87.6%, branch 70.4%, report at `artifacts/coverage/SummaryGithub.md`.

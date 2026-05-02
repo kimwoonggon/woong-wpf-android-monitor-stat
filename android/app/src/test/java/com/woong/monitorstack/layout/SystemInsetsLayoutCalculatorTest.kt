@@ -5,45 +5,45 @@ import org.junit.Test
 
 class SystemInsetsLayoutCalculatorTest {
     @Test
-    fun calculateAddsOnlySystemBottomInsetToBottomNavigationAndContentMargin() {
+    fun calculateKeepsBottomNavigationCompactWhenRootAlreadyFitsSystemWindows() {
         val calculator = SystemInsetsLayoutCalculator(
-            baseBottomNavigationHeightPx = 72,
-            contentBottomClearancePx = 16
+            baseBottomNavigationHeightPx = 56,
+            contentBottomClearancePx = 0
         )
 
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
-        assertEquals(96, layout.bottomNavigationHeightPx)
-        assertEquals(112, layout.fragmentBottomMarginPx)
-        assertEquals(24, layout.bottomNavigationPaddingBottomPx)
+        assertEquals(56, layout.bottomNavigationHeightPx)
+        assertEquals(56, layout.fragmentBottomMarginPx)
+        assertEquals(0, layout.bottomNavigationPaddingBottomPx)
     }
 
     @Test
     fun calculateTreatsNegativeInsetsAsZero() {
         val calculator = SystemInsetsLayoutCalculator(
-            baseBottomNavigationHeightPx = 72,
-            contentBottomClearancePx = 16
+            baseBottomNavigationHeightPx = 56,
+            contentBottomClearancePx = 0
         )
 
         val layout = calculator.calculate(systemNavigationBottomInsetPx = -10)
 
-        assertEquals(72, layout.bottomNavigationHeightPx)
-        assertEquals(88, layout.fragmentBottomMarginPx)
+        assertEquals(56, layout.bottomNavigationHeightPx)
+        assertEquals(56, layout.fragmentBottomMarginPx)
         assertEquals(0, layout.bottomNavigationPaddingBottomPx)
     }
 
     @Test
-    fun calculateKeepsPhoneViewportContentAboveBottomNavigationWithClearance() {
+    fun calculateKeepsContentMarginAlignedToCompactBottomNavigation() {
         val calculator = SystemInsetsLayoutCalculator(
-            baseBottomNavigationHeightPx = 72,
-            contentBottomClearancePx = 16
+            baseBottomNavigationHeightPx = 56,
+            contentBottomClearancePx = 0
         )
 
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
         assertEquals(
-            "Content container must keep scrollable tab content clear of the bottom navigation plus a visible buffer.",
-            layout.bottomNavigationHeightPx + 16,
+            "The main shell already fits system windows, so the content margin should not add a second navigation-bar-sized blank area.",
+            layout.bottomNavigationHeightPx,
             layout.fragmentBottomMarginPx
         )
     }

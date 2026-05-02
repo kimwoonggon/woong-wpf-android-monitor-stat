@@ -75,6 +75,25 @@ class LocationContextCollectionRunnerTest {
         assertEquals(emptyList<SyncOutboxEntity>(), outbox.insertedItems)
     }
 
+    @Test
+    fun collectRecordsLocationVisitStatisticsForCoordinateSnapshots() {
+        val snapshot = locationSnapshot(id = "location-context-visit")
+        val snapshotDao = FakeLocationContextSnapshotDao()
+        val outbox = FakeSyncOutboxWriter()
+        val visitWriter = FakeLocationVisitWriter()
+        val runner = LocationContextCollectionRunner(
+            provider = FakeRuntimeLocationSnapshotProvider(snapshot),
+            snapshotDao = snapshotDao,
+            outbox = outbox,
+            locationVisitWriter = visitWriter
+        )
+
+        val result = runner.collect(deviceId = "android-device-1")
+
+        assertEquals(LocationContextCollectionResult.Captured, result)
+        assertEquals(listOf(snapshot), visitWriter.recordedSnapshots)
+    }
+
     private class FakeRuntimeLocationSnapshotProvider(
         private val snapshot: LocationContextSnapshotEntity?
     ) : RuntimeLocationSnapshotProvider {
@@ -105,6 +124,15 @@ class LocationContextCollectionRunnerTest {
 
         override fun insert(item: SyncOutboxEntity) {
             insertedItems += item
+        }
+    }
+
+    private class FakeLocationVisitWriter : LocationVisitWriter {
+        val recordedSnapshots = mutableListOf<LocationContextSnapshotEntity>()
+
+        override fun record(snapshot: LocationContextSnapshotEntity): LocationVisitRecordResult {
+            recordedSnapshots += snapshot
+            return LocationVisitRecordResult.Created
         }
     }
 

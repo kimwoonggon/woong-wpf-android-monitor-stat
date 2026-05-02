@@ -11,15 +11,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         FocusSessionEntity::class,
         SyncOutboxEntity::class,
-        LocationContextSnapshotEntity::class
+        LocationContextSnapshotEntity::class,
+        LocationVisitEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class MonitorDatabase : RoomDatabase() {
     abstract fun focusSessionDao(): FocusSessionDao
     abstract fun syncOutboxDao(): SyncOutboxDao
     abstract fun locationContextSnapshotDao(): LocationContextSnapshotDao
+    abstract fun locationVisitDao(): LocationVisitDao
 
     companion object {
         @Volatile
@@ -64,6 +66,44 @@ abstract class MonitorDatabase : RoomDatabase() {
             }
         }
 
+        private val Migration3To4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS location_visits (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        deviceId TEXT NOT NULL,
+                        locationKey TEXT NOT NULL,
+                        latitude REAL NOT NULL,
+                        longitude REAL NOT NULL,
+                        coordinatePrecisionDecimals INTEGER NOT NULL,
+                        firstCapturedAtUtcMillis INTEGER NOT NULL,
+                        lastCapturedAtUtcMillis INTEGER NOT NULL,
+                        durationMs INTEGER NOT NULL,
+                        sampleCount INTEGER NOT NULL,
+                        accuracyMeters REAL,
+                        permissionState TEXT NOT NULL,
+                        captureMode TEXT NOT NULL,
+                        createdAtUtcMillis INTEGER NOT NULL,
+                        updatedAtUtcMillis INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE INDEX IF NOT EXISTS index_location_visits_device_key_last
+                    ON location_visits(deviceId, locationKey, lastCapturedAtUtcMillis)
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE INDEX IF NOT EXISTS index_location_visits_device_time
+                    ON location_visits(deviceId, firstCapturedAtUtcMillis, lastCapturedAtUtcMillis)
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): MonitorDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -71,7 +111,7 @@ abstract class MonitorDatabase : RoomDatabase() {
                     MonitorDatabase::class.java,
                     "woong-monitor.db"
                 )
-                    .addMigrations(Migration1To2, Migration2To3)
+                    .addMigrations(Migration1To2, Migration2To3, Migration3To4)
                     .build()
                     .also { instance = it }
             }
