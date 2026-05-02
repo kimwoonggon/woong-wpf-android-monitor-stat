@@ -18,6 +18,16 @@ public sealed class RawEventRetentionOptionsTests
     }
 
     [Fact]
+    public void AppSettings_DefinesProductionRetentionAlertingThresholds()
+    {
+        RawEventRetentionOptions options = LoadOptions("appsettings.json");
+
+        Assert.True(options.FailureAlertEnabled);
+        Assert.Equal(3, options.FailureAlertAfterConsecutiveFailures);
+        Assert.Equal(10_000, options.HighDeleteCountAlertThreshold);
+    }
+
+    [Fact]
     public void DevelopmentAppSettings_DisablesRawEventRetentionForLocalRuns()
     {
         RawEventRetentionOptions options = LoadOptions(
@@ -27,6 +37,9 @@ public sealed class RawEventRetentionOptionsTests
         Assert.False(options.Enabled);
         Assert.Equal(30, options.RetentionDays);
         Assert.Equal(TimeSpan.FromDays(1), options.Interval);
+        Assert.False(options.FailureAlertEnabled);
+        Assert.Equal(3, options.FailureAlertAfterConsecutiveFailures);
+        Assert.Equal(10_000, options.HighDeleteCountAlertThreshold);
     }
 
     private static RawEventRetentionOptions LoadOptions(params string[] files)

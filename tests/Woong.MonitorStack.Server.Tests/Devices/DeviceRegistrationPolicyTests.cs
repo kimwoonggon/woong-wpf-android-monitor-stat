@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
@@ -168,15 +170,31 @@ public sealed class DeviceRegistrationPolicyTests
     [Fact]
     public void Startup_WhenProductionStrictAuthUsesDefaultHeaderStubProvider_FailsConfigurationValidation()
     {
-        using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(
-            requireAuthenticatedUser: true,
-            environmentName: "Production");
+        ValidateOptionsResult result = ValidateProductionAuthOptions(new DeviceRegistrationAuthOptions
+        {
+            RequireAuthenticatedUser = true,
+            UserIdentityProviderMode = DeviceRegistrationAuthOptions.HeaderStubProviderMode
+        });
+        string failureMessage = GetFailureMessage(result);
 
-        OptionsValidationException exception = Assert.Throws<OptionsValidationException>(
-            () => factory.CreateClient());
+        Assert.True(result.Failed);
+        Assert.Contains("real user/session provider", failureMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("HeaderStub", failureMessage, StringComparison.Ordinal);
+    }
 
-        Assert.Contains("real user/session provider", exception.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("HeaderStub", exception.Message, StringComparison.Ordinal);
+    [Fact]
+    public void Startup_WhenProductionStrictAuthUsesUnwiredUserIdentityProviderMode_FailsConfigurationValidation()
+    {
+        ValidateOptionsResult result = ValidateProductionAuthOptions(new DeviceRegistrationAuthOptions
+        {
+            RequireAuthenticatedUser = true,
+            UserIdentityProviderMode = "Oidc"
+        });
+        string failureMessage = GetFailureMessage(result);
+
+        Assert.True(result.Failed);
+        Assert.Contains("not wired", failureMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Oidc", failureMessage, StringComparison.Ordinal);
     }
 
     private static async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
@@ -233,17 +251,24 @@ public sealed class DeviceRegistrationPolicyTests
 
     private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase(
         bool requireAuthenticatedUser,
-        string environmentName = "Testing")
+        string environmentName = "Testing",
+        string? userIdentityProviderMode = null)
         => new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment(environmentName);
                 builder.ConfigureAppConfiguration((_, configuration) =>
                 {
-                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                    var values = new Dictionary<string, string?>
                     {
                         ["DeviceRegistrationAuth:RequireAuthenticatedUser"] = requireAuthenticatedUser.ToString()
-                    });
+                    };
+                    if (!string.IsNullOrWhiteSpace(userIdentityProviderMode))
+                    {
+                        values["DeviceRegistrationAuth:UserIdentityProviderMode"] = userIdentityProviderMode;
+                    }
+
+                    configuration.AddInMemoryCollection(values);
                 });
                 builder.ConfigureServices(services =>
                 {
@@ -254,4 +279,27 @@ public sealed class DeviceRegistrationPolicyTests
                         options.UseInMemoryDatabase(databaseName));
                 });
             });
+
+    private static ValidateOptionsResult ValidateProductionAuthOptions(DeviceRegistrationAuthOptions options)
+    {
+        var validator = new DeviceRegistrationAuthOptionsValidator(new TestHostEnvironment("Production"));
+
+        return validator.Validate(null, options);
+    }
+
+    private static string GetFailureMessage(ValidateOptionsResult result)
+        => string.Join(" ", result.Failures ?? Array.Empty<string>());
+
+    private sealed class TestHostEnvironment : IHostEnvironment
+    {
+        public TestHostEnvironment(string environmentName)
+        {
+            EnvironmentName = environmentName;
+        }
+
+        public string ApplicationName { get; set; } = "Woong.MonitorStack.Server.Tests";
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+        public string EnvironmentName { get; set; }
+    }
 }

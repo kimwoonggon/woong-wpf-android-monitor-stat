@@ -228,12 +228,16 @@ uploads. Remaining server-side hardening should be split into small slices:
      `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, must use a real
      user/session provider, and must not ship with the `X-Woong-User-Id` header
      stub as the production identity provider.
-   - Startup validation now fails production strict-auth startup when
-     `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`. HeaderStub
-     is the dev/MVP compatibility provider mode and is not a public production
-     identity provider.
-   - The real user/session provider selection must remain an open release
-     blocker until the provider, provisioning path, token/session validation,
+  - Startup validation now fails production strict-auth startup when
+    `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`. HeaderStub
+    is the dev/MVP compatibility provider mode and is not a public production
+    identity provider.
+  - Startup validation also fails any non-`HeaderStub`
+    `UserIdentityProviderMode` until the mode is wired to a concrete
+    `IRegistrationUserIdentitySource`. Future provider names such as `Oidc`
+    must not silently continue using the header stub.
+  - The real user/session provider selection must remain an open release
+    blocker until the provider, provisioning path, token/session validation,
      and operational ownership are documented and validated.
    - Token-protected upload/rotation/revoke endpoints use this response policy:
      missing, malformed, revoked, or wrong device tokens return

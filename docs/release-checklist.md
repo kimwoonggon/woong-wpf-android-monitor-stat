@@ -84,6 +84,9 @@ elevated prompt and use the certificate emitted beside that exact MSIX artifact.
 - [x] Android Room stores only Android local data.
 - [x] Server/PostgreSQL is the only cross-device integration layer.
 - [x] Raw-event retention policy is documented in `docs/hardening.md`.
+- [x] Server raw-event retention config defines production alerting thresholds
+  for repeated retention failures and unusually high delete counts while
+  keeping Development alerting disabled.
 
 ## Validation Evidence
 
@@ -133,10 +136,13 @@ closed until the owning implementation agents report verified completion:
   header stub as the production identity provider. Startup validation blocks
   production strict-auth startup when
   `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`, which is the
-  dev/MVP compatibility provider mode. Until that real
-  user/session provider is selected, configured, and validated, this item must
-  remain an open release blocker and the release checklist must not be treated
-  as complete.
+  dev/MVP compatibility provider mode. Startup validation also rejects any
+  non-`HeaderStub` `UserIdentityProviderMode` until server code wires that mode
+  to a concrete `IRegistrationUserIdentitySource`, so setting `Oidc` or another
+  future provider name cannot silently keep using the header stub. Until that
+  real user/session provider is selected, configured, wired, and validated,
+  this item must remain an open release blocker and the release checklist must
+  not be treated as complete.
   Existing policy coverage proves strict mode rejects missing authenticated
   users, authenticated identity overrides payload `userId`, the same device key
   is scoped per authenticated user, payload `userId` cannot steal another

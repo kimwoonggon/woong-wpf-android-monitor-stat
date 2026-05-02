@@ -79,6 +79,31 @@ class AndroidUsageCollectionRunnerTest {
         assertEquals(10_000L, session.durationMs)
     }
 
+    @Test
+    fun collectReportsRequestedAndAnchoredQueryWindowToDebugHook() = runBlocking {
+        val debugHook = RecordingUsageCollectionDebugHook()
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(FakeUsageEventsReader(emptyList<UsageEventSnapshot>())),
+            sessionizer = UsageSessionizer(),
+            store = FakeUsageSessionStore(),
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            anchorLookbackMs = 9_000L,
+            debugHook = debugHook
+        )
+
+        runner.collect(10_000L, 30_000L)
+
+        assertEquals(
+            UsageCollectionDebugWindow(
+                requestedFromUtcMillis = 10_000L,
+                requestedToUtcMillis = 30_000L,
+                queryFromUtcMillis = 1_000L,
+                queryToUtcMillis = 30_000L
+            ),
+            debugHook.windows.single()
+        )
+    }
+
     private class FakeUsageEventsReader(
         private val events: List<UsageEventSnapshot>
     ) : UsageEventsReader {
@@ -107,6 +132,14 @@ class AndroidUsageCollectionRunnerTest {
 
         override suspend fun enqueueFocusSessions(sessions: List<FocusSessionEntity>) {
             this.sessions += sessions
+        }
+    }
+
+    private class RecordingUsageCollectionDebugHook : UsageCollectionDebugHook {
+        val windows = mutableListOf<UsageCollectionDebugWindow>()
+
+        override fun onCollectionWindow(window: UsageCollectionDebugWindow) {
+            windows += window
         }
     }
 }

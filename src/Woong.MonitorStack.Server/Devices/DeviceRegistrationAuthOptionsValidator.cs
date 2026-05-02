@@ -13,10 +13,21 @@ public sealed class DeviceRegistrationAuthOptionsValidator : IValidateOptions<De
 
     public ValidateOptionsResult Validate(string? name, DeviceRegistrationAuthOptions options)
     {
+        string providerMode = (options.UserIdentityProviderMode ?? string.Empty).Trim();
+        if (!string.Equals(
+                providerMode,
+                DeviceRegistrationAuthOptions.HeaderStubProviderMode,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return ValidateOptionsResult.Fail(
+                $"DeviceRegistrationAuth:UserIdentityProviderMode={providerMode} is not wired to a registered " +
+                "IRegistrationUserIdentitySource. Add a real user/session provider before enabling this mode.");
+        }
+
         if (_environment.IsProduction() &&
             options.RequireAuthenticatedUser &&
             string.Equals(
-                options.UserIdentityProviderMode,
+                providerMode,
                 DeviceRegistrationAuthOptions.HeaderStubProviderMode,
                 StringComparison.OrdinalIgnoreCase))
         {

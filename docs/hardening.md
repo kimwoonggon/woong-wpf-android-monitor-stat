@@ -82,9 +82,16 @@ Server retention observability:
 - Operators should watch for repeated failures, unexpectedly high
   `DeletedCount`, or no completion/skip logs after service startup.
 - Configure per environment with `RawEventRetention:Enabled`,
-  `RawEventRetention:RetentionDays`, and `RawEventRetention:Interval`.
+  `RawEventRetention:RetentionDays`, `RawEventRetention:Interval`,
+  `RawEventRetention:FailureAlertEnabled`,
+  `RawEventRetention:FailureAlertAfterConsecutiveFailures`, and
+  `RawEventRetention:HighDeleteCountAlertThreshold`.
   Production defaults enable daily 30-day retention; local Development defaults
   keep retention disabled to avoid surprising debug data deletion.
+- Production defaults enable retention failure alert policy after 3 consecutive
+  failures and flag unusually large single-run deletes at 10,000 raw-event
+  rows. Development keeps retention failure alerting disabled while retaining
+  the same threshold values for local validation.
 - Do not log raw-event payload contents while investigating retention. The
   useful operational facts are run status, cutoff, deleted row count, and
   exception type/message.

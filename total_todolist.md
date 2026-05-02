@@ -2306,6 +2306,7 @@ milestones below are finished.
 - [x] Production endpoint release behavior is documented and statically guarded: unset production endpoint keeps sync disabled, release builds do not silently fall back to local/blank/example endpoints, loopback HTTP is local-dev nonproduction only, and user-entered release endpoints are advanced/manual configuration only.
 - [x] Android production endpoint source/config path implemented: `BuildConfig.PRODUCTION_SYNC_BASE_URL` is populated by `woongProductionSyncBaseUrl` or `WOONG_ANDROID_PRODUCTION_SYNC_BASE_URL`, defaults blank, rejects local/example/invalid endpoints, and preserves explicit user-entered advanced endpoints.
 - [x] Settings now shows sync/registration/auth state without making sync appear enabled by default; worker auth-required status is persisted and surfaces as a repair-needed Settings state.
+- [x] Android UsageStats collection now exposes an optional no-op-by-default debug/test hook for requested and anchored query windows, so emulator validation can prove `from/to` behavior without relying on natural event timing.
 - [ ] Remaining Android sync hardening: Play signing/publishing policy,
   public user-auth registration/re-registration ownership policy, and
   server/user cross-device management policy stay open before release use.
@@ -2325,6 +2326,8 @@ milestones below are finished.
 - [x] Server token-protected endpoint response policy is now explicit in code/tests/docs: missing, malformed, revoked, or wrong tokens return `401 Unauthorized`, while a valid token presented by a different authenticated user returns `403 Forbidden` and persists no upload rows.
 - [x] Public Android/server sync release policy now separates dev/MVP payload mode from production strict-auth mode and guards the release checklist: production must set `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, select a real user/session provider, and cannot ship with the `X-Woong-User-Id` header stub as the production identity provider.
 - [x] Server startup/config validation now rejects Production + strict auth when `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`, keeping the dev/MVP header identity path from being accidentally shipped as the production provider.
+- [x] Server startup/config validation now also rejects non-`HeaderStub` user identity provider modes until they are wired to a concrete `IRegistrationUserIdentitySource`, so future names such as `Oidc` cannot silently keep using the header stub.
+- [x] Validation passed for server unwired-provider guard: focused `DeviceRegistrationPolicyTests`, full solution `dotnet test`, full solution `dotnet build`, and coverage collection.
 - [x] Android seven-screen snapshot evidence now pulls the residual Sessions row-tap, Sessions empty-state, second App Detail, and Settings storage/privacy scroll captures. The snapshot seed uses past sessions relative to the emulator clock so Today/Sessions evidence does not go empty when the emulator local time is before 09:00.
 - [x] Latest Android seven-screen/residual evidence: `artifacts/android-ui-snapshots/20260502-150542/`, including `25-sessions-row-tap-app-detail.png`, `26-sessions-empty-state.png`, `27-app-detail-youtube.png`, and `28-settings-storage-scrolled.png`.
 - [x] Validation passed for the Android snapshot residual + server HeaderStub guard slice: Android UI snapshot PASS, full solution `dotnet test` (579 passed / 6 skipped), full solution `dotnet build`, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage collection.
@@ -2435,8 +2438,9 @@ milestones below are finished.
 - [x] Added `RawEventRetentionMaintenanceService` with configurable `Enabled`, `RetentionDays`, and `Interval` options.
 - [x] Added option-gated `RawEventRetentionBackgroundService` and disabled its hosted-service registration in the `Testing` WebApplicationFactory host.
 - [x] Added production/development config defaults for `RawEventRetention`.
+- [x] Added environment-specific raw-event retention alerting config values: production enables alert policy with consecutive-failure and high-delete thresholds, development keeps alert delivery disabled with the same thresholds for validation.
 - [x] Added structured logging and hardening docs for raw-event retention runs.
 - [x] Added `docs/android-server-sync-hardening-plan.md` for remaining Android production sync requirements.
 - [x] Validation passed: server workflow validator, focused server retention tests, full solution `dotnet test`, and full solution `dotnet build`.
 - [x] Server production migration deployment path is documented and has a bundle helper/contract coverage; bundles are built explicitly and never applied automatically.
-- [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, and token-protected 401/403 response policy have focused coverage; production user/session provider selection and environment-specific retention alerting values still need implementation/validation.
+- [ ] Remaining server production hardening: device token issuance/enforcement, rotation, revocation, strict-mode ownership checks, and token-protected 401/403 response policy have focused coverage; production user/session provider selection and runtime retention alert delivery still need implementation/validation.

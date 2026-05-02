@@ -5508,3 +5508,18 @@ Validation completed for Android snapshot residual + Server HeaderStub guard sli
 - Validation passed: local Android release workflow validator, focused `AndroidReleaseWorkflowTests`, Android Gradle `testDebugUnitTest assembleRelease`, full solution `dotnet test` (579 passed / 6 skipped), full solution `dotnet build`, and coverage collection.
 - Latest coverage after this slice: line 87.7%, branch 69.7%, report at `artifacts/coverage/SummaryGithub.md`.
 - Remaining queue: configure real Android signing secrets/Play track only when release requirements are explicit; implement production user/session provider; add server retention alerting values; continue WPF/Server hardening.
+## 2026-05-02 Server Unwired Provider Guard
+
+- Server auth configuration now rejects any non-`HeaderStub` `DeviceRegistrationAuth:UserIdentityProviderMode` until that mode is wired to a concrete `IRegistrationUserIdentitySource`.
+- This prevents future provider names such as `Oidc` from silently continuing to use the dev/MVP header stub.
+- Tests now verify HeaderStub production strict-auth failure and unwired-provider failure through the public `DeviceRegistrationAuthOptionsValidator` result, avoiding brittle WebApplicationFactory startup exception wrapping under coverage.
+- Validation passed: focused `DeviceRegistrationPolicyTests`, full solution `dotnet test` (581 passed / 6 skipped), full solution `dotnet build`, and coverage collection.
+- Latest coverage after this slice: line 87.6%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- Remaining queue: real production user/session provider implementation/selection, environment-specific server retention alerting values, Android signing/Play operations, and later WPF/Server hardening.
+## 2026-05-02 Android UsageStats Debug Hook And Retention Alert Config
+
+- Android UsageStats collection now exposes a no-op-by-default `UsageCollectionDebugHook` that reports requested `from/to` and anchored query `from/to` windows for tests/debug validation.
+- Server raw-event retention config now includes environment-specific alerting values: production enables alert policy, development keeps delivery disabled, and both define consecutive-failure/high-delete thresholds.
+- Validation passed: Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, full solution `dotnet test` (581 passed / 6 skipped), full solution `dotnet build`, and coverage collection.
+- Latest coverage after this integrated slice: line 87.6%, branch 69.5%, report at `artifacts/coverage/SummaryGithub.md`.
+- Remaining queue: implement a real production user/session provider, add runtime retention alert delivery or external monitor wiring, and continue WPF/Server hardening.

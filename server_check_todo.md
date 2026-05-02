@@ -33,6 +33,9 @@ Status legend:
   `docs/android-server-sync-hardening-plan.md`,
   `ServerApiContractDocumentationTests.PublicReleaseDocs_RequireProductionStrictAuthAndRealUserSessionProviderDecision`.
 - [ ] Production user/session provider selected and validated.
+- [x] Startup validation rejects non-`HeaderStub` user identity provider modes
+  until they are wired to a concrete `IRegistrationUserIdentitySource`; future
+  provider names such as `Oidc` cannot silently continue using the header stub.
   This remains a public Android/server sync release blocker. Production
   strict-auth mode must set
   `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, use a real
@@ -97,6 +100,16 @@ Status legend:
 - [x] Raw-event payload privacy guard rejects forbidden user-input/content
   fields such as typed text while allowing safe metadata rows in the same batch.
   Evidence: `RawEventUploadApiTests.UploadRawEvents_WhenPayloadContainsForbiddenUserInputMetadata_ReturnsErrorAndDoesNotPersistIt`.
+
+## Raw Event Retention
+
+- [x] Production and Development configs define environment-specific raw-event
+  retention alerting values without adding alert delivery side effects.
+  Evidence:
+  `RawEventRetentionOptionsTests.AppSettings_DefinesProductionRetentionAlertingThresholds`,
+  `RawEventRetentionOptionsTests.DevelopmentAppSettings_DisablesRawEventRetentionForLocalRuns`.
+- [ ] Implement runtime retention alert delivery or external monitor wiring for
+  repeated retention failures and unexpectedly high delete counts.
 
 ## Location Context Upload
 

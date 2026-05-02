@@ -12,7 +12,8 @@ class AndroidUsageCollectionRunner(
     private val store: UsageSessionStore,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
     private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer,
-    private val anchorLookbackMs: Long = DefaultAnchorLookbackMs
+    private val anchorLookbackMs: Long = DefaultAnchorLookbackMs,
+    private val debugHook: UsageCollectionDebugHook = NoopUsageCollectionDebugHook
 ) : UsageCollectionRunner {
     init {
         require(anchorLookbackMs >= 0) { "anchorLookbackMs must not be negative." }
@@ -20,6 +21,14 @@ class AndroidUsageCollectionRunner(
 
     override suspend fun collect(fromUtcMillis: Long, toUtcMillis: Long): Int {
         val anchoredFromUtcMillis = (fromUtcMillis - anchorLookbackMs).coerceAtLeast(0L)
+        debugHook.onCollectionWindow(
+            UsageCollectionDebugWindow(
+                requestedFromUtcMillis = fromUtcMillis,
+                requestedToUtcMillis = toUtcMillis,
+                queryFromUtcMillis = anchoredFromUtcMillis,
+                queryToUtcMillis = toUtcMillis
+            )
+        )
         val sessions = sessionizer.sessionize(
             events = collector.collect(anchoredFromUtcMillis, toUtcMillis),
             collectionStartUtcMillis = fromUtcMillis,
@@ -65,4 +74,19 @@ class AndroidUsageCollectionRunner(
             )
         }
     }
+}
+
+data class UsageCollectionDebugWindow(
+    val requestedFromUtcMillis: Long,
+    val requestedToUtcMillis: Long,
+    val queryFromUtcMillis: Long,
+    val queryToUtcMillis: Long
+)
+
+interface UsageCollectionDebugHook {
+    fun onCollectionWindow(window: UsageCollectionDebugWindow)
+}
+
+private object NoopUsageCollectionDebugHook : UsageCollectionDebugHook {
+    override fun onCollectionWindow(window: UsageCollectionDebugWindow) = Unit
 }

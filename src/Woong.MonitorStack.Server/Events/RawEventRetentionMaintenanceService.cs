@@ -9,6 +9,12 @@ public sealed class RawEventRetentionOptions
     public int RetentionDays { get; set; } = 30;
 
     public TimeSpan Interval { get; set; } = TimeSpan.FromHours(24);
+
+    public bool FailureAlertEnabled { get; set; }
+
+    public int FailureAlertAfterConsecutiveFailures { get; set; } = 3;
+
+    public int HighDeleteCountAlertThreshold { get; set; } = 10_000;
 }
 
 public interface IRawEventRetentionMaintenanceService

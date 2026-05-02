@@ -935,7 +935,12 @@ workspace.
 - [ ] Future Android release hardening: configure real signing secrets and Play
   Store publishing only after explicit release requirements are defined.
 - [x] Current-focus validation screenshot timing/retry gap was resolved by the 2026-05-02 foreground validation pass.
-- [ ] Remaining Android gap: add an optional test/debug hook if emulator validation must force explicit UsageStats collection `from/to` timestamps without relying on natural event timing.
+- [x] Remaining Android gap resolved: `AndroidUsageCollectionRunner` now exposes
+  a test/debug hook that reports the requested collection `from/to` timestamps
+  and the anchored UsageStats query `from/to` timestamps without relying on
+  emulator natural event timing.
+- [x] Focused usage collection hook test:
+  `AndroidUsageCollectionRunnerTest.collectReportsRequestedAndAnchoredQueryWindowToDebugHook`.
 - [x] Dashboard/Report top-app rows now reduce dead space and render proportional usage bars for ranked app lists.
 - [x] Focused visual test: `ReportTopAppsVisualTest.reportTopAppsRenderProportionalUsageBars`.
 - [x] Remaining Android visual gap resolved: Dashboard chart/card density was tightened so ranked app content appears earlier and remains readable.
