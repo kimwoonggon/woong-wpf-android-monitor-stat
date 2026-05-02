@@ -2731,3 +2731,22 @@ milestones below are finished.
 - [x] Validation passed: WPF detail chart tests, Android location map/time
   focused tests, full solution `dotnet test`, full solution `dotnet build`,
   Android full `:app:testDebugUnitTest`, and Android `:app:assembleDebug`.
+
+## 2026-05-03 Android Optional Google Maps SDK Follow-Up
+
+- [x] Added RED/GREEN Android configuration tests requiring an optional Google
+  Maps SDK dependency, manifest API-key metadata, and a dashboard Google map
+  container with local fallback.
+- [x] Added `GoogleMapsAvailabilityPolicy` so blank keys use the local
+  no-network preview and configured keys enable the Google Maps path.
+- [x] Added `DashboardLocationMapController` to create a Google `MapView` only
+  when `woongGoogleMapsApiKey` or `WOONG_ANDROID_GOOGLE_MAPS_API_KEY` is
+  configured.
+- [x] Wired the Dashboard location card so persisted Room location visits render
+  as Google map markers/route line when a key is present, or as the local map
+  preview when no key is present.
+- [x] Documented API-key setup, emulator requirements, and the privacy meaning
+  of external map tiles in `docs/android-google-maps.md`, README, and Android
+  location docs.
+- [ ] Capture emulator evidence with a real Google Maps API key configured;
+  default no-key validation can only prove the safe local fallback path.

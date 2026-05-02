@@ -170,6 +170,9 @@
     <string name="location_visits_not_available">Location visits   No location visits</string>
     <string name="location_top_visit_not_available">Top location   No location statistics</string>
     <string name="location_map_empty">No location statistics</string>
+    <string name="location_google_map_unavailable">Google Maps API key not configured. Showing local map preview.</string>
+    <string name="location_google_map_enabled">Google Maps enabled. Location visits are shown as markers and a route line.</string>
+    <string name="location_google_map_marker_snippet">%1$s, %2$d samples</string>
 
     <string name="empty_sessions">No sessions yet</string>
     <string name="zero_duration">0m</string>

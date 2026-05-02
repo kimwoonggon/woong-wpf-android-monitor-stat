@@ -13,6 +13,12 @@ val productionSyncBaseUrl = providers
     .getOrElse("")
     .trim()
 
+val googleMapsApiKey = providers
+    .gradleProperty("woongGoogleMapsApiKey")
+    .orElse(providers.environmentVariable("WOONG_ANDROID_GOOGLE_MAPS_API_KEY"))
+    .getOrElse("")
+    .trim()
+
 android {
     namespace = "com.woong.monitorstack"
     compileSdk {
@@ -34,6 +40,12 @@ android {
             "PRODUCTION_SYNC_BASE_URL",
             productionSyncBaseUrl.asBuildConfigString()
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_MAPS_API_KEY",
+            googleMapsApiKey.asBuildConfigString()
+        )
+        manifestPlaceholders["googleMapsApiKey"] = googleMapsApiKey
     }
 
     buildTypes {
@@ -80,6 +92,7 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.okhttp)
     implementation(libs.mpandroidchart)
+    implementation(libs.google.play.services.maps)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.room.testing)

@@ -24,6 +24,7 @@ class DashboardFragment : Fragment() {
     private val topAppsAdapter = TopAppsAdapter()
     private val chartConfigurator = DashboardChartConfigurator()
     private lateinit var currentFocusResolver: DashboardCurrentFocusResolver
+    private lateinit var locationMapController: DashboardLocationMapController
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +45,13 @@ class DashboardFragment : Fragment() {
             )
         )
         currentFocusResolver = DashboardCurrentFocusResolver(requireContext().packageName)
+        locationMapController = DashboardLocationMapController(
+            context = requireContext(),
+            googleMapContainer = binding.googleLocationMapContainer,
+            localPreview = binding.locationMiniMapView,
+            providerStatusText = binding.locationMapProviderStatusText
+        )
+        locationMapController.onCreate(savedInstanceState)
 
         binding.recentSessionsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recentSessionsRecyclerView.adapter = sessionAdapter
@@ -166,10 +174,59 @@ class DashboardFragment : Fragment() {
             R.string.location_top_visit_value,
             state.locationContext.topVisitText
         )
-        binding.locationMiniMapView.setPoints(state.locationContext.mapPoints)
+        locationMapController.render(state.locationContext.mapPoints)
         sessionAdapter.submit(state.recentSessions)
         topAppsAdapter.submit(state.chartData.appUsage.take(3))
         renderHourlyChart(state.chartData.hourlyActivity)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (::locationMapController.isInitialized) {
+            locationMapController.onStart()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::locationMapController.isInitialized) {
+            locationMapController.onResume()
+        }
+    }
+
+    override fun onPause() {
+        if (::locationMapController.isInitialized) {
+            locationMapController.onPause()
+        }
+        super.onPause()
+    }
+
+    override fun onStop() {
+        if (::locationMapController.isInitialized) {
+            locationMapController.onStop()
+        }
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
+        if (::locationMapController.isInitialized) {
+            locationMapController.onDestroy()
+        }
+        super.onDestroyView()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        if (::locationMapController.isInitialized) {
+            locationMapController.onLowMemory()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (::locationMapController.isInitialized) {
+            locationMapController.onSaveInstanceState(outState)
+        }
+        super.onSaveInstanceState(outState)
     }
 
     private fun renderHourlyChart(hourlyActivity: List<DashboardActivityBucket>) {

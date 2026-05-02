@@ -597,6 +597,32 @@ for real app-usage collection:
 Location context is opt-in. Precise latitude/longitude requires separate
 foreground location permission and explicit user setting.
 
+### Optional Android Google Maps
+
+The Dashboard location card can render a real Google map when a Google Maps SDK
+API key is supplied at build time. Without a key, the app uses the local
+no-network mini map fallback.
+
+Do not commit API keys. Build with a temporary Gradle property:
+
+```powershell
+cd D:\woong-monitor-stack\android
+.\gradlew.bat :app:assembleDebug -PwoongGoogleMapsApiKey=YOUR_ANDROID_MAPS_KEY
+```
+
+Or use an environment variable:
+
+```powershell
+$env:WOONG_ANDROID_GOOGLE_MAPS_API_KEY='YOUR_ANDROID_MAPS_KEY'
+cd D:\woong-monitor-stack\android
+.\gradlew.bat :app:assembleDebug
+Remove-Item Env:\WOONG_ANDROID_GOOGLE_MAPS_API_KEY
+```
+
+Use an emulator image with Google APIs or Google Play services to validate the
+real map path. The local fallback works without Google Cloud setup. More detail:
+`docs/android-google-maps.md`.
+
 ## ASP.NET Core Server And PostgreSQL
 
 ### Local PostgreSQL With Docker

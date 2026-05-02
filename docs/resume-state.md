@@ -5676,3 +5676,12 @@ Validation update:
 - .NET full test passed: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
 - .NET full build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
 - Focused instrumentation screenshot evidence also passed: `adb shell am instrument -w -e class com.woong.monitorstack.snapshots.LocationMapSnapshotEvidenceTest com.woong.monitorstack.test/androidx.test.runner.AndroidJUnitRunner`; pulled screenshot to `artifacts/android-map-evidence/latest-instrumentation/dashboard-location-map.png`.
+
+## 2026-05-03 Android Optional Google Maps SDK Follow-Up
+
+- Added optional Maps SDK for Android support behind build-time key configuration.
+- New key inputs: Gradle property `woongGoogleMapsApiKey` or environment variable `WOONG_ANDROID_GOOGLE_MAPS_API_KEY`.
+- Manifest now receives `${googleMapsApiKey}` through `com.google.android.geo.API_KEY`, and `BuildConfig.GOOGLE_MAPS_API_KEY` drives runtime behavior.
+- `DashboardLocationMapController` creates a Google `MapView` only when a nonblank key exists; otherwise it keeps `LocationMiniMapView` visible and states that the local fallback is being used.
+- Added docs in `docs/android-google-maps.md` and updated README/location docs with privacy notes: external Google map tiles are explicit because map rendering uses Google services, while default fallback stays no-network.
+- Focused validation passed for Google Maps configuration/policy/controller tests.

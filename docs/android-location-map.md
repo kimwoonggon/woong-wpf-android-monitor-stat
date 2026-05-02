@@ -1,8 +1,12 @@
 # Android Location Map
 
-The Dashboard location preview is a local XML/View drawing, not an external map
-tile integration. It renders persisted `location_visits` points on a simple
-local grid and road context inside `LocationMiniMapView`.
+The Dashboard location card supports two map providers:
+
+1. Local fallback preview through `LocationMiniMapView`.
+2. Optional Google Maps SDK rendering when a build-time API key is provided.
+
+The default remains local-only. The app does not create a Google `MapView` when
+`BuildConfig.GOOGLE_MAPS_API_KEY` is blank.
 
 Current behavior:
 
@@ -13,16 +17,21 @@ Current behavior:
 - If the latest coordinate snapshot is older than the freshness window, the
   dashboard says `Location context stale - last captured ... ago` instead of
   pretending live capture is current.
-- The map is intentionally local-only and Google-map-like rather than Google
-  Maps-backed. Adding real map tiles later would require an explicit provider,
-  key, network policy, and privacy review.
+- Without a Google Maps API key, the local preview draws a no-network
+  Google-map-like road/block/grid context.
+- With a Google Maps API key, the dashboard renders markers and a route line on
+  a real Google map from persisted Room location visits.
 
 Privacy boundaries:
 
 - Location capture remains off by default.
 - Coordinates are stored only after explicit location opt-in, foreground
   permission, and precise-coordinate opt-in.
-- The mini map does not call external map providers or download map tiles.
+- The local mini map does not call external map providers or download map tiles.
+- The Google Maps path is explicit because map tiles require network access and
+  provider/API-key setup.
 - Screenshots for this feature must capture only Woong Monitor UI.
 - Do not collect typed text, clipboard contents, browser/page contents,
   screenshots of other apps, or Android touch coordinates.
+
+Configuration details are in `docs/android-google-maps.md`.

@@ -35,22 +35,22 @@ The dashboard now reads `location_visits` from Room and shows:
 - top location by duration
 - a local mini map based on persisted visit points
 
-## Local Mini Map
+## Map Rendering
 
-The Android dashboard uses `LocationMiniMapView` for the first version. This is
-a local-only visualization: it draws persisted Room visit points as bubbles
-sized by duration. It does not request external map tiles, call a map API, or
-send coordinates to a map provider.
+The Android dashboard always has a local fallback map. `LocationMiniMapView`
+draws persisted Room visit points as bubbles sized by duration. In fallback
+mode it does not request external map tiles, call a map API, or send coordinates
+to a map provider.
 
-This is intentional for privacy and reliability. It gives immediate visual
-feedback that location statistics are being stored and grouped without adding an
-API key or network dependency.
+The dashboard can also render real Google Maps when a Google Maps API key is
+provided at build time. The Google path is optional and explicit because map
+tiles are fetched from Google services. See `docs/android-google-maps.md`.
 
-## Real Map Future Option
+## Other Real Map Options
 
-A full map is possible later, but it needs an explicit product decision:
+Other map providers remain possible later, but they need an explicit product
+decision:
 
-- Google Maps SDK: polished, but requires API key and Google map tile requests.
 - MapLibre/OSM tiles: more control, but tile server/privacy policy must be
   selected.
 - Offline tiles: strongest privacy, but larger app/storage footprint.

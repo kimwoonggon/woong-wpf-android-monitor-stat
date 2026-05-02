@@ -531,12 +531,26 @@
                     android:textColor="@color/wms_text_primary"
                     android:textStyle="bold" />
 
+                <FrameLayout
+                    android:id="@+id/googleLocationMapContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone" />
+
                 <com.woong.monitorstack.dashboard.LocationMiniMapView
                     android:id="@+id/locationMiniMapView"
                     android:layout_width="match_parent"
                     android:layout_height="144dp"
                     android:layout_marginTop="12dp"
                     android:contentDescription="@string/location_map_empty" />
+
+                <TextView
+                    android:id="@+id/locationMapProviderStatusText"
+                    style="@style/WmsKeyValueText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location_google_map_unavailable" />
 
                 <TextView
                     android:id="@+id/locationLatitudeText"
