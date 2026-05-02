@@ -15,6 +15,8 @@ import androidx.test.uiautomator.UiDevice
 import com.woong.monitorstack.MainActivity
 import com.woong.monitorstack.R
 import com.woong.monitorstack.dashboard.DashboardActivity
+import com.woong.monitorstack.data.local.FocusSessionEntity
+import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.sessions.AppDetailFragment
 import com.woong.monitorstack.sessions.SessionsActivity
 import com.woong.monitorstack.settings.SettingsActivity
@@ -83,6 +85,10 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "19-sessions-filtered.png")
         )
+        captureMainShellSessionsRowTap(
+            device = device,
+            output = File(outputDir, "25-sessions-row-tap-app-detail.png")
+        )
         captureMainShellReport(
             device = device,
             output = File(outputDir, "12-main-shell-report.png")
@@ -122,6 +128,11 @@ class SnapshotCaptureTest {
             device = device,
             output = File(outputDir, "14-app-detail.png")
         )
+        captureMainShellAppDetail(
+            device = device,
+            output = File(outputDir, "27-app-detail-youtube.png"),
+            packageName = "com.google.android.youtube"
+        )
         captureDashboardFeatureScreens(
             device = device,
             outputDir = outputDir
@@ -159,6 +170,10 @@ class SnapshotCaptureTest {
             device = device,
             intent = dailySummaryIntent,
             output = File(outputDir, "08-daily-summary.png")
+        )
+        captureSessionsEmptyState(
+            device = device,
+            output = File(outputDir, "26-sessions-empty-state.png")
         )
     }
 
@@ -339,6 +354,9 @@ class SnapshotCaptureTest {
             scrollSettingsTo(scenario, R.id.locationSettingsCard)
             waitForScreen(device)
             captureScreen(device, File(outputDir, "06-settings-location-permission.png"))
+            scrollSettingsTo(scenario, R.id.privacyStorageSettingsCard)
+            waitForScreen(device)
+            captureScreen(device, File(outputDir, "28-settings-storage-scrolled.png"))
         }
     }
 
@@ -415,6 +433,53 @@ class SnapshotCaptureTest {
         output: File
     ) {
         captureMainShellSessionsSixHour(device, output)
+    }
+
+    private fun captureMainShellSessionsRowTap(
+        device: UiDevice,
+        output: File
+    ) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        seedMinimalSessions(MonitorDatabase.getInstance(context))
+
+        withMainActivityTestGates(
+            hasUsageAccess = true,
+            scheduleResult = UsageCollectionScheduleResult.Scheduled,
+            splashDelayMillis = 0L
+        ) {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                waitForScreen(device)
+                selectMainShellTab(scenario, R.id.navSessions)
+                waitForScreen(device)
+                scenario.onActivity { activity ->
+                    val sessions = activity.findViewById<androidx.recyclerview.widget.RecyclerView>(
+                        R.id.sessionsRecyclerView
+                    )
+                    assertTrue(
+                        "Expected seeded Sessions screen to contain at least one row before row-tap capture.",
+                        (sessions.adapter?.itemCount ?: 0) > 0
+                    )
+                    sessions.scrollToPosition(0)
+                    val firstRow = sessions.findViewHolderForAdapterPosition(0)?.itemView
+                        ?: sessions.getChildAt(0)
+                    assertTrue("Expected first Sessions row to be available for tap.", firstRow != null)
+                    requireNotNull(firstRow).performClick()
+                }
+                waitForScreen(device)
+                captureScreen(device, output)
+            }
+        }
+    }
+
+    private fun captureSessionsEmptyState(
+        device: UiDevice,
+        output: File
+    ) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = MonitorDatabase.getInstance(context)
+        database.clearAllTables()
+        captureMainShellSessions(device, output)
+        seedMinimalSessions(database)
     }
 
     private fun captureMainShellSettings(
@@ -538,8 +603,12 @@ class SnapshotCaptureTest {
 
     private fun captureMainShellAppDetail(
         device: UiDevice,
-        output: File
+        output: File,
+        packageName: String = "com.android.chrome"
     ) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        seedMinimalSessions(MonitorDatabase.getInstance(context))
+
         withMainActivityTestGates(
             hasUsageAccess = true,
             scheduleResult = UsageCollectionScheduleResult.Scheduled,
@@ -554,7 +623,7 @@ class SnapshotCaptureTest {
                         .beginTransaction()
                         .replace(
                             R.id.mainFragmentContainer,
-                            AppDetailFragment.newInstance("com.android.chrome")
+                            AppDetailFragment.newInstance(packageName)
                         )
                         .commitNow()
                 }
@@ -562,6 +631,45 @@ class SnapshotCaptureTest {
                 captureScreen(device, output)
             }
         }
+    }
+
+    private fun seedMinimalSessions(database: MonitorDatabase) {
+        val zone = ZoneId.systemDefault()
+        val now = java.time.ZonedDateTime.now(zone)
+        val today = now.toLocalDate()
+        val earliestToday = today.atStartOfDay(zone).plusMinutes(5)
+        val candidateBase = now.minusHours(3)
+        val base = if (candidateBase.isBefore(earliestToday)) {
+            earliestToday
+        } else {
+            candidateBase
+        }
+        database.focusSessionDao().insertAll(
+            listOf(
+                FocusSessionEntity(
+                    clientSessionId = "snapshot-restore-chrome",
+                    packageName = "com.android.chrome",
+                    startedAtUtcMillis = base.toInstant().toEpochMilli(),
+                    endedAtUtcMillis = base.plusMinutes(30).toInstant().toEpochMilli(),
+                    durationMs = 30 * 60_000L,
+                    localDate = today.toString(),
+                    timezoneId = zone.id,
+                    isIdle = false,
+                    source = "snapshot_seed_restore"
+                ),
+                FocusSessionEntity(
+                    clientSessionId = "snapshot-restore-youtube",
+                    packageName = "com.google.android.youtube",
+                    startedAtUtcMillis = base.plusHours(1).toInstant().toEpochMilli(),
+                    endedAtUtcMillis = base.plusHours(1).plusMinutes(20).toInstant().toEpochMilli(),
+                    durationMs = 20 * 60_000L,
+                    localDate = today.toString(),
+                    timezoneId = zone.id,
+                    isIdle = false,
+                    source = "snapshot_seed_restore"
+                )
+            )
+        )
     }
 
     private fun scrollDashboardTo(

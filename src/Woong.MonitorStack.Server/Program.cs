@@ -20,8 +20,10 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 builder.Services.AddScoped<DeviceRegistrationService>();
-builder.Services.Configure<DeviceRegistrationAuthOptions>(
-    builder.Configuration.GetSection(DeviceRegistrationAuthOptions.SectionName));
+builder.Services.AddSingleton<IValidateOptions<DeviceRegistrationAuthOptions>, DeviceRegistrationAuthOptionsValidator>();
+builder.Services.AddOptions<DeviceRegistrationAuthOptions>()
+    .Bind(builder.Configuration.GetSection(DeviceRegistrationAuthOptions.SectionName))
+    .ValidateOnStart();
 builder.Services.AddScoped<IRegistrationUserIdentitySource, HeaderRegistrationUserIdentitySource>();
 builder.Services.AddScoped<DeviceTokenAuthenticationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();

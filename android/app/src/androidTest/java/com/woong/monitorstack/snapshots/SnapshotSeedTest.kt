@@ -21,8 +21,15 @@ class SnapshotSeedTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val database = MonitorDatabase.getInstance(context)
         val zone = ZoneId.systemDefault()
-        val today = ZonedDateTime.now(zone).toLocalDate()
-        val base = today.atTime(9, 0).atZone(zone)
+        val now = ZonedDateTime.now(zone)
+        val today = now.toLocalDate()
+        val earliestToday = today.atStartOfDay(zone).plusMinutes(5)
+        val candidateBase = now.minusHours(5)
+        val base = if (candidateBase.isBefore(earliestToday)) {
+            earliestToday
+        } else {
+            candidateBase
+        }
 
         database.clearAllTables()
         database.focusSessionDao().insertAll(

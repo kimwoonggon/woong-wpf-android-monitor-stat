@@ -2322,6 +2322,11 @@ milestones below are finished.
 - [x] Server registration policy tests now prove the same device key can produce separate devices for separate authenticated users and payload `userId` cannot steal another user's device token.
 - [x] Server token-protected endpoint response policy is now explicit in code/tests/docs: missing, malformed, revoked, or wrong tokens return `401 Unauthorized`, while a valid token presented by a different authenticated user returns `403 Forbidden` and persists no upload rows.
 - [x] Public Android/server sync release policy now separates dev/MVP payload mode from production strict-auth mode and guards the release checklist: production must set `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, select a real user/session provider, and cannot ship with the `X-Woong-User-Id` header stub as the production identity provider.
+- [x] Server startup/config validation now rejects Production + strict auth when `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`, keeping the dev/MVP header identity path from being accidentally shipped as the production provider.
+- [x] Android seven-screen snapshot evidence now pulls the residual Sessions row-tap, Sessions empty-state, second App Detail, and Settings storage/privacy scroll captures. The snapshot seed uses past sessions relative to the emulator clock so Today/Sessions evidence does not go empty when the emulator local time is before 09:00.
+- [x] Latest Android seven-screen/residual evidence: `artifacts/android-ui-snapshots/20260502-150542/`, including `25-sessions-row-tap-app-detail.png`, `26-sessions-empty-state.png`, `27-app-detail-youtube.png`, and `28-settings-storage-scrolled.png`.
+- [x] Validation passed for the Android snapshot residual + server HeaderStub guard slice: Android UI snapshot PASS, full solution `dotnet test` (579 passed / 6 skipped), full solution `dotnet build`, Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage collection.
+- [x] Latest coverage after this slice: line 87.7%, branch 69.7%, report at `artifacts/coverage/SummaryGithub.md`.
 - [x] Android Dashboard Current Focus now suppresses NexusLauncher/SystemUI-only
   noise and shows `No app` / `No package` instead of a misleading current app.
 - [x] Latest Android launcher-noise evidence:

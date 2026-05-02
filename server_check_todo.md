@@ -38,6 +38,10 @@ Status legend:
   `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, use a real
   user/session provider, and not ship with the `X-Woong-User-Id` header stub as
   the production identity provider.
+- [x] Production strict-auth startup rejects the dev/MVP header-stub identity
+  provider.
+  Evidence:
+  `DeviceRegistrationPolicyTests.Startup_WhenProductionStrictAuthUsesDefaultHeaderStubProvider_FailsConfigurationValidation`.
 
 ## Focus Session Upload
 

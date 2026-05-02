@@ -5486,3 +5486,17 @@ Validation completed for disconnect/taskbar slice:
 - Validation passed: focused Android Settings tests, focused architecture release-policy guard, full `dotnet test` (578 passed / 6 skipped), full `dotnet build` (0 warnings / 0 errors), Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest`, and coverage generation.
 - Latest coverage: line 87.5%, branch 69.4%, report at `artifacts/coverage/SummaryGithub.md`.
 - Remaining high-priority queue: Android signing/Play publishing decision, production user/session provider implementation/validation, server environment-specific retention alerting values, and final release-policy evidence.
+## 2026-05-02 Android Snapshot Residuals And Production HeaderStub Guard
+
+- Android snapshot automation now pulls residual evidence for Sessions row-tap, Sessions empty-state, a second App Detail screen, and Settings storage/privacy scroll state.
+- Snapshot seed timing was fixed to use sessions in the past relative to the emulator clock, so Today/Sessions screenshots do not go empty when the emulator local time is before 09:00.
+- Latest Android UI snapshot evidence: `artifacts/android-ui-snapshots/20260502-150542/`.
+- Server startup/config validation rejects Production + strict auth when `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`, preventing the dev/MVP header identity path from shipping as the production provider.
+- Remaining high-priority queue: Android Play signing/publishing policy, production user/session provider implementation/validation, Android/server public sync release decision, server retention alerting values, and later WPF/Server hardening.
+Validation completed for Android snapshot residual + Server HeaderStub guard slice:
+
+- Android UI snapshot script passed on `emulator-5554`; latest evidence at `artifacts/android-ui-snapshots/20260502-150542/`.
+- Full solution `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed: 579 passed / 6 skipped.
+- Full solution `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` passed with 0 warnings and 0 errors.
+- Android Gradle `testDebugUnitTest assembleDebug assembleRelease assembleDebugAndroidTest --no-daemon --stacktrace` passed.
+- Coverage collection passed: line 87.7%, branch 69.7%, report at `artifacts/coverage/SummaryGithub.md`.

@@ -58,8 +58,10 @@ public sealed class ServerApiContractDocumentationTests
         Assert.Contains("dev/MVP payload mode", combinedDocs, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("production strict-auth mode", combinedDocs, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("DeviceRegistrationAuth:RequireAuthenticatedUser=true", combinedDocs, StringComparison.Ordinal);
+        Assert.Contains("DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub", combinedDocs, StringComparison.Ordinal);
         Assert.Contains("real user/session provider", combinedDocs, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("header stub", combinedDocs, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("startup validation", combinedDocs, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("must remain an open release blocker", combinedDocs, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("[x] Production user/session provider selected", releaseChecklist, StringComparison.OrdinalIgnoreCase);
     }

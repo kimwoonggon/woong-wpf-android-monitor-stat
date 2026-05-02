@@ -58,6 +58,10 @@ $featureScreens = @(
     "report custom invalid",
     "permission onboarding",
     "app detail",
+    "sessions row tap app detail",
+    "sessions empty state",
+    "app detail youtube",
+    "settings storage scrolled",
     "daily summary"
 )
 $expectedLocationChecks = @(
@@ -315,6 +319,26 @@ $screenTargets = @(
         Name = "app detail"
         FileName = "14-app-detail.png"
         Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "sessions row tap app detail"
+        FileName = "25-sessions-row-tap-app-detail.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "sessions empty state"
+        FileName = "26-sessions-empty-state.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "app detail youtube"
+        FileName = "27-app-detail-youtube.png"
+        Capture = "SnapshotCaptureTest"
+    },
+    [ordered]@{
+        Name = "settings storage scrolled"
+        FileName = "28-settings-storage-scrolled.png"
+        Capture = "SnapshotCaptureTest"
     }
 )
 
@@ -542,6 +566,7 @@ function Write-AndroidSnapshotArtifacts {
         "Report custom range screenshot 15 shows the yyyy-MM-dd start/end inputs and applied Room-backed range state.",
         "Screenshots 20 through 24 show Report 7d, 30d, 90d, custom valid, and custom invalid validation states.",
         "Permission onboarding screenshot 13 shows the Usage Access guidance shown when permission is missing.",
+        "Screenshots 25 through 28 show Sessions row-tap App Detail navigation, Sessions empty state, a second seeded App Detail target, and Settings storage scrolled state.",
         "Check that usage totals, permission guidance, sync state, and privacy-safe copy are readable.",
         "Check the Dashboard location card shows seeded opt-in location context when screenshots exist.",
         "Check the Settings location section shows location off by default, precise latitude/longitude explicit opt-in, and the permission action.",

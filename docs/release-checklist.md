@@ -130,7 +130,10 @@ closed until the owning implementation agents report verified completion:
   internal compatibility only. Production strict-auth mode must set
   `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, must use a real
   user/session provider, and must not treat the current `X-Woong-User-Id`
-  header stub as the production identity provider. Until that real
+  header stub as the production identity provider. Startup validation blocks
+  production strict-auth startup when
+  `DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub`, which is the
+  dev/MVP compatibility provider mode. Until that real
   user/session provider is selected, configured, and validated, this item must
   remain an open release blocker and the release checklist must not be treated
   as complete.
@@ -143,8 +146,9 @@ closed until the owning implementation agents report verified completion:
   This must stay unchecked until the release owner selects the real provider
   (for example OIDC, first-party account session, or another approved
   production identity boundary), documents provisioning/rotation/incident
-  ownership, and reruns strict-auth registration plus token-protected endpoint
-  tests with production-equivalent configuration.
+  ownership, configures a non-`HeaderStub` provider mode backed by real server
+  code, and reruns strict-auth registration plus token-protected endpoint tests
+  with production-equivalent configuration.
 - [ ] Production endpoint discovery/policy: approved server base URL source,
   release behavior when unset, local-dev endpoint labeling, and loopback-only
   HTTP exceptions.

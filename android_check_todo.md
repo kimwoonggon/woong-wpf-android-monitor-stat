@@ -338,7 +338,9 @@ Product boundary reminder:
 - [x] Capture Sessions default and filtered screenshots:
   `artifacts/android-ui-snapshots/20260502-131615/18-sessions-default.png`
   and `artifacts/android-ui-snapshots/20260502-131615/19-sessions-filtered.png`.
-- [ ] Capture Sessions empty-state if possible and row-tap screenshots.
+- [x] Capture Sessions empty-state and row-tap screenshots:
+  `artifacts/android-ui-snapshots/20260502-150542/25-sessions-row-tap-app-detail.png`
+  and `artifacts/android-ui-snapshots/20260502-150542/26-sessions-empty-state.png`.
 
 ### F. App Detail Screen Parity
 
@@ -348,7 +350,10 @@ Product boundary reminder:
 - [x] Hourly chart must use real selected-app Room data.
 - [x] Session list must show selected package only.
 - [x] Back returns to Sessions without losing selected tab state.
-- [ ] Capture App Detail for a seeded Chrome row and another seeded app row.
+- [x] Capture App Detail for a seeded Chrome row and another seeded app row:
+  `artifacts/android-ui-snapshots/20260502-150542/14-app-detail.png`,
+  `artifacts/android-ui-snapshots/20260502-150542/25-sessions-row-tap-app-detail.png`,
+  and `artifacts/android-ui-snapshots/20260502-150542/27-app-detail-youtube.png`.
 
 ### G. Report Screen Parity
 
@@ -383,13 +388,17 @@ Product boundary reminder:
   loopback endpoints, and embedded credentials are rejected.
 - [x] Sync-on manual sync with valid configuration must enqueue
   `AndroidSyncWorker` with explicit base URL/device ID input data.
-- [ ] Privacy defaults must be safe.
+- [x] Privacy defaults must be safe; Settings keeps sync opt-in off, domain/app
+  metadata scoped, and location/precise-coordinate options off unless enabled.
 - [x] Location context must default off, with precise coordinates requiring
   separate opt-in.
 - [x] Storage/local data controls must be visible or explicitly disabled with
   reason.
-- [ ] Capture Settings top, collection/sync, privacy/location, and storage
-  scrolled states.
+- [x] Capture Settings top, collection/sync, privacy/location, and storage
+  scrolled states:
+  `artifacts/android-ui-snapshots/20260502-150542/05-settings-privacy-sync.png`,
+  `artifacts/android-ui-snapshots/20260502-150542/06-settings-location-permission.png`,
+  and `artifacts/android-ui-snapshots/20260502-150542/28-settings-storage-scrolled.png`.
 
 ### I. Legacy Activity Cleanup
 

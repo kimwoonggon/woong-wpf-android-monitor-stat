@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Server.Data;
@@ -164,6 +165,20 @@ public sealed class DeviceRegistrationPolicyTests
         Assert.Empty(await dbContext.FocusSessions.ToListAsync());
     }
 
+    [Fact]
+    public void Startup_WhenProductionStrictAuthUsesDefaultHeaderStubProvider_FailsConfigurationValidation()
+    {
+        using WebApplicationFactory<Program> factory = CreateFactoryWithInMemoryDatabase(
+            requireAuthenticatedUser: true,
+            environmentName: "Production");
+
+        OptionsValidationException exception = Assert.Throws<OptionsValidationException>(
+            () => factory.CreateClient());
+
+        Assert.Contains("real user/session provider", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("HeaderStub", exception.Message, StringComparison.Ordinal);
+    }
+
     private static async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
         HttpClient client,
         string authenticatedUserId,
@@ -216,11 +231,13 @@ public sealed class DeviceRegistrationPolicyTests
         return await client.SendAsync(request);
     }
 
-    private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase(bool requireAuthenticatedUser)
+    private static WebApplicationFactory<Program> CreateFactoryWithInMemoryDatabase(
+        bool requireAuthenticatedUser,
+        string environmentName = "Testing")
         => new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
-                builder.UseEnvironment("Testing");
+                builder.UseEnvironment(environmentName);
                 builder.ConfigureAppConfiguration((_, configuration) =>
                 {
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
