@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -197,6 +199,104 @@ public sealed class DeviceRegistrationPolicyTests
         Assert.Contains("Oidc", failureMessage, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Startup_WhenProductionStrictAuthUsesClaimsPrincipalProviderMode_PassesConfigurationValidation()
+    {
+        ValidateOptionsResult result = ValidateProductionAuthOptions(new DeviceRegistrationAuthOptions
+        {
+            RequireAuthenticatedUser = true,
+            UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+            AuthenticatedUserClaimType = "sub"
+        });
+
+        Assert.False(result.Failed, GetFailureMessage(result));
+    }
+
+    [Fact]
+    public void ClaimsPrincipalIdentitySource_ExtractsStableUserIdFromConfiguredClaim()
+    {
+        var source = new ClaimsPrincipalRegistrationUserIdentitySource(
+            Options.Create(new DeviceRegistrationAuthOptions
+            {
+                UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+                AuthenticatedUserClaimType = "sub"
+            }));
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("sub", "user-123")],
+                authenticationType: "test-auth"))
+        };
+
+        string? userId = source.GetAuthenticatedUserId(context.Request);
+
+        Assert.Equal("user-123", userId);
+    }
+
+    [Fact]
+    public void ClaimsPrincipalIdentitySource_WhenConfiguredClaimIsMissing_ReturnsNull()
+    {
+        var source = new ClaimsPrincipalRegistrationUserIdentitySource(
+            Options.Create(new DeviceRegistrationAuthOptions
+            {
+                UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+                AuthenticatedUserClaimType = "sub"
+            }));
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("email", "user@example.com")],
+                authenticationType: "test-auth"))
+        };
+
+        string? userId = source.GetAuthenticatedUserId(context.Request);
+
+        Assert.Null(userId);
+    }
+
+    [Fact]
+    public void ConfiguredIdentitySource_WhenClaimsModeIsSelected_IgnoresHeaderStubValue()
+    {
+        var options = Options.Create(new DeviceRegistrationAuthOptions
+        {
+            UserIdentityProviderMode = DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+            AuthenticatedUserHeaderName = AuthenticatedUserHeaderName,
+            AuthenticatedUserClaimType = "sub"
+        });
+        var source = new ConfiguredRegistrationUserIdentitySource(
+            options,
+            new HeaderRegistrationUserIdentitySource(options),
+            new ClaimsPrincipalRegistrationUserIdentitySource(options));
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("sub", "claims-user")],
+                authenticationType: "test-auth"))
+        };
+        context.Request.Headers.Append(AuthenticatedUserHeaderName, "header-stub-user");
+
+        string? userId = source.GetAuthenticatedUserId(context.Request);
+
+        Assert.Equal("claims-user", userId);
+    }
+
+    [Fact]
+    public void ServerRegistrationPolicy_DoesNotReferenceWindowsOrAndroidLocalDatabases()
+    {
+        string repositoryRoot = FindRepositoryRoot();
+        string serverSourceRoot = Path.Combine(repositoryRoot, "src", "Woong.MonitorStack.Server");
+        string combinedServerSource = string.Join(
+            Environment.NewLine,
+            Directory.EnumerateFiles(serverSourceRoot, "*.cs", SearchOption.AllDirectories)
+                .Select(File.ReadAllText));
+
+        Assert.DoesNotContain("Room", combinedServerSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("SharedPreferences", combinedServerSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("AndroidSyncSettings", combinedServerSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Windows local", combinedServerSource, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("sqlite", combinedServerSource, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
         HttpClient client,
         string authenticatedUserId,
@@ -289,6 +389,23 @@ public sealed class DeviceRegistrationPolicyTests
 
     private static string GetFailureMessage(ValidateOptionsResult result)
         => string.Join(" ", result.Failures ?? Array.Empty<string>());
+
+    private static string FindRepositoryRoot()
+    {
+        DirectoryInfo? current = new(AppContext.BaseDirectory);
+
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "Woong.MonitorStack.sln")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate repository root.");
+    }
 
     private sealed class TestHostEnvironment : IHostEnvironment
     {

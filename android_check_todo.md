@@ -275,14 +275,16 @@ Product boundary reminder:
 ### B. Splash Screen Parity
 
 - [x] Add/verify tests that cold start shows Splash before routing.
-- [ ] Match the Figma Splash hierarchy: phone-safe top spacing, Woong logo
+- [x] Match the Figma Splash hierarchy: phone-safe top spacing, Woong logo
   mark, `Woong Monitor`, `Android Focus Tracker`, loading indicator, loading
   copy.
+  - Guarded by `SplashFragmentLayoutTest.splashLayoutMatchesRequiredFigmaHierarchy`.
 - [x] Keep shell toolbar and bottom navigation hidden on Splash.
 - [x] Keep Android 12+ system splash branding consistent with the in-app Splash.
 - [x] Capture `01-splash-before.png` and `01-splash-after.png`.
-- [ ] Ensure Splash does not delay normal relaunch longer than necessary after
+- [x] Ensure Splash does not delay normal relaunch longer than necessary after
   process death.
+  - Guarded by `MainActivityTest.launcherRoutesAfterDefaultSplashDelayWithoutExtraRelaunchWait`.
 
 ### C. Permission Onboarding Parity
 
@@ -290,10 +292,12 @@ Product boundary reminder:
   Dashboard.
 - [x] Match the Figma Permission screen: back affordance, shield/lock visual,
   title, explanation, principles card, and primary Settings button.
-- [ ] Explain exactly what is collected: app name, package name, start/end time,
+- [x] Explain exactly what is collected: app name, package name, start/end time,
   duration.
-- [ ] Explain exactly what is not collected: keyboard input, screen contents,
+- [x] Explain exactly what is not collected: keyboard input, screen contents,
   passwords, touch coordinates.
+  - Guarded by
+    `PermissionOnboardingFragmentLayoutTest.permissionOnboardingShowsExactCollectedAndNotCollectedCopy`.
 - [x] Open Android Usage Access settings from the permission button.
 - [x] Re-check permission after returning from Settings.
 - [x] Capture permission missing, settings handoff, and post-return screenshots.
@@ -835,6 +839,9 @@ workspace.
 - [x] Android Dashboard Current Focus no longer reports
   NexusLauncher/SystemUI-only noise as the current app; if only launcher noise
   is collected, it shows the safe `No app` / `No package` state instead.
+- [x] Current Focus resolver is unit-tested so a recently foreground
+  non-launcher app (`Chrome` or `Woong Monitor`) wins over NexusLauncher noise
+  while still exposing the latest external collected app separately.
 - [x] Latest Android UI snapshot evidence after the launcher-noise fix:
   `artifacts/android-ui-snapshots/20260502-141105/`.
 - [ ] Remaining Android sync hardening: Play signing/publishing policy,

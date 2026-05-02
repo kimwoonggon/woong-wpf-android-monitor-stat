@@ -89,6 +89,36 @@ class MainActivityTest {
     }
 
     @Test
+    fun launcherRoutesAfterDefaultSplashDelayWithoutExtraRelaunchWait() {
+        MainActivity.splashDelayMillis = MainActivity.DefaultSplashDelayMillis
+        MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+            .setup()
+        val activity = controller.get()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            SplashFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+
+        shadowOf(Looper.getMainLooper()).idleFor(
+            MainActivity.DefaultSplashDelayMillis,
+            java.util.concurrent.TimeUnit.MILLISECONDS
+        )
+        activity.supportFragmentManager.executePendingTransactions()
+
+        assertEquals(
+            DashboardFragment::class.java,
+            activity.supportFragmentManager.findFragmentById(R.id.mainFragmentContainer)?.javaClass
+        )
+        assertTrue(
+            "Normal relaunch should not wait a second or more on the in-app Splash.",
+            MainActivity.DefaultSplashDelayMillis < 1_000L
+        )
+    }
+
+    @Test
     fun shellChromeVisibilityUpdatesFragmentContainerMargins() {
         MainActivity.splashDelayMillis = 500L
         MainActivity.usageAccessGateFactory = { FakeUsageAccessGate(hasAccess = true) }

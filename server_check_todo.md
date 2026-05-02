@@ -41,6 +41,13 @@ Status legend:
   `DeviceRegistrationAuth:RequireAuthenticatedUser=true`, use a real
   user/session provider, and not ship with the `X-Woong-User-Id` header stub as
   the production identity provider.
+- [x] Claims-principal registration identity adapter is implemented as the
+  production-safe server boundary after upstream authentication middleware.
+  Evidence:
+  `DeviceRegistrationPolicyTests.Startup_WhenProductionStrictAuthUsesClaimsPrincipalProviderMode_PassesConfigurationValidation`,
+  `DeviceRegistrationPolicyTests.ClaimsPrincipalIdentitySource_ExtractsStableUserIdFromConfiguredClaim`,
+  `DeviceRegistrationPolicyTests.ClaimsPrincipalIdentitySource_WhenConfiguredClaimIsMissing_ReturnsNull`,
+  `DeviceRegistrationPolicyTests.ConfiguredIdentitySource_WhenClaimsModeIsSelected_IgnoresHeaderStubValue`.
 - [x] Production strict-auth startup rejects the dev/MVP header-stub identity
   provider.
   Evidence:
@@ -108,8 +115,13 @@ Status legend:
   Evidence:
   `RawEventRetentionOptionsTests.AppSettings_DefinesProductionRetentionAlertingThresholds`,
   `RawEventRetentionOptionsTests.DevelopmentAppSettings_DisablesRawEventRetentionForLocalRuns`.
-- [ ] Implement runtime retention alert delivery or external monitor wiring for
-  repeated retention failures and unexpectedly high delete counts.
+- [x] Runtime retention alert delivery is wired through
+  `IRawEventRetentionAlertSink`; the default logging sink emits only
+  operational metadata for repeated retention failures and unexpectedly high
+  delete counts.
+  Evidence:
+  `RawEventRetentionBackgroundServiceTests.RunOnceAsync_WhenDeleteCountReachesThreshold_SendsOperationalAlertWithoutPayloadContent`,
+  `RawEventRetentionBackgroundServiceTests.RunOnceAsync_WhenFailuresReachThreshold_SendsFailureAlertWithExceptionMetadataOnly`.
 
 ## Location Context Upload
 

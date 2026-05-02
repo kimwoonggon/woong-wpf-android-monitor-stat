@@ -139,8 +139,13 @@ closed until the owning implementation agents report verified completion:
   dev/MVP compatibility provider mode. Startup validation also rejects any
   non-`HeaderStub` `UserIdentityProviderMode` until server code wires that mode
   to a concrete `IRegistrationUserIdentitySource`, so setting `Oidc` or another
-  future provider name cannot silently keep using the header stub. Until that
-  real user/session provider is selected, configured, wired, and validated,
+  future provider name cannot silently keep using the header stub. A concrete
+  production-safe server adapter now exists at
+  `DeviceRegistrationAuth:UserIdentityProviderMode=ClaimsPrincipal`; it reads
+  the stable user id from the configured authenticated `HttpContext.User`
+  claim, defaults to claim type `sub`, ignores the header stub in claims mode,
+  and returns no user when that claim is absent. Until real upstream
+  authentication middleware/provider selection is configured and validated,
   this item must remain an open release blocker and the release checklist must
   not be treated as complete.
   Existing policy coverage proves strict mode rejects missing authenticated
@@ -152,7 +157,8 @@ closed until the owning implementation agents report verified completion:
   This must stay unchecked until the release owner selects the real provider
   (for example OIDC, first-party account session, or another approved
   production identity boundary), documents provisioning/rotation/incident
-  ownership, configures a non-`HeaderStub` provider mode backed by real server
+  ownership, configures `ClaimsPrincipal` mode behind real authentication
+  middleware or another approved non-`HeaderStub` provider backed by server
   code, and reruns strict-auth registration plus token-protected endpoint tests
   with production-equivalent configuration.
 - [ ] Production endpoint discovery/policy: approved server base URL source,

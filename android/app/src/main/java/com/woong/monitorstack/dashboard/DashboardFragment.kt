@@ -23,6 +23,7 @@ class DashboardFragment : Fragment() {
     private val sessionAdapter = SessionsAdapter()
     private val topAppsAdapter = TopAppsAdapter()
     private val chartConfigurator = DashboardChartConfigurator()
+    private lateinit var currentFocusResolver: DashboardCurrentFocusResolver
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +42,7 @@ class DashboardFragment : Fragment() {
                 locationDao = database.locationContextSnapshotDao()
             )
         )
+        currentFocusResolver = DashboardCurrentFocusResolver(requireContext().packageName)
 
         binding.recentSessionsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recentSessionsRecyclerView.adapter = sessionAdapter
@@ -103,8 +105,9 @@ class DashboardFragment : Fragment() {
 
     private fun render(state: DashboardUiState) {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
-        val latestSession = state.latestMeaningfulTrackedSession(requireContext().packageName)
-        val latestExternalSession = state.latestExternalTrackedSession(requireContext().packageName)
+        val currentFocusSelection = currentFocusResolver.resolve(state.recentSessions)
+        val latestSession = currentFocusSelection.currentSession
+        val latestExternalSession = currentFocusSelection.latestExternalSession
         val currentAppName = latestSession?.appName
             ?: latestExternalSession?.appName
             ?: getString(R.string.no_top_app)
@@ -196,31 +199,6 @@ class DashboardFragment : Fragment() {
             "${hours}h ${minutes}m"
         } else {
             "${minutes}m"
-        }
-    }
-
-    private fun DashboardUiState.latestMeaningfulTrackedSession(
-        monitorPackageName: String
-    ): DashboardSessionRow? {
-        val noisyPackages = setOf(
-            "com.google.android.apps.nexuslauncher",
-            "com.android.launcher",
-            "com.android.launcher2",
-            "com.android.launcher3",
-            "com.android.systemui",
-            "com.google.android.googlequicksearchbox"
-        )
-
-        return recentSessions.firstOrNull { session -> session.packageName !in noisyPackages }
-            ?: recentSessions.firstOrNull { session -> session.packageName == monitorPackageName }
-    }
-
-    private fun DashboardUiState.latestExternalTrackedSession(
-        monitorPackageName: String
-    ): DashboardSessionRow? {
-        return recentSessions.firstOrNull { session ->
-            session.packageName != monitorPackageName &&
-                session.packageName !in NoisyForegroundPackages
         }
     }
 
@@ -331,17 +309,6 @@ class DashboardFragment : Fragment() {
                 "${minutes}m"
             }
         }
-    }
-
-    companion object {
-        private val NoisyForegroundPackages = setOf(
-            "com.google.android.apps.nexuslauncher",
-            "com.android.launcher",
-            "com.android.launcher2",
-            "com.android.launcher3",
-            "com.android.systemui",
-            "com.google.android.googlequicksearchbox"
-        )
     }
 
 }

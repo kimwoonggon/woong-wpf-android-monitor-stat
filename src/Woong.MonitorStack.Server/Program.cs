@@ -24,7 +24,9 @@ builder.Services.AddSingleton<IValidateOptions<DeviceRegistrationAuthOptions>, D
 builder.Services.AddOptions<DeviceRegistrationAuthOptions>()
     .Bind(builder.Configuration.GetSection(DeviceRegistrationAuthOptions.SectionName))
     .ValidateOnStart();
-builder.Services.AddScoped<IRegistrationUserIdentitySource, HeaderRegistrationUserIdentitySource>();
+builder.Services.AddScoped<HeaderRegistrationUserIdentitySource>();
+builder.Services.AddScoped<ClaimsPrincipalRegistrationUserIdentitySource>();
+builder.Services.AddScoped<IRegistrationUserIdentitySource, ConfiguredRegistrationUserIdentitySource>();
 builder.Services.AddScoped<DeviceTokenAuthenticationService>();
 builder.Services.AddScoped<FocusSessionUploadService>();
 builder.Services.AddScoped<WebSessionUploadService>();
@@ -32,6 +34,7 @@ builder.Services.AddScoped<RawEventUploadService>();
 builder.Services.Configure<RawEventRetentionOptions>(
     builder.Configuration.GetSection("RawEventRetention"));
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IRawEventRetentionAlertSink, LoggingRawEventRetentionAlertSink>();
 builder.Services.AddScoped<IRawEventRetentionService, RawEventRetentionService>();
 builder.Services.AddScoped<IRawEventRetentionMaintenanceService, RawEventRetentionMaintenanceService>();
 if (!builder.Environment.IsEnvironment("Testing"))

@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.R
 import com.woong.monitorstack.databinding.FragmentPermissionOnboardingBinding
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,6 +34,24 @@ class PermissionOnboardingFragmentLayoutTest {
         listOf("keyboard input", "screen contents", "passwords", "touch coordinates").forEach {
             assertTrue("Permission screen should state it does not collect $it.", screenText.contains(it))
         }
+    }
+
+    @Test
+    fun permissionOnboardingShowsExactCollectedAndNotCollectedCopy() {
+        val context = ContextThemeWrapper(
+            ApplicationProvider.getApplicationContext<Context>(),
+            R.style.Theme_WoongMonitor
+        )
+        val binding = FragmentPermissionOnboardingBinding.inflate(LayoutInflater.from(context))
+
+        assertEquals(
+            "Collects: app name, package name, start time, end time, and duration.",
+            binding.permissionCollectedMetadataText.text.toString()
+        )
+        assertEquals(
+            "Does not collect: keyboard input, screen contents, passwords, or touch coordinates.",
+            binding.permissionNotCollectedDataText.text.toString()
+        )
     }
 
     private fun View.visibleText(): Sequence<String> = sequence {

@@ -92,6 +92,10 @@ Server retention observability:
   failures and flag unusually large single-run deletes at 10,000 raw-event
   rows. Development keeps retention failure alerting disabled while retaining
   the same threshold values for local validation.
+- Runtime alert delivery is wired through `IRawEventRetentionAlertSink`; the
+  default server sink logs warning-level operational alert metadata only:
+  alert kind, run status, cutoff, deleted row count, exception type, and
+  exception message.
 - Do not log raw-event payload contents while investigating retention. The
   useful operational facts are run status, cutoff, deleted row count, and
   exception type/message.

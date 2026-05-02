@@ -14,10 +14,15 @@ public sealed class DeviceRegistrationAuthOptionsValidator : IValidateOptions<De
     public ValidateOptionsResult Validate(string? name, DeviceRegistrationAuthOptions options)
     {
         string providerMode = (options.UserIdentityProviderMode ?? string.Empty).Trim();
-        if (!string.Equals(
-                providerMode,
-                DeviceRegistrationAuthOptions.HeaderStubProviderMode,
-                StringComparison.OrdinalIgnoreCase))
+        bool isHeaderStub = string.Equals(
+            providerMode,
+            DeviceRegistrationAuthOptions.HeaderStubProviderMode,
+            StringComparison.OrdinalIgnoreCase);
+        bool isClaimsPrincipal = string.Equals(
+            providerMode,
+            DeviceRegistrationAuthOptions.ClaimsPrincipalProviderMode,
+            StringComparison.OrdinalIgnoreCase);
+        if (!isHeaderStub && !isClaimsPrincipal)
         {
             return ValidateOptionsResult.Fail(
                 $"DeviceRegistrationAuth:UserIdentityProviderMode={providerMode} is not wired to a registered " +
@@ -26,14 +31,17 @@ public sealed class DeviceRegistrationAuthOptionsValidator : IValidateOptions<De
 
         if (_environment.IsProduction() &&
             options.RequireAuthenticatedUser &&
-            string.Equals(
-                providerMode,
-                DeviceRegistrationAuthOptions.HeaderStubProviderMode,
-                StringComparison.OrdinalIgnoreCase))
+            isHeaderStub)
         {
             return ValidateOptionsResult.Fail(
                 "Production strict-auth mode requires a real user/session provider. " +
                 "DeviceRegistrationAuth:UserIdentityProviderMode=HeaderStub is for dev/MVP compatibility only.");
+        }
+
+        if (isClaimsPrincipal && string.IsNullOrWhiteSpace(options.AuthenticatedUserClaimType))
+        {
+            return ValidateOptionsResult.Fail(
+                "DeviceRegistrationAuth:AuthenticatedUserClaimType is required when UserIdentityProviderMode=ClaimsPrincipal.");
         }
 
         return ValidateOptionsResult.Success;
