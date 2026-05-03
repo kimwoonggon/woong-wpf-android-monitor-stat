@@ -198,11 +198,17 @@ class MainActivity : AppCompatActivity() {
         )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainRoot) { _, insets ->
-            val bottomInset = insets.getInsets(WindowInsetsCompat.Type.tappableElement()).bottom
+            val bottomInset = maxOf(
+                insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
+                insets.getInsets(WindowInsetsCompat.Type.tappableElement()).bottom
+            )
             val layout = layoutCalculator.calculate(bottomInset)
 
             binding.bottomNavigation.layoutParams = binding.bottomNavigation.layoutParams.apply {
                 height = layout.bottomNavigationHeightPx
+                if (this is ViewGroup.MarginLayoutParams) {
+                    bottomMargin = layout.bottomNavigationBottomMarginPx
+                }
             }
             binding.bottomNavigation.updatePadding(
                 bottom = layout.bottomNavigationPaddingBottomPx

@@ -3,7 +3,8 @@ package com.woong.monitorstack.layout
 data class SystemInsetsLayout(
     val bottomNavigationHeightPx: Int,
     val fragmentBottomMarginPx: Int,
-    val bottomNavigationPaddingBottomPx: Int
+    val bottomNavigationPaddingBottomPx: Int,
+    val bottomNavigationBottomMarginPx: Int
 )
 
 class SystemInsetsLayoutCalculator(
@@ -20,12 +21,14 @@ class SystemInsetsLayoutCalculator(
     }
 
     fun calculate(systemNavigationBottomInsetPx: Int): SystemInsetsLayout {
+        val safeBottomInsetPx = systemNavigationBottomInsetPx.coerceAtLeast(0)
         val bottomNavigationHeightPx = baseBottomNavigationHeightPx
 
         return SystemInsetsLayout(
             bottomNavigationHeightPx = bottomNavigationHeightPx,
-            fragmentBottomMarginPx = bottomNavigationHeightPx + contentBottomClearancePx,
-            bottomNavigationPaddingBottomPx = 0
+            fragmentBottomMarginPx = bottomNavigationHeightPx + contentBottomClearancePx + safeBottomInsetPx,
+            bottomNavigationPaddingBottomPx = 0,
+            bottomNavigationBottomMarginPx = safeBottomInsetPx
         )
     }
 }

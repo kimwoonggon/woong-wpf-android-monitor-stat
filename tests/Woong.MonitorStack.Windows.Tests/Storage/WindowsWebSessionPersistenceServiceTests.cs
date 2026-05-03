@@ -73,6 +73,48 @@ public sealed class WindowsWebSessionPersistenceServiceTests : IDisposable
         Assert.False(payload.IsPrivateOrUnknown);
     }
 
+    [Fact]
+    public void SaveWebSession_WhenSameFocusAndStartIsSavedTwice_DoesNotDuplicateSqliteOrOutboxRows()
+    {
+        var clock = new FixedClock(new DateTimeOffset(2026, 4, 28, 0, 15, 0, TimeSpan.Zero));
+        var webRepository = new SqliteWebSessionRepository($"Data Source={_dbPath};Pooling=False");
+        var outboxRepository = new SqliteSyncOutboxRepository($"Data Source={_dbPath};Pooling=False");
+        var service = new WindowsWebSessionPersistenceService(webRepository, outboxRepository, clock);
+        var session = new WebSession(
+            focusSessionId: "focus-duplicate",
+            browserFamily: "Chrome",
+            url: "https://github.com/org/private-repo/issues/1?token=secret",
+            domain: "github.com",
+            pageTitle: "Sensitive issue title",
+            range: TimeRange.FromUtc(
+                new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 4, 28, 0, 5, 0, TimeSpan.Zero)),
+            captureMethod: "UIAutomationAddressBar",
+            captureConfidence: "High",
+            isPrivateOrUnknown: false);
+
+        webRepository.Initialize();
+        outboxRepository.Initialize();
+
+        WindowsWebSessionPersistenceResult first = service.SaveWebSession(session, "windows-device-1");
+        WindowsWebSessionPersistenceResult second = service.SaveWebSession(session, "windows-device-1");
+
+        Assert.Equal(first.AggregateId, second.AggregateId);
+        WebSession saved = Assert.Single(webRepository.QueryByFocusSessionId("focus-duplicate"));
+        Assert.Null(saved.Url);
+        Assert.Null(saved.PageTitle);
+        Assert.Equal("github.com", saved.Domain);
+        Assert.Equal(300_000, saved.DurationMs);
+
+        SyncOutboxItem item = Assert.Single(outboxRepository.QueryAll());
+        Assert.Equal($"web-session:{first.AggregateId}", item.Id);
+        Assert.Equal(first.AggregateId, item.AggregateId);
+        Assert.Equal("web_session", item.AggregateType);
+        Assert.Equal(SyncOutboxStatus.Pending, item.Status);
+        Assert.Equal(0, item.RetryCount);
+        Assert.Null(item.SyncedAtUtc);
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))

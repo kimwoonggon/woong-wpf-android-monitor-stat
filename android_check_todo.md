@@ -99,6 +99,33 @@ Product boundary reminder:
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
 
+### 2026-05-03 Android Bottom Navigation Blank-Floor Regression
+
+- [x] Added `scripts/validate-android-bottom-nav-floor.ps1`, an artifact
+  hierarchy gate that parses UIAutomator XML and fails when the visible
+  Dashboard/Sessions/Report/Settings bottom-nav item content leaves more than
+  80px of blank floor inside `bottomNavigation`.
+- [x] RED evidence: the new gate failed against the existing app-switch
+  hierarchy with a 214px blank floor under the visible bottom-nav item content.
+- [x] Updated app-switch QA and Android UI snapshot acceptance scripts to run
+  the bottom-nav floor gate against captured Dashboard/Sessions/Report/Settings
+  hierarchy XML.
+- [x] Android UI snapshots now pull matching `.xml` hierarchy artifacts for
+  each screenshot so screenshot acceptance can fail this regression, not only
+  store pixels.
+- [x] Fixed `MainActivity`/`SystemInsetsLayoutCalculator` so the visible bottom
+  navigation stays a compact 56dp bar and reserves the Android system
+  navigation area as a bottom margin instead of growing/padding the bar into a
+  blank white floor.
+- [x] Disabled Material bottom system-window padding on `BottomNavigationView`
+  with `app:paddingBottomSystemWindowInsets="false"`; the app still keeps the
+  Android system navigation area reachable and outside the tab content.
+- [x] Validation passed: focused Android inset tests, full
+  `:app:testDebugUnitTest`, and `:app:assembleDebug :app:assembleDebugAndroidTest`.
+- [x] Emulator evidence attempt documented as blocked: `Medium_Phone` exists,
+  but `scripts/start-android-emulator-stable.ps1 -AvdName Medium_Phone
+  -TimeoutSeconds 240` timed out and `adb devices -l` still reported no device.
+
 ### 2026-05-02 Android Location Visit Statistics And Bottom Nav Compacting
 
 - [x] Added RED/GREEN local Room model for `location_visits` so approved

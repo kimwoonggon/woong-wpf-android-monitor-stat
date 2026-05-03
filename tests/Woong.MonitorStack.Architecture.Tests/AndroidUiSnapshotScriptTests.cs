@@ -347,6 +347,14 @@ if "%1"=="devices" (
   exit /b 0
 )
 if "%1"=="pull" (
+  if /I "%~x3"==".xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
+    exit /b 0
+  )
   echo fake png>"%3"
   exit /b 0
 )
@@ -495,6 +503,14 @@ if "%1"=="devices" (
   exit /b 0
 )
 if "%1"=="-s" if "%3"=="pull" (
+  if /I "%~x5"==".xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
+    exit /b 0
+  )
   echo fake png>"%5"
   exit /b 0
 )

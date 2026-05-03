@@ -14,8 +14,9 @@ class SystemInsetsLayoutCalculatorTest {
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
         assertEquals(56, layout.bottomNavigationHeightPx)
-        assertEquals(56, layout.fragmentBottomMarginPx)
+        assertEquals(80, layout.fragmentBottomMarginPx)
         assertEquals(0, layout.bottomNavigationPaddingBottomPx)
+        assertEquals(24, layout.bottomNavigationBottomMarginPx)
     }
 
     @Test
@@ -30,6 +31,7 @@ class SystemInsetsLayoutCalculatorTest {
         assertEquals(56, layout.bottomNavigationHeightPx)
         assertEquals(56, layout.fragmentBottomMarginPx)
         assertEquals(0, layout.bottomNavigationPaddingBottomPx)
+        assertEquals(0, layout.bottomNavigationBottomMarginPx)
     }
 
     @Test
@@ -42,8 +44,8 @@ class SystemInsetsLayoutCalculatorTest {
         val layout = calculator.calculate(systemNavigationBottomInsetPx = 24)
 
         assertEquals(
-            "The main shell content should reserve exactly the visible bottom navigation height.",
-            layout.bottomNavigationHeightPx,
+            "The main shell content should reserve the visible bottom navigation plus the Android system navigation area below it.",
+            layout.bottomNavigationHeightPx + layout.bottomNavigationBottomMarginPx,
             layout.fragmentBottomMarginPx
         )
     }

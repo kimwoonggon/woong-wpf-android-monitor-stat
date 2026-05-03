@@ -2,6 +2,32 @@
 
 Updated: 2026-05-03
 
+## 2026-05-03 WPF Presentation Top-N Label Normalization
+
+- Worker D fixed Presentation dashboard top-N grouping so case variants such as
+  `Chrome.exe`/`chrome.exe` and `GitHub.com`/`github.com` are grouped before
+  dashboard top 3 and detail top 10 ranking.
+- Added RED/GREEN coverage:
+  `SelectPeriod_GroupsCaseVariantAppAndDomainLabelsBeforeTopThreeAndTopTen`.
+- Added `DashboardUsageLabelGrouper`, shared by `DashboardSummaryBuilder` and
+  `DashboardChartMapper`, to trim labels, group with
+  `StringComparer.OrdinalIgnoreCase`, and preserve the longest readable
+  original label with deterministic tie-breaking.
+- Range clipping behavior from the prior Presentation slice remains intact:
+  focus and web sessions are still clipped to the selected UTC `TimeRange`
+  before summary totals, hourly buckets, and top app/domain points are built.
+- Privacy boundary unchanged: no typed text, clipboard, page contents,
+  screenshots, or new collection surface was added.
+- Validation passed:
+  `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore --filter "FullyQualifiedName~SelectPeriod_GroupsCaseVariantAppAndDomainLabelsBeforeTopThreeAndTopTen" -v minimal`
+  failed before implementation with expected `Chrome.exe` first vs actual
+  `app-1`, then passed after the fix;
+  `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -v minimal`
+  passed 112 tests; and
+  `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed with 0 warnings and 0 errors.
+- Commit/push intentionally deferred to the main agent per Worker D instruction.
+
 ## 2026-05-03 WPF Presentation Range Clipping Follow-Up
 
 - Worker C fixed Presentation dashboard aggregation for overlapping sessions
@@ -5811,3 +5837,42 @@ Validation update:
 - WPF App tests now share STA/dispatcher/window helpers for shown-window and content-window assertions.
 - Final validation passed: `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (686 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (0 warnings, 0 errors).
 - Next WPF correctness queue: normalize app/domain top-N labels before ranking, then make local web-session persistence idempotent.
+
+## 2026-05-03 Windows Local Web-Session Persistence Idempotency
+
+- Worker E fixed Windows local web-session persistence idempotency in the storage ownership lane; no WPF Presentation/App tooling was touched.
+- Added RED/GREEN coverage for saving the same logical web session twice through `WindowsWebSessionPersistenceService`: local SQLite keeps one domain-only `web_session` row and the sync outbox keeps one pending `web_session` item.
+- `SqliteWebSessionRepository.Save` now inserts only when no row already exists for the same `focus_session_id` and UTC `started_at_utc`, matching the deterministic aggregate id used by the outbox. Existing domain-only/full-URL storage policy and payload privacy behavior are unchanged.
+- RED validation failed before the fix as expected: `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --filter "FullyQualifiedName~SaveWebSession_WhenSameFocusAndStartIsSavedTwice_DoesNotDuplicateSqliteOrOutboxRows" --no-restore -v minimal` failed because two `web_session` rows were returned.
+- GREEN validation passed after the fix: `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --filter "FullyQualifiedName~SaveWebSession_WhenSameFocusAndStartIsSavedTwice_DoesNotDuplicateSqliteOrOutboxRows" --no-restore -v minimal` (1 passed).
+- Focused Windows storage validation passed: `dotnet test tests\Woong.MonitorStack.Windows.Tests\Woong.MonitorStack.Windows.Tests.csproj --filter "FullyQualifiedName~Storage" --no-restore -v minimal` (15 passed).
+- Full solution build passed: `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (0 warnings, 0 errors).
+- Commit/push intentionally deferred to the main agent by explicit Worker E instruction.
+
+## 2026-05-03 Android Bottom Navigation Blank-Floor Regression
+
+- Worker G fixed the Android bottom-navigation blank-floor regression in the Android ownership lane only.
+- Added `scripts/validate-android-bottom-nav-floor.ps1`, which parses UIAutomator hierarchy XML and fails when visible bottom-nav item content leaves more than 80px of blank floor inside `bottomNavigation`.
+- RED evidence: the validator failed against the existing app-switch hierarchy with a 214px blank floor under visible bottom-nav item content; the updated inset unit test also failed before implementation because `bottomNavigationBottomMarginPx` did not exist.
+- `SystemInsetsLayoutCalculator` now keeps the bottom nav at its compact base height while adding the Android system navigation inset as a bottom margin.
+- `MainActivity` now uses the max of `navigationBars` and `tappableElement` bottom insets, applies that value as the bottom-nav bottom margin, and keeps fragment content clear of both the visible tab bar and the system navigation area.
+- `activity_main.xml` disables Material bottom system-window padding on `BottomNavigationView` with `app:paddingBottomSystemWindowInsets="false"`, preventing the Material child tree from floating above a white floor.
+- Android screenshot and app-switch acceptance scripts now validate pulled Dashboard/Sessions/Report/Settings hierarchy XML with the new blank-floor gate; `SnapshotCaptureTest` now writes matching `.xml` hierarchy artifacts beside each screenshot.
+- Validation passed: `.\gradlew.bat :app:testDebugUnitTest --tests com.woong.monitorstack.layout.SystemInsetsLayoutCalculatorTest --tests com.woong.monitorstack.MainActivityTest.mainShellKeepsBottomNavigationCompactAtBottomWhenGestureNavigationHasLargeInset --no-daemon --stacktrace`; `.\gradlew.bat :app:testDebugUnitTest --no-daemon --stacktrace`; and `.\gradlew.bat :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --stacktrace`.
+- Artifact gate checks: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate-android-bottom-nav-floor.ps1 -HierarchyPath artifacts\android-app-switch-qa\20260502-125805\dashboard-after-app-switch.xml` failed RED on the existing hierarchy with a 214px blank floor, while `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate-android-bottom-nav-floor.ps1 -HierarchyPath artifacts\android-ui-regression\latest\android-bottom-nav-after-fix.xml` passed with a 67px blank floor.
+- Connected evidence blocker: `adb devices -l` showed no connected device; `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -TimeoutSeconds 240` timed out before `emulator-5554` appeared, and a follow-up `adb devices -l` check still showed no device. The stuck emulator/qemu processes were stopped.
+- Smoke validation of the acceptance scripts with `-SkipBuild` completed and reported clean BLOCKED artifacts because no Android device was connected.
+- Privacy boundary unchanged: this slice only handles Woong Monitor UI geometry and local developer hierarchy/screenshot evidence. It does not collect typed text, clipboard, page contents, other-app screenshots, browser contents, messages, passwords, or global touch coordinates.
+- Commit/push intentionally deferred to the main agent per Worker G instruction.
+
+## 2026-05-03 Cross-Platform Correctness Batch Integration
+
+- Integrated Worker D/E/G results plus the architecture-test fixture repair needed by the new Android bottom-nav validator.
+- WPF Presentation app/domain top-N points now group case variants before ranking while preserving readable display labels.
+- Windows local web-session persistence is duplicate-safe for the same focus session and UTC start, preventing local SQLite/outbox inflation during duplicate saves.
+- Android bottom navigation now keeps the visible tab content near the compact nav floor and reserves system navigation space via bottom margin instead of Material duplicate bottom padding.
+- Fixed Android script architecture fake-ADB fixtures so XML pulls emit valid bottom-nav hierarchy documents, preserving strict validator behavior instead of weakening the production scripts.
+- Final .NET validation passed: `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (688 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (0 warnings, 0 errors).
+- Final Android validation passed: `.\gradlew.bat :app:testDebugUnitTest --no-daemon --stacktrace`, `.\gradlew.bat :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --stacktrace`, and `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate-android-bottom-nav-floor.ps1 -HierarchyPath artifacts\android-ui-regression\latest\android-bottom-nav-after-fix.xml` (67px blank floor).
+- Connected Android screenshots/app-switch evidence remain blocked because `adb devices -l` reports no devices attached.
+- Next Android queue: make screenshot acceptance trustworthy again by capturing fresh PASS evidence once an emulator is available, then add current-focus-after-Chrome and splash/permission first-launch evidence gates.

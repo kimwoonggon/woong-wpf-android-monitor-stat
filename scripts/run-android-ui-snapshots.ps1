@@ -71,6 +71,7 @@ $expectedLocationChecks = @(
 $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
+$hierarchies = @()
 $notes = New-Object System.Collections.Generic.List[string]
 $beginnerReviewAliases = @(
     [ordered]@{
@@ -534,6 +535,15 @@ function Write-AndroidSnapshotArtifacts {
             $reportLines += "- $($screenshot.name): $($screenshot.fileName)"
         }
     }
+    if ($hierarchies.Count -gt 0) {
+        $reportLines += @(
+            "",
+            "## UI Hierarchies"
+        )
+        foreach ($hierarchy in $hierarchies) {
+            $reportLines += "- $($hierarchy.name): $($hierarchy.fileName)"
+        }
+    }
     Set-Content -Path (Join-Path $runRoot "report.md") -Value $reportLines
 
     $manifest = [ordered]@{
@@ -549,6 +559,7 @@ function Write-AndroidSnapshotArtifacts {
         expectedLocationChecks = $expectedLocationChecks
         beginnerReviewAliases = $beginnerReviewAliases
         screenshots = $screenshots
+        hierarchies = $hierarchies
         blockedReason = $BlockedReason
     }
     $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $runRoot "manifest.json") -Encoding UTF8
@@ -666,8 +677,38 @@ try {
             path = $localPath
             capture = $target.Capture
         }
+
+        $hierarchyFileName = [System.IO.Path]::ChangeExtension($target.FileName, ".xml")
+        $hierarchyRemotePath = "$remoteSnapshotDir/$hierarchyFileName"
+        $hierarchyLocalPath = Join-Path $runRoot $hierarchyFileName
+        Invoke-AdbChecked -Arguments @("pull", $hierarchyRemotePath, $hierarchyLocalPath) -Description "Pull $($target.Name) UI hierarchy"
+        if (-not (Test-Path $hierarchyLocalPath)) {
+            throw "Expected UI hierarchy was not created: $hierarchyLocalPath"
+        }
+
+        $hierarchies += [ordered]@{
+            name = $target.Name
+            fileName = $hierarchyFileName
+            path = $hierarchyLocalPath
+            capture = $target.Capture
+        }
     }
     Copy-AndroidBeginnerReviewAliases
+    $bottomNavHierarchyPaths = @($hierarchies | Where-Object {
+            $_.fileName -in @(
+                "figma-03-dashboard.xml",
+                "figma-04-sessions.xml",
+                "figma-06-report.xml",
+                "figma-07-settings.xml",
+                "09-main-shell.xml",
+                "10-main-shell-sessions.xml",
+                "11-main-shell-settings.xml",
+                "12-main-shell-report.xml"
+            )
+        } | ForEach-Object { $_.path })
+    & (Join-Path $PSScriptRoot "validate-android-bottom-nav-floor.ps1") `
+        -HierarchyPath $bottomNavHierarchyPaths
+    $notes.Add("Bottom navigation hierarchy floor validation passed for Dashboard/Sessions/Report/Settings snapshot captures.")
     Write-AndroidSnapshotArtifacts -Status $status -BlockedReason $blockedReason
     & (Join-Path $PSScriptRoot "validate-android-ui-snapshot-report.ps1") `
         -ReportPath (Join-Path $latestRoot "report.md") `

@@ -42,6 +42,7 @@
         app:itemTextAppearanceActive="@style/WmsBottomNavLabel"
         app:itemTextAppearanceInactive="@style/WmsBottomNavLabel"
         app:labelVisibilityMode="labeled"
-        app:menu="@menu/menu_bottom_navigation" />
+        app:menu="@menu/menu_bottom_navigation"
+        app:paddingBottomSystemWindowInsets="false" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

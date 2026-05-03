@@ -59,21 +59,15 @@ public static class DashboardSummaryBuilder
         long totalIdleMs = focusSessionList
             .Where(session => session.IsIdle)
             .Sum(session => session.DurationMs);
-        List<UsageTotal> topApps = focusSessionList
-            .Where(session => !session.IsIdle)
-            .GroupBy(session => session.PlatformAppKey)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
-            .OrderByDescending(total => total.DurationMs)
-            .ThenBy(total => total.Key, StringComparer.Ordinal)
-            .ToList();
+        IReadOnlyList<UsageTotal> topApps = DashboardUsageLabelGrouper.GroupTotals(
+            focusSessionList
+                .Where(session => !session.IsIdle)
+                .Select(session => new UsageTotal(session.PlatformAppKey, session.DurationMs)));
         long totalWebMs = webSessionList.Sum(session => session.DurationMs);
-        List<UsageTotal> topDomains = webSessionList
-            .Where(session => !string.IsNullOrWhiteSpace(session.Domain))
-            .GroupBy(session => session.Domain)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
-            .OrderByDescending(total => total.DurationMs)
-            .ThenBy(total => total.Key, StringComparer.Ordinal)
-            .ToList();
+        IReadOnlyList<UsageTotal> topDomains = DashboardUsageLabelGrouper.GroupTotals(
+            webSessionList
+                .Where(session => !string.IsNullOrWhiteSpace(session.Domain))
+                .Select(session => new UsageTotal(session.Domain, session.DurationMs)));
 
         return new DailySummary(summaryDate, totalActiveMs, totalIdleMs, totalWebMs, topApps, topDomains);
     }

@@ -889,12 +889,44 @@ if "%1"=="pull" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
     exit /b 0
   )
+  if /I "{{pullRemoteFileName}}"=="dashboard-after-app-switch.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
+    exit /b 0
+  )
+  if /I "{{pullRemoteFileName}}"=="sessions-after-app-switch.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
+    exit /b 0
+  )
   echo fake artifact>"{{pullTarget}}"
   exit /b 0
 )
 if "%3"=="pull" (
   if "{{pullRemoteFileName}}"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if /I "{{pullRemoteFileName}}"=="dashboard-after-app-switch.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
+    exit /b 0
+  )
+  if /I "{{pullRemoteFileName}}"=="sessions-after-app-switch.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
     exit /b 0
   )
   echo fake artifact>"{{pullTarget}}"
@@ -941,6 +973,18 @@ if "%3"=="logcat" (
 if "%3"=="pull" (
   if "%~nx5"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":9,"syncOutboxChromeRows":9}>"%5"
+  ) else if /I "%~nx5"=="dashboard-after-app-switch.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
+  ) else if /I "%~nx5"=="sessions-after-app-switch.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
   ) else (
     echo fake artifact>"%5"
   )
@@ -1013,6 +1057,18 @@ if "%1"=="pull" (
   )
   if "%~nx3"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else if /I "%~nx3"=="dashboard-after-app-switch.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
+  ) else if /I "%~nx3"=="sessions-after-app-switch.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
   ) else (
     echo fake artifact>"%3"
   )
@@ -1054,6 +1110,18 @@ if "%1"=="pull" (
   )
   if "%~nx3"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else if /I "%~nx3"=="dashboard-after-app-switch.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
+  ) else if /I "%~nx3"=="sessions-after-app-switch.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
   ) else (
     echo fake artifact>"%3"
   )
@@ -1225,6 +1293,18 @@ if "%3"=="shell" (
 if "%3"=="pull" (
   if "%~nx4"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%5"
+  ) else if /I "%~nx4"=="dashboard-after-app-switch.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
+  ) else if /I "%~nx4"=="sessions-after-app-switch.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
   ) else (
     echo fake artifact>"%5"
   )

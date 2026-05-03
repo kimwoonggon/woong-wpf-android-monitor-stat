@@ -231,8 +231,7 @@ class SnapshotCaptureTest {
     ) {
         ActivityScenario.launch(T::class.java).use {
             waitForScreen(device)
-            assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
-            assertTrue("Expected screenshot file to exist: $output", output.isFile)
+            captureScreen(device, output)
         }
     }
 
@@ -709,14 +708,17 @@ class SnapshotCaptureTest {
     ) {
         ActivityScenario.launch<DailySummaryActivity>(intent).use {
             waitForScreen(device)
-            assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
-            assertTrue("Expected screenshot file to exist: $output", output.isFile)
+            captureScreen(device, output)
         }
     }
 
     private fun captureScreen(device: UiDevice, output: File) {
+        val hierarchy = File(output.parentFile, "${output.nameWithoutExtension}.xml")
+
         assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
+        device.dumpWindowHierarchy(hierarchy)
         assertTrue("Expected screenshot file to exist: $output", output.isFile)
+        assertTrue("Expected UI hierarchy file to exist: $hierarchy", hierarchy.isFile)
     }
 
     private fun waitForScreen(device: UiDevice) {

@@ -1,6 +1,6 @@
 # Total TODO List: Woong Monitor Stack
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 This file is the durable source of truth for the full PRD. Every agent must keep
 it current before and after work. A TODO is complete only when relevant tests
@@ -2886,3 +2886,58 @@ milestones below are finished.
 - [x] Run full solution build after the combined WPF batch: 0 warnings, 0
   errors.
 - [x] Commit and push the combined WPF refactor batch.
+
+## 2026-05-03 WPF Presentation Top-N Label Normalization
+
+- [x] Add RED Presentation coverage proving case-variant app/domain labels are
+  grouped before top 3/top 10 ranking.
+- [x] Normalize app and domain grouping keys case-insensitively while preserving
+  readable display labels.
+- [x] Preserve dashboard range clipping behavior for summary, chart, and detail
+  points.
+- [x] Validate focused Presentation tests and full solution build; do not
+  commit or push because Worker D is handing this slice back to the main agent.
+
+## 2026-05-03 Windows Local Web-Session Persistence Idempotency
+
+- [x] Add a focused RED Windows storage test proving saving the same logical
+  web session twice does not duplicate local SQLite rows or outbox rows.
+- [x] Make local `web_session` persistence duplicate-safe while preserving
+  pending outbox retry semantics and the existing domain-only/full-URL privacy
+  policy.
+- [x] Run focused Windows storage tests and full solution build.
+- [x] Update `docs/resume-state.md`; commit/push deferred to the main agent by
+  explicit Worker E instruction.
+
+## 2026-05-03 Android Bottom Navigation Blank-Floor Regression
+
+- [x] Add an automated hierarchy gate that fails when visible bottom-nav item
+  content leaves more than 80px of blank floor inside `bottomNavigation`.
+- [x] Prove the gate RED against existing Android app-switch hierarchy evidence
+  showing the Dashboard/Sessions/Report/Settings bar floating above a large
+  blank bottom area.
+- [x] Fix Android XML/layout inset handling so the bottom nav remains compact,
+  reserves the Android system navigation area with a margin, and disables
+  Material's duplicate bottom system-window padding.
+- [x] Update Android screenshot and app-switch acceptance scripts so captured
+  hierarchy XML is validated for the blank-floor regression.
+- [x] Run Android focused and full unit/build checks.
+- [x] Document emulator evidence blocker: the local `Medium_Phone` AVD timed
+  out before appearing in `adb devices -l`, so fresh connected screenshot and
+  app-switch evidence could not be captured in this worker slice.
+
+## 2026-05-03 Cross-Platform Correctness Batch Integration
+
+- [x] Integrate WPF Presentation top-N label normalization, Windows local
+  web-session idempotency, and Android bottom-nav blank-floor regression guard.
+- [x] Repair Android script architecture fake-ADB fixtures so they emit valid
+  bottom-nav hierarchy XML for the new validator instead of placeholder text.
+- [x] Run full `.NET` restore/test/build after integration: 688 passed, 6
+  PostgreSQL-environment tests skipped, build 0 warnings/0 errors.
+- [x] Run Android `:app:testDebugUnitTest`.
+- [x] Run Android `:app:assembleDebug :app:assembleDebugAndroidTest`.
+- [x] Run Android bottom-nav artifact gate on the fixed hierarchy: 67px blank
+  floor, under the 80px maximum.
+- [x] Confirm connected Android evidence remains blocked because `adb devices
+  -l` reports no attached device/emulator.
+- [x] Commit and push the cross-platform correctness batch.

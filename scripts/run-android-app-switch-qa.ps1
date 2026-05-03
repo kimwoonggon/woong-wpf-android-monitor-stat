@@ -1009,6 +1009,12 @@ try {
     Pull-AppSwitchArtifact -Name "Dashboard after app-switch UI hierarchy" -FileName "dashboard-after-app-switch.xml"
     Pull-AppSwitchArtifact -Name "Sessions after app-switch screenshot" -FileName "sessions-after-app-switch.png" -RetryBlankScreenshot
     Pull-AppSwitchArtifact -Name "Sessions after app-switch UI hierarchy" -FileName "sessions-after-app-switch.xml"
+    & (Join-Path $PSScriptRoot "validate-android-bottom-nav-floor.ps1") `
+        -HierarchyPath @(
+            (Join-Path $runRoot "dashboard-after-app-switch.xml"),
+            (Join-Path $runRoot "sessions-after-app-switch.xml")
+        )
+    $notes.Add("Bottom navigation hierarchy floor validation passed for app-switch Dashboard and Sessions evidence.")
 
     if (-not (Test-Path (Join-Path $runRoot "logcat-crash.txt"))) {
         Save-CrashLogcatArtifact | Out-Null

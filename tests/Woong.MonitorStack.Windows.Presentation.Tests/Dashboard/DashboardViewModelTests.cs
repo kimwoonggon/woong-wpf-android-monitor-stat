@@ -633,6 +633,83 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectPeriod_GroupsCaseVariantAppAndDomainLabelsBeforeTopThreeAndTopTen()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
+        FocusSession[] sessions =
+        [
+            ..Enumerable.Range(1, 10)
+                .Select(index =>
+                {
+                    DateTimeOffset startedAtUtc = now.AddMinutes(-50 + index);
+
+                    return Session(
+                        $"session-app-{index}",
+                        $"app-{index}",
+                        startedAtUtc,
+                        startedAtUtc.AddMinutes(Math.Max(1, 10 - index)),
+                        isIdle: false);
+                }),
+            Session("session-chrome-title", "Chrome.exe", now.AddMinutes(-25), now.AddMinutes(-20), isIdle: false),
+            Session("session-chrome-lower", "chrome.exe", now.AddMinutes(-20), now.AddMinutes(-15), isIdle: false)
+        ];
+        WebSession[] webSessions =
+        [
+            ..Enumerable.Range(1, 10)
+                .Select(index =>
+                {
+                    DateTimeOffset startedAtUtc = now.AddMinutes(-50 + index);
+
+                    return new WebSession(
+                        $"web-domain-{index}",
+                        "Chrome",
+                        $"https://domain-{index}.example/",
+                        $"domain-{index}.example",
+                        $"Domain {index}",
+                        TimeRange.FromUtc(
+                            startedAtUtc,
+                            startedAtUtc.AddMinutes(Math.Max(1, 10 - index))));
+                }),
+            new WebSession(
+                "web-github-title",
+                "Chrome",
+                "https://github.com/",
+                "GitHub.com",
+                "GitHub",
+                TimeRange.FromUtc(now.AddMinutes(-25), now.AddMinutes(-20))),
+            new WebSession(
+                "web-github-lower",
+                "Chrome",
+                "https://github.com/",
+                "github.com",
+                "GitHub",
+                TimeRange.FromUtc(now.AddMinutes(-20), now.AddMinutes(-15)))
+        ];
+        var viewModel = new DashboardViewModel(
+            new FakeDashboardDataSource(sessions, webSessions),
+            new FixedClock(now),
+            new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectPeriod(DashboardPeriod.LastHour);
+
+        Assert.Equal(["Chrome.exe", "app-1", "app-2"], viewModel.AppUsagePoints.Select(point => point.Label));
+        Assert.Equal(10, viewModel.AppUsageDetailPoints.Count);
+        Assert.Equal(600_000, viewModel.AppUsageDetailPoints.Single(point => point.Label == "Chrome.exe").ValueMs);
+        Assert.DoesNotContain("chrome.exe", viewModel.AppUsageDetailPoints.Select(point => point.Label));
+        Assert.Equal(
+            viewModel.AppUsageDetailPoints.Count,
+            viewModel.AppUsageDetailPoints.Select(point => point.Label).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+
+        Assert.Equal(["GitHub.com", "domain-1.example", "domain-2.example"], viewModel.DomainUsagePoints.Select(point => point.Label));
+        Assert.Equal(10, viewModel.DomainUsageDetailPoints.Count);
+        Assert.Equal(600_000, viewModel.DomainUsageDetailPoints.Single(point => point.Label == "GitHub.com").ValueMs);
+        Assert.DoesNotContain("github.com", viewModel.DomainUsageDetailPoints.Select(point => point.Label));
+        Assert.Equal(
+            viewModel.DomainUsageDetailPoints.Count,
+            viewModel.DomainUsageDetailPoints.Select(point => point.Label).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
     public void ShowAppFocusDetailsCommand_OpensChartDetailsWithTopTenAppPoints()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);

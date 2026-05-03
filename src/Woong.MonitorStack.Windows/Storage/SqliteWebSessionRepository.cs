@@ -67,7 +67,8 @@ public sealed class SqliteWebSessionRepository
                 capture_method,
                 capture_confidence,
                 is_private_or_unknown
-            ) VALUES (
+            )
+            SELECT
                 $focusSessionId,
                 $browserFamily,
                 $url,
@@ -79,6 +80,11 @@ public sealed class SqliteWebSessionRepository
                 $captureMethod,
                 $captureConfidence,
                 $isPrivateOrUnknown
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM web_session
+                WHERE focus_session_id = $focusSessionId
+                  AND started_at_utc = $startedAtUtc
             );
             """;
         AddParameters(command, session);

@@ -55,10 +55,7 @@ public static class DashboardChartMapper
     }
 
     private static IReadOnlyList<DashboardChartPoint> BuildUsagePoints(IEnumerable<UsageTotal> totals)
-        => totals
-            .GroupBy(total => total.Key, StringComparer.Ordinal)
-            .Select(group => new DashboardChartPoint(group.Key, group.Sum(total => total.DurationMs)))
-            .OrderByDescending(point => point.ValueMs)
-            .ThenBy(point => point.Label, StringComparer.Ordinal)
+        => DashboardUsageLabelGrouper.GroupTotals(totals)
+            .Select(total => new DashboardChartPoint(total.Key, total.DurationMs))
             .ToList();
 }

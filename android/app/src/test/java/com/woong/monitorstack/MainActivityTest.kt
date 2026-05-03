@@ -232,12 +232,21 @@ class MainActivityTest {
 
         val root = activity.findViewById<View>(R.id.mainRoot)
         val bottomNavigation = activity.findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        val bottomNavigationLayoutParams =
+            bottomNavigation.layoutParams as ViewGroup.MarginLayoutParams
         val compactHeight = activity.resources.getDimensionPixelSize(
             R.dimen.bottom_navigation_base_height
         )
+        val systemNavigationInset = 96
         val insets = WindowInsetsCompat.Builder()
-            .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 96))
-            .setInsets(WindowInsetsCompat.Type.tappableElement(), Insets.of(0, 0, 0, 96))
+            .setInsets(
+                WindowInsetsCompat.Type.navigationBars(),
+                Insets.of(0, 0, 0, systemNavigationInset)
+            )
+            .setInsets(
+                WindowInsetsCompat.Type.tappableElement(),
+                Insets.of(0, 0, 0, systemNavigationInset)
+            )
             .build()
 
         val returnedInsets = ViewCompat.dispatchApplyWindowInsets(root, insets)
@@ -248,7 +257,11 @@ class MainActivityTest {
             bottomNavigation.paddingBottom
         )
         assertEquals(compactHeight, bottomNavigation.layoutParams.height)
-        assertEquals(compactHeight, activity.fragmentContainerMargins().bottomMargin)
+        assertEquals(systemNavigationInset, bottomNavigationLayoutParams.bottomMargin)
+        assertEquals(
+            compactHeight + systemNavigationInset,
+            activity.fragmentContainerMargins().bottomMargin
+        )
         assertTrue(
             "The root listener should consume handled navigation insets so child views do not add their own extra bottom padding.",
             returnedInsets.isConsumed
