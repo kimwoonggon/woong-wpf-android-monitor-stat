@@ -19,172 +19,313 @@ using HttpClient httpClient = new()
     BaseAddress = new Uri(options.ServerBaseUrl)
 };
 
-LocalBridgeSummary summary = new();
-
-if (!string.IsNullOrWhiteSpace(options.WindowsDatabasePath))
-{
-    DeviceRegistrationResponse windowsDevice = await RegisterDeviceAsync(
-        httpClient,
-        options.UserId,
-        Platform.Windows,
-        $"{options.UserId}-windows-local",
-        "Windows WPF Local",
-        options.TimezoneId,
-        jsonOptions);
-
-    LocalUploadBatch windowsBatch = WindowsSqliteReader.Read(
-        options.WindowsDatabasePath,
-        windowsDevice.DeviceId,
-        options.TimezoneId);
-
-    summary.WindowsFocusUploaded = await UploadFocusSessionsAsync(
-        httpClient,
-        windowsDevice,
-        windowsBatch.FocusSessions,
-        jsonOptions);
-    summary.WindowsWebUploaded = await UploadWebSessionsAsync(
-        httpClient,
-        windowsDevice,
-        windowsBatch.WebSessions,
-        jsonOptions);
-}
-
-if (!string.IsNullOrWhiteSpace(options.AndroidDatabasePath))
-{
-    DeviceRegistrationResponse androidDevice = await RegisterDeviceAsync(
-        httpClient,
-        options.UserId,
-        Platform.Android,
-        $"{options.UserId}-android-emulator",
-        "Android Emulator Local",
-        options.TimezoneId,
-        jsonOptions);
-
-    LocalUploadBatch androidBatch = AndroidRoomReader.Read(
-        options.AndroidDatabasePath,
-        androidDevice.DeviceId,
-        options.TimezoneId);
-
-    summary.AndroidFocusUploaded = await UploadFocusSessionsAsync(
-        httpClient,
-        androidDevice,
-        androidBatch.FocusSessions,
-        jsonOptions);
-    summary.AndroidLocationUploaded = await UploadLocationContextsAsync(
-        httpClient,
-        androidDevice,
-        androidBatch.LocationContexts,
-        jsonOptions);
-}
+var runner = new LocalDashboardBridgeRunner(httpClient, jsonOptions);
+LocalBridgeSummary summary = await runner.RunAsync(options);
 
 Console.WriteLine(JsonSerializer.Serialize(summary, jsonOptions));
 return 0;
 
-static async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
-    HttpClient httpClient,
-    string userId,
-    Platform platform,
-    string deviceKey,
-    string deviceName,
-    string timezoneId,
-    JsonSerializerOptions jsonOptions)
+public sealed class LocalDashboardBridgeRunner
 {
-    var request = new RegisterDeviceRequest(userId, platform, deviceKey, deviceName, timezoneId);
-    using HttpResponseMessage response = await httpClient.PostAsJsonAsync("/api/devices/register", request, jsonOptions);
-    response.EnsureSuccessStatusCode();
+    private readonly HttpClient _httpClient;
+    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
-    return await response.Content.ReadFromJsonAsync<DeviceRegistrationResponse>(jsonOptions)
-        ?? throw new InvalidOperationException("Device registration returned an empty response.");
-}
-
-static async Task<int> UploadFocusSessionsAsync(
-    HttpClient httpClient,
-    DeviceRegistrationResponse device,
-    IReadOnlyList<FocusSessionUploadItem> sessions,
-    JsonSerializerOptions jsonOptions)
-{
-    if (sessions.Count == 0)
+    public LocalDashboardBridgeRunner(
+        HttpClient httpClient,
+        JsonSerializerOptions? jsonOptions = null,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
-        return 0;
+        _httpClient = httpClient;
+        _jsonOptions = jsonOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        _delayAsync = delayAsync ?? Task.Delay;
     }
 
-    using HttpRequestMessage request = CreateJsonPost(
-        "/api/focus-sessions/upload",
-        new UploadFocusSessionsRequest(device.DeviceId, sessions),
-        device.DeviceToken,
-        jsonOptions);
-    using HttpResponseMessage response = await httpClient.SendAsync(request);
-    response.EnsureSuccessStatusCode();
-
-    return sessions.Count;
-}
-
-static async Task<int> UploadWebSessionsAsync(
-    HttpClient httpClient,
-    DeviceRegistrationResponse device,
-    IReadOnlyList<WebSessionUploadItem> sessions,
-    JsonSerializerOptions jsonOptions)
-{
-    if (sessions.Count == 0)
+    public async Task<LocalBridgeSummary> RunAsync(
+        LocalBridgeOptions options,
+        CancellationToken cancellationToken = default)
     {
-        return 0;
+        var total = new LocalBridgeSummary();
+        int iterations = 0;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            LocalBridgeSummary iteration = await RunOnceAsync(options, cancellationToken);
+            total.Add(iteration);
+            iterations++;
+
+            if (options.RunOnce)
+            {
+                break;
+            }
+
+            if (options.MaxIterations.HasValue && iterations >= options.MaxIterations.Value)
+            {
+                break;
+            }
+
+            await _delayAsync(options.Interval!.Value, cancellationToken);
+        }
+
+        return total;
     }
 
-    using HttpRequestMessage request = CreateJsonPost(
-        "/api/web-sessions/upload",
-        new UploadWebSessionsRequest(device.DeviceId, sessions),
-        device.DeviceToken,
-        jsonOptions);
-    using HttpResponseMessage response = await httpClient.SendAsync(request);
-    response.EnsureSuccessStatusCode();
-
-    return sessions.Count;
-}
-
-static async Task<int> UploadLocationContextsAsync(
-    HttpClient httpClient,
-    DeviceRegistrationResponse device,
-    IReadOnlyList<LocationContextUploadItem> contexts,
-    JsonSerializerOptions jsonOptions)
-{
-    if (contexts.Count == 0)
+    private async Task<LocalBridgeSummary> RunOnceAsync(
+        LocalBridgeOptions options,
+        CancellationToken cancellationToken)
     {
-        return 0;
+        LocalBridgeSummary summary = new()
+        {
+            Iterations = 1
+        };
+
+        if (!string.IsNullOrWhiteSpace(options.WindowsDatabasePath))
+        {
+            DeviceRegistrationResponse windowsDevice = await RegisterDeviceAsync(
+                options.UserId,
+                Platform.Windows,
+                $"{options.UserId}-windows-local",
+                "Windows WPF Local",
+                options.TimezoneId,
+                cancellationToken);
+
+            LocalUploadBatch windowsBatch = WindowsSqliteReader.Read(
+                options.WindowsDatabasePath,
+                windowsDevice.DeviceId,
+                options.TimezoneId);
+
+            summary.WindowsFocus = await UploadFocusSessionsAsync(
+                windowsDevice,
+                windowsBatch.FocusSessions,
+                cancellationToken);
+            summary.WindowsWeb = await UploadWebSessionsAsync(
+                windowsDevice,
+                windowsBatch.WebSessions,
+                cancellationToken);
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.AndroidDatabasePath))
+        {
+            DeviceRegistrationResponse androidDevice = await RegisterDeviceAsync(
+                options.UserId,
+                Platform.Android,
+                $"{options.UserId}-android-emulator",
+                "Android Emulator Local",
+                options.TimezoneId,
+                cancellationToken);
+
+            LocalUploadBatch androidBatch = AndroidRoomReader.Read(
+                options.AndroidDatabasePath,
+                androidDevice.DeviceId,
+                options.TimezoneId);
+
+            summary.AndroidFocus = await UploadFocusSessionsAsync(
+                androidDevice,
+                androidBatch.FocusSessions,
+                cancellationToken);
+            summary.AndroidLocation = await UploadLocationContextsAsync(
+                androidDevice,
+                androidBatch.LocationContexts,
+                cancellationToken);
+        }
+
+        return summary;
     }
 
-    using HttpRequestMessage request = CreateJsonPost(
-        "/api/location-contexts/upload",
-        new UploadLocationContextsRequest(device.DeviceId, contexts),
-        device.DeviceToken,
-        jsonOptions);
-    using HttpResponseMessage response = await httpClient.SendAsync(request);
-    response.EnsureSuccessStatusCode();
-
-    return contexts.Count;
-}
-
-static HttpRequestMessage CreateJsonPost<T>(
-    string path,
-    T body,
-    string deviceToken,
-    JsonSerializerOptions jsonOptions)
-{
-    var request = new HttpRequestMessage(HttpMethod.Post, path)
+    private async Task<DeviceRegistrationResponse> RegisterDeviceAsync(
+        string userId,
+        Platform platform,
+        string deviceKey,
+        string deviceName,
+        string timezoneId,
+        CancellationToken cancellationToken)
     {
-        Content = JsonContent.Create(body, options: jsonOptions)
-    };
-    request.Headers.TryAddWithoutValidation("X-Device-Token", deviceToken);
-    return request;
+        var request = new RegisterDeviceRequest(userId, platform, deviceKey, deviceName, timezoneId);
+        using HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
+            "/api/devices/register",
+            request,
+            _jsonOptions,
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<DeviceRegistrationResponse>(_jsonOptions, cancellationToken)
+            ?? throw new InvalidOperationException("Device registration returned an empty response.");
+    }
+
+    private async Task<UploadStatusSummary> UploadFocusSessionsAsync(
+        DeviceRegistrationResponse device,
+        IReadOnlyList<FocusSessionUploadItem> sessions,
+        CancellationToken cancellationToken)
+    {
+        if (sessions.Count == 0)
+        {
+            return UploadStatusSummary.Empty;
+        }
+
+        using HttpRequestMessage request = CreateJsonPost(
+            "/api/focus-sessions/upload",
+            new UploadFocusSessionsRequest(device.DeviceId, sessions),
+            device.DeviceToken);
+        using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await ReadUploadSummaryAsync(response, sessions.Count, cancellationToken);
+    }
+
+    private async Task<UploadStatusSummary> UploadWebSessionsAsync(
+        DeviceRegistrationResponse device,
+        IReadOnlyList<WebSessionUploadItem> sessions,
+        CancellationToken cancellationToken)
+    {
+        if (sessions.Count == 0)
+        {
+            return UploadStatusSummary.Empty;
+        }
+
+        using HttpRequestMessage request = CreateJsonPost(
+            "/api/web-sessions/upload",
+            new UploadWebSessionsRequest(device.DeviceId, sessions),
+            device.DeviceToken);
+        using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await ReadUploadSummaryAsync(response, sessions.Count, cancellationToken);
+    }
+
+    private async Task<UploadStatusSummary> UploadLocationContextsAsync(
+        DeviceRegistrationResponse device,
+        IReadOnlyList<LocationContextUploadItem> contexts,
+        CancellationToken cancellationToken)
+    {
+        if (contexts.Count == 0)
+        {
+            return UploadStatusSummary.Empty;
+        }
+
+        using HttpRequestMessage request = CreateJsonPost(
+            "/api/location-contexts/upload",
+            new UploadLocationContextsRequest(device.DeviceId, contexts),
+            device.DeviceToken);
+        using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await ReadUploadSummaryAsync(response, contexts.Count, cancellationToken);
+    }
+
+    private async Task<UploadStatusSummary> ReadUploadSummaryAsync(
+        HttpResponseMessage response,
+        int attempted,
+        CancellationToken cancellationToken)
+    {
+        UploadBatchResult result = await response.Content.ReadFromJsonAsync<UploadBatchResult>(
+            _jsonOptions,
+            cancellationToken)
+            ?? throw new InvalidOperationException("Upload endpoint returned an empty response.");
+
+        return UploadStatusSummary.FromResult(attempted, result);
+    }
+
+    private HttpRequestMessage CreateJsonPost<T>(
+        string path,
+        T body,
+        string deviceToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = JsonContent.Create(body, options: _jsonOptions)
+        };
+        request.Headers.TryAddWithoutValidation("X-Device-Token", deviceToken);
+        return request;
+    }
 }
 
 public sealed record DeviceRegistrationResponse(string DeviceId, string DeviceToken);
 
 public sealed class LocalBridgeSummary
 {
-    public int WindowsFocusUploaded { get; set; }
-    public int WindowsWebUploaded { get; set; }
-    public int AndroidFocusUploaded { get; set; }
-    public int AndroidLocationUploaded { get; set; }
+    public int Iterations { get; set; }
+    public UploadStatusSummary WindowsFocus { get; set; } = new();
+    public UploadStatusSummary WindowsWeb { get; set; } = new();
+    public UploadStatusSummary AndroidFocus { get; set; } = new();
+    public UploadStatusSummary AndroidLocation { get; set; } = new();
+
+    public int WindowsFocusUploaded
+    {
+        get => WindowsFocus.Accepted;
+        set => WindowsFocus.Accepted = value;
+    }
+
+    public int WindowsWebUploaded
+    {
+        get => WindowsWeb.Accepted;
+        set => WindowsWeb.Accepted = value;
+    }
+
+    public int AndroidFocusUploaded
+    {
+        get => AndroidFocus.Accepted;
+        set => AndroidFocus.Accepted = value;
+    }
+
+    public int AndroidLocationUploaded
+    {
+        get => AndroidLocation.Accepted;
+        set => AndroidLocation.Accepted = value;
+    }
+
+    public void Add(LocalBridgeSummary iteration)
+    {
+        Iterations += iteration.Iterations;
+        WindowsFocus.Add(iteration.WindowsFocus);
+        WindowsWeb.Add(iteration.WindowsWeb);
+        AndroidFocus.Add(iteration.AndroidFocus);
+        AndroidLocation.Add(iteration.AndroidLocation);
+    }
+}
+
+public sealed class UploadStatusSummary
+{
+    public int Attempted { get; set; }
+    public int Accepted { get; set; }
+    public int Duplicate { get; set; }
+    public int Error { get; set; }
+
+    public static UploadStatusSummary Empty => new();
+
+    public static UploadStatusSummary FromResult(int attempted, UploadBatchResult result)
+    {
+        var summary = new UploadStatusSummary
+        {
+            Attempted = attempted
+        };
+
+        foreach (UploadItemResult item in result.Items)
+        {
+            switch (item.Status)
+            {
+                case UploadItemStatus.Accepted:
+                    summary.Accepted++;
+                    break;
+                case UploadItemStatus.Duplicate:
+                    summary.Duplicate++;
+                    break;
+                case UploadItemStatus.Error:
+                    summary.Error++;
+                    break;
+            }
+        }
+
+        return summary;
+    }
+
+    public void Add(UploadStatusSummary summary)
+    {
+        Attempted += summary.Attempted;
+        Accepted += summary.Accepted;
+        Duplicate += summary.Duplicate;
+        Error += summary.Error;
+    }
 }
 
 public sealed record LocalUploadBatch(
@@ -203,7 +344,10 @@ public sealed class LocalBridgeOptions
         string userId,
         string timezoneId,
         string? windowsDatabasePath,
-        string? androidDatabasePath)
+        string? androidDatabasePath,
+        bool runOnce,
+        int? intervalSeconds,
+        int? maxIterations)
     {
         ShowHelp = showHelp;
         ServerBaseUrl = serverBaseUrl;
@@ -211,6 +355,9 @@ public sealed class LocalBridgeOptions
         TimezoneId = timezoneId;
         WindowsDatabasePath = windowsDatabasePath;
         AndroidDatabasePath = androidDatabasePath;
+        RunOnce = runOnce;
+        IntervalSeconds = intervalSeconds;
+        MaxIterations = maxIterations;
     }
 
     public bool ShowHelp { get; }
@@ -225,9 +372,20 @@ public sealed class LocalBridgeOptions
 
     public string? AndroidDatabasePath { get; }
 
+    public bool RunOnce { get; }
+
+    public int? IntervalSeconds { get; }
+
+    public int? MaxIterations { get; }
+
+    public TimeSpan? Interval => IntervalSeconds.HasValue
+        ? TimeSpan.FromSeconds(IntervalSeconds.Value)
+        : null;
+
     public static LocalBridgeOptions Parse(string[] args)
     {
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var flags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool showHelp = args.Any(arg => arg is "--help" or "-h" or "/?");
 
         for (int index = 0; index < args.Length; index++)
@@ -243,11 +401,29 @@ public sealed class LocalBridgeOptions
             {
                 values[key] = args[++index];
             }
+            else
+            {
+                flags.Add(key);
+            }
         }
 
         string server = ValueOrDefault(values, "server", "http://127.0.0.1:5087");
         string userId = ValueOrDefault(values, "userId", "local-user");
         string timezoneId = ValueOrDefault(values, "timezoneId", TimeZoneInfo.Local.Id);
+        int? intervalSeconds = OptionalInt(values, "intervalSeconds");
+        int? maxIterations = OptionalInt(values, "maxIterations");
+
+        if (intervalSeconds is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(args), "--intervalSeconds must be zero or greater.");
+        }
+
+        if (maxIterations is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(args), "--maxIterations must be greater than zero.");
+        }
+
+        bool runOnce = flags.Contains("once") || !intervalSeconds.HasValue;
 
         return new LocalBridgeOptions(
             showHelp,
@@ -255,13 +431,16 @@ public sealed class LocalBridgeOptions
             userId,
             timezoneId,
             OptionalPath(values, "windowsDb"),
-            OptionalPath(values, "androidDb"));
+            OptionalPath(values, "androidDb"),
+            runOnce,
+            intervalSeconds,
+            maxIterations);
     }
 
     public static void WriteUsage()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine("  dotnet run --project tools/Woong.MonitorStack.LocalDashboardBridge -- --server http://127.0.0.1:5087 --userId local-user --windowsDb <windows-local.db> --androidDb <woong-monitor.db>");
+        Console.WriteLine("  dotnet run --project tools/Woong.MonitorStack.LocalDashboardBridge -- --server http://127.0.0.1:5087 --userId local-user --windowsDb <windows-local.db> --androidDb <woong-monitor.db> [--once|--intervalSeconds 5 --maxIterations 12]");
         Console.WriteLine();
         Console.WriteLine("Uploads local WPF SQLite and Android emulator Room metadata to the local ASP.NET Core server through API DTO contracts.");
     }
@@ -274,6 +453,11 @@ public sealed class LocalBridgeOptions
     private static string? OptionalPath(Dictionary<string, string> values, string key)
         => values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
             ? value
+            : null;
+
+    private static int? OptionalInt(Dictionary<string, string> values, string key)
+        => values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
+            ? int.Parse(value, CultureInfo.InvariantCulture)
             : null;
 }
 

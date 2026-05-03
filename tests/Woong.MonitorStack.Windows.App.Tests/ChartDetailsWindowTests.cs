@@ -264,6 +264,40 @@ public sealed class ChartDetailsWindowTests
     }
 
     [Fact]
+    public void ChartDetailsWindow_TopTenLongLabelsUseScrollableReadableLayout()
+        => RunWindowTest(
+            () =>
+            {
+                var request = new DashboardChartDetailsRequest(
+                    "Domain focus details",
+                    "Domains",
+                    Enumerable.Range(1, 10)
+                        .Select(index => new DashboardChartPoint($"very-long-review-domain-{index}.example.com", (11 - index) * 60_000))
+                        .ToList());
+
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
+                Assert.NotNull(FindByAutomationId<ScrollViewer>(window, "ChartDetailsRootScrollViewer"));
+
+                var chart = FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart");
+                Assert.True(
+                    chart.MinHeight >= 640,
+                    "Ten full-label horizontal bars need enough vertical space to stay readable instead of compressing into the table area.");
+
+                var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
+                Assert.Equal(10, viewModel.DetailRows.Count);
+                Assert.Equal(viewModel.DetailRows.Select(row => row.Label), viewModel.Chart.Labels);
+
+                Axis yAxis = Assert.Single(viewModel.Chart.YAxes);
+                Assert.Equal(viewModel.Chart.Labels, yAxis.Labels);
+                Assert.True(
+                    yAxis.TextSize >= 13,
+                    "Full app/domain labels in detail charts must remain readable.");
+            });
+
+    [Fact]
     public void ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace()
         => RunWindowTest(
             () =>
@@ -281,14 +315,14 @@ public sealed class ChartDetailsWindowTests
             {
                 var chart = FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart");
                 Assert.True(
-                    window.MinHeight >= 760,
-                    "The detail window itself must be tall enough that the top-10 chart is not squeezed by the table below.");
+                    window.MinHeight <= 700,
+                    "The detail window should be allowed to fit shorter screens while the root scroll viewer keeps the top-10 chart reachable.");
                 Assert.True(
-                    window.Height >= 820,
+                    window.Height >= 900,
                     "Top-10 detail windows should open tall by default instead of relying on the user to resize before labels become stable.");
                 Assert.Equal(WindowState.Maximized, window.WindowState);
                 Assert.True(
-                    chart.MinHeight >= 520,
+                    chart.MinHeight >= 640,
                     "Top-10 detail charts need enough height to avoid overlapping forced Y-axis labels.");
             });
 }

@@ -12,7 +12,6 @@ public sealed class WindowsWebSessionPersistenceService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly SqliteWebSessionRepository _webSessionRepository;
-    private readonly SqliteSyncOutboxRepository _outboxRepository;
     private readonly ISystemClock _clock;
     private readonly BrowserUrlStoragePolicy _storagePolicy;
 
@@ -23,7 +22,7 @@ public sealed class WindowsWebSessionPersistenceService
         BrowserUrlStoragePolicy storagePolicy = BrowserUrlStoragePolicy.DomainOnly)
     {
         _webSessionRepository = webSessionRepository ?? throw new ArgumentNullException(nameof(webSessionRepository));
-        _outboxRepository = outboxRepository ?? throw new ArgumentNullException(nameof(outboxRepository));
+        ArgumentNullException.ThrowIfNull(outboxRepository);
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         _storagePolicy = storagePolicy;
     }
@@ -34,15 +33,15 @@ public sealed class WindowsWebSessionPersistenceService
         string requiredDeviceId = RequiredStorageText.Ensure(deviceId, nameof(deviceId));
 
         WebSession privacySafeSession = ApplyStoragePolicy(session);
-        _webSessionRepository.Save(privacySafeSession);
         DateTimeOffset persistedAtUtc = _clock.UtcNow;
         string aggregateId = CreateAggregateId(privacySafeSession);
-        _outboxRepository.Add(SyncOutboxItem.Pending(
+        SyncOutboxItem outboxItem = SyncOutboxItem.Pending(
             id: $"web-session:{aggregateId}",
             aggregateType: "web_session",
             aggregateId,
             payloadJson: CreatePayload(privacySafeSession, requiredDeviceId, aggregateId),
-            createdAtUtc: persistedAtUtc));
+            createdAtUtc: persistedAtUtc);
+        _webSessionRepository.SaveWithOutbox(privacySafeSession, outboxItem);
 
         return new WindowsWebSessionPersistenceResult(privacySafeSession, aggregateId, persistedAtUtc);
     }

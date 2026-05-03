@@ -56,7 +56,9 @@ flowchart LR
 The bridge is the only local integrated dashboard ingestion step. Blazor does
 not poll WPF SQLite or Android Room directly; it polls the server dashboard API,
 which reads PostgreSQL-derived integrated facts. The page exposes user-selected
-polling intervals of Off, 1s, 5s, 10s, and 1h.
+polling intervals of Off, 1s, 5s, 10s, and 1h. The script can also ask the
+local bridge to repeat uploads so PostgreSQL keeps receiving refreshed local
+metadata while Blazor polls the server.
 
 ## Run
 
@@ -98,7 +100,47 @@ powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.
 
 # Print commands without running
 powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 -DryRun
+
+# Re-run bridge uploads every 5 seconds for 12 iterations
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 `
+  -BridgeIntervalSeconds 5 `
+  -BridgeMaxIterations 12
+
+# Re-run bridge uploads every 10 seconds until stopped with Ctrl+C
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 `
+  -BridgeIntervalSeconds 10
 ```
+
+Default bridge upload mode is one-shot. `-BridgeMaxIterations` requires
+`-BridgeIntervalSeconds`; leaving max iterations unset runs the bridge
+continuously in the foreground. The script pulls the Android emulator Room
+database once before starting the bridge, so continuous mode rereads the same
+configured `-AndroidDb` file unless that file is refreshed separately.
+
+## Future Checkpoint/Range Scanning
+
+Repeated bridge uploads are currently idempotent but should eventually avoid
+rereading unchanged rows forever. The checkpoint design should stay an
+optimization, not a privacy or correctness boundary: duplicate-safe server DTO
+uploads still need to remain valid when a checkpoint file is deleted or a row is
+seen twice.
+
+Recommended next contract:
+
+- Store bridge checkpoints under the local script output folder, for example
+  `bridge-checkpoints.json`, keyed by source database path and table name.
+- Track only metadata cursors such as `ended_at_utc` plus `client_session_id`
+  for Windows `focus_session` and `web_session`, `endedAtUtcMillis` plus
+  `clientSessionId` for Android `focus_sessions`, and `capturedAtUtcMillis`
+  plus `id` for Android `location_context_snapshots`.
+- On each interval, query a small overlap window before the saved cursor so
+  late commits or duration corrections are not missed. Server idempotency should
+  absorb any repeated rows from that overlap.
+- Save the checkpoint only after the corresponding API upload call succeeds.
+  Failed uploads should leave the prior cursor in place.
+- Keep checkpoint files local-only and metadata-only. They must not include
+  typed text, page contents, clipboard contents, screenshots, Android touch
+  coordinates, or private message/form/password contents.
 
 ## Privacy Boundary
 

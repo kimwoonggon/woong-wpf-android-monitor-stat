@@ -1,9 +1,12 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Woong.MonitorStack.Domain.Common;
+using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
+using Woong.MonitorStack.Windows.Storage;
+using Woong.MonitorStack.Windows.Sync;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -240,6 +243,82 @@ public sealed class WindowsAppCompositionTests
     }
 
     [Fact]
+    public void AddWindowsApp_SyncNowCommand_WhenSyncEnabled_ProcessesPendingOutboxRowsThroughRegisteredApiClient()
+    {
+        string dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        try
+        {
+            var apiClient = new ScriptedSyncApiClient(item => item.AggregateId switch
+            {
+                "focus-session-1" => new UploadBatchResult(
+                    [new UploadItemResult(item.AggregateId, UploadItemStatus.Accepted, ErrorMessage: null)]),
+                _ => new UploadBatchResult(
+                    [new UploadItemResult(item.AggregateId, UploadItemStatus.Error, "server rejected payload")])
+            });
+            var services = new ServiceCollection();
+            services.AddWindowsApp(new WindowsAppOptions(
+                new DashboardOptions("Asia/Seoul"),
+                deviceId: "windows-device-1",
+                localDatabaseConnectionString: $"Data Source={dbPath};Pooling=False",
+                idleThreshold: TimeSpan.FromMinutes(5)));
+            services.AddSingleton<IWindowsSyncApiClient>(apiClient);
+
+            using ServiceProvider provider = services.BuildServiceProvider();
+            SqliteSyncOutboxRepository outboxRepository = provider.GetRequiredService<SqliteSyncOutboxRepository>();
+            var firstCreatedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+            outboxRepository.Add(SyncOutboxItem.Pending(
+                id: "outbox-focus-1",
+                aggregateType: "focus_session",
+                aggregateId: "focus-session-1",
+                payloadJson: """{"clientSessionId":"focus-session-1","windowTitle":"Private draft title"}""",
+                createdAtUtc: firstCreatedAtUtc));
+            outboxRepository.Add(SyncOutboxItem.Pending(
+                id: "outbox-web-1",
+                aggregateType: "web_session",
+                aggregateId: "web-session-1",
+                payloadJson: """{"clientWebSessionId":"web-session-1","url":"https://example.com/private-message"}""",
+                createdAtUtc: firstCreatedAtUtc.AddMinutes(1)));
+            DashboardViewModel viewModel = provider.GetRequiredService<DashboardViewModel>();
+            viewModel.Settings.IsSyncEnabled = true;
+
+            viewModel.SyncNowCommand.Execute(null);
+
+            Assert.Equal(
+                "Sync completed with failures. Synced 1 local outbox row(s); failed 1.",
+                viewModel.LastSyncStatusText);
+            Assert.Equal(viewModel.LastSyncStatusText, viewModel.Settings.SyncStatusLabel);
+            Assert.DoesNotContain("Private draft title", viewModel.LastSyncStatusText, StringComparison.Ordinal);
+            Assert.DoesNotContain("private-message", viewModel.LastSyncStatusText, StringComparison.Ordinal);
+            IReadOnlyList<SyncOutboxItem> rows = outboxRepository.QueryAll();
+            Assert.Collection(
+                rows,
+                synced =>
+                {
+                    Assert.Equal("focus-session-1", synced.AggregateId);
+                    Assert.Equal(SyncOutboxStatus.Synced, synced.Status);
+                    Assert.NotNull(synced.SyncedAtUtc);
+                    Assert.Null(synced.LastError);
+                },
+                failed =>
+                {
+                    Assert.Equal("web-session-1", failed.AggregateId);
+                    Assert.Equal(SyncOutboxStatus.Failed, failed.Status);
+                    Assert.Null(failed.SyncedAtUtc);
+                    Assert.Equal(1, failed.RetryCount);
+                    Assert.Equal("server rejected payload", failed.LastError);
+                });
+            Assert.Equal(["focus-session-1", "web-session-1"], apiClient.UploadedAggregateIds);
+        }
+        finally
+        {
+            if (File.Exists(dbPath))
+            {
+                File.Delete(dbPath);
+            }
+        }
+    }
+
+    [Fact]
     public void AddWindowsApp_RegistersDispatcherTrackingTicker()
         => RunOnStaThread(() =>
         {
@@ -434,6 +513,18 @@ public sealed class WindowsAppCompositionTests
         public void Stop()
         {
             IsRunning = false;
+        }
+    }
+
+    private sealed class ScriptedSyncApiClient(Func<SyncOutboxItem, UploadBatchResult> upload) : IWindowsSyncApiClient
+    {
+        public List<string> UploadedAggregateIds { get; } = [];
+
+        public Task<UploadBatchResult> UploadAsync(SyncOutboxItem item, CancellationToken cancellationToken = default)
+        {
+            UploadedAggregateIds.Add(item.AggregateId);
+
+            return Task.FromResult(upload(item));
         }
     }
 }

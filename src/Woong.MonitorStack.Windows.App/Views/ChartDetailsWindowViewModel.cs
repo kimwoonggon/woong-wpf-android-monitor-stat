@@ -9,6 +9,8 @@ namespace Woong.MonitorStack.Windows.App.Views;
 
 public sealed class ChartDetailsWindowViewModel : INotifyPropertyChanged
 {
+    private const double DetailCategoryAxisTextSize = 13;
+
     private readonly string _seriesName;
     private readonly IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>> _periodPoints;
     private readonly Func<TimeRange, IReadOnlyList<DashboardChartPoint>>? _customRangePointsProvider;
@@ -253,6 +255,11 @@ public sealed class ChartDetailsWindowViewModel : INotifyPropertyChanged
             seriesName,
             points,
             maxCategoryLabelLength: null);
+        foreach (var yAxis in chart.YAxes)
+        {
+            yAxis.TextSize = DetailCategoryAxisTextSize;
+        }
+
         IReadOnlyList<ChartDetailsRow> detailRows = points
             .Select(point => new ChartDetailsRow(
                 point.Label,

@@ -68,6 +68,44 @@ public sealed class LocalIntegratedDashboardRunbookTests
         Assert.Contains("report.md", script, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LocalIntegratedDashboardScript_DryRunShowsBridgePollingOptions()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -NoOpenBrowser -BridgeIntervalSeconds 7 -BridgeMaxIterations 3");
+
+        Assert.Equal(0, dryRun.ExitCode);
+        Assert.Contains("Dry run", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Woong.MonitorStack.LocalDashboardBridge", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("--intervalSeconds 7", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("--maxIterations 3", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("every 7 second", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("3 iteration", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ProcessResult RunPowerShell(string workingDirectory, string arguments)
+    {
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+            "powershell.exe",
+            arguments)
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        }) ?? throw new InvalidOperationException("Could not start PowerShell.");
+
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        return new ProcessResult(process.ExitCode, output, error);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
@@ -84,4 +122,9 @@ public sealed class LocalIntegratedDashboardRunbookTests
 
         throw new DirectoryNotFoundException("Could not find repository root.");
     }
+
+    private sealed record ProcessResult(
+        int ExitCode,
+        string StandardOutput,
+        string StandardError);
 }

@@ -6,7 +6,7 @@
         Width="1280"
         Height="940"
         MinWidth="860"
-        MinHeight="820"
+        MinHeight="640"
         WindowState="Maximized"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackgroundBrush}">
@@ -23,14 +23,18 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <ScrollViewer AutomationProperties.AutomationId="ChartDetailsRootScrollViewer"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  CanContentScroll="False">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
         <TextBlock AutomationProperties.AutomationId="ChartDetailsTitleText"
                    Text="{Binding Title}"
@@ -120,23 +124,24 @@
                                 YAxes="{Binding Chart.YAxes}" />
         </Border>
 
-        <Border Grid.Row="4"
-                Margin="0,14,0,0"
-                Style="{StaticResource DashboardCardBorderStyle}">
-            <ListView AutomationProperties.AutomationId="ChartDetailsRowsList"
-                      ItemsSource="{Binding DetailRows}"
-                      MaxHeight="190">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Label"
-                                        Width="560"
-                                        DisplayMemberBinding="{Binding Label}" />
-                        <GridViewColumn Header="Duration"
-                                        Width="160"
-                                        DisplayMemberBinding="{Binding DurationText}" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </Border>
-    </Grid>
+            <Border Grid.Row="4"
+                    Margin="0,14,0,0"
+                    Style="{StaticResource DashboardCardBorderStyle}">
+                <ListView AutomationProperties.AutomationId="ChartDetailsRowsList"
+                          ItemsSource="{Binding DetailRows}"
+                          MaxHeight="190">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Label"
+                                            Width="560"
+                                            DisplayMemberBinding="{Binding Label}" />
+                            <GridViewColumn Header="Duration"
+                                            Width="160"
+                                            DisplayMemberBinding="{Binding DurationText}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </Window>

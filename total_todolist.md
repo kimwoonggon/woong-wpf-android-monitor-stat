@@ -3021,3 +3021,50 @@ milestones below are finished.
   `-SkipWindows` or `-SkipAndroid` is used.
 - [x] Validate focused WPF coordinator, sync worker, architecture, and local
   dashboard dry-run tests before integration commit.
+
+## 2026-05-03 Local Dashboard Bridge Polling Script Options
+
+- [x] Add script-level dry-run architecture coverage proving
+  `run-local-integrated-dashboard.ps1` exposes bridge polling flags and forwards
+  `--intervalSeconds` and `--maxIterations` to
+  `Woong.MonitorStack.LocalDashboardBridge`.
+- [x] Add `-BridgeIntervalSeconds` and `-BridgeMaxIterations` to the local
+  integrated dashboard script while preserving one-shot default behavior,
+  bounded repeat mode, and foreground continuous bridge mode.
+- [x] Add script validation for invalid bridge polling combinations, including
+  max iterations without an interval and unbounded zero-delay loops.
+- [x] Document repeated bridge upload examples and the Android Room snapshot
+  caveat in the local integrated dashboard runbook.
+- [x] Add a read-only checkpoint/range scanning design note for future bridge
+  interval mode optimization without touching `LocalDashboardBridge` code.
+- [ ] Follow-up: decide whether continuous script mode should refresh the
+  Android emulator Room snapshot before each bridge iteration instead of
+  rereading only the initially pulled `-AndroidDb` file.
+
+## 2026-05-03 WPF Atomic Outbox And Bridge Polling Batch
+
+- [x] WPF focus/web persistence atomicity: focus sessions and web sessions now
+  write the local SQLite session row and matching `sync_outbox` row in one
+  SQLite transaction, rolling back the session if outbox enqueue fails.
+- [x] WPF Sync Now real path: when sync is enabled, `SyncNow` processes pending
+  Windows outbox rows through `WindowsSyncWorker` and reports synced/failed
+  counts without leaking payload/window-title/URL details into UI status text.
+- [x] LocalDashboardBridge polling mode: the bridge can run repeated bounded
+  polls with `--intervalSeconds`/`--maxIterations` and reports accepted,
+  duplicate, and error upload counts.
+- [x] Validate focused Windows storage/sync, WPF app coordinator/composition,
+  and LocalDashboardBridge polling tests before full solution validation.
+- [x] Follow-up: expose LocalDashboardBridge interval options from
+  `scripts/run-local-integrated-dashboard.ps1`.
+- [ ] Follow-up: add checkpoint/range scanning so interval mode does not
+  reread every local SQLite/Room row forever.
+
+## 2026-05-03 WPF Detail Top-10 Readability Regression
+
+- [x] Add RED behavior/layout coverage for app/domain detail windows keeping
+  ten horizontal bars visible with one readable label per bar.
+- [x] Fix the WPF chart detail layout without touching Storage, Sync,
+  LocalDashboardBridge, or script ownership areas.
+- [x] Verify detail period controls still expose Today/1h/6h/24h/Custom and
+  custom range selection through the existing MVVM/provider infrastructure.
+- [x] Run focused WPF detail tests and a focused WPF app build.

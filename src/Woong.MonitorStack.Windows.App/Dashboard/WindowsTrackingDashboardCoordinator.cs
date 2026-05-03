@@ -2,6 +2,7 @@ using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
+using Woong.MonitorStack.Windows.Sync;
 using Woong.MonitorStack.Windows.Tracking;
 
 namespace Woong.MonitorStack.Windows.App.Dashboard;
@@ -15,6 +16,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     private readonly IBrowserActivityReader? _browserActivityReader;
     private readonly IBrowserUrlSanitizer _browserUrlSanitizer;
     private readonly BrowserUrlStoragePolicy _browserStoragePolicy;
+    private readonly WindowsSyncWorker? _syncWorker;
     private TrackingPoller? _trackingPoller;
     private BrowserWebSessionizer? _webSessionizer;
     private string? _webSessionizerFocusSessionId;
@@ -64,7 +66,8 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         ISystemClock clock,
         IBrowserActivityReader? browserActivityReader,
         IBrowserUrlSanitizer? browserUrlSanitizer = null,
-        BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly)
+        BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly,
+        WindowsSyncWorker? syncWorker = null)
     {
         _trackingPollerFactory = trackingPollerFactory ?? throw new ArgumentNullException(nameof(trackingPollerFactory));
         _focusSessionPersistenceService = focusSessionPersistenceService ?? throw new ArgumentNullException(nameof(focusSessionPersistenceService));
@@ -73,6 +76,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         _browserActivityReader = browserActivityReader;
         _browserUrlSanitizer = browserUrlSanitizer ?? new BrowserUrlSanitizer();
         _browserStoragePolicy = browserStoragePolicy;
+        _syncWorker = syncWorker;
     }
 
     public DashboardTrackingSnapshot StartTracking()
@@ -159,15 +163,42 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     }
 
     public DashboardSyncResult SyncNow(bool syncEnabled)
-        => syncEnabled
-            ? new DashboardSyncResult("Sync requested. Pending local outbox rows are ready for upload.")
-            : new DashboardSyncResult("Sync skipped. Enable sync to upload.");
+    {
+        if (!syncEnabled)
+        {
+            return new DashboardSyncResult("Sync skipped. Enable sync to upload.");
+        }
+
+        if (_syncWorker is null)
+        {
+            return new DashboardSyncResult("Sync failed. No Windows sync worker is configured.");
+        }
+
+        WindowsSyncResult result = RunSyncWorker();
+
+        return new DashboardSyncResult(FormatSyncStatus(result));
+    }
 
     private DashboardPersistedSessionSnapshot? PersistIfPresent(FocusSession? session)
         => session is null ? null : Persist(session);
 
     private TrackingPoller RequirePoller()
         => _trackingPoller ?? throw new InvalidOperationException("Tracking has not been started.");
+
+    private WindowsSyncResult RunSyncWorker()
+        // The dashboard coordinator contract is synchronous; the worker runs off the WPF dispatcher.
+        => Task.Run(async () => await _syncWorker!.ProcessPendingAsync().ConfigureAwait(false))
+            .GetAwaiter()
+            .GetResult();
+
+    private static string FormatSyncStatus(WindowsSyncResult result)
+        => (result.SyncedCount, result.FailedCount) switch
+        {
+            (0, 0) => "Sync completed. No pending local outbox rows.",
+            (_, 0) => $"Sync completed. Synced {result.SyncedCount} local outbox row(s).",
+            (0, _) => $"Sync failed. Failed {result.FailedCount} local outbox row(s).",
+            _ => $"Sync completed with failures. Synced {result.SyncedCount} local outbox row(s); failed {result.FailedCount}."
+        };
 
     private DashboardPersistedSessionSnapshot Persist(FocusSession session)
     {

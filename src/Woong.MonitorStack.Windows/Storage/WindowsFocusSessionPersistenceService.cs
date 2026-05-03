@@ -10,7 +10,6 @@ public sealed class WindowsFocusSessionPersistenceService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly SqliteFocusSessionRepository _focusSessionRepository;
-    private readonly SqliteSyncOutboxRepository _outboxRepository;
     private readonly ISystemClock _clock;
 
     public WindowsFocusSessionPersistenceService(
@@ -19,7 +18,7 @@ public sealed class WindowsFocusSessionPersistenceService
         ISystemClock clock)
     {
         _focusSessionRepository = focusSessionRepository ?? throw new ArgumentNullException(nameof(focusSessionRepository));
-        _outboxRepository = outboxRepository ?? throw new ArgumentNullException(nameof(outboxRepository));
+        ArgumentNullException.ThrowIfNull(outboxRepository);
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
@@ -28,14 +27,14 @@ public sealed class WindowsFocusSessionPersistenceService
         ArgumentNullException.ThrowIfNull(session);
 
         FocusSession privacySafeSession = ClearWindowTitle(session);
-        _focusSessionRepository.Save(privacySafeSession);
         DateTimeOffset persistedAtUtc = _clock.UtcNow;
-        _outboxRepository.Add(SyncOutboxItem.Pending(
+        SyncOutboxItem outboxItem = SyncOutboxItem.Pending(
             id: $"focus-session:{privacySafeSession.ClientSessionId}",
             aggregateType: "focus_session",
             aggregateId: privacySafeSession.ClientSessionId,
             payloadJson: CreatePayload(privacySafeSession),
-            createdAtUtc: persistedAtUtc));
+            createdAtUtc: persistedAtUtc);
+        _focusSessionRepository.SaveWithOutbox(privacySafeSession, outboxItem);
 
         return new WindowsFocusSessionPersistenceResult(privacySafeSession, persistedAtUtc);
     }

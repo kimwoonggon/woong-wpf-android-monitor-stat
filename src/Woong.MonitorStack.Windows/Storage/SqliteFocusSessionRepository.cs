@@ -57,44 +57,28 @@ public sealed class SqliteFocusSessionRepository
         ArgumentNullException.ThrowIfNull(session);
 
         using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = """
-            INSERT OR IGNORE INTO focus_session (
-                client_session_id,
-                device_id,
-                platform_app_key,
-                started_at_utc,
-                ended_at_utc,
-                duration_ms,
-                local_date,
-                timezone_id,
-                is_idle,
-                source,
-                process_id,
-                process_name,
-                process_path,
-                window_handle,
-                window_title
-            ) VALUES (
-                $clientSessionId,
-                $deviceId,
-                $platformAppKey,
-                $startedAtUtc,
-                $endedAtUtc,
-                $durationMs,
-                $localDate,
-                $timezoneId,
-                $isIdle,
-                $source,
-                $processId,
-                $processName,
-                $processPath,
-                $windowHandle,
-                $windowTitle
-            );
-            """;
-        AddCommonParameters(command, session);
+        using SqliteCommand command = CreateSaveCommand(connection, transaction: null, session);
         _ = command.ExecuteNonQuery();
+    }
+
+    public void SaveWithOutbox(FocusSession session, SyncOutboxItem outboxItem)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(outboxItem);
+
+        using var connection = OpenConnection();
+        using SqliteTransaction transaction = connection.BeginTransaction();
+        using SqliteCommand command = CreateSaveCommand(connection, transaction, session);
+        _ = command.ExecuteNonQuery();
+
+        int outboxRowsInserted = SqliteSyncOutboxCommands.Add(connection, transaction, outboxItem);
+        if (outboxRowsInserted == 0
+            && !SqliteSyncOutboxCommands.Exists(connection, transaction, outboxItem.Id))
+        {
+            throw new InvalidOperationException("Focus session outbox enqueue failed; local session persistence was rolled back.");
+        }
+
+        transaction.Commit();
     }
 
     public IReadOnlyList<FocusSession> QueryByRange(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
@@ -133,6 +117,52 @@ public sealed class SqliteFocusSessionRepository
         }
 
         return sessions;
+    }
+
+    private static SqliteCommand CreateSaveCommand(
+        SqliteConnection connection,
+        SqliteTransaction? transaction,
+        FocusSession session)
+    {
+        SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+            INSERT OR IGNORE INTO focus_session (
+                client_session_id,
+                device_id,
+                platform_app_key,
+                started_at_utc,
+                ended_at_utc,
+                duration_ms,
+                local_date,
+                timezone_id,
+                is_idle,
+                source,
+                process_id,
+                process_name,
+                process_path,
+                window_handle,
+                window_title
+            ) VALUES (
+                $clientSessionId,
+                $deviceId,
+                $platformAppKey,
+                $startedAtUtc,
+                $endedAtUtc,
+                $durationMs,
+                $localDate,
+                $timezoneId,
+                $isIdle,
+                $source,
+                $processId,
+                $processName,
+                $processPath,
+                $windowHandle,
+                $windowTitle
+            );
+            """;
+        AddCommonParameters(command, session);
+        return command;
     }
 
     private SqliteConnection OpenConnection()

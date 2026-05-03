@@ -11,7 +11,9 @@ param(
     [string]$WindowsDb = "",
     [string]$AndroidPackage = "com.woong.monitorstack",
     [string]$AndroidDb = "",
-    [string]$OutputRoot = ""
+    [string]$OutputRoot = "",
+    [int]$BridgeIntervalSeconds = -1,
+    [int]$BridgeMaxIterations = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,6 +39,22 @@ if ([string]::IsNullOrWhiteSpace($AndroidDb)) {
     $AndroidDb = Join-Path $OutputRoot "android-emulator\woong-monitor.db"
 }
 
+if ($BridgeIntervalSeconds -lt -1) {
+    throw "-BridgeIntervalSeconds must be zero or greater when specified."
+}
+
+if ($BridgeMaxIterations -lt 0) {
+    throw "-BridgeMaxIterations must be zero or greater. Use 0 for continuous bridge polling."
+}
+
+if ($BridgeMaxIterations -gt 0 -and $BridgeIntervalSeconds -lt 0) {
+    throw "-BridgeMaxIterations requires -BridgeIntervalSeconds because the default bridge upload mode is one-shot."
+}
+
+if ($BridgeIntervalSeconds -eq 0 -and $BridgeMaxIterations -eq 0) {
+    throw "-BridgeIntervalSeconds 0 requires -BridgeMaxIterations to avoid an unbounded zero-delay bridge loop."
+}
+
 function Write-Usage {
     Write-Host "Usage: powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1"
     Write-Host ""
@@ -48,6 +66,10 @@ function Write-Usage {
     Write-Host "  -SkipAndroid        Do not upload Android Room data."
     Write-Host "  -NoOpenBrowser      Print the dashboard URL without opening it."
     Write-Host "  -DryRun             Print planned commands only."
+    Write-Host "  -BridgeIntervalSeconds <seconds>"
+    Write-Host "                      Run bridge uploads repeatedly at this interval instead of one-shot."
+    Write-Host "  -BridgeMaxIterations <count>"
+    Write-Host "                      Stop repeated bridge uploads after this many iterations; omit for continuous mode."
 }
 
 function Write-Step([string]$Message) {
@@ -74,6 +96,32 @@ function Wait-Server {
     } while ((Get-Date) -lt $deadline)
 
     throw "Server did not become reachable at $baseUrl."
+}
+
+function Get-BridgePollingArguments {
+    $arguments = @()
+
+    if ($BridgeIntervalSeconds -ge 0) {
+        $arguments += @("--intervalSeconds", $BridgeIntervalSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+
+        if ($BridgeMaxIterations -gt 0) {
+            $arguments += @("--maxIterations", $BridgeMaxIterations.ToString([Globalization.CultureInfo]::InvariantCulture))
+        }
+    }
+
+    return $arguments
+}
+
+function Get-BridgePollingDescription {
+    if ($BridgeIntervalSeconds -lt 0) {
+        return "one-shot bridge upload"
+    }
+
+    if ($BridgeMaxIterations -gt 0) {
+        return "bridge uploads every $BridgeIntervalSeconds second(s), up to $BridgeMaxIterations iteration(s)"
+    }
+
+    return "bridge uploads every $BridgeIntervalSeconds second(s) until stopped"
 }
 
 function Pull-AndroidDatabase([string]$PackageName, [string]$DestinationPath) {
@@ -180,6 +228,9 @@ if ($Help) {
 
 $dashboardUrl = "$baseUrl/dashboard?userId=$([uri]::EscapeDataString($UserId))&from=$today&to=$today&timezoneId=$([uri]::EscapeDataString($TimezoneId))"
 $integratedDashboardApiUrl = "$baseUrl/api/dashboard/integrated?userId=$([uri]::EscapeDataString($UserId))&from=$today&to=$today&timezoneId=$([uri]::EscapeDataString($TimezoneId))"
+$bridgePollingArgs = @(Get-BridgePollingArguments)
+$bridgePollingArgsText = if ($bridgePollingArgs.Count -gt 0) { " " + ($bridgePollingArgs -join " ") } else { "" }
+$bridgeRunsContinuously = $BridgeIntervalSeconds -ge 0 -and $BridgeMaxIterations -eq 0
 
 if ($DryRun) {
     Write-Step "Dry run: would call scripts\start-server-postgres.ps1"
@@ -187,7 +238,8 @@ if ($DryRun) {
     if (!$SkipAndroid -and !$SkipAndroidPull) {
         Write-Step "Dry run: would use adb to pull Android emulator Room DB: $AndroidPackage databases/woong-monitor.db"
     }
-    Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge"
+    Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge$bridgePollingArgsText"
+    Write-Step "Dry run: bridge polling: $(Get-BridgePollingDescription)"
     Write-Step "Dry run: WPF SQLite path: $WindowsDb"
     Write-Step "Dry run: Android Room path: $AndroidDb"
     Write-Step "Dry run: would check /api/dashboard/integrated and write Windows/Android data-presence status to report.md"
@@ -239,6 +291,7 @@ try {
         "--timezoneId",
         $TimezoneId
     )
+    $bridgeArgs += $bridgePollingArgs
 
     if (!$SkipWindows -and (Test-Path $WindowsDb)) {
         $bridgeArgs += @("--windowsDb", $WindowsDb)
@@ -252,7 +305,17 @@ try {
         Write-Step "Android Room DB not found at $AndroidDb. Skipping Android upload."
     }
 
-    Write-Step "Uploading local client data through API DTOs"
+    if ($bridgeRunsContinuously) {
+        Write-Step "Bridge polling is continuous; press Ctrl+C to stop bridge uploads."
+        Write-Step "Dashboard URL:"
+        Write-Host $dashboardUrl
+
+        if (!$NoOpenBrowser) {
+            Start-Process $dashboardUrl
+        }
+    }
+
+    Write-Step "Uploading local client data through API DTOs ($(Get-BridgePollingDescription))"
     & dotnet @bridgeArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Local dashboard bridge failed with exit code $LASTEXITCODE."
@@ -306,7 +369,7 @@ try {
         throw "Integrated dashboard verification failed. See report: $reportPath"
     }
 
-    if (!$NoOpenBrowser) {
+    if (!$NoOpenBrowser -and !$bridgeRunsContinuously) {
         Start-Process $dashboardUrl
     }
 }

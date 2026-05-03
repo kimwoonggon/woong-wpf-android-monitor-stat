@@ -53,7 +53,37 @@ public sealed class SqliteWebSessionRepository
         ArgumentNullException.ThrowIfNull(session);
 
         using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
+        using SqliteCommand command = CreateSaveCommand(connection, transaction: null, session);
+        _ = command.ExecuteNonQuery();
+    }
+
+    public void SaveWithOutbox(WebSession session, SyncOutboxItem outboxItem)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(outboxItem);
+
+        using var connection = OpenConnection();
+        using SqliteTransaction transaction = connection.BeginTransaction();
+        using SqliteCommand command = CreateSaveCommand(connection, transaction, session);
+        _ = command.ExecuteNonQuery();
+
+        int outboxRowsInserted = SqliteSyncOutboxCommands.Add(connection, transaction, outboxItem);
+        if (outboxRowsInserted == 0
+            && !SqliteSyncOutboxCommands.Exists(connection, transaction, outboxItem.Id))
+        {
+            throw new InvalidOperationException("Web session outbox enqueue failed; local session persistence was rolled back.");
+        }
+
+        transaction.Commit();
+    }
+
+    private static SqliteCommand CreateSaveCommand(
+        SqliteConnection connection,
+        SqliteTransaction? transaction,
+        WebSession session)
+    {
+        SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText = """
             INSERT INTO web_session (
                 focus_session_id,
@@ -88,7 +118,7 @@ public sealed class SqliteWebSessionRepository
             );
             """;
         AddParameters(command, session);
-        _ = command.ExecuteNonQuery();
+        return command;
     }
 
     public IReadOnlyList<WebSession> QueryByFocusSessionId(string focusSessionId)

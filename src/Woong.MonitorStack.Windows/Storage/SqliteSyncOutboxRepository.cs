@@ -45,32 +45,7 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
         ArgumentNullException.ThrowIfNull(item);
 
         using var connection = OpenConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = """
-            INSERT OR IGNORE INTO sync_outbox (
-                id,
-                aggregate_type,
-                aggregate_id,
-                payload_json,
-                status,
-                retry_count,
-                created_at_utc,
-                synced_at_utc,
-                last_error
-            ) VALUES (
-                $id,
-                $aggregateType,
-                $aggregateId,
-                $payloadJson,
-                $status,
-                $retryCount,
-                $createdAtUtc,
-                $syncedAtUtc,
-                $lastError
-            );
-            """;
-        AddParameters(command, item);
-        _ = command.ExecuteNonQuery();
+        _ = SqliteSyncOutboxCommands.Add(connection, transaction: null, item);
     }
 
     public IReadOnlyList<SyncOutboxItem> QueryAll()
@@ -147,19 +122,6 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
         var connection = new SqliteConnection(connectionString);
         connection.Open();
         return connection;
-    }
-
-    private static void AddParameters(SqliteCommand command, SyncOutboxItem item)
-    {
-        _ = command.Parameters.AddWithValue("$id", item.Id);
-        _ = command.Parameters.AddWithValue("$aggregateType", item.AggregateType);
-        _ = command.Parameters.AddWithValue("$aggregateId", item.AggregateId);
-        _ = command.Parameters.AddWithValue("$payloadJson", item.PayloadJson);
-        _ = command.Parameters.AddWithValue("$status", (int)item.Status);
-        _ = command.Parameters.AddWithValue("$retryCount", item.RetryCount);
-        _ = command.Parameters.AddWithValue("$createdAtUtc", FormatUtc(item.CreatedAtUtc));
-        _ = command.Parameters.AddWithValue("$syncedAtUtc", item.SyncedAtUtc is null ? DBNull.Value : FormatUtc(item.SyncedAtUtc.Value));
-        _ = command.Parameters.AddWithValue("$lastError", item.LastError is null ? DBNull.Value : item.LastError);
     }
 
     private static SyncOutboxItem ReadItem(SqliteDataReader reader)

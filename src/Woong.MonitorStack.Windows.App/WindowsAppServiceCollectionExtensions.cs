@@ -1,9 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Browser;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
+using Woong.MonitorStack.Windows.Sync;
 using Woong.MonitorStack.Windows.Tracking;
 
 namespace Woong.MonitorStack.Windows.App;
@@ -71,6 +74,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddBrowserCaptureServices();
         services.AddTrackingPipelineServices();
         services.AddStorageServices();
+        services.AddSyncServices();
         services.AddDashboardAdapterServices();
 
         return services;
@@ -156,7 +160,16 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<ISystemClock>(),
             provider.GetRequiredService<IBrowserActivityReader>(),
             provider.GetRequiredService<IBrowserUrlSanitizer>(),
-            BrowserUrlStoragePolicy.DomainOnly));
+            BrowserUrlStoragePolicy.DomainOnly,
+            provider.GetRequiredService<WindowsSyncWorker>()));
+
+        return services;
+    }
+
+    private static IServiceCollection AddSyncServices(this IServiceCollection services)
+    {
+        services.TryAddSingleton<IWindowsSyncApiClient, SyncUnavailableWindowsSyncApiClient>();
+        services.AddSingleton<WindowsSyncWorker>();
 
         return services;
     }
@@ -188,5 +201,18 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<IDashboardTrackingCoordinator, NoopDashboardTrackingCoordinator>();
 
         return services;
+    }
+
+    private sealed class SyncUnavailableWindowsSyncApiClient : IWindowsSyncApiClient
+    {
+        public Task<UploadBatchResult> UploadAsync(
+            SyncOutboxItem item,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+
+            return Task.FromResult(new UploadBatchResult(
+                [new UploadItemResult(item.AggregateId, UploadItemStatus.Error, "Sync endpoint is not configured.")]));
+        }
     }
 }

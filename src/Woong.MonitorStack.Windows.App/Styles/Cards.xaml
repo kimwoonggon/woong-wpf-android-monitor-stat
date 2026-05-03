@@ -22,7 +22,7 @@
 
     <Style x:Key="ChartDetailsHorizontalBarChartStyle"
            TargetType="{x:Type lvc:CartesianChart}">
-        <Setter Property="MinHeight" Value="520" />
+        <Setter Property="MinHeight" Value="640" />
     </Style>
 
     <Style x:Key="SummaryMetricCardStyle"

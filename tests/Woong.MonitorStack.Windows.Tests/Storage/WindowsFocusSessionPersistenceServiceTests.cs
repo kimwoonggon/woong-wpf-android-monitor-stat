@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.Storage;
@@ -74,6 +75,34 @@ public sealed class WindowsFocusSessionPersistenceServiceTests : IDisposable
         Assert.Null(payload.WindowTitle);
     }
 
+    [Fact]
+    public void SaveFocusSession_WhenOutboxInsertFails_RollsBackLocalSession()
+    {
+        var clock = new FixedClock(new DateTimeOffset(2026, 4, 28, 0, 15, 0, TimeSpan.Zero));
+        var focusRepository = new SqliteFocusSessionRepository($"Data Source={_dbPath};Pooling=False");
+        var outboxRepository = new SqliteSyncOutboxRepository($"Data Source={_dbPath};Pooling=False");
+        var service = new WindowsFocusSessionPersistenceService(focusRepository, outboxRepository, clock);
+        var session = FocusSession.FromUtc(
+            clientSessionId: "session-outbox-fails",
+            deviceId: "windows-device-1",
+            platformAppKey: "Code.exe",
+            startedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            endedAtUtc: new DateTimeOffset(2026, 4, 28, 0, 10, 0, TimeSpan.Zero),
+            timezoneId: "Asia/Seoul",
+            isIdle: false,
+            source: "foreground_window");
+
+        focusRepository.Initialize();
+        CreateRejectingOutboxTable();
+
+        Assert.Throws<InvalidOperationException>(() => service.SaveFocusSession(session));
+
+        Assert.Empty(focusRepository.QueryByRange(
+            new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero)));
+        Assert.Empty(outboxRepository.QueryAll());
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))
@@ -85,5 +114,27 @@ public sealed class WindowsFocusSessionPersistenceServiceTests : IDisposable
     private sealed class FixedClock(DateTimeOffset utcNow) : ISystemClock
     {
         public DateTimeOffset UtcNow { get; } = utcNow;
+    }
+
+    private void CreateRejectingOutboxTable()
+    {
+        using var connection = new SqliteConnection($"Data Source={_dbPath};Pooling=False");
+        connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            CREATE TABLE sync_outbox (
+                id TEXT NOT NULL PRIMARY KEY,
+                aggregate_type TEXT NOT NULL,
+                aggregate_id TEXT NOT NULL,
+                payload_json TEXT NOT NULL,
+                status INTEGER NOT NULL,
+                retry_count INTEGER NOT NULL,
+                created_at_utc TEXT NOT NULL,
+                synced_at_utc TEXT NULL,
+                last_error TEXT NULL,
+                required_marker TEXT NOT NULL
+            );
+            """;
+        _ = command.ExecuteNonQuery();
     }
 }
