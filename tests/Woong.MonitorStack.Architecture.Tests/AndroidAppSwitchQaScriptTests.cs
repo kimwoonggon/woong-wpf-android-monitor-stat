@@ -425,7 +425,9 @@ public sealed class AndroidAppSwitchQaScriptTests
 
             string stdout = process.StandardOutput.ReadToEnd();
             string stderr = process.StandardError.ReadToEnd();
-            Assert.Equal(0, process.ExitCode);
+            Assert.True(
+                process.ExitCode == 0,
+                BuildAndroidQaProcessFailureMessage(process.ExitCode, stdout, stderr, tempRoot, adbLog));
             Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
 
             string latest = Path.Combine(tempRoot, "latest");
@@ -495,7 +497,9 @@ public sealed class AndroidAppSwitchQaScriptTests
 
             string stdout = process.StandardOutput.ReadToEnd();
             string stderr = process.StandardError.ReadToEnd();
-            Assert.Equal(0, process.ExitCode);
+            Assert.True(
+                process.ExitCode == 0,
+                BuildAndroidQaProcessFailureMessage(process.ExitCode, stdout, stderr, tempRoot, adbLog));
             Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
 
             string latest = Path.Combine(tempRoot, "latest");
