@@ -8,6 +8,7 @@ using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.App.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
+using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -328,49 +329,20 @@ public sealed partial class MainWindowUiExpectationTests
     private static IReadOnlySet<string> CollectText(DependencyObject root)
     {
         var values = new HashSet<string>(StringComparer.Ordinal);
-        CollectText(root, values);
+        foreach (DependencyObject element in FindVisualDescendants<DependencyObject>(root))
+        {
+            if (element is TextBlock { Text.Length: > 0 } textBlock)
+            {
+                values.Add(textBlock.Text);
+            }
+
+            if (element is ContentControl { Content: string content } && !string.IsNullOrWhiteSpace(content))
+            {
+                values.Add(content);
+            }
+        }
 
         return values;
-    }
-
-    private static void CollectText(DependencyObject root, ISet<string> values)
-    {
-        if (root is TextBlock { Text.Length: > 0 } textBlock)
-        {
-            values.Add(textBlock.Text);
-        }
-
-        if (root is ContentControl { Content: string content } && !string.IsNullOrWhiteSpace(content))
-        {
-            values.Add(content);
-        }
-
-        foreach (DependencyObject child in GetChildren(root))
-        {
-            CollectText(child, values);
-        }
-    }
-
-    private static T FindByAutomationId<T>(DependencyObject root, string automationId)
-        where T : DependencyObject
-    {
-        if (root is T candidate && AutomationProperties.GetAutomationId(root) == automationId)
-        {
-            return candidate;
-        }
-
-        foreach (DependencyObject child in GetChildren(root))
-        {
-            try
-            {
-                return FindByAutomationId<T>(child, automationId);
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
-
-        throw new InvalidOperationException($"Could not find {typeof(T).Name} with AutomationId '{automationId}'.");
     }
 
     private static TextBlock FindTextBlock(DependencyObject root, string text)
@@ -380,57 +352,6 @@ public sealed partial class MainWindowUiExpectationTests
 
         return match ?? throw new InvalidOperationException($"Could not find TextBlock with text '{text}'.");
     }
-
-    private static IReadOnlyList<T> FindVisualDescendants<T>(DependencyObject root)
-        where T : DependencyObject
-    {
-        var descendants = new List<T>();
-        CollectVisualDescendants(root, descendants);
-
-        return descendants;
-    }
-
-    private static void CollectVisualDescendants<T>(DependencyObject root, ICollection<T> descendants)
-        where T : DependencyObject
-    {
-        if (root is T current)
-        {
-            descendants.Add(current);
-        }
-
-        foreach (DependencyObject child in GetChildren(root))
-        {
-            CollectVisualDescendants(child, descendants);
-        }
-    }
-
-    private static IEnumerable<DependencyObject> GetChildren(DependencyObject root)
-    {
-        int visualChildCount = 0;
-        try
-        {
-            visualChildCount = VisualTreeHelper.GetChildrenCount(root);
-        }
-        catch (InvalidOperationException)
-        {
-        }
-
-        for (var index = 0; index < visualChildCount; index++)
-        {
-            yield return VisualTreeHelper.GetChild(root, index);
-        }
-
-        foreach (object child in LogicalTreeHelper.GetChildren(root))
-        {
-            if (child is DependencyObject dependencyObject)
-            {
-                yield return dependencyObject;
-            }
-        }
-    }
-
-    private static void RunOnStaThread(Action action)
-        => WpfTestHelpers.RunOnStaThread(action);
 
     private sealed record TestDashboard(
         DateTimeOffset Now,

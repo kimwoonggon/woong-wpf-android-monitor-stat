@@ -36,7 +36,15 @@ internal static class SqliteSyncOutboxCommands
             );
             """;
         AddParameters(command, item);
-        return command.ExecuteNonQuery();
+        int rowsInserted = command.ExecuteNonQuery();
+        if (rowsInserted > 0)
+        {
+            return rowsInserted;
+        }
+
+        return ExistsAggregateIdentity(connection, transaction, item.AggregateType, item.AggregateId)
+            ? 1
+            : 0;
     }
 
     public static bool Exists(
@@ -67,6 +75,26 @@ internal static class SqliteSyncOutboxCommands
         _ = command.Parameters.AddWithValue("$createdAtUtc", FormatUtc(item.CreatedAtUtc));
         _ = command.Parameters.AddWithValue("$syncedAtUtc", item.SyncedAtUtc is null ? DBNull.Value : FormatUtc(item.SyncedAtUtc.Value));
         _ = command.Parameters.AddWithValue("$lastError", item.LastError is null ? DBNull.Value : item.LastError);
+    }
+
+    private static bool ExistsAggregateIdentity(
+        SqliteConnection connection,
+        SqliteTransaction? transaction,
+        string aggregateType,
+        string aggregateId)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = """
+            SELECT 1
+            FROM sync_outbox
+            WHERE aggregate_type = $aggregateType
+              AND aggregate_id = $aggregateId
+            LIMIT 1;
+            """;
+        _ = command.Parameters.AddWithValue("$aggregateType", aggregateType);
+        _ = command.Parameters.AddWithValue("$aggregateId", aggregateId);
+        return command.ExecuteScalar() is not null;
     }
 
     private static string FormatUtc(DateTimeOffset value)

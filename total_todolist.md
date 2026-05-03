@@ -3037,9 +3037,11 @@ milestones below are finished.
   caveat in the local integrated dashboard runbook.
 - [x] Add a read-only checkpoint/range scanning design note for future bridge
   interval mode optimization without touching `LocalDashboardBridge` code.
-- [ ] Follow-up: decide whether continuous script mode should refresh the
-  Android emulator Room snapshot before each bridge iteration instead of
-  rereading only the initially pulled `-AndroidDb` file.
+- [x] Follow-up: add explicit bounded
+  `-RefreshAndroidDbEachBridgeIteration` mode so the local integrated
+  dashboard script can pull a fresh Android emulator Room snapshot before each
+  one-shot bridge upload iteration without changing the default one-shot or
+  bridge-internal interval behavior.
 
 ## 2026-05-03 WPF Atomic Outbox And Bridge Polling Batch
 
@@ -3100,13 +3102,34 @@ milestones below are finished.
   same `ended_at_utc` and `focus_session_id`.
 - [x] Move WPF `FindVisualDescendant<T>` traversal into `WpfTestHelpers` and
   add a harness architecture guard for migrated visual traversal tests.
+- [x] Move remaining WPF App UI expectation visual traversal helpers into
+  `WpfTestHelpers`, including `FindVisualDescendants<T>` and AutomationId
+  lookup coverage, and extend the harness architecture guard.
+- [x] Add protected WPF sync token storage groundwork:
+  `IWindowsSyncTokenStore`, file-backed protected token persistence, current
+  user DPAPI protector, and composition tests proving configured tokens are not
+  exposed in Settings text, SQLite schema, or plaintext files.
 - [x] Validate focused bridge, storage, and WPF harness tests before full
   solution validation.
 - [ ] Follow-up: add WPF Register/Repair device flow with protected token
   storage; keep environment token as development/config bridge only.
-- [ ] Follow-up: consider migrating remaining bespoke visual/tree traversal in
-  other WPF App tests into `WpfTestHelpers`, then add those files to the visual
-  traversal architecture guard.
+- [ ] Follow-up: migrate WPF sync composition from environment device tokens to
+  `IWindowsSyncTokenStore` after the Register/Repair flow exists.
+- [ ] Follow-up: add WPF disconnect/revoke flow that deletes the protected
+  sync token and keeps sync opt-in off until explicitly re-enabled.
+- [x] Follow-up: harden Windows focus-session `SaveWithOutbox` idempotency so a
+  duplicate focus row cannot enqueue a second outbox row.
+- [x] Follow-up: harden `sync_outbox` aggregate idempotency and terminal-state
+  transitions so duplicate aggregate rows cannot queue twice and late failures
+  cannot reopen synced rows.
+- [x] Validate protected sync token storage, WPF helper migration, Android DB
+  refresh bridge loop, focus/outbox idempotency, full .NET test/build,
+  coverage, and Windows smoke before integration commit.
+- [ ] Follow-up: add durable browser raw-event identity and atomic browser raw
+  event + web-session + outbox persistence.
+- [ ] Follow-up: add metadata-only current-app state upload contracts so the
+  local Blazor dashboard can distinguish true live/current Windows and Android
+  app state from the latest completed focus session.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 

@@ -10,12 +10,15 @@ public sealed class WpfTestHarnessArchitectureTests
     [
         "MainWindowAutomationIdTests.cs",
         "MainWindowTrackingPipelineTests.cs",
+        "MainWindowUiExpectationTestHelpers.cs",
         "WindowsAppCompositionTests.cs"
     ];
 
     private static readonly string[] VisualTraversalMigratedTestFiles =
     [
-        "MainWindowTrackingPipelineTests.cs"
+        "MainWindowAutomationIdTests.cs",
+        "MainWindowTrackingPipelineTests.cs",
+        "MainWindowUiExpectationTestHelpers.cs"
     ];
 
     private static readonly Regex[] ForbiddenRawStaHelperPatterns =
@@ -27,7 +30,10 @@ public sealed class WpfTestHarnessArchitectureTests
 
     private static readonly Regex[] ForbiddenVisualTraversalHelperPatterns =
     [
+        new(@"\bprivate\s+static\s+T\s+FindByAutomationId\s*<", RegexOptions.Compiled),
         new(@"\bprivate\s+static\s+T\s+FindVisualDescendant\s*<", RegexOptions.Compiled),
+        new(@"\bprivate\s+static\s+IReadOnlyList\s*<\s*T\s*>\s+FindVisualDescendants\s*<", RegexOptions.Compiled),
+        new(@"\bprivate\s+static\s+void\s+CollectVisualDescendants\s*<", RegexOptions.Compiled),
         new(@"\bprivate\s+static\s+IEnumerable\s*<\s*DependencyObject\s*>\s+GetChildren\b", RegexOptions.Compiled),
         new(@"\bVisualTreeHelper\.GetChildrenCount\b", RegexOptions.Compiled),
         new(@"\bLogicalTreeHelper\.GetChildren\b", RegexOptions.Compiled)

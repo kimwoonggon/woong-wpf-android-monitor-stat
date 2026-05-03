@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -191,6 +192,11 @@ public static class WindowsAppServiceCollectionExtensions
 
     private static IServiceCollection AddSyncServices(this IServiceCollection services, WindowsAppSyncOptions syncOptions)
     {
+        services.TryAddSingleton<IWindowsUserDataProtector, DpapiWindowsUserDataProtector>();
+        services.TryAddSingleton<IWindowsSyncTokenStore>(provider => new FileWindowsSyncTokenStore(
+            BuildSyncTokenFilePath(provider.GetService<WindowsAppOptions>()),
+            provider.GetRequiredService<IWindowsUserDataProtector>()));
+
         if (syncOptions.IsUploadConfigured)
         {
             services.TryAddSingleton(syncOptions.CreateClientOptions());
@@ -204,6 +210,20 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<WindowsSyncWorker>();
 
         return services;
+    }
+
+    private static string BuildSyncTokenFilePath(WindowsAppOptions? options)
+    {
+        string? databaseDirectory = options is null
+            ? null
+            : Path.GetDirectoryName(options.LocalDatabasePath);
+        string tokenDirectory = string.IsNullOrWhiteSpace(databaseDirectory)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "WoongMonitorStack")
+            : databaseDirectory;
+
+        return Path.Combine(tokenDirectory, "windows-sync-device-token.dat");
     }
 
     private static IServiceCollection AddTrackingPipelineAcceptanceMode(this IServiceCollection services)

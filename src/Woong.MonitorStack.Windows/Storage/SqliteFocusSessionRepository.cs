@@ -69,7 +69,12 @@ public sealed class SqliteFocusSessionRepository
         using var connection = OpenConnection();
         using SqliteTransaction transaction = connection.BeginTransaction();
         using SqliteCommand command = CreateSaveCommand(connection, transaction, session);
-        _ = command.ExecuteNonQuery();
+        int focusRowsInserted = command.ExecuteNonQuery();
+        if (focusRowsInserted == 0)
+        {
+            transaction.Commit();
+            return;
+        }
 
         int outboxRowsInserted = SqliteSyncOutboxCommands.Add(connection, transaction, outboxItem);
         if (outboxRowsInserted == 0

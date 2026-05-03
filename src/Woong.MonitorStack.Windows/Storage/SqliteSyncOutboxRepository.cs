@@ -38,6 +38,8 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
                 ON sync_outbox(status, created_at_utc);
             """;
         _ = command.ExecuteNonQuery();
+        DeleteDuplicateAggregateIdentities(connection);
+        EnsureAggregateIdentityIndex(connection);
     }
 
     public void Add(SyncOutboxItem item)
@@ -86,11 +88,13 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
             SET status = $status,
                 synced_at_utc = $syncedAtUtc,
                 last_error = NULL
-            WHERE id = $id;
+            WHERE id = $id
+              AND status <> $syncedStatus;
             """;
         _ = command.Parameters.AddWithValue("$status", (int)SyncOutboxStatus.Synced);
         _ = command.Parameters.AddWithValue("$syncedAtUtc", FormatUtc(syncedAtUtc));
         _ = command.Parameters.AddWithValue("$id", id);
+        _ = command.Parameters.AddWithValue("$syncedStatus", (int)SyncOutboxStatus.Synced);
         _ = command.ExecuteNonQuery();
     }
 
@@ -103,11 +107,37 @@ public sealed class SqliteSyncOutboxRepository : ISyncOutboxRepository
             SET status = $status,
                 retry_count = retry_count + 1,
                 last_error = $lastError
-            WHERE id = $id;
+            WHERE id = $id
+              AND status <> $syncedStatus;
             """;
         _ = command.Parameters.AddWithValue("$status", (int)SyncOutboxStatus.Failed);
         _ = command.Parameters.AddWithValue("$lastError", RequiredStorageText.Ensure(error, nameof(error)));
         _ = command.Parameters.AddWithValue("$id", id);
+        _ = command.Parameters.AddWithValue("$syncedStatus", (int)SyncOutboxStatus.Synced);
+        _ = command.ExecuteNonQuery();
+    }
+
+    private static void DeleteDuplicateAggregateIdentities(SqliteConnection connection)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            DELETE FROM sync_outbox
+            WHERE rowid NOT IN (
+                SELECT MIN(rowid)
+                FROM sync_outbox
+                GROUP BY aggregate_type, aggregate_id
+            );
+            """;
+        _ = command.ExecuteNonQuery();
+    }
+
+    private static void EnsureAggregateIdentityIndex(SqliteConnection connection)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_sync_outbox_aggregate_identity
+                ON sync_outbox(aggregate_type, aggregate_id);
+            """;
         _ = command.ExecuteNonQuery();
     }
 

@@ -14,7 +14,8 @@ param(
     [string]$OutputRoot = "",
     [int]$BridgeIntervalSeconds = -1,
     [int]$BridgeMaxIterations = 0,
-    [string]$BridgeCheckpointPath = ""
+    [string]$BridgeCheckpointPath = "",
+    [switch]$RefreshAndroidDbEachBridgeIteration
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,6 +66,24 @@ if ($BridgeIntervalSeconds -eq 0 -and $BridgeMaxIterations -eq 0) {
     throw "-BridgeIntervalSeconds 0 requires -BridgeMaxIterations to avoid an unbounded zero-delay bridge loop."
 }
 
+if ($RefreshAndroidDbEachBridgeIteration -and $BridgeIntervalSeconds -lt 0) {
+    throw "-RefreshAndroidDbEachBridgeIteration requires -BridgeIntervalSeconds."
+}
+
+if ($RefreshAndroidDbEachBridgeIteration -and $BridgeMaxIterations -le 0) {
+    throw "-RefreshAndroidDbEachBridgeIteration requires -BridgeMaxIterations greater than zero."
+}
+
+if ($RefreshAndroidDbEachBridgeIteration -and $SkipAndroid) {
+    throw "-RefreshAndroidDbEachBridgeIteration cannot be used with -SkipAndroid."
+}
+
+if ($RefreshAndroidDbEachBridgeIteration -and $SkipAndroidPull) {
+    throw "-RefreshAndroidDbEachBridgeIteration cannot be used with -SkipAndroidPull."
+}
+
+$scriptManagedBridgeLoop = [bool]$RefreshAndroidDbEachBridgeIteration
+
 function Write-Usage {
     Write-Host "Usage: powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1"
     Write-Host ""
@@ -82,6 +101,8 @@ function Write-Usage {
     Write-Host "                      Stop repeated bridge uploads after this many iterations; omit for continuous mode."
     Write-Host "  -BridgeCheckpointPath <path>"
     Write-Host "                      Pass a metadata-only checkpoint file to the bridge; interval mode defaults to OutputRoot\bridge-checkpoints.json."
+    Write-Host "  -RefreshAndroidDbEachBridgeIteration"
+    Write-Host "                      In bounded interval mode, pull the Android emulator Room DB before each one-shot bridge run."
 }
 
 function Write-Step([string]$Message) {
@@ -113,7 +134,7 @@ function Wait-Server {
 function Get-BridgePollingArguments {
     $arguments = @()
 
-    if ($BridgeIntervalSeconds -ge 0) {
+    if ($BridgeIntervalSeconds -ge 0 -and !$scriptManagedBridgeLoop) {
         $arguments += @("--intervalSeconds", $BridgeIntervalSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 
         if ($BridgeMaxIterations -gt 0) {
@@ -129,6 +150,10 @@ function Get-BridgePollingArguments {
 }
 
 function Get-BridgePollingDescription {
+    if ($scriptManagedBridgeLoop) {
+        return "script-managed bridge loop every $BridgeIntervalSeconds second(s), up to $BridgeMaxIterations iteration(s)"
+    }
+
     if ($BridgeIntervalSeconds -lt 0) {
         return "one-shot bridge upload"
     }
@@ -138,6 +163,36 @@ function Get-BridgePollingDescription {
     }
 
     return "bridge uploads every $BridgeIntervalSeconds second(s) until stopped"
+}
+
+function Get-BridgeArguments {
+    $arguments = @(
+        "run",
+        "--project",
+        $bridgeProject,
+        "--",
+        "--server",
+        $baseUrl,
+        "--userId",
+        $UserId,
+        "--timezoneId",
+        $TimezoneId
+    )
+    $arguments += $bridgePollingArgs
+
+    if (!$SkipWindows -and (Test-Path $WindowsDb)) {
+        $arguments += @("--windowsDb", $WindowsDb)
+    } elseif (!$SkipWindows) {
+        Write-Step "WPF SQLite not found at $WindowsDb. Skipping Windows upload."
+    }
+
+    if (!$SkipAndroid -and (Test-Path $AndroidDb)) {
+        $arguments += @("--androidDb", $AndroidDb)
+    } elseif (!$SkipAndroid) {
+        Write-Step "Android Room DB not found at $AndroidDb. Skipping Android upload."
+    }
+
+    return $arguments
 }
 
 function Pull-AndroidDatabase([string]$PackageName, [string]$DestinationPath) {
@@ -252,9 +307,18 @@ if ($DryRun) {
     Write-Step "Dry run: would call scripts\start-server-postgres.ps1"
     Write-Step "Dry run: would run ASP.NET Core server at $baseUrl"
     if (!$SkipAndroid -and !$SkipAndroidPull) {
-        Write-Step "Dry run: would use adb to pull Android emulator Room DB: $AndroidPackage databases/woong-monitor.db"
+        if ($scriptManagedBridgeLoop) {
+            Write-Step "Dry run: would pull Android emulator Room DB before each bridge iteration: $AndroidPackage databases/woong-monitor.db"
+        } else {
+            Write-Step "Dry run: would use adb to pull Android emulator Room DB: $AndroidPackage databases/woong-monitor.db"
+        }
     }
-    Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge$bridgePollingArgsText"
+    if ($scriptManagedBridgeLoop) {
+        Write-Step "Dry run: would run script-managed bridge loop for $BridgeMaxIterations iteration(s), sleeping $BridgeIntervalSeconds second(s) between iterations."
+        Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge once per script-managed iteration$bridgePollingArgsText"
+    } else {
+        Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge$bridgePollingArgsText"
+    }
     Write-Step "Dry run: bridge polling: $(Get-BridgePollingDescription)"
     Write-Step "Dry run: bridge checkpoint: $(if ([string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) { "disabled" } else { $BridgeCheckpointPath })"
     Write-Step "Dry run: WPF SQLite path: $WindowsDb"
@@ -292,50 +356,45 @@ try {
 
     Wait-Server
 
-    if (!$SkipAndroid -and !$SkipAndroidPull) {
+    if (!$scriptManagedBridgeLoop -and !$SkipAndroid -and !$SkipAndroidPull) {
         Pull-AndroidDatabase $AndroidPackage $AndroidDb
     }
 
-    $bridgeArgs = @(
-        "run",
-        "--project",
-        $bridgeProject,
-        "--",
-        "--server",
-        $baseUrl,
-        "--userId",
-        $UserId,
-        "--timezoneId",
-        $TimezoneId
-    )
-    $bridgeArgs += $bridgePollingArgs
+    if ($scriptManagedBridgeLoop) {
+        Write-Step "Running script-managed bridge loop for $BridgeMaxIterations iteration(s)."
+        for ($iteration = 1; $iteration -le $BridgeMaxIterations; $iteration++) {
+            Write-Step "Bridge loop iteration $iteration of $BridgeMaxIterations"
+            Pull-AndroidDatabase $AndroidPackage $AndroidDb
 
-    if (!$SkipWindows -and (Test-Path $WindowsDb)) {
-        $bridgeArgs += @("--windowsDb", $WindowsDb)
-    } elseif (!$SkipWindows) {
-        Write-Step "WPF SQLite not found at $WindowsDb. Skipping Windows upload."
-    }
+            $bridgeArgs = @(Get-BridgeArguments)
+            Write-Step "Uploading local client data through API DTOs (one-shot bridge iteration)"
+            & dotnet @bridgeArgs
+            if ($LASTEXITCODE -ne 0) {
+                throw "Local dashboard bridge failed with exit code $LASTEXITCODE."
+            }
 
-    if (!$SkipAndroid -and (Test-Path $AndroidDb)) {
-        $bridgeArgs += @("--androidDb", $AndroidDb)
-    } elseif (!$SkipAndroid) {
-        Write-Step "Android Room DB not found at $AndroidDb. Skipping Android upload."
-    }
+            if ($iteration -lt $BridgeMaxIterations -and $BridgeIntervalSeconds -gt 0) {
+                Start-Sleep -Seconds $BridgeIntervalSeconds
+            }
+        }
+    } else {
+        $bridgeArgs = @(Get-BridgeArguments)
 
-    if ($bridgeRunsContinuously) {
+        if ($bridgeRunsContinuously) {
         Write-Step "Bridge polling is continuous; press Ctrl+C to stop bridge uploads."
         Write-Step "Dashboard URL:"
         Write-Host $dashboardUrl
 
-        if (!$NoOpenBrowser) {
-            Start-Process $dashboardUrl
+            if (!$NoOpenBrowser) {
+                Start-Process $dashboardUrl
+            }
         }
-    }
 
-    Write-Step "Uploading local client data through API DTOs ($(Get-BridgePollingDescription))"
-    & dotnet @bridgeArgs
-    if ($LASTEXITCODE -ne 0) {
-        throw "Local dashboard bridge failed with exit code $LASTEXITCODE."
+        Write-Step "Uploading local client data through API DTOs ($(Get-BridgePollingDescription))"
+        & dotnet @bridgeArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "Local dashboard bridge failed with exit code $LASTEXITCODE."
+        }
     }
 
     $verification = Test-IntegratedDashboardDataPresence `
@@ -351,6 +410,7 @@ try {
         "- Integrated dashboard API: $integratedDashboardApiUrl",
         "- WPF SQLite: $WindowsDb",
         "- Android Room: $AndroidDb",
+        "- Android DB refreshed per bridge iteration: $([bool]$RefreshAndroidDbEachBridgeIteration)",
         "- Bridge checkpoint: $(if ([string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) { "disabled" } else { $BridgeCheckpointPath })",
         "- Server: $baseUrl",
         "- PostgreSQL: Docker localhost:55432",

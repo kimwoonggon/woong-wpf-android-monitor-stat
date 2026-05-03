@@ -8,6 +8,7 @@ using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.App.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
+using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 

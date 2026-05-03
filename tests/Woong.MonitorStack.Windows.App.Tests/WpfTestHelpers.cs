@@ -60,6 +60,16 @@ internal static class WpfTestHelpers
         throw new InvalidOperationException($"Could not find visual descendant {typeof(T).Name}.");
     }
 
+    public static IReadOnlyList<T> FindVisualDescendants<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        var descendants = new List<T>();
+        var visited = new HashSet<DependencyObject>();
+        CollectVisualDescendants(root, descendants, visited);
+
+        return descendants;
+    }
+
     public static void RunOnStaThread(Action action)
     {
         ExceptionDispatchInfo? failure = null;
@@ -170,6 +180,28 @@ internal static class WpfTestHelpers
             {
                 yield return dependencyObject;
             }
+        }
+    }
+
+    private static void CollectVisualDescendants<T>(
+        DependencyObject root,
+        ICollection<T> descendants,
+        ISet<DependencyObject> visited)
+        where T : DependencyObject
+    {
+        if (!visited.Add(root))
+        {
+            return;
+        }
+
+        if (root is T current)
+        {
+            descendants.Add(current);
+        }
+
+        foreach (DependencyObject child in GetChildren(root))
+        {
+            CollectVisualDescendants(child, descendants, visited);
         }
     }
 }

@@ -137,6 +137,39 @@ public sealed class LocalIntegratedDashboardRunbookTests
         Assert.Contains("-BridgeCheckpointPath must not be empty or whitespace.", dryRun.StandardError, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void LocalIntegratedDashboardScript_DryRunCanRefreshAndroidDbBeforeEachBoundedBridgeIteration()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -NoOpenBrowser -BridgeIntervalSeconds 5 -BridgeMaxIterations 3 -RefreshAndroidDbEachBridgeIteration");
+
+        Assert.Equal(0, dryRun.ExitCode);
+        Assert.Contains("script-managed bridge loop", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("3 iteration", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("pull Android emulator Room DB before each bridge iteration", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("run Woong.MonitorStack.LocalDashboardBridge once per script-managed iteration", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("--intervalSeconds 5", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.DoesNotContain("--maxIterations 3", dryRun.StandardOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LocalIntegratedDashboardScript_RejectsUnboundedAndroidDbRefreshLoop()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -BridgeIntervalSeconds 5 -RefreshAndroidDbEachBridgeIteration");
+
+        Assert.NotEqual(0, dryRun.ExitCode);
+        Assert.Contains("-RefreshAndroidDbEachBridgeIteration requires -BridgeMaxIterations greater than zero.", dryRun.StandardError, StringComparison.Ordinal);
+    }
+
     private static ProcessResult RunPowerShell(string workingDirectory, string arguments)
     {
         using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(

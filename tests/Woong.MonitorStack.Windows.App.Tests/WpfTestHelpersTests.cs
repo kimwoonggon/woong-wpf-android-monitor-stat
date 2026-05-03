@@ -79,4 +79,20 @@ public sealed class WpfTestHelpersTests
         Assert.Equal("expected failure", failure.Message);
         Assert.True(wasClosed);
     }
+
+    [Fact]
+    public void FindVisualDescendants_ReturnsRootAndNestedMatches()
+        => WpfTestHelpers.RunOnStaThread(() =>
+        {
+            var root = new StackPanel();
+            root.Children.Add(new TextBlock { Text = "first" });
+            root.Children.Add(new Border
+            {
+                Child = new TextBlock { Text = "second" }
+            });
+
+            IReadOnlyList<TextBlock> textBlocks = WpfTestHelpers.FindVisualDescendants<TextBlock>(root);
+
+            Assert.Equal(["first", "second"], textBlocks.Select(textBlock => textBlock.Text));
+        });
 }

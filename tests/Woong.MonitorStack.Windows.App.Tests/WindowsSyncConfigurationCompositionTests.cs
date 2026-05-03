@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -82,6 +83,26 @@ public sealed class WindowsSyncConfigurationCompositionTests : IDisposable
         Assert.DoesNotContain("secret-device-token", viewModel.LastSyncStatusText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void AddWindowsApp_WhenSyncTokenIsConfigured_DoesNotExposeTokenInSettingsStoreOrSqlite()
+    {
+        var services = new ServiceCollection();
+        services.AddWindowsApp(CreateOptions(WindowsAppSyncOptions.FromValidatedEndpoint(
+            new Uri("https://monitor.example"),
+            "secret-device-token")));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        DashboardViewModel viewModel = provider.GetRequiredService<DashboardViewModel>();
+        FileWindowsSyncTokenStore tokenStore = Assert.IsType<FileWindowsSyncTokenStore>(
+            provider.GetRequiredService<IWindowsSyncTokenStore>());
+        _ = provider.GetRequiredService<SqliteSyncOutboxRepository>();
+
+        Assert.DoesNotContain("secret-device-token", viewModel.Settings.SyncEndpointText, StringComparison.Ordinal);
+        Assert.Null(tokenStore.GetDeviceToken());
+        Assert.False(File.Exists(tokenStore.TokenFilePath));
+        Assert.DoesNotContain("token", ReadSqliteSchema(), StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))
@@ -97,6 +118,16 @@ public sealed class WindowsSyncConfigurationCompositionTests : IDisposable
             localDatabaseConnectionString: $"Data Source={_dbPath};Pooling=False",
             idleThreshold: TimeSpan.FromMinutes(5),
             syncOptions: syncOptions);
+
+    private string ReadSqliteSchema()
+    {
+        using var connection = new SqliteConnection($"Data Source={_dbPath};Pooling=False");
+        connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT group_concat(sql, char(10)) FROM sqlite_master WHERE sql IS NOT NULL;";
+
+        return command.ExecuteScalar() as string ?? "";
+    }
 
     public static TheoryData<WindowsAppSyncOptions, string> SyncEndpointDisplayCases()
         => new()

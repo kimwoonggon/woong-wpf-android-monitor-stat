@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
@@ -59,27 +58,10 @@ public sealed class MainWindowAutomationIdTests
             });
 
     private static ISet<string> CollectAutomationIds(DependencyObject root)
-    {
-        var ids = new HashSet<string>(StringComparer.Ordinal);
-        CollectAutomationIds(root, ids);
-
-        return ids;
-    }
-
-    private static void CollectAutomationIds(DependencyObject element, ISet<string> ids)
-    {
-        string automationId = AutomationProperties.GetAutomationId(element);
-        if (!string.IsNullOrWhiteSpace(automationId))
-        {
-            ids.Add(automationId);
-        }
-
-        int childCount = VisualTreeHelper.GetChildrenCount(element);
-        for (var index = 0; index < childCount; index++)
-        {
-            CollectAutomationIds(VisualTreeHelper.GetChild(element, index), ids);
-        }
-    }
+        => FindVisualDescendants<DependencyObject>(root)
+            .Select(AutomationProperties.GetAutomationId)
+            .Where(automationId => !string.IsNullOrWhiteSpace(automationId))
+            .ToHashSet(StringComparer.Ordinal);
 
     private sealed class EmptyDataSource : IDashboardDataSource
     {

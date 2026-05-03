@@ -115,6 +115,12 @@ powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.
   -BridgeIntervalSeconds 5 `
   -BridgeMaxIterations 12 `
   -BridgeCheckpointPath D:\temp\woong-bridge-checkpoints.json
+
+# Pull a fresh Android emulator Room DB before each bounded bridge iteration
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 `
+  -BridgeIntervalSeconds 5 `
+  -BridgeMaxIterations 12 `
+  -RefreshAndroidDbEachBridgeIteration
 ```
 
 Default bridge upload mode is one-shot. `-BridgeMaxIterations` requires
@@ -127,6 +133,16 @@ when `-BridgeCheckpointPath` is omitted, the script passes
 emulator Room database once before starting the bridge, so continuous mode
 rereads the same configured `-AndroidDb` file unless that file is refreshed
 separately.
+
+`-RefreshAndroidDbEachBridgeIteration` is an explicit bounded-loop mode for
+Android emulator evidence runs. Because `LocalDashboardBridge` cannot run `adb`
+between its own internal interval iterations, this script option does not pass
+`--intervalSeconds` or `--maxIterations` to the bridge. Instead, the script
+pulls the Android Room database, runs one bridge upload, sleeps
+`-BridgeIntervalSeconds`, and repeats until `-BridgeMaxIterations` is reached.
+It requires `-BridgeIntervalSeconds` and `-BridgeMaxIterations`, and it cannot
+be combined with `-SkipAndroid` or `-SkipAndroidPull`. The default behavior
+remains unchanged.
 
 ## LocalDashboardBridge Checkpoint/Range Scanning
 
