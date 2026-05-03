@@ -4,7 +4,6 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
@@ -1044,53 +1043,6 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
             CaptureMethod.FakeTestData,
             CaptureConfidence.High,
             isPrivateOrUnknown: false);
-
-    private static T FindVisualDescendant<T>(DependencyObject root)
-        where T : DependencyObject
-    {
-        if (root is T current)
-        {
-            return current;
-        }
-
-        foreach (DependencyObject child in GetChildren(root))
-        {
-            try
-            {
-                return FindVisualDescendant<T>(child);
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
-
-        throw new InvalidOperationException($"Could not find visual descendant {typeof(T).Name}.");
-    }
-
-    private static IEnumerable<DependencyObject> GetChildren(DependencyObject root)
-    {
-        int visualChildCount = 0;
-        try
-        {
-            visualChildCount = VisualTreeHelper.GetChildrenCount(root);
-        }
-        catch (InvalidOperationException)
-        {
-        }
-
-        for (var index = 0; index < visualChildCount; index++)
-        {
-            yield return VisualTreeHelper.GetChild(root, index);
-        }
-
-        foreach (object child in LogicalTreeHelper.GetChildren(root))
-        {
-            if (child is DependencyObject dependencyObject)
-            {
-                yield return dependencyObject;
-            }
-        }
-    }
 
     private sealed class MutableClock(DateTimeOffset utcNow) : ISystemClock, IDashboardClock
     {

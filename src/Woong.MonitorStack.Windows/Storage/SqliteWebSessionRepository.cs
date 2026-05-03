@@ -46,6 +46,8 @@ public sealed class SqliteWebSessionRepository
         EnsureNullableColumn(connection, "capture_confidence", "TEXT NULL");
         EnsureNullableColumn(connection, "is_private_or_unknown", "INTEGER NULL");
         EnsureUrlAllowsNull(connection);
+        DeleteDuplicateSessionIdentities(connection);
+        EnsureSessionIdentityIndex(connection);
     }
 
     public void Save(WebSession session)
@@ -65,7 +67,12 @@ public sealed class SqliteWebSessionRepository
         using var connection = OpenConnection();
         using SqliteTransaction transaction = connection.BeginTransaction();
         using SqliteCommand command = CreateSaveCommand(connection, transaction, session);
-        _ = command.ExecuteNonQuery();
+        int webRowsInserted = command.ExecuteNonQuery();
+        if (webRowsInserted == 0)
+        {
+            transaction.Commit();
+            return;
+        }
 
         int outboxRowsInserted = SqliteSyncOutboxCommands.Add(connection, transaction, outboxItem);
         if (outboxRowsInserted == 0
@@ -110,12 +117,7 @@ public sealed class SqliteWebSessionRepository
                 $captureMethod,
                 $captureConfidence,
                 $isPrivateOrUnknown
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM web_session
-                WHERE focus_session_id = $focusSessionId
-                  AND started_at_utc = $startedAtUtc
-            );
+            ON CONFLICT(focus_session_id, started_at_utc) DO NOTHING;
             """;
         AddParameters(command, session);
         return command;
@@ -317,6 +319,30 @@ public sealed class SqliteWebSessionRepository
                 ON web_session(focus_session_id);
 
             PRAGMA foreign_keys=ON;
+            """;
+        _ = command.ExecuteNonQuery();
+    }
+
+    private static void DeleteDuplicateSessionIdentities(SqliteConnection connection)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            DELETE FROM web_session
+            WHERE rowid NOT IN (
+                SELECT MIN(rowid)
+                FROM web_session
+                GROUP BY focus_session_id, started_at_utc
+            );
+            """;
+        _ = command.ExecuteNonQuery();
+    }
+
+    private static void EnsureSessionIdentityIndex(SqliteConnection connection)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_web_session_focus_session_started_at_utc
+                ON web_session(focus_session_id, started_at_utc);
             """;
         _ = command.ExecuteNonQuery();
     }

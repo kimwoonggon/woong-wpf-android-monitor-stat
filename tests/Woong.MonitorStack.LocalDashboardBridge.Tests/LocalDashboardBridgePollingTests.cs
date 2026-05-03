@@ -193,6 +193,62 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
         Assert.DoesNotContain("devenv.exe", checkpointJson, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RunAsync_WhenLateWebRowHasSameEndAndFocusSession_DoesNotSkipItAfterCheckpoint()
+    {
+        string databasePath = CreateWindowsDatabaseWithFocusAndWebSession(
+            "win-session-1",
+            "2026-05-02T00:01:00Z",
+            "2026-05-02T00:10:00Z");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-checkpoints.json");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(
+            httpClient,
+            delayAsync: (_, _) => Task.CompletedTask);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--windowsDb",
+            databasePath,
+            "--intervalSeconds",
+            "0",
+            "--maxIterations",
+            "1",
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary first = await runner.RunAsync(options);
+        InsertWindowsWebSession(
+            databasePath,
+            "win-session-1",
+            "2026-05-02T00:02:00Z",
+            "2026-05-02T00:10:00Z",
+            480000);
+
+        LocalBridgeSummary second = await runner.RunAsync(options);
+
+        Assert.Equal(1, first.WindowsWeb.Attempted);
+        Assert.Equal(1, second.WindowsWeb.Attempted);
+        Assert.Equal(2, handler.WebUploadCount);
+
+        string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+        Assert.Contains("windows.web_session", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("win-session-1", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("2026-05-02T00:02:00", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("example.com", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("Chrome", checkpointJson, StringComparison.Ordinal);
+    }
+
     public void Dispose()
     {
         try
@@ -240,6 +296,34 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
         return databasePath;
     }
 
+    private string CreateWindowsDatabaseWithFocusAndWebSession(
+        string focusSessionId,
+        string webStartedAtUtc,
+        string webEndedAtUtc)
+    {
+        string databasePath = CreateWindowsDatabaseWithFocusSession(focusSessionId);
+        using var connection = new SqliteConnection($"Data Source={databasePath}");
+        connection.Open();
+        Execute(connection, """
+            CREATE TABLE web_session (
+                focus_session_id TEXT NOT NULL,
+                browser_family TEXT NOT NULL,
+                url TEXT NULL,
+                domain TEXT NOT NULL,
+                page_title TEXT NULL,
+                started_at_utc TEXT NOT NULL,
+                ended_at_utc TEXT NOT NULL,
+                duration_ms INTEGER NOT NULL,
+                capture_method TEXT NULL,
+                capture_confidence TEXT NULL,
+                is_private_or_unknown INTEGER NULL
+            );
+            """);
+        InsertWindowsWebSession(connection, focusSessionId, webStartedAtUtc, webEndedAtUtc, 540000);
+
+        return databasePath;
+    }
+
     private static void InsertWindowsFocusSession(
         string databasePath,
         string clientSessionId,
@@ -279,6 +363,42 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
             """);
     }
 
+    private static void InsertWindowsWebSession(
+        string databasePath,
+        string focusSessionId,
+        string startedAtUtc,
+        string endedAtUtc,
+        long durationMs)
+    {
+        using var connection = new SqliteConnection($"Data Source={databasePath}");
+        connection.Open();
+        InsertWindowsWebSession(connection, focusSessionId, startedAtUtc, endedAtUtc, durationMs);
+    }
+
+    private static void InsertWindowsWebSession(
+        SqliteConnection connection,
+        string focusSessionId,
+        string startedAtUtc,
+        string endedAtUtc,
+        long durationMs)
+    {
+        Execute(connection, $"""
+            INSERT INTO web_session VALUES (
+                '{focusSessionId}',
+                'Chrome',
+                NULL,
+                'example.com',
+                NULL,
+                '{startedAtUtc}',
+                '{endedAtUtc}',
+                {durationMs},
+                'native_messaging',
+                'domain_only',
+                0
+            );
+            """);
+    }
+
     private static void Execute(SqliteConnection connection, string commandText)
     {
         using SqliteCommand command = connection.CreateCommand();
@@ -298,6 +418,8 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
         }
 
         public int FocusUploadCount { get; private set; }
+
+        public int WebUploadCount { get; private set; }
 
         public int StoredFocusSessionCount => _storedFocusSessionIds.Count;
 
@@ -333,6 +455,23 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                         {
                             clientId = "win-session-1",
                             status,
+                            errorMessage = (string?)null
+                        }
+                    }
+                }));
+            }
+
+            if (request.RequestUri?.AbsolutePath == "/api/web-sessions/upload")
+            {
+                WebUploadCount++;
+                return Task.FromResult(JsonResponse(new
+                {
+                    items = new[]
+                    {
+                        new
+                        {
+                            clientId = $"web-session-{WebUploadCount}",
+                            status = 1,
                             errorMessage = (string?)null
                         }
                     }

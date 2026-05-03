@@ -586,14 +586,26 @@ public sealed record LocalBridgeCheckpointDocument(
 
 public sealed record LocalBridgeCheckpointCursor(
     DateTimeOffset TimestampUtc,
-    string Id)
+    string Id,
+    DateTimeOffset? SecondaryTimestampUtc = null)
 {
     public int CompareTo(LocalBridgeCheckpointCursor other)
     {
         int timestampComparison = TimestampUtc.CompareTo(other.TimestampUtc);
-        return timestampComparison != 0
-            ? timestampComparison
-            : string.Compare(Id, other.Id, StringComparison.Ordinal);
+        if (timestampComparison != 0)
+        {
+            return timestampComparison;
+        }
+
+        int idComparison = string.Compare(Id, other.Id, StringComparison.Ordinal);
+        if (idComparison != 0)
+        {
+            return idComparison;
+        }
+
+        DateTimeOffset secondary = SecondaryTimestampUtc ?? DateTimeOffset.MinValue;
+        DateTimeOffset otherSecondary = other.SecondaryTimestampUtc ?? DateTimeOffset.MinValue;
+        return secondary.CompareTo(otherSecondary);
     }
 
     public static LocalBridgeCheckpointCursor? FromFocusSessions(
@@ -602,7 +614,11 @@ public sealed record LocalBridgeCheckpointCursor(
 
     public static LocalBridgeCheckpointCursor? FromWebSessions(
         IReadOnlyList<WebSessionUploadItem> sessions)
-        => FromItems(sessions, session => session.EndedAtUtc, session => session.FocusSessionId);
+        => FromItems(
+            sessions,
+            session => session.EndedAtUtc,
+            session => session.FocusSessionId,
+            session => session.StartedAtUtc);
 
     public static LocalBridgeCheckpointCursor? FromLocationContexts(
         IReadOnlyList<LocationContextUploadItem> contexts)
@@ -611,12 +627,16 @@ public sealed record LocalBridgeCheckpointCursor(
     private static LocalBridgeCheckpointCursor? FromItems<T>(
         IReadOnlyList<T> items,
         Func<T, DateTimeOffset> timestamp,
-        Func<T, string> id)
+        Func<T, string> id,
+        Func<T, DateTimeOffset>? secondaryTimestamp = null)
     {
         LocalBridgeCheckpointCursor? cursor = null;
         foreach (T item in items)
         {
-            var candidate = new LocalBridgeCheckpointCursor(timestamp(item).ToUniversalTime(), id(item));
+            var candidate = new LocalBridgeCheckpointCursor(
+                timestamp(item).ToUniversalTime(),
+                id(item),
+                secondaryTimestamp?.Invoke(item).ToUniversalTime());
             if (cursor is null || candidate.CompareTo(cursor) > 0)
             {
                 cursor = candidate;
@@ -724,7 +744,16 @@ public static class WindowsSqliteReader
                   OR julianday(ended_at_utc) > julianday($cursorTimestamp)
                   OR (
                       julianday(ended_at_utc) = julianday($cursorTimestamp)
-                      AND focus_session_id > $cursorId
+                      AND (
+                          focus_session_id > $cursorId
+                          OR (
+                              focus_session_id = $cursorId
+                              AND (
+                                  $cursorSecondaryTimestamp IS NULL
+                                  OR julianday(started_at_utc) > julianday($cursorSecondaryTimestamp)
+                              )
+                          )
+                      )
                   )
               )
             ORDER BY ended_at_utc, focus_session_id, started_at_utc
@@ -773,6 +802,11 @@ public static class WindowsSqliteReader
                 ? DBNull.Value
                 : checkpoint.TimestampUtc.ToString("O", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$cursorId", checkpoint?.Id ?? string.Empty);
+        command.Parameters.AddWithValue(
+            "$cursorSecondaryTimestamp",
+            checkpoint?.SecondaryTimestampUtc is null
+                ? DBNull.Value
+                : checkpoint.SecondaryTimestampUtc.Value.ToString("O", CultureInfo.InvariantCulture));
     }
 
     private static DateOnly ParseDateOnly(string value)

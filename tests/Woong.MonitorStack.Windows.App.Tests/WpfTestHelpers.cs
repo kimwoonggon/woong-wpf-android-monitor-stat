@@ -38,6 +38,28 @@ internal static class WpfTestHelpers
         throw new InvalidOperationException($"Could not find {typeof(T).Name} with AutomationId '{automationId}'.");
     }
 
+    public static T FindVisualDescendant<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        if (root is T current)
+        {
+            return current;
+        }
+
+        foreach (DependencyObject child in GetChildren(root))
+        {
+            try
+            {
+                return FindVisualDescendant<T>(child);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        throw new InvalidOperationException($"Could not find visual descendant {typeof(T).Name}.");
+    }
+
     public static void RunOnStaThread(Action action)
     {
         ExceptionDispatchInfo? failure = null;

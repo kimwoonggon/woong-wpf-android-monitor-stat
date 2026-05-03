@@ -3058,10 +3058,10 @@ milestones below are finished.
   `scripts/run-local-integrated-dashboard.ps1`.
 - [x] Follow-up: add checkpoint/range scanning so interval mode does not
   reread every local SQLite/Room row forever.
-- [ ] Follow-up: expose LocalDashboardBridge `--checkpointPath` from
+- [x] Follow-up: expose LocalDashboardBridge `--checkpointPath` from
   `scripts/run-local-integrated-dashboard.ps1`, for example as
   `-BridgeCheckpointPath`.
-- [ ] Follow-up: harden Windows web-session checkpoint cursors for same
+- [x] Follow-up: harden Windows web-session checkpoint cursors for same
   `ended_at_utc`/`focus_session_id` late rows.
 
 ## 2026-05-03 WPF Production Sync Configuration And Test Harness Batch
@@ -3092,12 +3092,21 @@ milestones below are finished.
 - [x] Continue WPF App STA helper migration by moving
   `MainWindowTrackingPipelineTests.cs` to shared WPF test helpers and adding it
   to the harness architecture rule.
+- [x] Harden Windows local SQLite `web_session` idempotency with migration-time
+  duplicate cleanup, a unique `(focus_session_id, started_at_utc)` index, and
+  duplicate-safe `SaveWithOutbox` behavior.
+- [x] Harden LocalDashboardBridge Windows web-session checkpoints with
+  `started_at_utc` as a metadata-only tie-breaker for late rows sharing the
+  same `ended_at_utc` and `focus_session_id`.
+- [x] Move WPF `FindVisualDescendant<T>` traversal into `WpfTestHelpers` and
+  add a harness architecture guard for migrated visual traversal tests.
+- [x] Validate focused bridge, storage, and WPF harness tests before full
+  solution validation.
 - [ ] Follow-up: add WPF Register/Repair device flow with protected token
   storage; keep environment token as development/config bridge only.
-- [ ] Follow-up: decide whether to expose `FindVisualDescendant<T>` from
-  `WpfTestHelpers` or add an automation id to the dashboard root scroll viewer
-  so `MainWindowTrackingPipelineTests.cs` can drop its remaining local visual
-  traversal helper.
+- [ ] Follow-up: consider migrating remaining bespoke visual/tree traversal in
+  other WPF App tests into `WpfTestHelpers`, then add those files to the visual
+  traversal architecture guard.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 
