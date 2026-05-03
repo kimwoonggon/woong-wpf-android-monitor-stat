@@ -23,13 +23,12 @@ public sealed class WindowsSyncFlowTests : IDisposable
         repository.Add(item);
         var handler = new CapturingHandler(
             """{"items":[{"clientId":"session-1","status":1,"errorMessage":null}]}""");
-        using var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://monitor.example")
-        };
+        using var httpClient = new HttpClient(handler);
         var apiClient = new HttpWindowsSyncApiClient(
             httpClient,
-            new WindowsSyncClientOptions("device-token-1"));
+            new WindowsSyncClientOptions(
+                new Uri("https://monitor.example"),
+                "device-token-1"));
         var syncedAtUtc = new DateTimeOffset(2026, 4, 28, 4, 0, 0, TimeSpan.Zero);
         var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(syncedAtUtc));
 

@@ -27,7 +27,7 @@ public sealed class HttpWindowsSyncApiClient : IWindowsSyncApiClient
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, GetEndpoint(item.AggregateType))
+        using var request = new HttpRequestMessage(HttpMethod.Post, GetEndpointUri(item.AggregateType))
         {
             Content = new StringContent(item.PayloadJson, Encoding.UTF8, "application/json")
         };
@@ -45,7 +45,10 @@ public sealed class HttpWindowsSyncApiClient : IWindowsSyncApiClient
         return result ?? new UploadBatchResult([]);
     }
 
-    private static string GetEndpoint(string aggregateType)
+    private Uri GetEndpointUri(string aggregateType)
+        => new(_options.ServerBaseUri, GetEndpointPath(aggregateType));
+
+    private static string GetEndpointPath(string aggregateType)
         => aggregateType switch
         {
             "focus_session" => "/api/focus-sessions/upload",

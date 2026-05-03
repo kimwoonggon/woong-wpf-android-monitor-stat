@@ -94,4 +94,92 @@ public sealed class WindowsAppOptionsTests
             Environment.SetEnvironmentVariable(WindowsAppOptions.AcceptanceModeEnvironmentVariable, previousMode);
         }
     }
+
+    [Fact]
+    public void CreateDefault_WhenSyncEnvironmentIsMissing_KeepsSyncLocalOnly()
+    {
+        PreserveSyncEnvironment(() =>
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable, null);
+            Environment.SetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable, null);
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.False(options.SyncOptions.IsUploadConfigured);
+            Assert.False(options.SyncOptions.HasServerEndpoint);
+            Assert.False(options.SyncOptions.HasDeviceToken);
+            Assert.Equal("No sync endpoint configured", options.SyncOptions.EndpointDisplayText);
+        });
+    }
+
+    [Fact]
+    public void CreateDefault_WhenSyncEnvironmentIsConfigured_ParsesUploadConfiguration()
+    {
+        PreserveSyncEnvironment(() =>
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable, "https://monitor.example");
+            Environment.SetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable, "device-token-1");
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.True(options.SyncOptions.IsUploadConfigured);
+            Assert.True(options.SyncOptions.HasServerEndpoint);
+            Assert.True(options.SyncOptions.HasDeviceToken);
+            Assert.Equal("https://monitor.example/", options.SyncOptions.EndpointDisplayText);
+            Assert.Equal(new Uri("https://monitor.example/"), options.SyncOptions.CreateClientOptions().ServerBaseUri);
+            Assert.Equal("device-token-1", options.SyncOptions.CreateClientOptions().DeviceToken);
+        });
+    }
+
+    [Fact]
+    public void CreateDefault_WhenSyncEndpointIsUnsafe_KeepsSyncLocalOnlyWithoutLeakingToken()
+    {
+        PreserveSyncEnvironment(() =>
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable, "http://monitor.example");
+            Environment.SetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable, "secret-device-token");
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.False(options.SyncOptions.IsUploadConfigured);
+            Assert.False(options.SyncOptions.HasServerEndpoint);
+            Assert.False(options.SyncOptions.HasDeviceToken);
+            Assert.Equal("Sync endpoint rejected", options.SyncOptions.EndpointDisplayText);
+            Assert.DoesNotContain("secret-device-token", options.SyncOptions.ConfigurationStatusText, StringComparison.Ordinal);
+            Assert.DoesNotContain("http://monitor.example", options.SyncOptions.ConfigurationStatusText, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public void CreateDefault_WhenOnlyDeviceTokenIsConfigured_KeepsSyncLocalOnlyWithoutLeakingToken()
+    {
+        PreserveSyncEnvironment(() =>
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable, null);
+            Environment.SetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable, "secret-device-token");
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.False(options.SyncOptions.IsUploadConfigured);
+            Assert.False(options.SyncOptions.HasServerEndpoint);
+            Assert.False(options.SyncOptions.HasDeviceToken);
+            Assert.Equal("No sync endpoint configured", options.SyncOptions.EndpointDisplayText);
+            Assert.DoesNotContain("secret-device-token", options.SyncOptions.ConfigurationStatusText, StringComparison.Ordinal);
+        });
+    }
+
+    private static void PreserveSyncEnvironment(Action action)
+    {
+        string? previousBaseUrl = Environment.GetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable);
+        string? previousDeviceToken = Environment.GetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable);
+        try
+        {
+            action();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.SyncBaseUrlEnvironmentVariable, previousBaseUrl);
+            Environment.SetEnvironmentVariable(WindowsAppOptions.DeviceTokenEnvironmentVariable, previousDeviceToken);
+        }
+    }
 }

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
+using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -11,21 +12,20 @@ public sealed class MainWindowAutomationIdTests
 {
     [Fact]
     public void MainWindow_ExposesStableAutomationIdsForSnapshotAutomation()
-        => RunOnStaThread(() =>
-        {
-            var viewModel = new DashboardViewModel(
-                new EmptyDataSource(),
-                new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
-                new DashboardOptions("Asia/Seoul"));
-            var window = new MainWindow(viewModel);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var viewModel = new DashboardViewModel(
+                    new EmptyDataSource(),
+                    new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
+                    new DashboardOptions("Asia/Seoul"));
 
+                return new MainWindow(viewModel);
+            },
+            window =>
+            {
                 ISet<string> automationIds = CollectAutomationIds(window);
-                TabControl tabs = FindTabControl(window);
+                TabControl tabs = FindByAutomationId<TabControl>(window, "DashboardTabs");
                 for (var selectedIndex = 0; selectedIndex < tabs.Items.Count; selectedIndex++)
                 {
                     tabs.SelectedIndex = selectedIndex;
@@ -56,12 +56,7 @@ public sealed class MainWindowAutomationIdTests
                 Assert.Contains("LiveEventsList", automationIds);
                 Assert.Contains("SettingsTab", automationIds);
                 Assert.Contains("WindowTitleVisibleCheckBox", automationIds);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     private static ISet<string> CollectAutomationIds(DependencyObject root)
     {
@@ -83,53 +78,6 @@ public sealed class MainWindowAutomationIdTests
         for (var index = 0; index < childCount; index++)
         {
             CollectAutomationIds(VisualTreeHelper.GetChild(element, index), ids);
-        }
-    }
-
-    private static TabControl FindTabControl(DependencyObject root)
-    {
-        if (root is TabControl tabControl)
-        {
-            return tabControl;
-        }
-
-        int childCount = VisualTreeHelper.GetChildrenCount(root);
-        for (var index = 0; index < childCount; index++)
-        {
-            try
-            {
-                return FindTabControl(VisualTreeHelper.GetChild(root, index));
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
-
-        throw new InvalidOperationException("Dashboard tab control was not found.");
-    }
-
-    private static void RunOnStaThread(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (failure is not null)
-        {
-            throw failure;
         }
     }
 

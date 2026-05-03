@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
@@ -7,6 +8,7 @@ using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Sync;
+using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -430,34 +432,9 @@ public sealed class WindowsAppCompositionTests
         }
     }
 
-    private static void RunOnStaThread(Action action)
+    private static string FindRepositoryRoot([CallerFilePath] string sourceFilePath = "")
     {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (failure is not null)
-        {
-            throw failure;
-        }
-    }
-
-    private static string FindRepositoryRoot()
-    {
-        DirectoryInfo? current = new(AppContext.BaseDirectory);
+        DirectoryInfo? current = new(Path.GetDirectoryName(sourceFilePath) ?? AppContext.BaseDirectory);
 
         while (current is not null)
         {

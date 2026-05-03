@@ -95,6 +95,104 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
         Assert.Equal(1, summary.WindowsFocusUploaded);
     }
 
+    [Fact]
+    public async Task RunAsync_WhenCheckpointPathIsSet_DoesNotReattemptUnchangedRowsOnNextPoll()
+    {
+        string databasePath = CreateWindowsDatabaseWithFocusSession("win-session-1");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-checkpoints.json");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(
+            httpClient,
+            delayAsync: (_, _) => Task.CompletedTask);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--windowsDb",
+            databasePath,
+            "--intervalSeconds",
+            "0",
+            "--maxIterations",
+            "2",
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary summary = await runner.RunAsync(options);
+
+        Assert.Equal(2, summary.Iterations);
+        Assert.Equal(1, handler.FocusUploadCount);
+        Assert.Equal(1, summary.WindowsFocus.Attempted);
+        Assert.Equal(1, summary.WindowsFocus.Accepted);
+        Assert.True(File.Exists(checkpointPath));
+
+        string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+        Assert.Contains("windows.focus_session", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("2026-05-02T00:05:00", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("win-session-1", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("Solution Explorer", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("devenv.exe", checkpointJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenCheckpointedDatabaseGetsNewRow_UploadsOnlyTheNewRow()
+    {
+        string databasePath = CreateWindowsDatabaseWithFocusSession("win-session-1");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-checkpoints.json");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(
+            httpClient,
+            delayAsync: (_, _) => Task.CompletedTask);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--windowsDb",
+            databasePath,
+            "--intervalSeconds",
+            "0",
+            "--maxIterations",
+            "1",
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary first = await runner.RunAsync(options);
+        InsertWindowsFocusSession(
+            databasePath,
+            "win-session-2",
+            "2026-05-02T00:06:00Z",
+            "2026-05-02T00:07:00Z",
+            60000);
+
+        LocalBridgeSummary second = await runner.RunAsync(options);
+
+        Assert.Equal(1, first.WindowsFocus.Attempted);
+        Assert.Equal(1, second.WindowsFocus.Attempted);
+        Assert.Equal(2, handler.FocusUploadCount);
+
+        string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+        Assert.Contains("win-session-2", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("Solution Explorer", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("devenv.exe", checkpointJson, StringComparison.Ordinal);
+    }
+
     public void Dispose()
     {
         try
@@ -132,13 +230,42 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                 window_title TEXT NULL
             );
             """);
+        InsertWindowsFocusSession(
+            connection,
+            clientSessionId,
+            "2026-05-02T00:00:00Z",
+            "2026-05-02T00:05:00Z",
+            300000);
+
+        return databasePath;
+    }
+
+    private static void InsertWindowsFocusSession(
+        string databasePath,
+        string clientSessionId,
+        string startedAtUtc,
+        string endedAtUtc,
+        long durationMs)
+    {
+        using var connection = new SqliteConnection($"Data Source={databasePath}");
+        connection.Open();
+        InsertWindowsFocusSession(connection, clientSessionId, startedAtUtc, endedAtUtc, durationMs);
+    }
+
+    private static void InsertWindowsFocusSession(
+        SqliteConnection connection,
+        string clientSessionId,
+        string startedAtUtc,
+        string endedAtUtc,
+        long durationMs)
+    {
         Execute(connection, $"""
             INSERT INTO focus_session VALUES (
                 '{clientSessionId}',
                 'devenv.exe',
-                '2026-05-02T00:00:00Z',
-                '2026-05-02T00:05:00Z',
-                300000,
+                '{startedAtUtc}',
+                '{endedAtUtc}',
+                {durationMs},
                 '2026-05-02',
                 'UTC',
                 0,
@@ -150,8 +277,6 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                 'Solution Explorer'
             );
             """);
-
-        return databasePath;
     }
 
     private static void Execute(SqliteConnection connection, string commandText)

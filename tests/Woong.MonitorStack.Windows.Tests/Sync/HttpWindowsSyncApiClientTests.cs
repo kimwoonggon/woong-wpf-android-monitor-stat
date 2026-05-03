@@ -12,13 +12,12 @@ public sealed class HttpWindowsSyncApiClientTests
     {
         var handler = new CapturingHandler(
             """{"items":[{"clientId":"session-1","status":1,"errorMessage":null}]}""");
-        using var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://monitor.example")
-        };
+        using var httpClient = new HttpClient(handler);
         var client = new HttpWindowsSyncApiClient(
             httpClient,
-            new WindowsSyncClientOptions(deviceToken: "device-token-1"));
+            new WindowsSyncClientOptions(
+                new Uri("https://monitor.example"),
+                deviceToken: "device-token-1"));
         var item = SyncOutboxItem.Pending(
             id: "outbox-1",
             aggregateType: "focus_session",
@@ -29,6 +28,7 @@ public sealed class HttpWindowsSyncApiClientTests
         UploadBatchResult result = await client.UploadAsync(item);
 
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("https://monitor.example/api/focus-sessions/upload", handler.Request.RequestUri!.AbsoluteUri);
         Assert.Equal("/api/focus-sessions/upload", handler.Request.RequestUri!.AbsolutePath);
         Assert.Equal("device-token-1", Assert.Single(handler.Request.Headers.GetValues("X-Device-Token")));
         Assert.Equal("""{"deviceId":"device-1","sessions":[]}""", handler.Body);

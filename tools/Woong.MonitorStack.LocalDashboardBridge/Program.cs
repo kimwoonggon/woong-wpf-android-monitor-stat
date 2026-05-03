@@ -75,6 +75,9 @@ public sealed class LocalDashboardBridgeRunner
         LocalBridgeOptions options,
         CancellationToken cancellationToken)
     {
+        LocalBridgeCheckpointStore? checkpoints = LocalBridgeCheckpointStore.Load(
+            options.CheckpointPath,
+            _jsonOptions);
         LocalBridgeSummary summary = new()
         {
             Iterations = 1
@@ -93,16 +96,27 @@ public sealed class LocalDashboardBridgeRunner
             LocalUploadBatch windowsBatch = WindowsSqliteReader.Read(
                 options.WindowsDatabasePath,
                 windowsDevice.DeviceId,
-                options.TimezoneId);
+                options.TimezoneId,
+                checkpoints);
 
             summary.WindowsFocus = await UploadFocusSessionsAsync(
                 windowsDevice,
                 windowsBatch.FocusSessions,
                 cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.WindowsFocusSession,
+                LocalBridgeCheckpointCursor.FromFocusSessions(windowsBatch.FocusSessions),
+                summary.WindowsFocus);
+            checkpoints?.Save();
             summary.WindowsWeb = await UploadWebSessionsAsync(
                 windowsDevice,
                 windowsBatch.WebSessions,
                 cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.WindowsWebSession,
+                LocalBridgeCheckpointCursor.FromWebSessions(windowsBatch.WebSessions),
+                summary.WindowsWeb);
+            checkpoints?.Save();
         }
 
         if (!string.IsNullOrWhiteSpace(options.AndroidDatabasePath))
@@ -118,16 +132,27 @@ public sealed class LocalDashboardBridgeRunner
             LocalUploadBatch androidBatch = AndroidRoomReader.Read(
                 options.AndroidDatabasePath,
                 androidDevice.DeviceId,
-                options.TimezoneId);
+                options.TimezoneId,
+                checkpoints);
 
             summary.AndroidFocus = await UploadFocusSessionsAsync(
                 androidDevice,
                 androidBatch.FocusSessions,
                 cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.AndroidFocusSession,
+                LocalBridgeCheckpointCursor.FromFocusSessions(androidBatch.FocusSessions),
+                summary.AndroidFocus);
+            checkpoints?.Save();
             summary.AndroidLocation = await UploadLocationContextsAsync(
                 androidDevice,
                 androidBatch.LocationContexts,
                 cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.AndroidLocationContext,
+                LocalBridgeCheckpointCursor.FromLocationContexts(androidBatch.LocationContexts),
+                summary.AndroidLocation);
+            checkpoints?.Save();
         }
 
         return summary;
@@ -347,7 +372,8 @@ public sealed class LocalBridgeOptions
         string? androidDatabasePath,
         bool runOnce,
         int? intervalSeconds,
-        int? maxIterations)
+        int? maxIterations,
+        string? checkpointPath)
     {
         ShowHelp = showHelp;
         ServerBaseUrl = serverBaseUrl;
@@ -358,6 +384,7 @@ public sealed class LocalBridgeOptions
         RunOnce = runOnce;
         IntervalSeconds = intervalSeconds;
         MaxIterations = maxIterations;
+        CheckpointPath = checkpointPath;
     }
 
     public bool ShowHelp { get; }
@@ -377,6 +404,8 @@ public sealed class LocalBridgeOptions
     public int? IntervalSeconds { get; }
 
     public int? MaxIterations { get; }
+
+    public string? CheckpointPath { get; }
 
     public TimeSpan? Interval => IntervalSeconds.HasValue
         ? TimeSpan.FromSeconds(IntervalSeconds.Value)
@@ -434,13 +463,14 @@ public sealed class LocalBridgeOptions
             OptionalPath(values, "androidDb"),
             runOnce,
             intervalSeconds,
-            maxIterations);
+            maxIterations,
+            OptionalPath(values, "checkpointPath"));
     }
 
     public static void WriteUsage()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine("  dotnet run --project tools/Woong.MonitorStack.LocalDashboardBridge -- --server http://127.0.0.1:5087 --userId local-user --windowsDb <windows-local.db> --androidDb <woong-monitor.db> [--once|--intervalSeconds 5 --maxIterations 12]");
+        Console.WriteLine("  dotnet run --project tools/Woong.MonitorStack.LocalDashboardBridge -- --server http://127.0.0.1:5087 --userId local-user --windowsDb <windows-local.db> --androidDb <woong-monitor.db> [--once|--intervalSeconds 5 --maxIterations 12] [--checkpointPath <bridge-checkpoints.json>]");
         Console.WriteLine();
         Console.WriteLine("Uploads local WPF SQLite and Android emulator Room metadata to the local ASP.NET Core server through API DTO contracts.");
     }
@@ -461,9 +491,149 @@ public sealed class LocalBridgeOptions
             : null;
 }
 
+public static class LocalBridgeCheckpointKeys
+{
+    public const string WindowsFocusSession = "windows.focus_session";
+    public const string WindowsWebSession = "windows.web_session";
+    public const string AndroidFocusSession = "android.focus_sessions";
+    public const string AndroidLocationContext = "android.location_context_snapshots";
+}
+
+public sealed class LocalBridgeCheckpointStore
+{
+    private readonly string? _path;
+    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly Dictionary<string, LocalBridgeCheckpointCursor> _sources;
+    private bool _changed;
+
+    private LocalBridgeCheckpointStore(
+        string? path,
+        JsonSerializerOptions jsonOptions,
+        Dictionary<string, LocalBridgeCheckpointCursor> sources)
+    {
+        _path = path;
+        _jsonOptions = jsonOptions;
+        _sources = sources;
+    }
+
+    public static LocalBridgeCheckpointStore? Load(
+        string? path,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        Dictionary<string, LocalBridgeCheckpointCursor> sources = [];
+        if (File.Exists(path))
+        {
+            LocalBridgeCheckpointDocument? document = JsonSerializer.Deserialize<LocalBridgeCheckpointDocument>(
+                File.ReadAllText(path),
+                jsonOptions);
+            sources = document?.Sources is null
+                ? []
+                : new Dictionary<string, LocalBridgeCheckpointCursor>(document.Sources, StringComparer.Ordinal);
+        }
+
+        return new LocalBridgeCheckpointStore(path, jsonOptions, sources);
+    }
+
+    public LocalBridgeCheckpointCursor? Get(string key)
+        => _sources.TryGetValue(key, out LocalBridgeCheckpointCursor? cursor)
+            ? cursor
+            : null;
+
+    public void AdvanceAfterSuccessfulUpload(
+        string key,
+        LocalBridgeCheckpointCursor? cursor,
+        UploadStatusSummary uploadSummary)
+    {
+        if (cursor is null || uploadSummary.Error > 0)
+        {
+            return;
+        }
+
+        if (!_sources.TryGetValue(key, out LocalBridgeCheckpointCursor? current) || cursor.CompareTo(current) > 0)
+        {
+            _sources[key] = cursor;
+            _changed = true;
+        }
+    }
+
+    public void Save()
+    {
+        if (!_changed || string.IsNullOrWhiteSpace(_path))
+        {
+            return;
+        }
+
+        string? directory = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var document = new LocalBridgeCheckpointDocument(1, _sources);
+        File.WriteAllText(_path, JsonSerializer.Serialize(document, _jsonOptions));
+        _changed = false;
+    }
+}
+
+public sealed record LocalBridgeCheckpointDocument(
+    int Version,
+    Dictionary<string, LocalBridgeCheckpointCursor> Sources);
+
+public sealed record LocalBridgeCheckpointCursor(
+    DateTimeOffset TimestampUtc,
+    string Id)
+{
+    public int CompareTo(LocalBridgeCheckpointCursor other)
+    {
+        int timestampComparison = TimestampUtc.CompareTo(other.TimestampUtc);
+        return timestampComparison != 0
+            ? timestampComparison
+            : string.Compare(Id, other.Id, StringComparison.Ordinal);
+    }
+
+    public static LocalBridgeCheckpointCursor? FromFocusSessions(
+        IReadOnlyList<FocusSessionUploadItem> sessions)
+        => FromItems(sessions, session => session.EndedAtUtc, session => session.ClientSessionId);
+
+    public static LocalBridgeCheckpointCursor? FromWebSessions(
+        IReadOnlyList<WebSessionUploadItem> sessions)
+        => FromItems(sessions, session => session.EndedAtUtc, session => session.FocusSessionId);
+
+    public static LocalBridgeCheckpointCursor? FromLocationContexts(
+        IReadOnlyList<LocationContextUploadItem> contexts)
+        => FromItems(contexts, context => context.CapturedAtUtc, context => context.ClientContextId);
+
+    private static LocalBridgeCheckpointCursor? FromItems<T>(
+        IReadOnlyList<T> items,
+        Func<T, DateTimeOffset> timestamp,
+        Func<T, string> id)
+    {
+        LocalBridgeCheckpointCursor? cursor = null;
+        foreach (T item in items)
+        {
+            var candidate = new LocalBridgeCheckpointCursor(timestamp(item).ToUniversalTime(), id(item));
+            if (cursor is null || candidate.CompareTo(cursor) > 0)
+            {
+                cursor = candidate;
+            }
+        }
+
+        return cursor;
+    }
+}
+
 public static class WindowsSqliteReader
 {
-    public static LocalUploadBatch Read(string databasePath, string serverDeviceId, string fallbackTimezoneId)
+    public static LocalUploadBatch Read(
+        string databasePath,
+        string serverDeviceId,
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointStore? checkpoints = null)
     {
         if (!File.Exists(databasePath))
         {
@@ -474,10 +644,16 @@ public static class WindowsSqliteReader
         connection.Open();
 
         IReadOnlyList<FocusSessionUploadItem> focusSessions = TableExists(connection, "focus_session")
-            ? ReadFocusSessions(connection, serverDeviceId, fallbackTimezoneId)
+            ? ReadFocusSessions(
+                connection,
+                serverDeviceId,
+                fallbackTimezoneId,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.WindowsFocusSession))
             : [];
         IReadOnlyList<WebSessionUploadItem> webSessions = TableExists(connection, "web_session")
-            ? ReadWebSessions(connection)
+            ? ReadWebSessions(
+                connection,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.WindowsWebSession))
             : [];
 
         return new LocalUploadBatch(focusSessions, webSessions, []);
@@ -486,7 +662,8 @@ public static class WindowsSqliteReader
     private static IReadOnlyList<FocusSessionUploadItem> ReadFocusSessions(
         SqliteConnection connection,
         string serverDeviceId,
-        string fallbackTimezoneId)
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointCursor? checkpoint)
     {
         using SqliteCommand command = connection.CreateCommand();
         command.CommandText = """
@@ -495,8 +672,17 @@ public static class WindowsSqliteReader
                    process_id, process_name, process_path, window_handle, window_title
             FROM focus_session
             WHERE duration_ms > 0
-            ORDER BY started_at_utc
+              AND (
+                  $cursorTimestamp IS NULL
+                  OR julianday(ended_at_utc) > julianday($cursorTimestamp)
+                  OR (
+                      julianday(ended_at_utc) = julianday($cursorTimestamp)
+                      AND client_session_id > $cursorId
+                  )
+              )
+            ORDER BY ended_at_utc, client_session_id
             """;
+        AddCursorParameters(command, checkpoint);
 
         using SqliteDataReader reader = command.ExecuteReader();
         var sessions = new List<FocusSessionUploadItem>();
@@ -522,7 +708,9 @@ public static class WindowsSqliteReader
         return sessions;
     }
 
-    private static IReadOnlyList<WebSessionUploadItem> ReadWebSessions(SqliteConnection connection)
+    private static IReadOnlyList<WebSessionUploadItem> ReadWebSessions(
+        SqliteConnection connection,
+        LocalBridgeCheckpointCursor? checkpoint)
     {
         using SqliteCommand command = connection.CreateCommand();
         command.CommandText = """
@@ -531,8 +719,17 @@ public static class WindowsSqliteReader
                    capture_method, capture_confidence, is_private_or_unknown
             FROM web_session
             WHERE duration_ms > 0
-            ORDER BY started_at_utc
+              AND (
+                  $cursorTimestamp IS NULL
+                  OR julianday(ended_at_utc) > julianday($cursorTimestamp)
+                  OR (
+                      julianday(ended_at_utc) = julianday($cursorTimestamp)
+                      AND focus_session_id > $cursorId
+                  )
+              )
+            ORDER BY ended_at_utc, focus_session_id, started_at_utc
             """;
+        AddCursorParameters(command, checkpoint);
 
         using SqliteDataReader reader = command.ExecuteReader();
         var sessions = new List<WebSessionUploadItem>();
@@ -566,6 +763,18 @@ public static class WindowsSqliteReader
         return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
     }
 
+    private static void AddCursorParameters(
+        SqliteCommand command,
+        LocalBridgeCheckpointCursor? checkpoint)
+    {
+        command.Parameters.AddWithValue(
+            "$cursorTimestamp",
+            checkpoint is null
+                ? DBNull.Value
+                : checkpoint.TimestampUtc.ToString("O", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$cursorId", checkpoint?.Id ?? string.Empty);
+    }
+
     private static DateOnly ParseDateOnly(string value)
         => DateOnly.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
@@ -591,7 +800,11 @@ public static class WindowsSqliteReader
 
 public static class AndroidRoomReader
 {
-    public static LocalUploadBatch Read(string databasePath, string serverDeviceId, string fallbackTimezoneId)
+    public static LocalUploadBatch Read(
+        string databasePath,
+        string serverDeviceId,
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointStore? checkpoints = null)
     {
         if (!File.Exists(databasePath))
         {
@@ -602,10 +815,16 @@ public static class AndroidRoomReader
         connection.Open();
 
         IReadOnlyList<FocusSessionUploadItem> focusSessions = TableExists(connection, "focus_sessions")
-            ? ReadFocusSessions(connection, fallbackTimezoneId)
+            ? ReadFocusSessions(
+                connection,
+                fallbackTimezoneId,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.AndroidFocusSession))
             : [];
         IReadOnlyList<LocationContextUploadItem> locationContexts = TableExists(connection, "location_context_snapshots")
-            ? ReadLocationContexts(connection, fallbackTimezoneId)
+            ? ReadLocationContexts(
+                connection,
+                fallbackTimezoneId,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.AndroidLocationContext))
             : [];
 
         return new LocalUploadBatch(focusSessions, [], locationContexts);
@@ -613,7 +832,8 @@ public static class AndroidRoomReader
 
     private static IReadOnlyList<FocusSessionUploadItem> ReadFocusSessions(
         SqliteConnection connection,
-        string fallbackTimezoneId)
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointCursor? checkpoint)
     {
         using SqliteCommand command = connection.CreateCommand();
         command.CommandText = """
@@ -621,8 +841,14 @@ public static class AndroidRoomReader
                    durationMs, localDate, timezoneId, isIdle, source
             FROM focus_sessions
             WHERE durationMs > 0
-            ORDER BY startedAtUtcMillis
+              AND (
+                  $cursorMillis IS NULL
+                  OR endedAtUtcMillis > $cursorMillis
+                  OR (endedAtUtcMillis = $cursorMillis AND clientSessionId > $cursorId)
+              )
+            ORDER BY endedAtUtcMillis, clientSessionId
             """;
+        AddCursorParameters(command, checkpoint);
 
         using SqliteDataReader reader = command.ExecuteReader();
         var sessions = new List<FocusSessionUploadItem>();
@@ -645,15 +871,22 @@ public static class AndroidRoomReader
 
     private static IReadOnlyList<LocationContextUploadItem> ReadLocationContexts(
         SqliteConnection connection,
-        string fallbackTimezoneId)
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointCursor? checkpoint)
     {
         using SqliteCommand command = connection.CreateCommand();
         command.CommandText = """
             SELECT id, capturedAtUtcMillis, latitude, longitude, accuracyMeters,
                    permissionState, captureMode
             FROM location_context_snapshots
-            ORDER BY capturedAtUtcMillis
+            WHERE (
+                $cursorMillis IS NULL
+                OR capturedAtUtcMillis > $cursorMillis
+                OR (capturedAtUtcMillis = $cursorMillis AND id > $cursorId)
+            )
+            ORDER BY capturedAtUtcMillis, id
             """;
+        AddCursorParameters(command, checkpoint);
 
         using SqliteDataReader reader = command.ExecuteReader();
         var contexts = new List<LocationContextUploadItem>();
@@ -684,6 +917,18 @@ public static class AndroidRoomReader
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name";
         command.Parameters.AddWithValue("$name", tableName);
         return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+    }
+
+    private static void AddCursorParameters(
+        SqliteCommand command,
+        LocalBridgeCheckpointCursor? checkpoint)
+    {
+        command.Parameters.AddWithValue(
+            "$cursorMillis",
+            checkpoint is null
+                ? DBNull.Value
+                : checkpoint.TimestampUtc.ToUnixTimeMilliseconds());
+        command.Parameters.AddWithValue("$cursorId", checkpoint?.Id ?? string.Empty);
     }
 
     private static TimeZoneInfo ResolveTimeZone(string timezoneId)

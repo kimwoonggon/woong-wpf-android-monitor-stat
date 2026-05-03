@@ -1,5 +1,6 @@
 using System.IO;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
+using Woong.MonitorStack.Windows.Sync;
 
 namespace Woong.MonitorStack.Windows.App;
 
@@ -13,13 +14,18 @@ public sealed class WindowsAppOptions
 
     public const string AutoStartTrackingEnvironmentVariable = "WOONG_MONITOR_AUTO_START_TRACKING";
 
+    public const string SyncBaseUrlEnvironmentVariable = "WOONG_MONITOR_SYNC_BASE_URL";
+
+    public const string DeviceTokenEnvironmentVariable = "WOONG_MONITOR_DEVICE_TOKEN";
+
     public WindowsAppOptions(
         DashboardOptions dashboardOptions,
         string deviceId,
         string localDatabaseConnectionString,
         TimeSpan idleThreshold,
         WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
-        bool autoStartTracking = true)
+        bool autoStartTracking = true,
+        WindowsAppSyncOptions? syncOptions = null)
         : this(
             dashboardOptions,
             deviceId,
@@ -27,7 +33,8 @@ public sealed class WindowsAppOptions
             localDatabaseConnectionString,
             idleThreshold,
             acceptanceMode,
-            autoStartTracking)
+            autoStartTracking,
+            syncOptions: syncOptions)
     {
     }
 
@@ -39,7 +46,8 @@ public sealed class WindowsAppOptions
         TimeSpan idleThreshold,
         WindowsAppAcceptanceMode acceptanceMode = WindowsAppAcceptanceMode.None,
         bool autoStartTracking = true,
-        string? runtimeLogPath = null)
+        string? runtimeLogPath = null,
+        WindowsAppSyncOptions? syncOptions = null)
     {
         DashboardOptions = dashboardOptions ?? throw new ArgumentNullException(nameof(dashboardOptions));
         DeviceId = string.IsNullOrWhiteSpace(deviceId)
@@ -59,6 +67,7 @@ public sealed class WindowsAppOptions
         RuntimeLogPath = string.IsNullOrWhiteSpace(runtimeLogPath)
             ? BuildDefaultRuntimeLogPath(LocalDatabasePath)
             : runtimeLogPath;
+        SyncOptions = syncOptions ?? WindowsAppSyncOptions.LocalOnly;
     }
 
     public DashboardOptions DashboardOptions { get; }
@@ -77,6 +86,8 @@ public sealed class WindowsAppOptions
 
     public string RuntimeLogPath { get; }
 
+    public WindowsAppSyncOptions SyncOptions { get; }
+
     public static WindowsAppOptions CreateDefault(DashboardOptions dashboardOptions)
     {
         ArgumentNullException.ThrowIfNull(dashboardOptions);
@@ -87,6 +98,7 @@ public sealed class WindowsAppOptions
             deviceId = $"windows-{Environment.MachineName}";
         }
 
+        WindowsAppSyncOptions syncOptions = ParseSyncOptions();
         string? localDbOverride = Environment.GetEnvironmentVariable(LocalDbEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(localDbOverride))
         {
@@ -103,7 +115,8 @@ public sealed class WindowsAppOptions
                 localDatabaseConnectionString: BuildConnectionString(localDbOverride),
                 idleThreshold: TimeSpan.FromMinutes(5),
                 acceptanceMode: ParseAcceptanceMode(),
-                autoStartTracking: ParseAutoStartTracking());
+                autoStartTracking: ParseAutoStartTracking(),
+                syncOptions: syncOptions);
         }
 
         string dataDirectory = Path.Combine(
@@ -119,7 +132,8 @@ public sealed class WindowsAppOptions
             localDatabaseConnectionString: BuildConnectionString(localDatabasePath),
             idleThreshold: TimeSpan.FromMinutes(5),
             acceptanceMode: ParseAcceptanceMode(),
-            autoStartTracking: ParseAutoStartTracking());
+            autoStartTracking: ParseAutoStartTracking(),
+            syncOptions: syncOptions);
     }
 
     public static string BuildConnectionString(string databasePath)
@@ -181,6 +195,100 @@ public sealed class WindowsAppOptions
         return Enum.TryParse(value, ignoreCase: true, out WindowsAppAcceptanceMode mode)
             ? mode
             : throw new InvalidOperationException($"Unsupported WPF acceptance mode: {value}.");
+    }
+
+    private static WindowsAppSyncOptions ParseSyncOptions()
+    {
+        string? configuredBaseUrl = Environment.GetEnvironmentVariable(SyncBaseUrlEnvironmentVariable);
+        string? configuredDeviceToken = Environment.GetEnvironmentVariable(DeviceTokenEnvironmentVariable);
+
+        if (string.IsNullOrWhiteSpace(configuredBaseUrl))
+        {
+            return WindowsAppSyncOptions.LocalOnly;
+        }
+
+        if (!WindowsSyncClientOptions.TryNormalizeServerBaseUri(configuredBaseUrl, out Uri? serverBaseUri))
+        {
+            return WindowsAppSyncOptions.RejectedEndpoint;
+        }
+
+        return WindowsAppSyncOptions.FromValidatedEndpoint(serverBaseUri!, configuredDeviceToken);
+    }
+}
+
+public sealed class WindowsAppSyncOptions
+{
+    private const string MissingEndpointText = "No sync endpoint configured";
+
+    private readonly string? _deviceToken;
+
+    private WindowsAppSyncOptions(
+        Uri? serverBaseUri,
+        string? deviceToken,
+        string endpointDisplayText,
+        string configurationStatusText)
+    {
+        ServerBaseUri = serverBaseUri;
+        _deviceToken = string.IsNullOrWhiteSpace(deviceToken) ? null : deviceToken.Trim();
+        EndpointDisplayText = endpointDisplayText;
+        ConfigurationStatusText = configurationStatusText;
+    }
+
+    public static WindowsAppSyncOptions LocalOnly { get; } = new(
+        serverBaseUri: null,
+        deviceToken: null,
+        endpointDisplayText: MissingEndpointText,
+        configurationStatusText: "Sync endpoint is not configured.");
+
+    public static WindowsAppSyncOptions RejectedEndpoint { get; } = new(
+        serverBaseUri: null,
+        deviceToken: null,
+        endpointDisplayText: "Sync endpoint rejected",
+        configurationStatusText: "Sync endpoint is not safe. Use HTTPS, or loopback HTTP for local development.");
+
+    public Uri? ServerBaseUri { get; }
+
+    public bool HasServerEndpoint => ServerBaseUri is not null;
+
+    public bool HasDeviceToken => !string.IsNullOrWhiteSpace(_deviceToken);
+
+    public bool IsUploadConfigured => HasServerEndpoint && HasDeviceToken;
+
+    public string EndpointDisplayText { get; }
+
+    public string ConfigurationStatusText { get; }
+
+    public WindowsSyncClientOptions CreateClientOptions()
+    {
+        if (!IsUploadConfigured)
+        {
+            throw new InvalidOperationException("Sync upload is not configured.");
+        }
+
+        return new WindowsSyncClientOptions(ServerBaseUri!, _deviceToken!);
+    }
+
+    public static WindowsAppSyncOptions FromValidatedEndpoint(Uri serverBaseUri, string? deviceToken)
+    {
+        Uri normalizedServerBaseUri = WindowsSyncClientOptions.TryNormalizeServerBaseUri(serverBaseUri.ToString(), out Uri? normalized)
+            ? normalized!
+            : throw new ArgumentException("Sync endpoint is not safe.", nameof(serverBaseUri));
+        string endpointDisplayText = normalizedServerBaseUri.ToString();
+
+        if (string.IsNullOrWhiteSpace(deviceToken))
+        {
+            return new WindowsAppSyncOptions(
+                normalizedServerBaseUri,
+                deviceToken: null,
+                endpointDisplayText,
+                configurationStatusText: "Sync device token is not configured.");
+        }
+
+        return new WindowsAppSyncOptions(
+            normalizedServerBaseUri,
+            deviceToken,
+            endpointDisplayText,
+            configurationStatusText: "Sync upload is configured.");
     }
 }
 

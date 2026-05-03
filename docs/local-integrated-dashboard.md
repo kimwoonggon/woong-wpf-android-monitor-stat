@@ -117,30 +117,46 @@ continuously in the foreground. The script pulls the Android emulator Room
 database once before starting the bridge, so continuous mode rereads the same
 configured `-AndroidDb` file unless that file is refreshed separately.
 
-## Future Checkpoint/Range Scanning
+## LocalDashboardBridge Checkpoint/Range Scanning
 
-Repeated bridge uploads are currently idempotent but should eventually avoid
-rereading unchanged rows forever. The checkpoint design should stay an
+Repeated bridge uploads are idempotent and can avoid reattempting unchanged
+rows when checkpointing is enabled on the bridge CLI. Checkpointing is an
 optimization, not a privacy or correctness boundary: duplicate-safe server DTO
 uploads still need to remain valid when a checkpoint file is deleted or a row is
 seen twice.
 
-Recommended next contract:
+Current bridge contract:
 
-- Store bridge checkpoints under the local script output folder, for example
-  `bridge-checkpoints.json`, keyed by source database path and table name.
+- Enable checkpointing with `--checkpointPath <bridge-checkpoints.json>` when
+  running `tools/Woong.MonitorStack.LocalDashboardBridge` directly.
+- Store bridge checkpoints as a local JSON file such as
+  `bridge-checkpoints.json`.
 - Track only metadata cursors such as `ended_at_utc` plus `client_session_id`
   for Windows `focus_session` and `web_session`, `endedAtUtcMillis` plus
   `clientSessionId` for Android `focus_sessions`, and `capturedAtUtcMillis`
   plus `id` for Android `location_context_snapshots`.
-- On each interval, query a small overlap window before the saved cursor so
-  late commits or duration corrections are not missed. Server idempotency should
-  absorb any repeated rows from that overlap.
 - Save the checkpoint only after the corresponding API upload call succeeds.
   Failed uploads should leave the prior cursor in place.
 - Keep checkpoint files local-only and metadata-only. They must not include
   typed text, page contents, clipboard contents, screenshots, Android touch
   coordinates, or private message/form/password contents.
+
+Example direct bridge run after the local server is already available:
+
+```powershell
+dotnet run --project tools\Woong.MonitorStack.LocalDashboardBridge -- `
+  --server http://127.0.0.1:5087 `
+  --userId local-user `
+  --timezoneId "Korea Standard Time" `
+  --windowsDb "$env:LOCALAPPDATA\WoongMonitorStack\windows-local.db" `
+  --intervalSeconds 5 `
+  --maxIterations 12 `
+  --checkpointPath artifacts\local-integrated-dashboard\bridge-checkpoints.json
+```
+
+The local integrated dashboard script should expose a checkpoint-path
+pass-through in a later script-owned slice. Until then, checkpointed interval
+mode is available through the bridge CLI itself.
 
 ## Privacy Boundary
 

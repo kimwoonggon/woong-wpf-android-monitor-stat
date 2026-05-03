@@ -1,6 +1,6 @@
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Browser;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
@@ -33,7 +33,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<IWindowsTrayLifecycleService, WindowsTrayLifecycleService>();
         services.AddSingleton<IDashboardApplicationLifetime, WpfDashboardApplicationLifetime>();
         services.AddDashboardPresentation();
-        services.AddWindowsInfrastructure();
+        services.AddWindowsInfrastructure(options);
         if (options.AcceptanceMode == WindowsAppAcceptanceMode.TrackingPipeline)
         {
             services.AddTrackingPipelineAcceptanceMode();
@@ -67,14 +67,21 @@ public static class WindowsAppServiceCollectionExtensions
     }
 
     public static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services)
+        => services.AddWindowsInfrastructure(WindowsAppSyncOptions.LocalOnly);
+
+    private static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services, WindowsAppOptions options)
+        => services.AddWindowsInfrastructure(options.SyncOptions);
+
+    private static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services, WindowsAppSyncOptions syncOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(syncOptions);
 
         services.AddWindowsCaptureServices();
         services.AddBrowserCaptureServices();
         services.AddTrackingPipelineServices();
         services.AddStorageServices();
-        services.AddSyncServices();
+        services.AddSyncServices(syncOptions);
         services.AddDashboardAdapterServices();
 
         return services;
@@ -161,14 +168,25 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<IBrowserActivityReader>(),
             provider.GetRequiredService<IBrowserUrlSanitizer>(),
             BrowserUrlStoragePolicy.DomainOnly,
-            provider.GetRequiredService<WindowsSyncWorker>()));
+            provider.GetService<IWindowsSyncApiClient>() is null
+                ? null
+                : provider.GetRequiredService<WindowsSyncWorker>()));
 
         return services;
     }
 
-    private static IServiceCollection AddSyncServices(this IServiceCollection services)
+    private static IServiceCollection AddSyncServices(this IServiceCollection services, WindowsAppSyncOptions syncOptions)
     {
-        services.TryAddSingleton<IWindowsSyncApiClient, SyncUnavailableWindowsSyncApiClient>();
+        if (syncOptions.IsUploadConfigured)
+        {
+            services.TryAddSingleton(syncOptions.CreateClientOptions());
+            services.TryAddSingleton(provider => new HttpClient
+            {
+                BaseAddress = provider.GetRequiredService<WindowsSyncClientOptions>().ServerBaseUri
+            });
+            services.TryAddSingleton<IWindowsSyncApiClient, HttpWindowsSyncApiClient>();
+        }
+
         services.AddSingleton<WindowsSyncWorker>();
 
         return services;
@@ -203,16 +221,4 @@ public static class WindowsAppServiceCollectionExtensions
         return services;
     }
 
-    private sealed class SyncUnavailableWindowsSyncApiClient : IWindowsSyncApiClient
-    {
-        public Task<UploadBatchResult> UploadAsync(
-            SyncOutboxItem item,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-
-            return Task.FromResult(new UploadBatchResult(
-                [new UploadItemResult(item.AggregateId, UploadItemStatus.Error, "Sync endpoint is not configured.")]));
-        }
-    }
 }

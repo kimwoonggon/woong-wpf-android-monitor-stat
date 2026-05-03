@@ -3056,8 +3056,39 @@ milestones below are finished.
   and LocalDashboardBridge polling tests before full solution validation.
 - [x] Follow-up: expose LocalDashboardBridge interval options from
   `scripts/run-local-integrated-dashboard.ps1`.
-- [ ] Follow-up: add checkpoint/range scanning so interval mode does not
+- [x] Follow-up: add checkpoint/range scanning so interval mode does not
   reread every local SQLite/Room row forever.
+- [ ] Follow-up: expose LocalDashboardBridge `--checkpointPath` from
+  `scripts/run-local-integrated-dashboard.ps1`, for example as
+  `-BridgeCheckpointPath`.
+- [ ] Follow-up: harden Windows web-session checkpoint cursors for same
+  `ended_at_utc`/`focus_session_id` late rows.
+
+## 2026-05-03 WPF Production Sync Configuration And Test Harness Batch
+
+- [x] WPF sync client options now validate server base URI plus device token,
+  accepting HTTPS and loopback HTTP only while rejecting credentials, query, and
+  fragment values without leaking configured secrets.
+- [x] WPF app options parse `WOONG_MONITOR_SYNC_BASE_URL` and
+  `WOONG_MONITOR_DEVICE_TOKEN` as a dev/config bridge while preserving explicit
+  UI opt-in for actual uploads.
+- [x] WPF DI registers `HttpWindowsSyncApiClient` only when upload config is
+  complete; missing or unsafe config stays local-only and does not burn pending
+  outbox retry count.
+- [x] LocalDashboardBridge checkpoint/range scanning stores metadata-only
+  cursors and skips unchanged local SQLite/Room rows during interval polling
+  when `--checkpointPath` is provided.
+- [x] WPF App test harness rule now prevents raw STA helper duplication in the
+  migrated `MainWindowAutomationIdTests` and `WindowsAppCompositionTests`.
+- [x] Validate focused sync, WPF app composition/options/harness, and
+  LocalDashboardBridge checkpoint tests before full solution validation.
+- [ ] Follow-up: bind WPF Settings `SyncEndpointText` to
+  `WindowsAppOptions.SyncOptions.EndpointDisplayText` without exposing device
+  token.
+- [ ] Follow-up: add WPF Register/Repair device flow with protected token
+  storage; keep environment token as development/config bridge only.
+- [ ] Follow-up: continue WPF App STA helper migration with
+  `MainWindowTrackingPipelineTests.cs`.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 
