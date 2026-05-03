@@ -160,7 +160,9 @@ public sealed class AndroidAppSwitchQaScriptTests
 
             string stdout = process.StandardOutput.ReadToEnd();
             string stderr = process.StandardError.ReadToEnd();
-            Assert.Equal(0, process.ExitCode);
+            Assert.True(
+                process.ExitCode == 0,
+                BuildAndroidQaProcessFailureMessage(process.ExitCode, stdout, stderr, tempRoot, adbLog));
             Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
 
             string latest = Path.Combine(tempRoot, "latest");
@@ -351,7 +353,9 @@ public sealed class AndroidAppSwitchQaScriptTests
 
             string stdout = process.StandardOutput.ReadToEnd();
             string stderr = process.StandardError.ReadToEnd();
-            Assert.Equal(0, process.ExitCode);
+            Assert.True(
+                process.ExitCode == 0,
+                BuildAndroidQaProcessFailureMessage(process.ExitCode, stdout, stderr, tempRoot, adbLog));
             Assert.Contains("Android app-switch QA artifacts", stdout + stderr);
 
             string latest = Path.Combine(tempRoot, "latest");
@@ -1304,6 +1308,41 @@ exit /b 0
     private static string PassingLocationMapEvidenceJson() =>
         """{"status":"PASS","visitCount":1,"topVisitLocationKey":"37.5665,126.9780","topVisitDurationMs":600000,"topVisitSampleCount":2,"metadataOnly":true,"mapScreenshot":"dashboard-location-map.png"}""";
 
+    private static string BuildAndroidQaProcessFailureMessage(
+        int exitCode,
+        string stdout,
+        string stderr,
+        string tempRoot,
+        string adbLog)
+    {
+        string latest = Path.Combine(tempRoot, "latest");
+        string report = ReadTextIfExists(Path.Combine(latest, "report.md"));
+        string manifest = ReadTextIfExists(Path.Combine(latest, "manifest.json"));
+        string adbCommands = ReadTextIfExists(adbLog);
+
+        return $"""
+                Android app-switch QA script should exit 0 for blocked/pass fake-adb scenarios, but exited {exitCode}.
+
+                stdout:
+                {stdout}
+
+                stderr:
+                {stderr}
+
+                report.md:
+                {report}
+
+                manifest.json:
+                {manifest}
+
+                adb.log:
+                {adbCommands}
+                """;
+    }
+
+    private static string ReadTextIfExists(string path) =>
+        File.Exists(path) ? File.ReadAllText(path) : $"<missing: {path}>";
+
     private static string FakeAdbScriptWithInstallTimeout(string adbLog)
     {
         return $$"""
@@ -1320,7 +1359,7 @@ if "%3"=="shell" (
 if "%3"=="install" (
   echo fake install stdout before timeout
   echo fake install stderr before timeout 1>&2
-  ping -n 6 127.0.0.1 >nul
+  powershell.exe -NoProfile -Command "Start-Sleep -Seconds 6"
   exit /b 0
 )
 exit /b 0
