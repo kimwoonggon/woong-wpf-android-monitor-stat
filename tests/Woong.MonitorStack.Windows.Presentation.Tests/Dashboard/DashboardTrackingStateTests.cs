@@ -123,6 +123,35 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public async Task DisconnectSyncDeviceCommand_ClearsRegistrationTurnsSyncOffAndKeepsStatusSafe()
+    {
+        var registrationService = new RecordingSyncRegistrationService
+        {
+            DisconnectResult = DashboardSyncRegistrationResult.Success(
+                "Device disconnected. Sync is off and data stays local.")
+        };
+        DashboardViewModel viewModel = CreateViewModel(registrationService: registrationService);
+        viewModel.Settings.IsSyncEnabled = true;
+        viewModel.Settings.SyncDeviceRegistrationStatusText =
+            "Device registered. Sync will use this device registration.";
+
+        await viewModel.DisconnectSyncDeviceCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, registrationService.DisconnectCallCount);
+        Assert.False(viewModel.Settings.IsSyncEnabled);
+        Assert.Equal("Sync Off", viewModel.SyncBadgeText);
+        Assert.Equal("Local only", viewModel.Settings.SyncModeLabel);
+        Assert.Equal(
+            "Device disconnected. Sync is off and data stays local.",
+            viewModel.Settings.SyncDeviceRegistrationStatusText);
+        Assert.Equal(
+            "Device disconnected. Sync is off and data stays local.",
+            viewModel.LastSyncStatusText);
+        Assert.DoesNotContain("secret-device-token", viewModel.LastSyncStatusText, StringComparison.Ordinal);
+        Assert.DoesNotContain("token", viewModel.LastSyncStatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Settings_WhenSyncFailureIsReported_UpdatesDashboardSyncStatusAndBadge()
     {
         DashboardViewModel viewModel = CreateViewModel();
@@ -829,13 +858,25 @@ public sealed class DashboardTrackingStateTests
         public DashboardSyncRegistrationResult Result { get; init; } =
             DashboardSyncRegistrationResult.Success("Device registered.");
 
+        public DashboardSyncRegistrationResult DisconnectResult { get; init; } =
+            DashboardSyncRegistrationResult.Success("Device disconnected.");
+
         public int RegisterCallCount { get; private set; }
+
+        public int DisconnectCallCount { get; private set; }
 
         public Task<DashboardSyncRegistrationResult> RegisterOrRepairAsync(CancellationToken cancellationToken = default)
         {
             RegisterCallCount++;
 
             return Task.FromResult(Result);
+        }
+
+        public Task<DashboardSyncRegistrationResult> DisconnectAsync(CancellationToken cancellationToken = default)
+        {
+            DisconnectCallCount++;
+
+            return Task.FromResult(DisconnectResult);
         }
     }
 }

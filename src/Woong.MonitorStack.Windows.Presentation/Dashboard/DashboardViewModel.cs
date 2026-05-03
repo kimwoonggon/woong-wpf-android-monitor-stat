@@ -440,6 +440,33 @@ public sealed partial class DashboardViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private async Task DisconnectSyncDeviceAsync()
+    {
+        try
+        {
+            DashboardSyncRegistrationResult result = await _syncRegistrationService.DisconnectAsync();
+            if (result.Succeeded)
+            {
+                Settings.IsSyncEnabled = false;
+            }
+
+            Settings.SyncDeviceRegistrationStatusText = result.StatusText;
+            Settings.SyncStatusLabel = result.StatusText;
+            Settings.HasSyncFailure = !result.Succeeded;
+            LastSyncStatusText = result.StatusText;
+            UpdateSyncBadge();
+        }
+        catch (Exception exception)
+        {
+            ReportRuntimeError(nameof(DisconnectSyncDeviceAsync), exception);
+            Settings.SyncDeviceRegistrationStatusText = "Disconnect failed. See runtime log.";
+            Settings.ReportSyncFailure("Disconnect failed. See runtime log.");
+            LastSyncStatusText = Settings.SyncStatusLabel;
+            UpdateSyncBadge();
+        }
+    }
+
     private void SyncNowCore()
     {
         DashboardSyncResult syncResult = _trackingCoordinator.SyncNow(Settings.IsSyncEnabled);

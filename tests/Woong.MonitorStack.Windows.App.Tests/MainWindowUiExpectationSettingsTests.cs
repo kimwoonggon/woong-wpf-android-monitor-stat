@@ -189,6 +189,7 @@ public sealed partial class MainWindowUiExpectationTests
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(panel, "SyncStatusLabel");
                 TextBox syncEndpoint = FindByAutomationId<TextBox>(panel, "SyncEndpointTextBox");
                 Button registerRepairDevice = FindByAutomationId<Button>(panel, "RegisterRepairDeviceButton");
+                Button disconnectSyncDevice = FindByAutomationId<Button>(panel, "DisconnectSyncDeviceButton");
                 TextBlock registrationStatus = FindByAutomationId<TextBlock>(panel, "SyncDeviceRegistrationStatusText");
 
                 Assert.Equal("Sync enabled", syncEnabled.Content);
@@ -199,10 +200,13 @@ public sealed partial class MainWindowUiExpectationTests
                 Assert.False(syncEndpoint.IsEnabled);
                 Assert.Equal("Register / repair device", registerRepairDevice.Content);
                 Assert.Same(dashboard.ViewModel.RegisterRepairDeviceCommand, registerRepairDevice.Command);
+                Assert.Equal("Disconnect device", disconnectSyncDevice.Content);
+                Assert.Same(dashboard.ViewModel.DisconnectSyncDeviceCommand, disconnectSyncDevice.Command);
                 Assert.Equal(
                     "Device not registered. Register / repair is available after sync is turned on.",
                     registrationStatus.Text);
                 AssertReadableButton(registerRepairDevice);
+                AssertReadableButton(disconnectSyncDevice);
 
                 syncEnabled.IsChecked = true;
                 window.UpdateLayout();
@@ -228,6 +232,7 @@ public sealed partial class MainWindowUiExpectationTests
             {
                 SettingsPanel panel = ShowSettingsPanel(window);
                 Button registerRepairDevice = FindByAutomationId<Button>(panel, "RegisterRepairDeviceButton");
+                Button disconnectSyncDevice = FindByAutomationId<Button>(panel, "DisconnectSyncDeviceButton");
                 TextBlock registrationStatus = FindByAutomationId<TextBlock>(panel, "SyncDeviceRegistrationStatusText");
                 IReadOnlyList<TextBox> textBoxes = FindVisualDescendants<TextBox>(panel);
                 IReadOnlyList<PasswordBox> passwordBoxes = FindVisualDescendants<PasswordBox>(panel);
@@ -235,6 +240,8 @@ public sealed partial class MainWindowUiExpectationTests
 
                 Assert.Equal("Register / repair device", registerRepairDevice.Content);
                 Assert.Same(dashboard.ViewModel.RegisterRepairDeviceCommand, registerRepairDevice.Command);
+                Assert.Equal("Disconnect device", disconnectSyncDevice.Content);
+                Assert.Same(dashboard.ViewModel.DisconnectSyncDeviceCommand, disconnectSyncDevice.Command);
                 Assert.Equal(
                     "Device not registered. Register / repair is available after sync is turned on.",
                     registrationStatus.Text);

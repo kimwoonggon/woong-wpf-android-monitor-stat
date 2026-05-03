@@ -43,6 +43,36 @@ public sealed class WindowsSyncRegistrationServiceTests
         Assert.DoesNotContain("token", result.StatusText, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task DisconnectAsync_ClearsProtectedTokenAndRegistrationWithoutCallingServer()
+    {
+        var options = new WindowsAppOptions(
+            new DashboardOptions("Asia/Seoul"),
+            deviceId: "windows-device-key",
+            localDatabaseConnectionString: "Data Source=:memory:",
+            idleThreshold: TimeSpan.FromMinutes(5),
+            syncOptions: WindowsAppSyncOptions.FromValidatedEndpoint(new Uri("https://monitor.example"), null));
+        var registrationClient = new RecordingDeviceRegistrationClient();
+        var tokenStore = new RecordingSyncTokenStore();
+        tokenStore.SaveDeviceToken("secret-device-token");
+        var registrationStore = new RecordingSyncRegistrationStore();
+        registrationStore.SaveRegistration(new WindowsSyncRegistration("server-device-1"));
+        var service = new WindowsDashboardSyncRegistrationService(
+            options,
+            registrationClient,
+            tokenStore,
+            registrationStore);
+
+        DashboardSyncRegistrationResult result = await service.DisconnectAsync();
+
+        Assert.True(result.Succeeded);
+        Assert.Null(tokenStore.SavedToken);
+        Assert.Null(registrationStore.SavedRegistration);
+        Assert.Null(registrationClient.Request);
+        Assert.DoesNotContain("secret-device-token", result.StatusText, StringComparison.Ordinal);
+        Assert.DoesNotContain("token", result.StatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
     private sealed class RecordingDeviceRegistrationClient : IWindowsDeviceRegistrationClient
     {
         public WindowsDeviceRegistrationRequest? Request { get; private set; }

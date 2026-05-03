@@ -3115,7 +3115,7 @@ milestones below are finished.
   storage; keep environment token as development/config bridge only.
 - [x] Follow-up: migrate WPF sync composition from environment device tokens to
   `IWindowsSyncTokenStore` after the Register/Repair flow exists.
-- [ ] Follow-up: add WPF disconnect/revoke flow that deletes the protected
+- [x] Follow-up: add WPF disconnect/revoke flow that deletes the protected
   sync token and keeps sync opt-in off until explicitly re-enabled.
 - [x] Follow-up: harden Windows focus-session `SaveWithOutbox` idempotency so a
   duplicate focus row cannot enqueue a second outbox row.
@@ -3168,6 +3168,19 @@ milestones below are finished.
 - [ ] Follow-up: capture connected Android emulator screenshots/evidence for
   current app, location map/history, and all major screens when a device is
   available.
+
+## 2026-05-03 WPF Sync Disconnect/Revoke Flow
+
+- [x] Add RED Presentation behavior coverage for `DisconnectSyncDeviceCommand`
+  clearing registration state, turning sync off, and keeping status text free
+  of token details.
+- [x] Add WPF app service coverage proving disconnect deletes the protected
+  token plus server registration without calling the server.
+- [x] Add Settings UI button and accessibility coverage for `Disconnect device`.
+- [x] Implement disconnect through `IDashboardSyncRegistrationService`,
+  `WindowsDashboardSyncRegistrationService`, and `DashboardViewModel`.
+- [ ] Follow-up: remove or fail-safe the legacy raw environment-token upload
+  path so production upload is protected-store-backed only.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 

@@ -26,6 +26,10 @@ public sealed class SettingsPanelAccessibilityTests
                     panel,
                     "RegisterRepairDeviceButton",
                     "Register or repair sync device");
+                AssertAutomationName<Button>(
+                    panel,
+                    "DisconnectSyncDeviceButton",
+                    "Disconnect sync device");
             });
 
 }

@@ -50,6 +50,15 @@ public sealed class WindowsDashboardSyncRegistrationService : IDashboardSyncRegi
             "Device registered. Sync will use this device registration.");
     }
 
+    public Task<DashboardSyncRegistrationResult> DisconnectAsync(CancellationToken cancellationToken = default)
+    {
+        _tokenStore.DeleteDeviceToken();
+        _registrationStore.ClearRegistration();
+
+        return Task.FromResult(DashboardSyncRegistrationResult.Success(
+            "Device disconnected. Sync is off and data stays local."));
+    }
+
     private static string ResolveDeviceName()
         => string.IsNullOrWhiteSpace(Environment.MachineName)
             ? "Windows device"

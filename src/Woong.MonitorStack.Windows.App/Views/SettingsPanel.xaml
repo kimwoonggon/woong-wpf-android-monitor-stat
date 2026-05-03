@@ -90,6 +90,12 @@
                     Command="{Binding RegisterRepairDeviceCommand}"
                     Style="{StaticResource SecondaryButtonStyle}"
                     Margin="0,12,0,0" />
+            <Button Content="Disconnect device"
+                    AutomationProperties.AutomationId="DisconnectSyncDeviceButton"
+                    AutomationProperties.Name="Disconnect sync device"
+                    Command="{Binding DisconnectSyncDeviceCommand}"
+                    Style="{StaticResource DangerButtonStyle}"
+                    Margin="0,8,0,0" />
             <TextBlock AutomationProperties.AutomationId="SyncDeviceRegistrationStatusText"
                        AutomationProperties.Name="Sync device registration status"
                        Text="{Binding Settings.SyncDeviceRegistrationStatusText}"

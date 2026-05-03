@@ -5928,3 +5928,13 @@ Validation update:
 - Validation passed: focused WPF/Windows/Bridge/Android tests, `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (756 passed, 6 PostgreSQL-environment skips), `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, Android `:app:testDebugUnitTest`, Android `:app:assembleDebug`, and coverage collection/report generation.
 - Coverage summary from `artifacts/coverage/SummaryGithub.md`: line 88.2%, branch 71.0%; Domain 89.8%, LocalDashboardBridge 90.4%, Server 82.9%, Windows 93.1%, Windows.App 83.7%, Windows.Presentation 94.0%.
 - Remaining queue: constrain legacy raw-token sync constructor path, add local integrated dashboard E2E evidence for WPF+Android current-app cards, capture connected Android emulator evidence when a device is available, and add WPF disconnect/revoke flow.
+
+## 2026-05-03 WPF Sync Disconnect/Revoke Flow
+
+- Added a TDD slice for disconnect/revoke after the current-app sync integration commit.
+- RED behavior: `DashboardViewModel` initially had no `DisconnectSyncDeviceCommand`, and the WPF registration service had no disconnect operation.
+- GREEN behavior: Settings now exposes `Disconnect device`; executing it clears the protected sync token and server registration, turns sync off, and keeps the UI in `Local only` without displaying token details.
+- Focused validation passed: Presentation register/disconnect command tests and WPF App registration/settings/accessibility tests.
+- Subagent queue returned next plans for store-backed-only WPF upload, local integrated dashboard current-app E2E evidence, WPF chart detail/packaging evidence, and Android connected emulator evidence.
+- Final validation for the WPF disconnect/revoke slice passed: `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (778 passed, 6 PostgreSQL-environment skips), `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, coverage collection, and ReportGenerator.
+- Updated coverage summary after disconnect/revoke: line 88.2% (7860/8911), branch 71.0% (1418/1995).
