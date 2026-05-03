@@ -1,6 +1,7 @@
 package com.woong.monitorstack.usage
 
 import android.content.Context
+import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -9,12 +10,15 @@ import androidx.test.uiautomator.UiDevice
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.woong.monitorstack.MainActivity
 import com.woong.monitorstack.R
+import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.display.AppDisplayNameFormatter
 import com.woong.monitorstack.sync.AndroidOutboxSyncProcessor
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -105,6 +109,103 @@ class AppSwitchQaEvidenceTest {
     }
 
     @Test
+    fun dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val device = UiDevice.getInstance(instrumentation)
+        val arguments = InstrumentationRegistry.getArguments()
+        val monitorPackageName = context.packageName
+        val chromePackageName = arguments.getString("chromePackageName") ?: "com.android.chrome"
+        val expectedCurrentAppName = AppDisplayNameFormatter.format(monitorPackageName)
+        val expectedExternalAppName = AppDisplayNameFormatter.format(chromePackageName)
+        val database = MonitorDatabase.getInstance(context)
+        val outputDir = outputDir(context)
+        outputDir.mkdirs()
+
+        val monitorSessions = database.focusSessionDao().queryByPackage(monitorPackageName, limit = 20)
+        val chromeSessions = database.focusSessionDao().queryByPackage(chromePackageName, limit = 20)
+        val hasValidMonitorSession = monitorSessions.any { it.isValidUsageStatsSession() }
+        val hasValidChromeSession = chromeSessions.any { it.isValidUsageStatsSession() }
+
+        withMainActivityTestGates {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                val values = waitForDashboardCurrentFocusValues(
+                    scenario = scenario,
+                    device = device,
+                    expectedCurrentPackageName = monitorPackageName,
+                    expectedExternalPackageName = chromePackageName
+                )
+                captureScreen(
+                    device = device,
+                    outputDir = outputDir,
+                    baseName = DashboardCurrentFocusAfterChromeReturnBaseName
+                )
+
+                val status = if (
+                    values.currentAppName == expectedCurrentAppName &&
+                    values.currentPackageName == monitorPackageName &&
+                    values.latestExternalAppName == expectedExternalAppName &&
+                    values.latestExternalPackageName == chromePackageName &&
+                    hasValidMonitorSession &&
+                    hasValidChromeSession
+                ) {
+                    "PASS"
+                } else {
+                    "FAIL"
+                }
+
+                writeJson(
+                    File(outputDir, DashboardCurrentFocusEvidenceFileName),
+                    JSONObject()
+                        .put("status", status)
+                        .put("privacy", PrivacyBoundary)
+                        .put("expectedCurrentAppText", expectedCurrentAppName)
+                        .put("expectedCurrentPackageText", monitorPackageName)
+                        .put("actualCurrentAppText", values.currentAppName)
+                        .put("actualCurrentPackageText", values.currentPackageName)
+                        .put("expectedLatestExternalAppText", expectedExternalAppName)
+                        .put("expectedLatestExternalPackageText", chromePackageName)
+                        .put("actualLatestExternalAppText", values.latestExternalAppName)
+                        .put("actualLatestExternalPackageText", values.latestExternalPackageName)
+                        .put("roomFocusSessionMonitorRows", monitorSessions.size)
+                        .put("roomFocusSessionChromeRows", chromeSessions.size)
+                        .put("hasValidMonitorUsageStatsSession", hasValidMonitorSession)
+                        .put("hasValidChromeUsageStatsSession", hasValidChromeSession)
+                        .put(
+                            "monitorFocusSessions",
+                            JSONArray(monitorSessions.map { it.toMetadataJson() })
+                        )
+                        .put(
+                            "chromeFocusSessions",
+                            JSONArray(chromeSessions.map { it.toMetadataJson() })
+                        )
+                        .put(
+                            "dashboardScreenshot",
+                            "$DashboardCurrentFocusAfterChromeReturnBaseName.png"
+                        )
+                        .put(
+                            "dashboardHierarchy",
+                            "$DashboardCurrentFocusAfterChromeReturnBaseName.xml"
+                        )
+                )
+
+                assertEquals(expectedCurrentAppName, values.currentAppName)
+                assertEquals(monitorPackageName, values.currentPackageName)
+                assertEquals(expectedExternalAppName, values.latestExternalAppName)
+                assertEquals(chromePackageName, values.latestExternalPackageName)
+                assertTrue(
+                    "Expected at least one valid Woong Monitor UsageStats focus_session row.",
+                    hasValidMonitorSession
+                )
+                assertTrue(
+                    "Expected at least one valid Chrome UsageStats focus_session row.",
+                    hasValidChromeSession
+                )
+            }
+        }
+    }
+
+    @Test
     fun captureWoongDashboardAndSessionsOnlyAfterReturn() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -145,6 +246,73 @@ class AppSwitchQaEvidenceTest {
         device.dumpWindowHierarchy(hierarchy)
         assertTrue("Expected screenshot file to exist: $screenshot", screenshot.isFile)
         assertTrue("Expected UI hierarchy file to exist: $hierarchy", hierarchy.isFile)
+    }
+
+    private fun waitForDashboardCurrentFocusValues(
+        scenario: ActivityScenario<MainActivity>,
+        device: UiDevice,
+        expectedCurrentPackageName: String,
+        expectedExternalPackageName: String
+    ): DashboardCurrentFocusValues {
+        var latestValues = DashboardCurrentFocusValues()
+
+        repeat(20) {
+            waitForScreen(device)
+            latestValues = readDashboardCurrentFocusValues(scenario)
+            if (
+                latestValues.currentPackageName == expectedCurrentPackageName &&
+                latestValues.latestExternalPackageName == expectedExternalPackageName
+            ) {
+                return latestValues
+            }
+
+            Thread.sleep(250)
+        }
+
+        return latestValues
+    }
+
+    private fun readDashboardCurrentFocusValues(
+        scenario: ActivityScenario<MainActivity>
+    ): DashboardCurrentFocusValues {
+        var values = DashboardCurrentFocusValues()
+
+        scenario.onActivity { activity ->
+            values = DashboardCurrentFocusValues(
+                currentAppName = activity.textOf(R.id.currentAppText),
+                currentPackageName = activity.textOf(R.id.currentPackageText),
+                latestExternalAppName = activity.textOf(R.id.latestCollectedExternalAppText),
+                latestExternalPackageName = activity.textOf(
+                    R.id.latestCollectedExternalPackageText
+                )
+            )
+        }
+
+        return values
+    }
+
+    private fun MainActivity.textOf(viewId: Int): String {
+        return findViewById<TextView>(viewId)?.text?.toString().orEmpty()
+    }
+
+    private fun FocusSessionEntity.isValidUsageStatsSession(): Boolean {
+        return source == "android_usage_stats" &&
+            durationMs > 0L &&
+            startedAtUtcMillis < endedAtUtcMillis &&
+            localDate.isNotBlank() &&
+            timezoneId.isNotBlank()
+    }
+
+    private fun FocusSessionEntity.toMetadataJson(): JSONObject {
+        return JSONObject()
+            .put("clientSessionId", clientSessionId)
+            .put("packageName", packageName)
+            .put("startedAtUtcMillis", startedAtUtcMillis)
+            .put("endedAtUtcMillis", endedAtUtcMillis)
+            .put("durationMs", durationMs)
+            .put("localDate", localDate)
+            .put("timezoneId", timezoneId)
+            .put("source", source)
     }
 
     private fun withMainActivityTestGates(block: () -> Unit) {
@@ -202,9 +370,20 @@ class AppSwitchQaEvidenceTest {
         private const val DefaultCollectionLookbackMs = 15 * 60 * 1_000L
         private const val DashboardAfterAppSwitchBaseName = "dashboard-after-app-switch"
         private const val SessionsAfterAppSwitchBaseName = "sessions-after-app-switch"
+        private const val DashboardCurrentFocusAfterChromeReturnBaseName =
+            "dashboard-current-focus-after-chrome-return"
+        private const val DashboardCurrentFocusEvidenceFileName =
+            "dashboard-current-focus-evidence.json"
         private const val DashboardAfterAppSwitchScreenshot = "dashboard-after-app-switch.png"
         private const val SessionsAfterAppSwitchScreenshot = "sessions-after-app-switch.png"
         private const val PrivacyBoundary =
             "No Chrome screenshots, no Chrome UI hierarchy, no typed text, no form contents, no browser/page contents."
     }
+
+    private data class DashboardCurrentFocusValues(
+        val currentAppName: String = "",
+        val currentPackageName: String = "",
+        val latestExternalAppName: String = "",
+        val latestExternalPackageName: String = ""
+    )
 }

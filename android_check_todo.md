@@ -1,6 +1,6 @@
 # Android Check TODO
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 This checklist is the Android feature verification map for Woong Monitor Stack.
 The Android app measures metadata only: which apps were foreground for how long,
@@ -28,6 +28,12 @@ Latest Android UI screenshot evidence:
 artifacts/android-ui-snapshots/20260502-132522/
 ```
 
+Latest Android UI screenshot acceptance attempt:
+
+```text
+artifacts/android-ui-snapshots/20260503-195857/  # BLOCKED: no connected device/emulator
+```
+
 Latest Android UsageStats current-focus evidence:
 
 ```text
@@ -38,6 +44,12 @@ Latest accepted Android app-switch QA evidence:
 
 ```text
 artifacts/android-app-switch-qa/20260502-125805/
+```
+
+Latest Android app-switch current-focus evidence attempt:
+
+```text
+artifacts/android-app-switch-qa/20260503-195857/  # BLOCKED: no connected device/emulator
 ```
 
 Latest Android manual app-switch/performance evidence:
@@ -98,6 +110,61 @@ Product boundary reminder:
 - Location context is opt-in and permission-gated.
 - Do not collect typed text, passwords, form contents, clipboard contents,
   browser/page contents, other-app screenshots, or global touch coordinates.
+
+### 2026-05-03 Android App-Switch Current Focus Evidence
+
+- [x] Add instrumentation evidence for Chrome -> Woong return that proves the
+  Dashboard Current Focus card shows `Woong Monitor / com.woong.monitorstack`
+  as current while separately showing `Chrome / com.android.chrome` as the
+  latest collected external app.
+- [x] Update app-switch QA artifacts so this evidence is machine-readable and
+  privacy-preserving: Room metadata rows plus Woong-owned Dashboard
+  screenshot/hierarchy only, with no Chrome screenshot or Chrome UI hierarchy.
+- [x] App-switch QA now runs
+  `dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal`,
+  pulls `dashboard-current-focus-evidence.json`,
+  `dashboard-current-focus-after-chrome-return.png`, and
+  `dashboard-current-focus-after-chrome-return.xml`, and fails if current
+  package is not Woong or latest external package is not Chrome.
+- [x] No-device script validation passed with BLOCKED artifacts:
+  `artifacts/android-app-switch-qa/20260503-195857/`.
+- [x] Validation passed: focused Dashboard/UsageStats unit tests, full
+  `:app:testDebugUnitTest`, and
+  `:app:assembleDebug :app:assembleDebugAndroidTest`.
+- [x] Connected emulator evidence remains blocked because `adb devices -l`
+  reports no attached device/emulator.
+
+### 2026-05-03 Android UI Snapshot Acceptance Trustworthiness
+
+- [x] Add deterministic validation coverage proving a PASS snapshot report is
+  rejected unless the matching screenshot pixels and UI hierarchy contracts are
+  present for Splash, Permission, Dashboard, Report, Settings, and bottom
+  navigation tabs.
+- [x] Harden the snapshot report validator so it checks pulled hierarchy XML
+  for Splash branding, permission guidance, Dashboard current focus, Dashboard
+  location card/map, and Dashboard/Sessions/Report/Settings bottom-nav tabs.
+- [x] Keep no-device runs clearly BLOCKED with local report/manifest artifacts
+  instead of stale FAIL/PASS evidence.
+- [x] Run focused validation tests, Android unit tests, and Android debug/test
+  APK build; document emulator evidence as blocked if `adb devices -l` has no
+  device.
+- [x] RED/GREEN evidence:
+  `AndroidUiSnapshotReportValidator_RejectsPassReportWithoutHierarchyEvidence`
+  failed before the validator change because a PASS report without hierarchy
+  XML was accepted, then passed after the validator required hierarchy
+  evidence.
+- [x] Focused validation passed:
+  `dotnet test tests\Woong.MonitorStack.Architecture.Tests\Woong.MonitorStack.Architecture.Tests.csproj --no-restore --filter "FullyQualifiedName~AndroidUiSnapshot" -maxcpucount:1 -v minimal`
+  (13 passed).
+- [x] Android validation passed:
+  `.\gradlew.bat :app:testDebugUnitTest --no-daemon --max-workers=1 --stacktrace`
+  and
+  `.\gradlew.bat :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=1 --stacktrace`.
+- [x] Connected snapshot evidence is still blocked locally:
+  `adb devices -l` reported no attached device/emulator, and
+  `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -SkipBuild`
+  wrote fresh BLOCKED evidence at
+  `artifacts/android-ui-snapshots/20260503-195857/`.
 
 ### 2026-05-03 Android Bottom Navigation Blank-Floor Regression
 

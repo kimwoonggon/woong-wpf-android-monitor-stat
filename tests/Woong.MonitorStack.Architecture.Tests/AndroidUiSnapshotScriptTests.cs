@@ -329,6 +329,51 @@ public sealed class AndroidUiSnapshotScriptTests
     }
 
     [Fact]
+    public void AndroidUiSnapshotReportValidator_RejectsPassReportWithoutHierarchyEvidence()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string validatorPath = Path.Combine(repoRoot, "scripts", "validate-android-ui-snapshot-report.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-snapshot-validator-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            string reportPath = Path.Combine(tempRoot, "report.md");
+            string manifestPath = Path.Combine(tempRoot, "manifest.json");
+            WritePassSnapshotReport(reportPath);
+            WritePassSnapshotManifest(manifestPath, tempRoot);
+            foreach (string screen in RequiredSnapshotPixelScreens)
+            {
+                File.WriteAllBytes(Path.Combine(tempRoot, screen), NonBlankPngBytes);
+            }
+
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{validatorPath}\" -ReportPath \"{reportPath}\" -ManifestPath \"{manifestPath}\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            process.WaitForExit(30_000);
+
+            string output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+            Assert.NotEqual(0, process.ExitCode);
+            Assert.Contains("UI hierarchy", output, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("figma-01-splash.xml", output, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void AndroidUiSnapshotScript_WhenDeviceConnected_CapturesExpectedAppScreens()
     {
         string repoRoot = FindRepositoryRoot();
@@ -337,7 +382,11 @@ public sealed class AndroidUiSnapshotScriptTests
         string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
         string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
         string adbLog = Path.Combine(tempRoot, "adb.log");
+        string fakeHierarchy = Path.Combine(tempRoot, "fake-hierarchy.xml");
+        string fakeScreenshot = Path.Combine(tempRoot, "fake-screenshot.png");
         Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeHierarchy, AndroidSnapshotHierarchyFixture);
+        File.WriteAllBytes(fakeScreenshot, NonBlankPngBytes);
         File.WriteAllText(fakeAdb, $$"""
 @echo off
 echo %*>>"{{adbLog}}"
@@ -348,14 +397,10 @@ if "%1"=="devices" (
 )
 if "%1"=="pull" (
   if /I "%~x3"==".xml" (
-    >"%3" echo ^<hierarchy^>
-    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
-    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
-    >>"%3" echo ^</node^>
-    >>"%3" echo ^</hierarchy^>
+    copy /Y "{{fakeHierarchy}}" "%3" >nul
     exit /b 0
   )
-  echo fake png>"%3"
+  copy /Y "{{fakeScreenshot}}" "%3" >nul
   exit /b 0
 )
 exit /b 0
@@ -492,7 +537,11 @@ exit /b 0
         string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
         string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
         string adbLog = Path.Combine(tempRoot, "adb.log");
+        string fakeHierarchy = Path.Combine(tempRoot, "fake-hierarchy.xml");
+        string fakeScreenshot = Path.Combine(tempRoot, "fake-screenshot.png");
         Directory.CreateDirectory(tempRoot);
+        File.WriteAllText(fakeHierarchy, AndroidSnapshotHierarchyFixture);
+        File.WriteAllBytes(fakeScreenshot, NonBlankPngBytes);
         File.WriteAllText(fakeAdb, $$"""
 @echo off
 echo %*>>"{{adbLog}}"
@@ -504,14 +553,10 @@ if "%1"=="devices" (
 )
 if "%1"=="-s" if "%3"=="pull" (
   if /I "%~x5"==".xml" (
-    >"%5" echo ^<hierarchy^>
-    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
-    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" bounds="[0,2210][200,2240]" /^>
-    >>"%5" echo ^</node^>
-    >>"%5" echo ^</hierarchy^>
+    copy /Y "{{fakeHierarchy}}" "%5" >nul
     exit /b 0
   )
-  echo fake png>"%5"
+  copy /Y "{{fakeScreenshot}}" "%5" >nul
   exit /b 0
 )
 exit /b 0
@@ -550,6 +595,140 @@ exit /b 0
                 Directory.Delete(tempRoot, recursive: true);
             }
         }
+    }
+
+    private static readonly string[] CanonicalFigmaScreens =
+    [
+        "figma-01-splash.png",
+        "figma-02-permission.png",
+        "figma-03-dashboard.png",
+        "figma-04-sessions.png",
+        "figma-05-app-detail.png",
+        "figma-06-report.png",
+        "figma-07-settings.png"
+    ];
+
+    private static readonly string[] RequiredSnapshotPixelScreens =
+    [
+        "figma-01-splash.png",
+        "figma-02-permission.png",
+        "figma-03-dashboard.png",
+        "figma-04-sessions.png",
+        "figma-05-app-detail.png",
+        "figma-06-report.png",
+        "figma-07-settings.png",
+        "02-dashboard-summary-location.png",
+        "06-settings-location-permission.png",
+        "09-main-shell.png",
+        "10-main-shell-sessions.png",
+        "11-main-shell-settings.png",
+        "12-main-shell-report.png"
+    ];
+
+    private const string NonBlankPngBase64 =
+        "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBhXY/jPAEb/gQhIMDD8BwBOwwj4zb9+BwAAAABJRU5ErkJggg==";
+
+    private static readonly byte[] NonBlankPngBytes = Convert.FromBase64String(NonBlankPngBase64);
+
+    private const string AndroidSnapshotHierarchyFixture = """
+        <hierarchy>
+          <node resource-id="com.woong.monitorstack:id/splashRoot" bounds="[0,0][1080,2200]" />
+          <node resource-id="com.woong.monitorstack:id/splashLogoContainer" bounds="[499,320][581,402]" />
+          <node resource-id="com.woong.monitorstack:id/appTitleText" text="Woong Monitor" bounds="[330,450][750,520]" />
+          <node resource-id="com.woong.monitorstack:id/appSubtitleText" text="Android Focus Tracker" bounds="[350,532][730,570]" />
+          <node resource-id="com.woong.monitorstack:id/loadingIndicator" bounds="[512,720][568,776]" />
+          <node resource-id="com.woong.monitorstack:id/permissionScrollRoot" bounds="[0,0][1080,2200]" />
+          <node resource-id="com.woong.monitorstack:id/permissionTitle" text="Usage Access permission" bounds="[0,0][1080,64]" />
+          <node resource-id="com.woong.monitorstack:id/permissionCollectedMetadataText" text="Collects: app name, package name, start time, end time, and duration." bounds="[64,500][1016,540]" />
+          <node resource-id="com.woong.monitorstack:id/permissionNotCollectedDataText" text="Does not collect: keyboard input, screen contents, passwords, or touch coordinates." bounds="[64,548][1016,590]" />
+          <node resource-id="com.woong.monitorstack:id/openUsageAccessSettingsButton" text="Open Usage Access settings" bounds="[64,1200][1016,1260]" />
+          <node resource-id="com.woong.monitorstack:id/currentFocusCard" bounds="[24,160][1056,520]" />
+          <node resource-id="com.woong.monitorstack:id/currentFocusTitle" text="Current Focus" bounds="[48,184][320,224]" />
+          <node resource-id="com.woong.monitorstack:id/currentForegroundLabel" text="Current foreground app" bounds="[120,240][520,268]" />
+          <node resource-id="com.woong.monitorstack:id/currentAppText" text="Woong Monitor" bounds="[120,274][520,306]" />
+          <node resource-id="com.woong.monitorstack:id/currentPackageText" text="com.woong.monitorstack" bounds="[120,312][620,338]" />
+          <node resource-id="com.woong.monitorstack:id/latestCollectedExternalAppText" text="Chrome" bounds="[120,360][620,390]" />
+          <node resource-id="com.woong.monitorstack:id/lastCollectedText" text="Last collected 09:00" bounds="[720,274][1032,306]" />
+          <node resource-id="com.woong.monitorstack:id/locationContextCard" bounds="[24,620][1056,1040]" />
+          <node resource-id="com.woong.monitorstack:id/locationStatusText" text="Location context captured" bounds="[48,660][840,692]" />
+          <node resource-id="com.woong.monitorstack:id/locationMiniMapView" content-desc="No location statistics" bounds="[48,720][1032,864]" />
+          <node resource-id="com.woong.monitorstack:id/locationMapProviderStatusText" text="Google Maps API key not configured. Showing local map preview." bounds="[48,876][1032,904]" />
+          <node resource-id="com.woong.monitorstack:id/locationLatitudeText" text="Latitude 37.5665" bounds="[48,912][1032,940]" />
+          <node resource-id="com.woong.monitorstack:id/locationLongitudeText" text="Longitude 126.9780" bounds="[48,944][1032,972]" />
+          <node resource-id="com.woong.monitorstack:id/locationCapturedAtText" text="Captured 09:00" bounds="[48,976][1032,1004]" />
+          <node resource-id="com.woong.monitorstack:id/reportTitle" text="Report" bounds="[24,96][420,150]" />
+          <node resource-id="com.woong.monitorstack:id/reportSevenDayButton" text="7d" bounds="[24,172][160,228]" />
+          <node resource-id="com.woong.monitorstack:id/reportTrendChartCard" bounds="[24,420][1056,620]" />
+          <node resource-id="com.woong.monitorstack:id/reportTopAppsCard" bounds="[24,640][1056,900]" />
+          <node resource-id="com.woong.monitorstack:id/settingsTitle" text="Settings" bounds="[24,96][420,150]" />
+          <node resource-id="com.woong.monitorstack:id/permissionsSettingsCard" bounds="[24,160][1056,360]" />
+          <node resource-id="com.woong.monitorstack:id/collectionSettingsCard" bounds="[24,380][1056,520]" />
+          <node resource-id="com.woong.monitorstack:id/syncSettingsCard" bounds="[24,540][1056,760]" />
+          <node resource-id="com.woong.monitorstack:id/locationSettingsCard" bounds="[24,780][1056,1040]" />
+          <node resource-id="com.woong.monitorstack:id/locationContextDefaultText" text="Location context is off by default." bounds="[48,820][1032,850]" />
+          <node resource-id="com.woong.monitorstack:id/locationCoordinateBoundaryText" text="Latitude/longitude are not stored unless location context is enabled." bounds="[48,856][1032,886]" />
+          <node resource-id="com.woong.monitorstack:id/preciseLocationOptInText" text="Precise latitude/longitude requires a separate explicit opt-in." bounds="[48,892][1032,922]" />
+          <node resource-id="com.woong.monitorstack:id/locationContextCheckBox" text="Store optional location context" bounds="[48,928][1032,980]" />
+          <node resource-id="com.woong.monitorstack:id/preciseLatitudeLongitudeCheckBox" text="Store precise latitude/longitude" bounds="[48,984][1032,1036]" />
+          <node resource-id="com.woong.monitorstack:id/requestLocationPermissionButton" text="Allow location permission" bounds="[48,1040][1032,1092]" />
+          <node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]">
+            <node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[40,2210][240,2240]" />
+            <node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Sessions" bounds="[310,2210][510,2240]" />
+            <node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Report" bounds="[580,2210][780,2240]" />
+            <node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Settings" bounds="[850,2210][1050,2240]" />
+          </node>
+        </hierarchy>
+        """;
+
+    private static void WritePassSnapshotReport(string path)
+    {
+        List<string> lines =
+        [
+            "# Android UI Snapshot Report",
+            "",
+            "Status: PASS",
+            "",
+            "## Canonical Figma Screen Status",
+            "",
+            "| Screen | Status | Artifact | Note |",
+            "|---|---|---|---|"
+        ];
+
+        foreach (string screen in CanonicalFigmaScreens)
+        {
+            string displayName = screen
+                .Replace("figma-0", "Figma ", StringComparison.Ordinal)
+                .Replace(".png", "", StringComparison.Ordinal);
+            lines.Add($"| {displayName} | PASS | `{screen}` | Captured non-empty local screenshot. |");
+        }
+
+        File.WriteAllLines(path, lines);
+    }
+
+    private static void WritePassSnapshotManifest(string path, string outputRoot)
+    {
+        var manifest = new
+        {
+            status = "PASS",
+            output = outputRoot,
+            screenStatuses = CanonicalFigmaScreens.Select(screen => new
+            {
+                name = screen,
+                status = "PASS",
+                fileName = screen,
+                note = "Captured non-empty local screenshot."
+            }).ToArray(),
+            screenshots = RequiredSnapshotPixelScreens.Select(screen => new
+            {
+                name = screen,
+                fileName = screen,
+                path = Path.Combine(outputRoot, screen),
+                capture = "test"
+            }).ToArray(),
+            hierarchies = Array.Empty<object>()
+        };
+
+        File.WriteAllText(path, JsonSerializer.Serialize(manifest));
     }
 
     private static string FindRepositoryRoot()

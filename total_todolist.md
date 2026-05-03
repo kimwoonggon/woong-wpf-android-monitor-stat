@@ -2941,3 +2941,39 @@ milestones below are finished.
 - [x] Confirm connected Android evidence remains blocked because `adb devices
   -l` reports no attached device/emulator.
 - [x] Commit and push the cross-platform correctness batch.
+
+## 2026-05-03 Android App-Switch Current Focus Evidence
+
+- [x] Add Android instrumentation evidence for Chrome -> Woong return proving
+  Dashboard Current Focus shows `Woong Monitor / com.woong.monitorstack` as
+  current and `Chrome / com.android.chrome` as latest collected external app.
+- [x] Wire the app-switch QA script to pull and assert the current-focus
+  evidence artifact, while preserving no-device BLOCKED reports.
+- [x] Run focused Android unit/build/script verification; document connected
+  evidence as PASS or BLOCKED.
+- [x] Connected emulator evidence is BLOCKED on this machine:
+  `adb devices -l` reports no attached device/emulator; no Chrome screenshots
+  or Chrome UI hierarchy were captured.
+
+## 2026-05-03 Android UI Snapshot Acceptance Trustworthiness
+
+- [x] Add deterministic test coverage proving Android UI snapshot acceptance
+  rejects PASS reports that lack matching screenshot pixels and required
+  hierarchy evidence for Splash, Permission, Dashboard current focus, Dashboard
+  location map/card, Report, Settings, and bottom navigation tabs.
+- [x] Harden `scripts/run-android-ui-snapshots.ps1` and
+  `scripts/validate-android-ui-snapshot-report.ps1` so a connected device run
+  captures/pulls Report and Settings artifacts, validates hierarchy contracts,
+  checks screenshots are parseable/nonblank, and validates
+  Dashboard/Sessions/Report/Settings bottom navigation.
+- [x] Keep no-device Android screenshot runs classified as BLOCKED with a clear
+  report/manifest and no false PASS evidence.
+- [x] Run focused architecture/script validation, Android unit tests, and
+  Android debug/androidTest APK build; document connected evidence blocker if
+  no emulator/device is attached.
+- [x] Connected Android UI screenshot evidence remains BLOCKED on this machine:
+  `adb devices -l` reports no attached device/emulator; latest fresh BLOCKED
+  artifact is `artifacts/android-ui-snapshots/20260503-195857/`.
+- [x] Integrated Android UI snapshot and app-switch evidence hardening in the
+  main worktree, fixed fake-ADB architecture fixtures for the new current-focus
+  evidence contract, then reran full .NET and Android validation before commit.

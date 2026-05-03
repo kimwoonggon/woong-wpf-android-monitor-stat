@@ -46,6 +46,9 @@ public sealed class AndroidAppSwitchQaScriptTests
             "logcat-woong-app.txt",
             "meminfo-after-app-switch.txt",
             "gfxinfo-after-app-switch.txt",
+            "dashboard-current-focus-evidence.json",
+            "dashboard-current-focus-after-chrome-return.png",
+            "dashboard-current-focus-after-chrome-return.xml",
             "dashboard-after-app-switch.png",
             "dashboard-after-app-switch.xml",
             "sessions-after-app-switch.png",
@@ -176,6 +179,9 @@ public sealed class AndroidAppSwitchQaScriptTests
                 "logcat-woong-app.txt",
                 "meminfo-after-app-switch.txt",
                 "gfxinfo-after-app-switch.txt",
+                "dashboard-current-focus-evidence.json",
+                "dashboard-current-focus-after-chrome-return.png",
+                "dashboard-current-focus-after-chrome-return.xml",
                 "dashboard-after-app-switch.png",
                 "dashboard-after-app-switch.xml",
                 "sessions-after-app-switch.png",
@@ -201,8 +207,11 @@ public sealed class AndroidAppSwitchQaScriptTests
             Assert.Contains("shell am start -a android.intent.action.VIEW -d about:blank -p com.android.chrome", commands);
             Assert.Contains("shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#prepareCleanRoomForAppSwitchQa", commands);
             Assert.Contains("shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox", commands);
+            Assert.Contains("shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal", commands);
             Assert.Contains("shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn", commands);
             Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/room-assertions.json", commands);
+            Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-current-focus-evidence.json", commands);
+            Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-current-focus-after-chrome-return.xml", commands);
             Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", commands);
             Assert.Contains("pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/sessions-after-app-switch.xml", commands);
             Assert.Contains("logcat -d -b crash", commands);
@@ -845,6 +854,8 @@ public sealed class AndroidAppSwitchQaScriptTests
             Assert.Contains("-s emulator-5554 shell am start -W -n com.woong.monitorstack/.MainActivity", commands);
             Assert.Contains("-s emulator-5554 shell am start -a android.intent.action.VIEW -d about:blank -p com.android.chrome", commands);
             Assert.Contains("-s emulator-5554 shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox", commands);
+            Assert.Contains("-s emulator-5554 shell am instrument -w -e class com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal", commands);
+            Assert.Contains("-s emulator-5554 pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-current-focus-evidence.json", commands);
             Assert.Contains("-s emulator-5554 pull /sdcard/Android/data/com.woong.monitorstack/files/app-switch-qa/dashboard-after-app-switch.png", commands);
             Assert.Contains("-s emulator-5554 logcat -d -b crash", commands);
             Assert.DoesNotContain("-s emulator-5556", commands);
@@ -889,6 +900,18 @@ if "%1"=="pull" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
     exit /b 0
   )
+  if "{{pullRemoteFileName}}"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if /I "{{pullRemoteFileName}}"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
+    exit /b 0
+  )
   if /I "{{pullRemoteFileName}}"=="dashboard-after-app-switch.xml" (
     >"{{pullTarget}}" echo ^<hierarchy^>
     >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -911,6 +934,18 @@ if "%1"=="pull" (
 if "%3"=="pull" (
   if "{{pullRemoteFileName}}"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if "{{pullRemoteFileName}}"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if /I "{{pullRemoteFileName}}"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"{{pullTarget}}" echo ^<hierarchy^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"{{pullTarget}}" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"{{pullTarget}}" echo ^</node^>
+    >>"{{pullTarget}}" echo ^</hierarchy^>
     exit /b 0
   )
   if /I "{{pullRemoteFileName}}"=="dashboard-after-app-switch.xml" (
@@ -973,6 +1008,14 @@ if "%3"=="logcat" (
 if "%3"=="pull" (
   if "%~nx5"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":9,"syncOutboxChromeRows":9}>"%5"
+  ) else if "%~nx5"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":9}>"%5"
+  ) else if /I "%~nx5"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
   ) else if /I "%~nx5"=="dashboard-after-app-switch.xml" (
     >"%5" echo ^<hierarchy^>
     >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1057,6 +1100,14 @@ if "%1"=="pull" (
   )
   if "%~nx3"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else if "%~nx3"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%3"
+  ) else if /I "%~nx3"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
   ) else if /I "%~nx3"=="dashboard-after-app-switch.xml" (
     >"%3" echo ^<hierarchy^>
     >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1110,6 +1161,14 @@ if "%1"=="pull" (
   )
   if "%~nx3"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+  ) else if "%~nx3"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%3"
+  ) else if /I "%~nx3"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"%3" echo ^<hierarchy^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"%3" echo ^</node^>
+    >>"%3" echo ^</hierarchy^>
   ) else if /I "%~nx3"=="dashboard-after-app-switch.xml" (
     >"%3" echo ^<hierarchy^>
     >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1293,6 +1352,14 @@ if "%3"=="shell" (
 if "%3"=="pull" (
   if "%~nx4"=="room-assertions.json" (
     echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%5"
+  ) else if "%~nx4"=="dashboard-current-focus-evidence.json" (
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%5"
+  ) else if /I "%~nx4"=="dashboard-current-focus-after-chrome-return.xml" (
+    >"%5" echo ^<hierarchy^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
+    >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/navigation_bar_item_large_label_view" text="Dashboard" bounds="[0,2210][200,2240]" /^>
+    >>"%5" echo ^</node^>
+    >>"%5" echo ^</hierarchy^>
   ) else if /I "%~nx4"=="dashboard-after-app-switch.xml" (
     >"%5" echo ^<hierarchy^>
     >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>

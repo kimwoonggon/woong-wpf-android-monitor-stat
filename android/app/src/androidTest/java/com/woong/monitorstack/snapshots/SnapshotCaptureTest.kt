@@ -718,7 +718,9 @@ class SnapshotCaptureTest {
         assertTrue("Expected screenshot capture to succeed for ${output.name}", device.takeScreenshot(output))
         device.dumpWindowHierarchy(hierarchy)
         assertTrue("Expected screenshot file to exist: $output", output.isFile)
+        assertTrue("Expected screenshot file to be non-empty: $output", output.length() > 0L)
         assertTrue("Expected UI hierarchy file to exist: $hierarchy", hierarchy.isFile)
+        assertTrue("Expected UI hierarchy file to be non-empty: $hierarchy", hierarchy.length() > 0L)
     }
 
     private fun waitForScreen(device: UiDevice) {

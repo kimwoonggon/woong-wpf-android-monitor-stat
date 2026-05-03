@@ -1,6 +1,6 @@
 # Android UsageStats Current Focus Validation
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 This local emulator check validates that returning from Chrome refreshes the
 Woong Dashboard Current Focus card to the app that is actually foreground:
@@ -42,6 +42,20 @@ Fast run when the debug APK is already installed:
 powershell -ExecutionPolicy Bypass -File scripts/run-android-usage-current-focus-validation.ps1 -DeviceSerial emulator-5554 -SkipBuild
 ```
 
+For the stronger app-switch QA path that also proves Chrome was collected as
+the latest external app in Room-backed Dashboard state, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -ChromeForegroundSeconds 3
+```
+
+That runner executes the instrumentation test
+`dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal` after
+UsageStats collection. It pulls `dashboard-current-focus-evidence.json`,
+`dashboard-current-focus-after-chrome-return.png`, and
+`dashboard-current-focus-after-chrome-return.xml`; the screenshot and hierarchy
+are captured only from Woong Monitor after the app is foreground again.
+
 ## Artifacts
 
 Each run writes:
@@ -51,6 +65,12 @@ Each run writes:
 - `foreground-window.txt`
 - `current-focus-after-chrome.png` when a device run reaches Woong foreground
 - `current-focus-after-chrome.xml` when a device run reaches Woong foreground
+
+The app-switch QA runner additionally writes:
+
+- `dashboard-current-focus-evidence.json`
+- `dashboard-current-focus-after-chrome-return.png`
+- `dashboard-current-focus-after-chrome-return.xml`
 
 Artifacts are written to:
 

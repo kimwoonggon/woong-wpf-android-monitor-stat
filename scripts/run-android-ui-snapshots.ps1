@@ -68,6 +68,16 @@ $expectedLocationChecks = @(
     "Dashboard location card: locationContextCard, locationStatusText, locationLatitudeText, locationLongitudeText, locationAccuracyText, locationCapturedAtText, locationMiniMapView",
     "Settings location section: locationContextDefaultText, locationCoordinateBoundaryText, preciseLocationOptInText, locationContextCheckBox, preciseLatitudeLongitudeCheckBox, requestLocationPermissionButton"
 )
+$expectedHierarchyChecks = @(
+    "Pixels: every accepted PNG must be parseable and contain varied, nonblank pixels.",
+    "Splash hierarchy: figma-01-splash.xml must include splashRoot, appTitleText, appSubtitleText, loadingIndicator, Woong Monitor, and Android Focus Tracker.",
+    "Permission hierarchy: figma-02-permission.xml must include permission guidance, collected metadata, and not-collected privacy copy.",
+    "Dashboard hierarchy: figma-03-dashboard.xml must include Current Focus and current foreground/latest-collected IDs.",
+    "Location hierarchy: 02-dashboard-summary-location.xml must include locationContextCard, locationMiniMapView, latitude/longitude, and captured-at rows.",
+    "Report hierarchy: figma-06-report.xml must include reportTitle, period controls, trend chart, and top-apps card.",
+    "Settings hierarchy: figma-07-settings.xml and 06-settings-location-permission.xml must include Settings, sync, location opt-in, precise-coordinate opt-in, and permission controls.",
+    "Bottom navigation hierarchy: Dashboard/Sessions/Report/Settings captures must include all four tab labels and pass the blank-floor gate."
+)
 $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
@@ -505,13 +515,22 @@ function Write-AndroidSnapshotArtifacts {
     }
     $reportLines += @(
         "",
+        "## Expected Hierarchy And Pixel Checks",
+        ""
+    )
+    foreach ($check in $expectedHierarchyChecks) {
+        $reportLines += "- $check"
+    }
+    $reportLines += @(
+        "",
         "## Result",
         ""
     )
     if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) {
         $reportLines += "- BLOCKED: $BlockedReason"
+        $reportLines += "- NEXT: start or attach an Android device/emulator and rerun this script; PASS evidence requires screenshots plus matching UI hierarchy XML."
     } else {
-        $reportLines += "- PASS: Android UI screenshot flow completed."
+        $reportLines += "- PASS: Android UI screenshot flow completed with pixel, hierarchy, and bottom-navigation gates."
     }
     $reportLines += @(
         "",
@@ -557,6 +576,7 @@ function Write-AndroidSnapshotArtifacts {
         featureScreens = $featureScreens
         screenStatuses = $canonicalScreenStatuses
         expectedLocationChecks = $expectedLocationChecks
+        expectedHierarchyChecks = $expectedHierarchyChecks
         beginnerReviewAliases = $beginnerReviewAliases
         screenshots = $screenshots
         hierarchies = $hierarchies

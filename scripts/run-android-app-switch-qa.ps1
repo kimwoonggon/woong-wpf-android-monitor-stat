@@ -35,6 +35,7 @@ $testRunner = "$PackageName.test/androidx.test.runner.AndroidJUnitRunner"
 $testClass = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest"
 $prepareTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#prepareCleanRoomForAppSwitchQa"
 $collectTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox"
+$currentFocusTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal"
 $captureTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn"
 $installDiagnosticArtifactContract = @(
     "package-manager-preflight.txt",
@@ -203,6 +204,29 @@ function Write-RoomAssertionPlaceholder {
     Add-Artifact -Name "Room assertions" -FileName "room-assertions.json" -Path $path
 }
 
+function Write-DashboardCurrentFocusEvidencePlaceholder {
+    param(
+        [string]$Status,
+        [string]$Reason
+    )
+
+    $path = Join-Path $runRoot "dashboard-current-focus-evidence.json"
+    [ordered]@{
+        status = $Status
+        reason = $Reason
+        privacy = "No Chrome screenshots, no Chrome UI hierarchy, no typed text, no form contents, no browser/page contents."
+        expectedCurrentPackageText = $PackageName
+        expectedLatestExternalPackageText = $ChromePackageName
+        actualCurrentPackageText = ""
+        actualLatestExternalPackageText = ""
+        roomFocusSessionMonitorRows = 0
+        roomFocusSessionChromeRows = 0
+        hasValidMonitorUsageStatsSession = $false
+        hasValidChromeUsageStatsSession = $false
+    } | ConvertTo-Json -Depth 4 | Set-Content -Path $path -Encoding UTF8
+    Add-Artifact -Name "Dashboard current focus evidence" -FileName "dashboard-current-focus-evidence.json" -Path $path
+}
+
 function Write-AppSwitchArtifacts {
     param(
         [string]$Status,
@@ -211,6 +235,17 @@ function Write-AppSwitchArtifacts {
 
     if (-not (Test-Path (Join-Path $runRoot "room-assertions.json"))) {
         Write-RoomAssertionPlaceholder -Status $Status -Reason $BlockedReason
+    }
+    if (-not (Test-Path (Join-Path $runRoot "dashboard-current-focus-evidence.json"))) {
+        if ($Status -eq "PASS") {
+            $Status = "FAIL"
+            $script:status = "FAIL"
+            $script:classification = "dashboard-current-focus-evidence-missing"
+            $script:nextAction = "Inspect the app-switch instrumentation run; dashboard-current-focus-evidence.json must be present before accepting QA."
+            $BlockedReason = "Dashboard current focus evidence artifact was missing from an otherwise passing app-switch QA run."
+            $script:blockedReason = $BlockedReason
+        }
+        Write-DashboardCurrentFocusEvidencePlaceholder -Status $Status -Reason $BlockedReason
     }
 
     $reportLines = @(
@@ -230,6 +265,7 @@ function Write-AppSwitchArtifacts {
         "- Returns to Woong Monitor Stack.",
         "- Runs production UsageStats collection through Android instrumentation.",
         "- Asserts Room ``focus_session`` and ``sync_outbox`` metadata evidence.",
+        "- Asserts Dashboard Current Focus shows Woong Monitor as current and Chrome as latest collected external app.",
         "- Captures Dashboard and Sessions evidence only after Woong is foreground.",
         "",
         "## Privacy Boundary",
@@ -538,6 +574,47 @@ function Invoke-AppSwitchInstrumentation {
     Invoke-AdbChecked -Arguments $arguments -Description "Run $TestName instrumentation" | Out-Null
 }
 
+function Invoke-AppSwitchInstrumentationForEvidence {
+    param(
+        [string]$TestName,
+        [hashtable]$ExtraArguments,
+        [string]$ArtifactPrefix
+    )
+
+    $arguments = @(
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-e",
+        "class",
+        $TestName
+    )
+
+    foreach ($key in $ExtraArguments.Keys) {
+        $arguments += "-e"
+        $arguments += $key
+        $arguments += [string]$ExtraArguments[$key]
+    }
+
+    $arguments += $testRunner
+
+    $result = Invoke-AdbProcess `
+        -Arguments $arguments `
+        -Description "Run $TestName instrumentation"
+
+    Save-TextArtifact `
+        -Name "$ArtifactPrefix instrumentation stdout" `
+        -FileName "$ArtifactPrefix-instrumentation-stdout.txt" `
+        -Lines $result.stdout
+    Save-TextArtifact `
+        -Name "$ArtifactPrefix instrumentation stderr" `
+        -FileName "$ArtifactPrefix-instrumentation-stderr.txt" `
+        -Lines $result.stderr
+
+    return $result
+}
+
 function Test-WoongScreenshotPerceptuallyBlank {
     param([string]$Path)
 
@@ -603,7 +680,8 @@ function Pull-AppSwitchArtifact {
     param(
         [string]$Name,
         [string]$FileName,
-        [switch]$RetryBlankScreenshot
+        [switch]$RetryBlankScreenshot,
+        [string]$RetryCaptureTestName = $captureTestName
     )
 
     $localPath = Join-Path $runRoot $FileName
@@ -624,7 +702,7 @@ function Pull-AppSwitchArtifact {
                 $notes.Add("Perceptually blank screenshot detected for $FileName; rerunning Woong-only capture instrumentation and retrying pull.")
             }
             Invoke-AppSwitchInstrumentation `
-                -TestName $captureTestName `
+                -TestName $RetryCaptureTestName `
                 -ExtraArguments @{
                     chromePackageName = $ChromePackageName
                 }
@@ -670,6 +748,40 @@ function Assert-RoomAssertionsPassed {
     $script:classification = "room-assertions-failed"
     $script:nextAction = "Inspect room-assertions.json and fix Android UsageStats collection/outbox persistence before accepting app-switch QA."
     $script:blockedReason = "Room assertions failed: status=$roomStatus, focusSessionChromeRows=$focusRows, syncOutboxChromeRows=$outboxRows."
+}
+
+function Assert-DashboardCurrentFocusEvidencePassed {
+    $evidencePath = Join-Path $runRoot "dashboard-current-focus-evidence.json"
+    if (-not (Test-Path $evidencePath)) {
+        throw "Dashboard current focus evidence artifact was not found after pull: $evidencePath"
+    }
+
+    try {
+        $evidence = Get-Content -Path $evidencePath -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "Dashboard current focus evidence artifact is not valid JSON: $($_.Exception.Message)"
+    }
+
+    $evidenceStatus = [string]$evidence.status
+    $currentPackage = [string]$evidence.actualCurrentPackageText
+    $externalPackage = [string]$evidence.actualLatestExternalPackageText
+    $monitorRows = if ($null -ne $evidence.roomFocusSessionMonitorRows) { [string]$evidence.roomFocusSessionMonitorRows } else { "unknown" }
+    $chromeRows = if ($null -ne $evidence.roomFocusSessionChromeRows) { [string]$evidence.roomFocusSessionChromeRows } else { "unknown" }
+
+    if (
+        $evidenceStatus -eq "PASS" -and
+        $currentPackage -eq $PackageName -and
+        $externalPackage -eq $ChromePackageName
+    ) {
+        $notes.Add("Dashboard Current Focus evidence passed: current '$currentPackage', latest external '$externalPackage'.")
+        return
+    }
+
+    $script:status = "FAIL"
+    $script:classification = "dashboard-current-focus-evidence-failed"
+    $script:nextAction = "Inspect dashboard-current-focus-evidence.json and the Woong-only Dashboard hierarchy/screenshot; fix stale Current Focus if Chrome is shown as current after return."
+    $script:blockedReason = "Dashboard Current Focus evidence failed: status=$evidenceStatus, currentPackage=$currentPackage, latestExternalPackage=$externalPackage, monitorRows=$monitorRows, chromeRows=$chromeRows."
 }
 
 function Test-PackageManagerPreflight {
@@ -999,6 +1111,37 @@ try {
         exit 1
     }
 
+    $currentFocusInstrumentation = Invoke-AppSwitchInstrumentationForEvidence `
+        -TestName $currentFocusTestName `
+        -ExtraArguments @{
+            chromePackageName = $ChromePackageName
+        } `
+        -ArtifactPrefix "dashboard-current-focus"
+
+    Pull-AppSwitchArtifact -Name "Dashboard current focus evidence" -FileName "dashboard-current-focus-evidence.json"
+    Pull-AppSwitchArtifact `
+        -Name "Dashboard current focus after Chrome screenshot" `
+        -FileName "dashboard-current-focus-after-chrome-return.png"
+    Pull-AppSwitchArtifact -Name "Dashboard current focus after Chrome UI hierarchy" -FileName "dashboard-current-focus-after-chrome-return.xml"
+    Assert-DashboardCurrentFocusEvidencePassed
+
+    if (
+        ($currentFocusInstrumentation.timedOut -or $currentFocusInstrumentation.exitCode -ne 0) -and
+        $status -ne "FAIL"
+    ) {
+        $status = "FAIL"
+        $classification = "dashboard-current-focus-instrumentation-failed"
+        $nextAction = "Inspect dashboard-current-focus-instrumentation-stdout.txt, dashboard-current-focus-instrumentation-stderr.txt, and dashboard-current-focus-evidence.json."
+        $blockedReason = "Dashboard Current Focus instrumentation failed with exitCode=$($currentFocusInstrumentation.exitCode), timedOut=$($currentFocusInstrumentation.timedOut)."
+    }
+
+    if ($status -eq "FAIL" -and $classification -like "dashboard-current-focus-*") {
+        Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
+        Write-Host $blockedReason
+        Write-Host "Android app-switch QA artifacts: $runRoot"
+        exit 1
+    }
+
     Invoke-AppSwitchInstrumentation `
         -TestName $captureTestName `
         -ExtraArguments @{
@@ -1011,6 +1154,7 @@ try {
     Pull-AppSwitchArtifact -Name "Sessions after app-switch UI hierarchy" -FileName "sessions-after-app-switch.xml"
     & (Join-Path $PSScriptRoot "validate-android-bottom-nav-floor.ps1") `
         -HierarchyPath @(
+            (Join-Path $runRoot "dashboard-current-focus-after-chrome-return.xml"),
             (Join-Path $runRoot "dashboard-after-app-switch.xml"),
             (Join-Path $runRoot "sessions-after-app-switch.xml")
         )
