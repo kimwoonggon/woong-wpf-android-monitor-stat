@@ -903,6 +903,24 @@ function Get-InstalledApkSha256 {
     return ""
 }
 
+function Get-LocalFileSha256 {
+    param([string]$Path)
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            return ([System.BitConverter]::ToString($sha256.ComputeHash($stream)) -replace "-", "").ToLowerInvariant()
+        }
+        finally {
+            $sha256.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
 function Install-ApkIfNeeded {
     param(
         [string]$DisplayName,
@@ -921,7 +939,7 @@ function Install-ApkIfNeeded {
         throw "Install $DisplayName blocked because APK file was not found: $ApkPath"
     }
 
-    $localHash = (Get-FileHash -Path $ApkPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $localHash = Get-LocalFileSha256 -Path $ApkPath
     $installedHash = Get-InstalledApkSha256 -InstalledPackageName $InstalledPackageName
     if (-not [string]::IsNullOrWhiteSpace($installedHash) -and $installedHash -eq $localHash) {
         Save-InstallDiagnosticArtifacts `

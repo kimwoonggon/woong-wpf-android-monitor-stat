@@ -830,6 +830,68 @@ public sealed class AndroidAppSwitchQaScriptTests
     }
 
     [Fact]
+    public void AndroidAppSwitchQaScript_WhenPowerShellGetFileHashIsUnavailable_StillSkipsCurrentApks()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-android-app-switch-qa.ps1");
+        string tempRoot = Path.Combine(Path.GetTempPath(), $"woong-android-app-switch-{Guid.NewGuid():N}");
+        string fakeAdb = Path.Combine(tempRoot, "fake-adb.cmd");
+        string fakeGradle = Path.Combine(tempRoot, "gradlew.bat");
+        string adbLog = Path.Combine(tempRoot, "adb.log");
+        string wrapper = Path.Combine(tempRoot, "run-without-get-filehash.ps1");
+        Directory.CreateDirectory(tempRoot);
+        string apkPath = CreateFakeApks(tempRoot, sameContent: true).debugApk;
+        string currentHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(apkPath)))
+            .ToLowerInvariant();
+        File.WriteAllText(fakeAdb, FakeAdbScriptWithCurrentApks(adbLog, Path.Combine(tempRoot, "hash-check-count.txt"), currentHash));
+        File.WriteAllText(fakeGradle, "@echo off\r\nexit /b 0\r\n");
+        File.WriteAllText(
+            wrapper,
+            $$"""
+function global:Get-FileHash {
+    throw 'Get-FileHash unavailable in this test shell.'
+}
+& '{{scriptPath}}' -OutputRoot '{{tempRoot}}' -AdbPath '{{fakeAdb}}' -GradleWrapperPath '{{fakeGradle}}' -DeviceSerial emulator-5554 -ChromeForegroundSeconds 0
+exit $LASTEXITCODE
+""");
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{wrapper}\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                WorkingDirectory = repoRoot
+            });
+            Assert.NotNull(process);
+            Assert.True(process.WaitForExit(30_000), "The current-APK scenario should finish quickly without Get-FileHash.");
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+            Assert.True(
+                process.ExitCode == 0,
+                BuildAndroidQaProcessFailureMessage(process.ExitCode, stdout, stderr, tempRoot, adbLog));
+
+            string latest = Path.Combine(tempRoot, "latest");
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(latest, "manifest.json")));
+            Assert.Equal("PASS", manifest.RootElement.GetProperty("status").GetString());
+            Assert.Contains(
+                "Skipped debug APK install because installed APK hash matches",
+                File.ReadAllText(Path.Combine(latest, "install-debug-apk-stdout.txt")));
+        }
+        finally
+        {
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public void AndroidAppSwitchQaScript_DeviceSerialPinsAllDeviceScopedCommands()
     {
         string repoRoot = FindRepositoryRoot();
