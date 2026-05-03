@@ -3082,13 +3082,22 @@ milestones below are finished.
   migrated `MainWindowAutomationIdTests` and `WindowsAppCompositionTests`.
 - [x] Validate focused sync, WPF app composition/options/harness, and
   LocalDashboardBridge checkpoint tests before full solution validation.
-- [ ] Follow-up: bind WPF Settings `SyncEndpointText` to
+- [x] Expose LocalDashboardBridge checkpointing from
+  `scripts/run-local-integrated-dashboard.ps1` via `-BridgeCheckpointPath`,
+  defaulting interval mode to `<OutputRoot>\bridge-checkpoints.json` while
+  preserving one-shot default as checkpoint-disabled.
+- [x] Bind WPF Settings `SyncEndpointText` to
   `WindowsAppOptions.SyncOptions.EndpointDisplayText` without exposing device
   token.
+- [x] Continue WPF App STA helper migration by moving
+  `MainWindowTrackingPipelineTests.cs` to shared WPF test helpers and adding it
+  to the harness architecture rule.
 - [ ] Follow-up: add WPF Register/Repair device flow with protected token
   storage; keep environment token as development/config bridge only.
-- [ ] Follow-up: continue WPF App STA helper migration with
-  `MainWindowTrackingPipelineTests.cs`.
+- [ ] Follow-up: decide whether to expose `FindVisualDescendant<T>` from
+  `WpfTestHelpers` or add an automation id to the dashboard root scroll viewer
+  so `MainWindowTrackingPipelineTests.cs` can drop its remaining local visual
+  traversal helper.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 

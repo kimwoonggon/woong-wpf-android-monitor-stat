@@ -109,13 +109,24 @@ powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.
 # Re-run bridge uploads every 10 seconds until stopped with Ctrl+C
 powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 `
   -BridgeIntervalSeconds 10
+
+# Use an explicit bridge checkpoint file
+powershell -ExecutionPolicy Bypass -File scripts\run-local-integrated-dashboard.ps1 `
+  -BridgeIntervalSeconds 5 `
+  -BridgeMaxIterations 12 `
+  -BridgeCheckpointPath D:\temp\woong-bridge-checkpoints.json
 ```
 
 Default bridge upload mode is one-shot. `-BridgeMaxIterations` requires
 `-BridgeIntervalSeconds`; leaving max iterations unset runs the bridge
-continuously in the foreground. The script pulls the Android emulator Room
-database once before starting the bridge, so continuous mode rereads the same
-configured `-AndroidDb` file unless that file is refreshed separately.
+continuously in the foreground. In one-shot mode the script does not pass a
+checkpoint file unless `-BridgeCheckpointPath` is provided. In interval mode,
+when `-BridgeCheckpointPath` is omitted, the script passes
+`<OutputRoot>\bridge-checkpoints.json` to `LocalDashboardBridge`; an explicit
+`-BridgeCheckpointPath` overrides that default. The script pulls the Android
+emulator Room database once before starting the bridge, so continuous mode
+rereads the same configured `-AndroidDb` file unless that file is refreshed
+separately.
 
 ## LocalDashboardBridge Checkpoint/Range Scanning
 
@@ -127,8 +138,9 @@ seen twice.
 
 Current bridge contract:
 
-- Enable checkpointing with `--checkpointPath <bridge-checkpoints.json>` when
-  running `tools/Woong.MonitorStack.LocalDashboardBridge` directly.
+- Enable checkpointing through the script with `-BridgeCheckpointPath <path>`,
+  or through direct bridge CLI usage with
+  `--checkpointPath <bridge-checkpoints.json>`.
 - Store bridge checkpoints as a local JSON file such as
   `bridge-checkpoints.json`.
 - Track only metadata cursors such as `ended_at_utc` plus `client_session_id`
@@ -154,9 +166,9 @@ dotnet run --project tools\Woong.MonitorStack.LocalDashboardBridge -- `
   --checkpointPath artifacts\local-integrated-dashboard\bridge-checkpoints.json
 ```
 
-The local integrated dashboard script should expose a checkpoint-path
-pass-through in a later script-owned slice. Until then, checkpointed interval
-mode is available through the bridge CLI itself.
+The local integrated dashboard script forwards `-BridgeCheckpointPath` to this
+bridge option. In interval mode, omitting the script option uses the
+`<OutputRoot>\bridge-checkpoints.json` default described above.
 
 ## Privacy Boundary
 

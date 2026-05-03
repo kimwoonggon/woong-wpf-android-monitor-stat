@@ -13,7 +13,8 @@ param(
     [string]$AndroidDb = "",
     [string]$OutputRoot = "",
     [int]$BridgeIntervalSeconds = -1,
-    [int]$BridgeMaxIterations = 0
+    [int]$BridgeMaxIterations = 0,
+    [string]$BridgeCheckpointPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,6 +38,15 @@ if ([string]::IsNullOrWhiteSpace($WindowsDb)) {
 
 if ([string]::IsNullOrWhiteSpace($AndroidDb)) {
     $AndroidDb = Join-Path $OutputRoot "android-emulator\woong-monitor.db"
+}
+
+$bridgeCheckpointPathWasProvided = $BridgeCheckpointPath.Length -gt 0
+if ($bridgeCheckpointPathWasProvided -and [string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) {
+    throw "-BridgeCheckpointPath must not be empty or whitespace."
+}
+
+if (!$bridgeCheckpointPathWasProvided -and $BridgeIntervalSeconds -ge 0) {
+    $BridgeCheckpointPath = Join-Path $OutputRoot "bridge-checkpoints.json"
 }
 
 if ($BridgeIntervalSeconds -lt -1) {
@@ -70,6 +80,8 @@ function Write-Usage {
     Write-Host "                      Run bridge uploads repeatedly at this interval instead of one-shot."
     Write-Host "  -BridgeMaxIterations <count>"
     Write-Host "                      Stop repeated bridge uploads after this many iterations; omit for continuous mode."
+    Write-Host "  -BridgeCheckpointPath <path>"
+    Write-Host "                      Pass a metadata-only checkpoint file to the bridge; interval mode defaults to OutputRoot\bridge-checkpoints.json."
 }
 
 function Write-Step([string]$Message) {
@@ -107,6 +119,10 @@ function Get-BridgePollingArguments {
         if ($BridgeMaxIterations -gt 0) {
             $arguments += @("--maxIterations", $BridgeMaxIterations.ToString([Globalization.CultureInfo]::InvariantCulture))
         }
+    }
+
+    if (![string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) {
+        $arguments += @("--checkpointPath", $BridgeCheckpointPath)
     }
 
     return $arguments
@@ -240,6 +256,7 @@ if ($DryRun) {
     }
     Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge$bridgePollingArgsText"
     Write-Step "Dry run: bridge polling: $(Get-BridgePollingDescription)"
+    Write-Step "Dry run: bridge checkpoint: $(if ([string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) { "disabled" } else { $BridgeCheckpointPath })"
     Write-Step "Dry run: WPF SQLite path: $WindowsDb"
     Write-Step "Dry run: Android Room path: $AndroidDb"
     Write-Step "Dry run: would check /api/dashboard/integrated and write Windows/Android data-presence status to report.md"
@@ -334,6 +351,7 @@ try {
         "- Integrated dashboard API: $integratedDashboardApiUrl",
         "- WPF SQLite: $WindowsDb",
         "- Android Room: $AndroidDb",
+        "- Bridge checkpoint: $(if ([string]::IsNullOrWhiteSpace($BridgeCheckpointPath)) { "disabled" } else { $BridgeCheckpointPath })",
         "- Server: $baseUrl",
         "- PostgreSQL: Docker localhost:55432",
         "",

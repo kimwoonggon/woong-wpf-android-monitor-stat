@@ -19,6 +19,7 @@ public sealed class WpfTestHarnessArchitectureTests
         string[] migratedTestFiles =
         [
             "MainWindowAutomationIdTests.cs",
+            "MainWindowTrackingPipelineTests.cs",
             "WindowsAppCompositionTests.cs"
         ];
 

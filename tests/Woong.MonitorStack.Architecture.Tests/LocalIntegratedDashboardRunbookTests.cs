@@ -87,6 +87,56 @@ public sealed class LocalIntegratedDashboardRunbookTests
         Assert.Contains("3 iteration", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void LocalIntegratedDashboardScript_DryRunDefaultsCheckpointPathForIntervalMode()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+        string outputRoot = Path.Combine(
+            Path.GetTempPath(),
+            $"woong-local-dashboard-checkpoint-{Guid.NewGuid():N}");
+        string expectedCheckpointPath = Path.Combine(outputRoot, "bridge-checkpoints.json");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -NoOpenBrowser -OutputRoot \"{outputRoot}\" -BridgeIntervalSeconds 7 -BridgeMaxIterations 3");
+
+        Assert.Equal(0, dryRun.ExitCode);
+        Assert.Contains("--intervalSeconds 7", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains($"--checkpointPath {expectedCheckpointPath}", dryRun.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains($"bridge checkpoint: {expectedCheckpointPath}", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void LocalIntegratedDashboardScript_DryRunKeepsOneShotCheckpointDisabledByDefault()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -NoOpenBrowser");
+
+        Assert.Equal(0, dryRun.ExitCode);
+        Assert.Contains("one-shot bridge upload", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bridge checkpoint: disabled", dryRun.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("--checkpointPath", dryRun.StandardOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LocalIntegratedDashboardScript_RejectsWhitespaceBridgeCheckpointPath()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        ProcessResult dryRun = RunPowerShell(
+            repoRoot,
+            $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -DryRun -BridgeCheckpointPath \"   \"");
+
+        Assert.NotEqual(0, dryRun.ExitCode);
+        Assert.Contains("-BridgeCheckpointPath must not be empty or whitespace.", dryRun.StandardError, StringComparison.Ordinal);
+    }
+
     private static ProcessResult RunPowerShell(string workingDirectory, string arguments)
     {
         using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(

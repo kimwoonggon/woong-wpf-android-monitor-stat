@@ -38,6 +38,23 @@ public sealed class WindowsSyncConfigurationCompositionTests : IDisposable
         Assert.Null(provider.GetService<IWindowsSyncApiClient>());
     }
 
+    [Theory]
+    [MemberData(nameof(SyncEndpointDisplayCases))]
+    public void AddWindowsApp_BindsSafeSyncEndpointDisplayTextToSettings(
+        WindowsAppSyncOptions syncOptions,
+        string expectedEndpointText)
+    {
+        var services = new ServiceCollection();
+        services.AddWindowsApp(CreateOptions(syncOptions));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        DashboardViewModel viewModel = provider.GetRequiredService<DashboardViewModel>();
+        Assert.Equal(expectedEndpointText, viewModel.Settings.SyncEndpointText);
+        Assert.DoesNotContain("device-token", viewModel.Settings.SyncEndpointText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("secret", viewModel.Settings.SyncEndpointText, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public void SyncNow_WhenSyncEnabledButUploadIsNotConfigured_LeavesOutboxPendingWithoutLeakingDetails()
     {
@@ -80,4 +97,17 @@ public sealed class WindowsSyncConfigurationCompositionTests : IDisposable
             localDatabaseConnectionString: $"Data Source={_dbPath};Pooling=False",
             idleThreshold: TimeSpan.FromMinutes(5),
             syncOptions: syncOptions);
+
+    public static TheoryData<WindowsAppSyncOptions, string> SyncEndpointDisplayCases()
+        => new()
+        {
+            { WindowsAppSyncOptions.LocalOnly, "No sync endpoint configured" },
+            { WindowsAppSyncOptions.RejectedEndpoint, "Sync endpoint rejected" },
+            {
+                WindowsAppSyncOptions.FromValidatedEndpoint(
+                    new Uri("https://monitor.example"),
+                    "secret-device-token"),
+                "https://monitor.example/"
+            }
+        };
 }

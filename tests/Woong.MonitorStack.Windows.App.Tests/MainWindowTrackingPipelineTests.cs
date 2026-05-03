@@ -5,13 +5,13 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Windows.App.Dashboard;
 using Woong.MonitorStack.Windows.Browser;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Tracking;
+using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -1016,15 +1016,6 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
         DrainDispatcher();
     }
 
-    private static void DrainDispatcher()
-    {
-        var frame = new DispatcherFrame();
-        Dispatcher.CurrentDispatcher.BeginInvoke(
-            DispatcherPriority.Background,
-            new Action(() => frame.Continue = false));
-        Dispatcher.PushFrame(frame);
-    }
-
     private static void PersistCompletedWebSessions(
         SqliteWebSessionRepository repository,
         IEnumerable<WebSession> completedSessions)
@@ -1053,28 +1044,6 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
             CaptureMethod.FakeTestData,
             CaptureConfidence.High,
             isPrivateOrUnknown: false);
-
-    private static T FindByAutomationId<T>(DependencyObject root, string automationId)
-        where T : DependencyObject
-    {
-        if (root is T candidate && AutomationProperties.GetAutomationId(root) == automationId)
-        {
-            return candidate;
-        }
-
-        foreach (DependencyObject child in GetChildren(root))
-        {
-            try
-            {
-                return FindByAutomationId<T>(child, automationId);
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
-
-        throw new InvalidOperationException($"Could not find {typeof(T).Name} with AutomationId '{automationId}'.");
-    }
 
     private static T FindVisualDescendant<T>(DependencyObject root)
         where T : DependencyObject
@@ -1120,31 +1089,6 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
             {
                 yield return dependencyObject;
             }
-        }
-    }
-
-    private static void RunOnStaThread(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (failure is not null)
-        {
-            throw failure;
         }
     }
 

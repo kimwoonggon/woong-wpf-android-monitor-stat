@@ -32,7 +32,7 @@ public static class WindowsAppServiceCollectionExtensions
         services.AddSingleton<IWindowsTrayIcon, WindowsNotifyIcon>();
         services.AddSingleton<IWindowsTrayLifecycleService, WindowsTrayLifecycleService>();
         services.AddSingleton<IDashboardApplicationLifetime, WpfDashboardApplicationLifetime>();
-        services.AddDashboardPresentation();
+        services.AddDashboardPresentation(options.SyncOptions);
         services.AddWindowsInfrastructure(options);
         if (options.AcceptanceMode == WindowsAppAcceptanceMode.TrackingPipeline)
         {
@@ -55,15 +55,29 @@ public static class WindowsAppServiceCollectionExtensions
     }
 
     public static IServiceCollection AddDashboardPresentation(this IServiceCollection services)
+        => services.AddDashboardPresentation(WindowsAppSyncOptions.LocalOnly);
+
+    private static IServiceCollection AddDashboardPresentation(this IServiceCollection services, WindowsAppSyncOptions syncOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(syncOptions);
 
         services.AddSingleton<IDashboardClock, SystemDashboardClock>();
         services.AddSingleton<IDashboardTrackingCoordinator, NoopDashboardTrackingCoordinator>();
         services.AddSingleton<IDashboardChartDetailsPresenter, DashboardChartDetailsWindowPresenter>();
-        services.AddTransient<DashboardViewModel>();
+        services.AddTransient(provider => CreateDashboardViewModel(provider, syncOptions));
 
         return services;
+    }
+
+    private static DashboardViewModel CreateDashboardViewModel(
+        IServiceProvider provider,
+        WindowsAppSyncOptions syncOptions)
+    {
+        DashboardViewModel viewModel = ActivatorUtilities.CreateInstance<DashboardViewModel>(provider);
+        viewModel.Settings.SyncEndpointText = syncOptions.EndpointDisplayText;
+
+        return viewModel;
     }
 
     public static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services)
