@@ -3003,3 +3003,21 @@ milestones below are finished.
   verification.
 - [x] Validate focused Android runbook architecture tests before committing the
   audit/runbook batch.
+
+## 2026-05-03 WPF And Local Dashboard Audit Follow-Up Batch
+
+- [x] WPF coordinator duplicate-start guard: `StartTracking` while already
+  running no longer replaces the open poller or truncates the current session.
+- [x] WPF sync worker thrown-exception handling: non-cancellation upload
+  exceptions mark the outbox item failed and continue; cancellation leaves rows
+  untouched and bubbles as cancellation.
+- [x] Architecture guard: Windows infrastructure must not reference
+  `Woong.MonitorStack.Windows.Presentation` by project reference or namespace
+  dependency.
+- [x] Local integrated dashboard script post-upload verification:
+  `run-local-integrated-dashboard.ps1` now calls `/api/dashboard/integrated`
+  after bridge upload, records Windows/Android data-presence status in
+  `report.md`, and fails clearly for missing required platform data unless
+  `-SkipWindows` or `-SkipAndroid` is used.
+- [x] Validate focused WPF coordinator, sync worker, architecture, and local
+  dashboard dry-run tests before integration commit.

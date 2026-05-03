@@ -77,6 +77,11 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     public DashboardTrackingSnapshot StartTracking()
     {
+        if (_isRunning)
+        {
+            return PollOnce();
+        }
+
         _trackingPoller = _trackingPollerFactory();
         _isRunning = true;
         DateTimeOffset pollAtUtc = _clock.UtcNow;

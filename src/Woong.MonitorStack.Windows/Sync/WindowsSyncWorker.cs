@@ -38,17 +38,29 @@ public sealed class WindowsSyncWorker
 
         foreach (SyncOutboxItem item in _outboxRepository.QueryAll().Where(ShouldAttemptSync).ToList())
         {
-            UploadBatchResult result = await _apiClient.UploadAsync(item, cancellationToken);
-            if (IsSuccessfulBatch(result))
+            try
             {
-                DateTimeOffset syncedAtUtc = _clock.UtcNow;
-                _outboxRepository.MarkSynced(item.Id, syncedAtUtc);
-                _checkpointStore.Save(syncedAtUtc);
-                syncedCount++;
+                UploadBatchResult result = await _apiClient.UploadAsync(item, cancellationToken);
+                if (IsSuccessfulBatch(result))
+                {
+                    DateTimeOffset syncedAtUtc = _clock.UtcNow;
+                    _outboxRepository.MarkSynced(item.Id, syncedAtUtc);
+                    _checkpointStore.Save(syncedAtUtc);
+                    syncedCount++;
+                }
+                else
+                {
+                    _outboxRepository.MarkFailed(item.Id, GetFailureMessage(result));
+                    failedCount++;
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                _outboxRepository.MarkFailed(item.Id, GetFailureMessage(result));
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _outboxRepository.MarkFailed(item.Id, FormatExceptionMessage(exception));
                 failedCount++;
             }
         }
@@ -68,6 +80,11 @@ public sealed class WindowsSyncWorker
             .Select(item => item.ErrorMessage)
             .FirstOrDefault(message => !string.IsNullOrWhiteSpace(message))
             ?? "Server rejected sync payload.";
+
+    private static string FormatExceptionMessage(Exception exception)
+        => string.IsNullOrWhiteSpace(exception.Message)
+            ? exception.GetType().Name
+            : $"{exception.GetType().Name}: {exception.Message}";
 
     private sealed class NoOpSyncCheckpointStore : ISyncCheckpointStore
     {

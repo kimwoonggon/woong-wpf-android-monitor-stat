@@ -50,6 +50,7 @@ public sealed class ProjectReferenceRulesTests
                 "src/Woong.MonitorStack.Windows/Woong.MonitorStack.Windows.csproj",
                 [
                     "Woong.MonitorStack.Windows.App",
+                    "Woong.MonitorStack.Windows.Presentation",
                     "Woong.MonitorStack.Server"
                 ]
             },
@@ -121,12 +122,13 @@ public sealed class ProjectReferenceRulesTests
     }
 
     [Fact]
-    public void WindowsInfrastructure_DoesNotDependOnServerOrWpfApp()
+    public void WindowsInfrastructure_DoesNotDependOnPresentationServerOrWpfApp()
     {
         TestResult result = Types
             .InAssembly(typeof(TrackingPoller).Assembly)
             .Should()
             .NotHaveDependencyOnAny(
+                "Woong.MonitorStack.Windows.Presentation",
                 "Woong.MonitorStack.Server",
                 "Woong.MonitorStack.Windows.App",
                 "System.Windows")

@@ -92,12 +92,94 @@ function Pull-AndroidDatabase([string]$PackageName, [string]$DestinationPath) {
     }
 }
 
+function Get-IntegratedDashboardPlatformPresence([object]$Snapshot, [string]$Platform) {
+    $currentApps = @($Snapshot.currentApps | Where-Object { $_.platform -eq $Platform })
+    $devices = @($Snapshot.devices | Where-Object { $_.platform -eq $Platform })
+    $platformTotals = @($Snapshot.platformTotals | Where-Object { $_.platform -eq $Platform })
+    $platformUsage = @($Snapshot.platformUsage | Where-Object { $_.platform -eq $Platform })
+    [Int64]$durationMs = 0
+
+    foreach ($total in $platformTotals + $platformUsage) {
+        foreach ($propertyName in @("activeMs", "idleMs", "webMs")) {
+            if ($null -ne $total.$propertyName) {
+                $durationMs += [Int64]$total.$propertyName
+            }
+        }
+    }
+
+    [pscustomobject]@{
+        DataPresent = ($currentApps.Count -gt 0) -or ($durationMs -gt 0)
+        CurrentAppCount = $currentApps.Count
+        DeviceCount = $devices.Count
+        UsageDurationMs = $durationMs
+    }
+}
+
+function Test-IntegratedDashboardDataPresence(
+    [string]$ApiUrl,
+    [bool]$RequireWindows,
+    [bool]$RequireAndroid) {
+    Write-Step "Verifying integrated dashboard data presence"
+
+    $messages = [System.Collections.Generic.List[string]]::new()
+
+    try {
+        $snapshot = Invoke-RestMethod -Method Get -Uri $ApiUrl
+    } catch {
+        $messages.Add("Integrated dashboard API request failed: $($_.Exception.Message)")
+
+        return [pscustomobject]@{
+            Succeeded = $false
+            ApiUrl = $ApiUrl
+            WindowsStatus = if ($RequireWindows) { "missing" } else { "skipped" }
+            AndroidStatus = if ($RequireAndroid) { "missing" } else { "skipped" }
+            WindowsDataPresent = $false
+            AndroidDataPresent = $false
+            WindowsCurrentAppCount = 0
+            AndroidCurrentAppCount = 0
+            WindowsDeviceCount = 0
+            AndroidDeviceCount = 0
+            WindowsUsageDurationMs = 0
+            AndroidUsageDurationMs = 0
+            Messages = $messages.ToArray()
+        }
+    }
+
+    $windowsPresence = Get-IntegratedDashboardPlatformPresence $snapshot "windows"
+    $androidPresence = Get-IntegratedDashboardPlatformPresence $snapshot "android"
+
+    if ($RequireWindows -and !$windowsPresence.DataPresent) {
+        $messages.Add("Missing required Windows data in /api/dashboard/integrated after bridge upload. Use -SkipWindows only when Windows data is intentionally absent.")
+    }
+
+    if ($RequireAndroid -and !$androidPresence.DataPresent) {
+        $messages.Add("Missing required Android data in /api/dashboard/integrated after bridge upload. Use -SkipAndroid only when Android data is intentionally absent.")
+    }
+
+    [pscustomobject]@{
+        Succeeded = $messages.Count -eq 0
+        ApiUrl = $ApiUrl
+        WindowsStatus = if (!$RequireWindows) { "skipped" } elseif ($windowsPresence.DataPresent) { "present" } else { "missing" }
+        AndroidStatus = if (!$RequireAndroid) { "skipped" } elseif ($androidPresence.DataPresent) { "present" } else { "missing" }
+        WindowsDataPresent = [bool]$windowsPresence.DataPresent
+        AndroidDataPresent = [bool]$androidPresence.DataPresent
+        WindowsCurrentAppCount = $windowsPresence.CurrentAppCount
+        AndroidCurrentAppCount = $androidPresence.CurrentAppCount
+        WindowsDeviceCount = $windowsPresence.DeviceCount
+        AndroidDeviceCount = $androidPresence.DeviceCount
+        WindowsUsageDurationMs = $windowsPresence.UsageDurationMs
+        AndroidUsageDurationMs = $androidPresence.UsageDurationMs
+        Messages = $messages.ToArray()
+    }
+}
+
 if ($Help) {
     Write-Usage
     exit 0
 }
 
 $dashboardUrl = "$baseUrl/dashboard?userId=$([uri]::EscapeDataString($UserId))&from=$today&to=$today&timezoneId=$([uri]::EscapeDataString($TimezoneId))"
+$integratedDashboardApiUrl = "$baseUrl/api/dashboard/integrated?userId=$([uri]::EscapeDataString($UserId))&from=$today&to=$today&timezoneId=$([uri]::EscapeDataString($TimezoneId))"
 
 if ($DryRun) {
     Write-Step "Dry run: would call scripts\start-server-postgres.ps1"
@@ -108,6 +190,7 @@ if ($DryRun) {
     Write-Step "Dry run: would run Woong.MonitorStack.LocalDashboardBridge"
     Write-Step "Dry run: WPF SQLite path: $WindowsDb"
     Write-Step "Dry run: Android Room path: $AndroidDb"
+    Write-Step "Dry run: would check /api/dashboard/integrated and write Windows/Android data-presence status to report.md"
     Write-Step "Dry run: would open $dashboardUrl"
     exit 0
 }
@@ -175,22 +258,53 @@ try {
         throw "Local dashboard bridge failed with exit code $LASTEXITCODE."
     }
 
+    $verification = Test-IntegratedDashboardDataPresence `
+        -ApiUrl $integratedDashboardApiUrl `
+        -RequireWindows:(-not $SkipWindows) `
+        -RequireAndroid:(-not $SkipAndroid)
+
     $reportPath = Join-Path $OutputRoot "report.md"
-    @(
+    $reportLines = @(
         "# Local Integrated Dashboard",
         "",
         "- Dashboard: $dashboardUrl",
+        "- Integrated dashboard API: $integratedDashboardApiUrl",
         "- WPF SQLite: $WindowsDb",
         "- Android Room: $AndroidDb",
         "- Server: $baseUrl",
         "- PostgreSQL: Docker localhost:55432",
         "",
+        "## Post-upload verification",
+        "",
+        "- Windows data present: $($verification.WindowsDataPresent) (status: $($verification.WindowsStatus); current apps: $($verification.WindowsCurrentAppCount); devices: $($verification.WindowsDeviceCount); usage duration ms: $($verification.WindowsUsageDurationMs))",
+        "- Android data present: $($verification.AndroidDataPresent) (status: $($verification.AndroidStatus); current apps: $($verification.AndroidCurrentAppCount); devices: $($verification.AndroidDeviceCount); usage duration ms: $($verification.AndroidUsageDurationMs))",
+        "",
         "This local flow uploads app/window/site/location metadata only. It does not read typed text, passwords, messages, clipboard contents, page contents, screenshots, or Android touch coordinates."
-    ) | Set-Content -LiteralPath $reportPath -Encoding UTF8
+    )
+
+    $verificationMessages = @($verification.Messages)
+    if ($verificationMessages.Count -gt 0) {
+        $reportLines += ""
+        $reportLines += "## Verification warnings"
+        $reportLines += ""
+        foreach ($message in $verificationMessages) {
+            $reportLines += "- $message"
+        }
+    }
+
+    $reportLines | Set-Content -LiteralPath $reportPath -Encoding UTF8
+
+    foreach ($message in $verificationMessages) {
+        Write-Warning $message
+    }
 
     Write-Step "Dashboard URL:"
     Write-Host $dashboardUrl
     Write-Step "Report: $reportPath"
+
+    if (!$verification.Succeeded) {
+        throw "Integrated dashboard verification failed. See report: $reportPath"
+    }
 
     if (!$NoOpenBrowser) {
         Start-Process $dashboardUrl

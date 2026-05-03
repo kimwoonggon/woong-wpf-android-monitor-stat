@@ -58,6 +58,76 @@ public sealed class WindowsSyncWorkerTests
     }
 
     [Fact]
+    public async Task ProcessPendingAsync_WhenApiThrows_MarksItemFailedAndContinuesWithNextItem()
+    {
+        var failedItem = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: "{\"clientSessionId\":\"session-1\"}",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        var syncedItem = SyncOutboxItem.Pending(
+            id: "outbox-2",
+            aggregateType: "focus_session",
+            aggregateId: "session-2",
+            payloadJson: "{\"clientSessionId\":\"session-2\"}",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 5, 0, TimeSpan.Zero));
+        var syncedAtUtc = new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero);
+        var repository = new FakeSyncOutboxRepository([failedItem, syncedItem]);
+        var apiClient = new ScriptedSyncApiClient([
+            _ => throw new InvalidOperationException("network dropped"),
+            _ => Task.FromResult(new UploadBatchResult(
+                [new UploadItemResult("session-2", UploadItemStatus.Accepted, ErrorMessage: null)]))
+        ]);
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(syncedAtUtc));
+
+        WindowsSyncResult result = await worker.ProcessPendingAsync();
+
+        Assert.Equal(1, result.SyncedCount);
+        Assert.Equal(1, result.FailedCount);
+        Assert.Equal([failedItem, syncedItem], apiClient.UploadedItems);
+        Assert.Collection(
+            repository.Items,
+            saved =>
+            {
+                Assert.Equal(SyncOutboxStatus.Failed, saved.Status);
+                Assert.Equal(1, saved.RetryCount);
+                Assert.Equal("InvalidOperationException: network dropped", saved.LastError);
+                Assert.Null(saved.SyncedAtUtc);
+            },
+            saved =>
+            {
+                Assert.Equal(SyncOutboxStatus.Synced, saved.Status);
+                Assert.Equal(syncedAtUtc, saved.SyncedAtUtc);
+                Assert.Null(saved.LastError);
+            });
+    }
+
+    [Fact]
+    public async Task ProcessPendingAsync_WhenApiCancellationIsThrown_DoesNotMarkItemFailed()
+    {
+        var item = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: "{\"clientSessionId\":\"session-1\"}",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        var repository = new FakeSyncOutboxRepository([item]);
+        var apiClient = new ScriptedSyncApiClient([
+            _ => throw new OperationCanceledException("sync canceled")
+        ]);
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(DateTimeOffset.UtcNow));
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => worker.ProcessPendingAsync());
+
+        SyncOutboxItem saved = Assert.Single(repository.Items);
+        Assert.Equal(SyncOutboxStatus.Pending, saved.Status);
+        Assert.Equal(0, saved.RetryCount);
+        Assert.Null(saved.LastError);
+        Assert.Null(saved.SyncedAtUtc);
+    }
+
+    [Fact]
     public async Task ProcessPendingAsync_WhenApiReportsDuplicate_MarksOutboxItemSynced()
     {
         var failedItem = new SyncOutboxItem(
@@ -124,6 +194,25 @@ public sealed class WindowsSyncWorkerTests
             UploadedItems.Add(item);
 
             return Task.FromResult(_result);
+        }
+    }
+
+    private sealed class ScriptedSyncApiClient : IWindowsSyncApiClient
+    {
+        private readonly Queue<Func<SyncOutboxItem, Task<UploadBatchResult>>> _uploads;
+
+        public ScriptedSyncApiClient(IEnumerable<Func<SyncOutboxItem, Task<UploadBatchResult>>> uploads)
+        {
+            _uploads = new Queue<Func<SyncOutboxItem, Task<UploadBatchResult>>>(uploads);
+        }
+
+        public List<SyncOutboxItem> UploadedItems { get; } = [];
+
+        public Task<UploadBatchResult> UploadAsync(SyncOutboxItem item, CancellationToken cancellationToken = default)
+        {
+            UploadedItems.Add(item);
+
+            return _uploads.Dequeue()(item);
         }
     }
 

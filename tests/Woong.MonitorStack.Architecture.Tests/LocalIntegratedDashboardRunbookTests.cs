@@ -42,6 +42,32 @@ public sealed class LocalIntegratedDashboardRunbookTests
         Assert.Contains("does not read typed text", docs, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void LocalIntegratedDashboardScript_VerifiesDashboardDataPresenceAfterBridgeUpload()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-local-integrated-dashboard.ps1");
+
+        Assert.True(File.Exists(scriptPath), "Local integrated dashboard script must exist.");
+
+        string script = File.ReadAllText(scriptPath);
+        int bridgeUploadIndex = script.IndexOf("Uploading local client data through API DTOs", StringComparison.Ordinal);
+        int verificationIndex = script.IndexOf("$verification = Test-IntegratedDashboardDataPresence", StringComparison.Ordinal);
+
+        Assert.True(bridgeUploadIndex >= 0, "Script must run the local dashboard bridge.");
+        Assert.True(verificationIndex > bridgeUploadIndex, "Script must verify dashboard data presence after the bridge upload.");
+        Assert.Contains("/api/dashboard/integrated", script, StringComparison.Ordinal);
+        Assert.Contains("currentApps", script, StringComparison.Ordinal);
+        Assert.Contains("$SkipWindows", script, StringComparison.Ordinal);
+        Assert.Contains("$SkipAndroid", script, StringComparison.Ordinal);
+        Assert.Contains("Missing required Windows data", script, StringComparison.Ordinal);
+        Assert.Contains("Missing required Android data", script, StringComparison.Ordinal);
+        Assert.Contains("Windows data present", script, StringComparison.Ordinal);
+        Assert.Contains("Android data present", script, StringComparison.Ordinal);
+        Assert.Contains("Integrated dashboard verification failed", script, StringComparison.Ordinal);
+        Assert.Contains("report.md", script, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

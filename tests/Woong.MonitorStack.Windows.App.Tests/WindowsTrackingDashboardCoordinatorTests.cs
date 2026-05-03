@@ -529,6 +529,52 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
             new DateTimeOffset(2026, 4, 28, 1, 0, 0, TimeSpan.Zero)));
     }
 
+    [Fact]
+    public void StartTracking_WhenAlreadyRunning_DoesNotReplaceOpenPollerOrTruncateSession()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 100,
+            processId: 10,
+            processName: "Code.exe",
+            executablePath: "C:\\Apps\\Code.exe",
+            windowTitle: "Project - Visual Studio Code"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        int pollerFactoryCalls = 0;
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () =>
+            {
+                pollerFactoryCalls++;
+                return new TrackingPoller(
+                    new ForegroundWindowCollector(foregroundReader, clock),
+                    new AlwaysActiveLastInputReader(),
+                    new IdleDetector(TimeSpan.FromMinutes(5)),
+                    new FocusSessionizer("windows-device-1", "Asia/Seoul"));
+            },
+            focusRepository,
+            outboxRepository,
+            clock);
+
+        coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(2);
+
+        DashboardTrackingSnapshot duplicateStart = coordinator.StartTracking();
+        clock.UtcNow = startedAtUtc.AddMinutes(3);
+        DashboardTrackingSnapshot stopped = coordinator.StopTracking();
+
+        Assert.Equal(1, pollerFactoryCalls);
+        Assert.Equal("Code.exe", duplicateStart.AppName);
+        Assert.Equal("00:02:00", FormatClockDuration(duplicateStart.CurrentSessionDuration));
+        Assert.Equal("Code.exe", stopped.LastPersistedSession?.AppName);
+        FocusSession saved = Assert.Single(focusRepository.QueryByRange(
+            startedAtUtc.AddMinutes(-1),
+            startedAtUtc.AddMinutes(4)));
+        Assert.Equal(180_000, saved.DurationMs);
+        Assert.Single(outboxRepository.QueryAll());
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))
