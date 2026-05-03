@@ -64,6 +64,145 @@ The WPF app uses a local SQLite database for Windows-only data. It does not read
 Android Room tables directly, and PostgreSQL remains the only integrated
 Windows + Android database.
 
+### Beginner Q&A: How The Tables Connect
+
+#### What is the relationship between `current_app_state` and `focus_session`?
+
+`current_app_state` is the latest foreground app state. It is a single-row
+runtime snapshot, like "what app is being watched right now?"
+
+`focus_session` is the historical record created after a foreground interval is
+closed. When the user switches apps, becomes idle, stops tracking, or the app
+flushes the current open interval, the previously current app can become a
+closed `focus_session` row.
+
+Example:
+
+```text
+09:00 Chrome becomes foreground
+current_app_state = Chrome
+
+09:10 Chrome is still foreground
+current_app_state = Chrome
+focus_session may not have a closed Chrome row yet
+
+09:20 User switches to VS Code
+current_app_state = VS Code
+focus_session receives Chrome 09:00-09:20
+```
+
+This relationship is conceptual. The current table does not have a
+`focus_session_id` foreign key. The runtime coordinator converts open state into
+closed session records.
+
+#### What do Mermaid symbols such as `||`, `o|`, and `o{` mean?
+
+The diagrams use Mermaid ER notation:
+
+```text
+|| = exactly one
+o| = zero or one
+o{ = zero or many
+|{ = one or many
+```
+
+So:
+
+```text
+focus_session ||--o{ web_session
+```
+
+means one focus session can have zero or many web sessions. A VS Code focus
+session usually has no web sessions, while a Chrome focus session can contain
+multiple domain intervals such as `github.com`, `chatgpt.com`, and
+`youtube.com`.
+
+#### Why does `browser_raw_event` look different from `web_session`?
+
+`browser_raw_event` is not the final statistics table. It stores browser
+native-message events such as "tab/domain changed at this observed time."
+
+It has `observed_at_utc`, `tab_id`, and `window_id` because each row is one raw
+browser event. It does not have `started_at_utc`, `ended_at_utc`, or
+`duration_ms` because duration is calculated later when raw events are
+sessionized into `web_session` rows.
+
+Example:
+
+```text
+browser_raw_event:
+09:00 tab 12 domain github.com
+09:10 tab 12 domain chatgpt.com
+09:25 tab 12 domain youtube.com
+
+web_session:
+github.com  09:00-09:10  10m
+chatgpt.com 09:10-09:25  15m
+youtube.com 09:25-09:30   5m
+```
+
+Important: `browser_raw_event.window_id` is the browser extension window id, not
+the Windows `HWND`. It must not be joined directly to
+`focus_session.window_handle`.
+
+#### Does `focus_session_id` appear every hour?
+
+No. A focus session id is created when an app/window focus interval becomes a
+session. It is not an hourly id. It is tied to a usage interval.
+
+If Chrome remains foreground for three hours without a focus/idle boundary, it
+can be one long focus session:
+
+```text
+Chrome 09:00-12:00
+client_session_id = A
+```
+
+If the user switches apps every ten minutes, each closed interval gets its own
+primary key:
+
+```text
+09:00-09:10 Chrome  client_session_id = A
+09:10-09:20 VS Code client_session_id = B
+09:20-09:30 Chrome  client_session_id = C
+```
+
+In this project:
+
+```text
+focus_session.client_session_id = primary key for one app/window usage record
+web_session.focus_session_id = the focus-session id that a browser/domain record belongs to
+```
+
+#### How are tables linked if SQLite does not define `FOREIGN KEY` constraints?
+
+The application code writes matching identifiers into related rows.
+
+For focus uploads:
+
+```text
+focus_session.client_session_id
+= sync_outbox.aggregate_id where aggregate_type = "focus_session"
+```
+
+For web sessions:
+
+```text
+focus_session.client_session_id
+= web_session.focus_session_id
+```
+
+For web uploads, the code creates an aggregate id from the focus session id and
+web session start time:
+
+```text
+sync_outbox.aggregate_type = "web_session"
+sync_outbox.aggregate_id = "{web_session.focus_session_id}:{web_session.started_at_utc}"
+```
+
+So the relationship is enforced by repository/persistence code rather than by
+SQLite foreign-key declarations.
+
 ### Table Overview
 
 | Table | Purpose | Written by | Read by | Sync behavior |
