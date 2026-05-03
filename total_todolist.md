@@ -376,6 +376,19 @@ milestones below are finished.
 - [x] Run full solution restore/test/build after refactor.
 - [x] Commit and push WPF architecture refactor follow-up.
 
+## Milestone 14.2: WPF Lifecycle Hardening Follow-Up
+
+- [x] Extract `MainWindowLifecycleCoordinator` so `MainWindow.xaml.cs` remains a thin WPF shell.
+- [x] Keep `MainWindow` responsible for `InitializeComponent`, `DataContext`, WPF events, and HWND hook/source integration.
+- [x] Add lifecycle coordinator tests for auto-start, polling, close flush, ticker unsubscribe, and tray minimize delegation.
+- [x] Add `WpfDashboardApplicationLifetime` tests for explicit exit delegation with compatible and incompatible main windows.
+- [x] Add tray restore-event coverage for the notification-area icon restore path.
+- [x] Document the `MainWindow` lifecycle boundary in `docs/architecture/reference-rules.md`.
+- [x] Add architecture tests preventing `MainWindow.xaml.cs` from directly owning raw ticker fields or dashboard tracking commands.
+- [x] Run focused WPF App and Architecture tests after lifecycle hardening.
+- [x] Run full solution restore/test/build after lifecycle hardening.
+- [x] Commit and push WPF lifecycle hardening follow-up.
+
 ## Milestone 15: Completion Audit
 
 - [x] Check `docs/prd.md` and `total_todolist.md` for conflicts.

@@ -119,6 +119,16 @@ It contains `App.xaml`, `MainWindow.xaml`, host/DI setup, WPF resources, and UI
 adapters. Code-behind should stay thin: initialization, `DataContext`
 assignment, and WPF lifecycle integration only.
 
+`MainWindow` is a thin WPF shell. It may initialize XAML, assign the
+`DataContext`, and translate WPF lifecycle events or window messages into calls
+on a lifecycle coordinator. It must not directly execute
+`DashboardViewModel.StartTrackingCommand`,
+`DashboardViewModel.PollTrackingCommand`, or
+`DashboardViewModel.StopTrackingCommand`, and it must not hold raw
+`ITrackingTicker` or dispatcher ticker fields. Tracking start, poll, stop, and
+ticker orchestration belongs in `Runtime/MainWindowLifecycleCoordinator` or an
+equivalent Windows app-layer lifecycle service.
+
 `App.xaml.cs` owns the Generic Host lifecycle and resolves `MainWindow` from
 DI. It must not manually construct `DashboardViewModel`,
 `EmptyDashboardDataSource`, or `SystemDashboardClock`.

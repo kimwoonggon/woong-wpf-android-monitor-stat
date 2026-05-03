@@ -5741,3 +5741,16 @@ Validation update:
 - Focused validation passed during the refactor: WPF Presentation tests reached 110 passing tests, and WPF App tests reached 193 passing tests.
 - Next required validation before commit: full solution restore/test/build.
 - Final validation for the WPF architecture refactor follow-up passed: `dotnet restore tests\Woong.MonitorStack.Domain.Tests\Woong.MonitorStack.Domain.Tests.csproj --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (667 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+
+## 2026-05-03 WPF Lifecycle Hardening Follow-Up
+
+- Extracted `MainWindowLifecycleCoordinator` so `MainWindow.xaml.cs` remains a thin WPF shell for initialization, DataContext assignment, WPF events, and HWND hook/source integration.
+- Lifecycle coordination now owns loaded auto-start, ticker polling, close flush, closed ticker stop/unsubscribe, and tray minimize delegation.
+- Added lifecycle coordinator tests for loaded/polling/close/flush/tray behavior.
+- Added `WpfDashboardApplicationLifetime` tests for explicit exit delegation with compatible `MainWindow` and incompatible/null fallback windows.
+- Added notification-area tray restore-event coverage.
+- Documented the `MainWindow` lifecycle boundary in `docs/architecture/reference-rules.md`.
+- Added architecture tests preventing `MainWindow.xaml.cs` from directly owning raw ticker fields or dashboard Start/Poll/Stop command orchestration.
+- Focused validation passed: WPF App tests reached 197 passing tests, and Architecture tests reached 141 passing tests.
+- Next required validation before commit: full solution restore/test/build.
+- Final validation for the WPF lifecycle hardening follow-up passed: `dotnet restore tests\Woong.MonitorStack.Domain.Tests\Woong.MonitorStack.Domain.Tests.csproj --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (675 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.

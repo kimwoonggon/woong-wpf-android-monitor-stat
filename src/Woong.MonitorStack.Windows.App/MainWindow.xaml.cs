@@ -9,13 +9,8 @@ public partial class MainWindow : Window
     private const int WmSysCommand = 0x0112;
     private const int ScClose = 0xF060;
 
-    private readonly ITrackingTicker _trackingTicker;
-    private readonly IWindowsTrayLifecycleService _trayLifecycle;
-    private readonly ITrayLifecycleWindow _trayWindow;
-    private readonly DashboardViewModel _viewModel;
-    private readonly MainWindowStartupOptions _startupOptions;
+    private readonly MainWindowLifecycleCoordinator _lifecycleCoordinator;
     private HwndSource? _windowMessageSource;
-    private bool _hasAppliedStartupOptions;
 
     public MainWindow(DashboardViewModel viewModel)
         : this(viewModel, MainWindowStartupOptions.Manual, new DispatcherTrackingTicker())
@@ -57,25 +52,25 @@ public partial class MainWindow : Window
         IWindowsTrayLifecycleService trayLifecycle)
     {
         InitializeComponent();
-        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-        _startupOptions = startupOptions ?? throw new ArgumentNullException(nameof(startupOptions));
-        _trackingTicker = trackingTicker ?? throw new ArgumentNullException(nameof(trackingTicker));
-        _trayLifecycle = trayLifecycle ?? throw new ArgumentNullException(nameof(trayLifecycle));
-        _trayWindow = new WpfTrayLifecycleWindow(this);
-        _trayLifecycle.RegisterWindow(_trayWindow);
+        ArgumentNullException.ThrowIfNull(viewModel);
+        ArgumentNullException.ThrowIfNull(startupOptions);
+        ArgumentNullException.ThrowIfNull(trackingTicker);
+        ArgumentNullException.ThrowIfNull(trayLifecycle);
+
+        var trayWindow = new WpfTrayLifecycleWindow(this);
+        _lifecycleCoordinator = new MainWindowLifecycleCoordinator(
+            viewModel,
+            startupOptions,
+            trackingTicker,
+            trayLifecycle,
+            trayWindow);
         DataContext = viewModel;
-        _trackingTicker.Tick += OnTrackingTickerTick;
         SourceInitialized += OnSourceInitialized;
-        Closing += (_, _) => FlushTrackingBeforeClose();
-        Loaded += (_, _) =>
-        {
-            ApplyStartupOptions();
-            _trackingTicker.Start();
-        };
+        Closing += (_, _) => _lifecycleCoordinator.HandleClosing();
+        Loaded += (_, _) => _lifecycleCoordinator.HandleLoaded();
         Closed += (_, _) =>
         {
-            _trackingTicker.Stop();
-            _trackingTicker.Tick -= OnTrackingTickerTick;
+            _lifecycleCoordinator.HandleClosed();
             _windowMessageSource?.RemoveHook(OnWindowMessage);
             _windowMessageSource = null;
         };
@@ -91,40 +86,10 @@ public partial class MainWindow : Window
     {
         if (message == WmSysCommand && ((wParam.ToInt64() & 0xFFF0) == ScClose))
         {
-            _trayLifecycle.MinimizeToTaskbar(_trayWindow);
+            _lifecycleCoordinator.MinimizeToTaskbar();
             handled = true;
         }
 
         return IntPtr.Zero;
-    }
-
-    private void FlushTrackingBeforeClose()
-    {
-        if (_viewModel.StopTrackingCommand.CanExecute(null))
-        {
-            _viewModel.StopTrackingCommand.Execute(null);
-        }
-    }
-
-    private void OnTrackingTickerTick(object? sender, EventArgs e)
-    {
-        if (_viewModel.PollTrackingCommand.CanExecute(null))
-        {
-            _viewModel.PollTrackingCommand.Execute(null);
-        }
-    }
-
-    private void ApplyStartupOptions()
-    {
-        if (_hasAppliedStartupOptions)
-        {
-            return;
-        }
-
-        _hasAppliedStartupOptions = true;
-        if (_startupOptions.AutoStartTracking && _viewModel.StartTrackingCommand.CanExecute(null))
-        {
-            _viewModel.StartTrackingCommand.Execute(null);
-        }
     }
 }

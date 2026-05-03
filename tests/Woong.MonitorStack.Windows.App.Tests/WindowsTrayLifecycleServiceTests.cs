@@ -79,6 +79,29 @@ public sealed class WindowsTrayLifecycleServiceTests
     }
 
     [Fact]
+    public void TrayIconRestoreRequest_RestoresRegisteredWindowAndWritesLifecycleEvent()
+    {
+        var window = new FakeTrayWindow
+        {
+            ShowInTaskbar = false,
+            WindowState = WindowState.Minimized
+        };
+        var trayIcon = new FakeTrayIcon { IsVisible = true };
+        var runtimeLogSink = new RecordingRuntimeLogSink();
+        var service = new WindowsTrayLifecycleService(trayIcon, runtimeLogSink);
+        service.RegisterWindow(window);
+
+        trayIcon.RaiseRestoreRequested();
+
+        Assert.Equal(1, window.ShowCallCount);
+        Assert.Equal(1, window.ActivateCallCount);
+        Assert.True(window.ShowInTaskbar);
+        Assert.Equal(WindowState.Normal, window.WindowState);
+        Assert.True(trayIcon.IsVisible);
+        Assert.Contains(runtimeLogSink.Events, logEvent => logEvent.EventType == "Window restored from tray");
+    }
+
+    [Fact]
     public void MinimizeToTaskbar_WhenRuntimeLogSinkThrows_DoesNotThrowAndWritesFallbackDiagnostic()
     {
         var fallbackMessages = new List<string>();
