@@ -67,13 +67,36 @@ public static class WindowsAppServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddWindowsCaptureServices();
+        services.AddBrowserCaptureServices();
+        services.AddTrackingPipelineServices();
+        services.AddStorageServices();
+        services.AddDashboardAdapterServices();
+
+        return services;
+    }
+
+    private static IServiceCollection AddWindowsCaptureServices(this IServiceCollection services)
+    {
         services.AddSingleton<ISystemClock, SystemClock>();
         services.AddSingleton<IForegroundWindowReader, WindowsForegroundWindowReader>();
         services.AddSingleton<ILastInputReader, WindowsLastInputReader>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBrowserCaptureServices(this IServiceCollection services)
+    {
         services.AddSingleton<IBrowserProcessClassifier, BrowserProcessClassifier>();
         services.AddSingleton<IBrowserUrlSanitizer, BrowserUrlSanitizer>();
         services.AddSingleton<IBrowserAddressBarReader, WindowsUiAutomationAddressBarReader>();
         services.AddSingleton<IBrowserActivityReader, UiAutomationBrowserActivityReader>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddTrackingPipelineServices(this IServiceCollection services)
+    {
         services.AddSingleton(provider => new ForegroundWindowCollector(
             provider.GetRequiredService<IForegroundWindowReader>(),
             provider.GetRequiredService<ISystemClock>()));
@@ -83,6 +106,12 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<DashboardOptions>().TimeZoneId));
         services.AddTransient<TrackingPoller>();
         services.AddSingleton<Func<TrackingPoller>>(provider => () => provider.GetRequiredService<TrackingPoller>());
+
+        return services;
+    }
+
+    private static IServiceCollection AddStorageServices(this IServiceCollection services)
+    {
         services.AddSingleton(provider =>
         {
             var repository = new SqliteFocusSessionRepository(
@@ -111,6 +140,12 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<SqliteSyncOutboxRepository>(),
             provider.GetRequiredService<ISystemClock>(),
             BrowserUrlStoragePolicy.DomainOnly));
+
+        return services;
+    }
+
+    private static IServiceCollection AddDashboardAdapterServices(this IServiceCollection services)
+    {
         services.AddSingleton<IDashboardDataSource, SqliteDashboardDataSource>();
         services.AddSingleton<IWindowsDatabaseFilePicker, WindowsDatabaseFilePicker>();
         services.AddSingleton<IDashboardDatabaseController, WindowsLocalDatabaseController>();

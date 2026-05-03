@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel;
-using System.Globalization;
 using Woong.MonitorStack.Domain.Common;
 
 namespace Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -16,10 +15,14 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardApplicationLifetime _applicationLifetime;
     private readonly IDashboardChartDetailsPresenter _chartDetailsPresenter;
     private readonly TimeZoneInfo _timeZone;
+    private readonly DashboardRowMapper _rowMapper;
+    private readonly DashboardPeriodRangeResolver _periodRangeResolver;
+    private readonly DashboardCurrentActivityMapper _currentActivityMapper;
+    private readonly DashboardDetailsPager _detailsPager = new();
     private readonly List<DashboardEventLogRow> _runtimeLiveEvents = [];
     private IReadOnlyList<DashboardEventLogRow> _persistedLiveEvents = [];
     private string? _currentWindowTitle;
-    private ActiveWebSessionSnapshot? _activeWebSession;
+    private DashboardActiveWebSessionPreview? _activeWebSession;
     private bool _isTrackingRunning;
     private TimeRange? _customRange;
 
@@ -69,7 +72,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private string _currentWindowTitleText = "Window title hidden by privacy settings";
 
     [ObservableProperty]
-    private string _currentBrowserDomainText = BrowserDomainUnavailableText;
+    private string _currentBrowserDomainText = DashboardCurrentActivityMapper.BrowserDomainUnavailableText;
 
     [ObservableProperty]
     private string _browserCaptureStatusText = "Browser capture unavailable";
@@ -168,13 +171,16 @@ public sealed partial class DashboardViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(TotalDetailsPages))]
     private int _rowsPerPage = 10;
 
-    public IReadOnlyList<int> RowsPerPageOptions { get; } = [10, 25, 50];
+    public IReadOnlyList<int> RowsPerPageOptions { get; } = DashboardDetailsPager.RowsPerPageOptions;
 
-    public int TotalDetailsPages => Math.Max(1, CalculateTotalDetailsPages());
+    public int TotalDetailsPages => _detailsPager.CalculateTotalPages(
+        SelectedDetailsTab,
+        RecentSessions.Count,
+        RecentWebSessions.Count,
+        LiveEvents.Count,
+        RowsPerPage);
 
     public string DetailsPageText => $"{CurrentDetailsPage} / {TotalDetailsPages}";
-
-    private const string BrowserDomainUnavailableText = "No browser domain yet. Connect browser capture; app focus is tracked.";
 
     public DashboardViewModel(
         IDashboardDataSource dataSource,
@@ -195,6 +201,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         _chartDetailsPresenter = chartDetailsPresenter ?? new NullDashboardChartDetailsPresenter();
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
+        _rowMapper = new DashboardRowMapper(_timeZone);
+        _periodRangeResolver = new DashboardPeriodRangeResolver(_timeZone);
+        _currentActivityMapper = new DashboardCurrentActivityMapper(_timeZone);
         InitializeCustomRangeDefaults();
         Settings.CurrentDatabasePathText = _databaseController.CurrentDatabasePath;
         Settings.RuntimeLogPathText = _runtimeLogSink.LogPath;
@@ -206,32 +215,31 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     public void UpdateCurrentActivity(DashboardTrackingSnapshot snapshot)
     {
-        ArgumentNullException.ThrowIfNull(snapshot);
+        DashboardCurrentActivityPresentation presentation = _currentActivityMapper.Map(
+            snapshot,
+            Settings.IsWindowTitleVisible);
 
-        CurrentAppNameText = TextOrDefault(snapshot.AppName, "No current app");
-        CurrentProcessNameText = TextOrDefault(snapshot.ProcessName, "No process");
-        CurrentBrowserDomainText = FormatBrowserDomain(snapshot.CurrentBrowserDomain);
-        BrowserCaptureStatusText = FormatBrowserCaptureStatus(snapshot.BrowserCaptureStatus);
-        _activeWebSession = CreateActiveWebSessionSnapshot(snapshot);
-        _currentWindowTitle = Settings.IsWindowTitleVisible ? snapshot.WindowTitle : null;
-        UpdateCurrentWindowTitleText();
-        CurrentSessionDurationText = FormatClockDuration(snapshot.CurrentSessionDuration);
+        CurrentAppNameText = presentation.AppNameText;
+        CurrentProcessNameText = presentation.ProcessNameText;
+        CurrentBrowserDomainText = presentation.BrowserDomainText;
+        BrowserCaptureStatusText = presentation.BrowserCaptureStatusText;
+        _activeWebSession = presentation.ActiveWebSessionPreview;
+        _currentWindowTitle = presentation.CapturedWindowTitle;
+        CurrentWindowTitleText = presentation.CurrentWindowTitleText;
+        CurrentSessionDurationText = presentation.CurrentSessionDurationText;
         if (snapshot.LastPersistedSession is not null)
         {
             LastPersistedSessionText = FormatPersistedSession(snapshot.LastPersistedSession);
         }
 
-        if (snapshot.LastPollAtUtc is not null)
+        if (presentation.LastPollTimeText is not null)
         {
-            LastPollTimeText = FormatLocalTime(snapshot.LastPollAtUtc.Value, _timeZone);
+            LastPollTimeText = presentation.LastPollTimeText;
         }
 
-        DateTimeOffset? lastDbWriteAtUtc = snapshot.LastDbWriteAtUtc
-            ?? snapshot.LastPersistedSession?.EndedAtUtc
-            ?? (snapshot.HasPersistedWebSession ? snapshot.LastPollAtUtc : null);
-        if (lastDbWriteAtUtc is not null)
+        if (presentation.LastDbWriteTimeText is not null)
         {
-            LastDbWriteTimeText = FormatLocalTime(lastDbWriteAtUtc.Value, _timeZone);
+            LastDbWriteTimeText = presentation.LastDbWriteTimeText;
         }
     }
 
@@ -245,7 +253,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     public void SelectCustomRange(DateTimeOffset startedAtUtc, DateTimeOffset endedAtUtc)
     {
         _customRange = TimeRange.FromUtc(startedAtUtc, endedAtUtc);
-        CustomRangeStatusText = FormatCustomRangeStatus(_customRange);
+        CustomRangeStatusText = _periodRangeResolver.FormatCustomRangeStatus(_customRange);
         SelectPeriod(DashboardPeriod.Custom);
     }
 
@@ -262,15 +270,15 @@ public sealed partial class DashboardViewModel : ObservableObject
             return;
         }
 
-        if (!TryParseClockTime(CustomStartTimeText, out TimeSpan startTime)
-            || !TryParseClockTime(CustomEndTimeText, out TimeSpan endTime))
+        if (!_periodRangeResolver.TryParseClockTime(CustomStartTimeText, out TimeSpan startTime)
+            || !_periodRangeResolver.TryParseClockTime(CustomEndTimeText, out TimeSpan endTime))
         {
             CustomRangeStatusText = "Use HH:mm for custom start and end times.";
             return;
         }
 
-        DateTimeOffset startedAtUtc = ConvertLocalDashboardDateTimeToUtc(CustomStartDate.Value, startTime);
-        DateTimeOffset endedAtUtc = ConvertLocalDashboardDateTimeToUtc(CustomEndDate.Value, endTime);
+        DateTimeOffset startedAtUtc = _periodRangeResolver.ConvertLocalDashboardDateTimeToUtc(CustomStartDate.Value, startTime);
+        DateTimeOffset endedAtUtc = _periodRangeResolver.ConvertLocalDashboardDateTimeToUtc(CustomEndDate.Value, endTime);
         if (endedAtUtc <= startedAtUtc)
         {
             CustomRangeStatusText = "Custom end must be after custom start.";
@@ -487,9 +495,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     partial void OnRowsPerPageChanged(int value)
     {
-        if (!RowsPerPageOptions.Contains(value))
+        if (!_detailsPager.IsSupportedRowsPerPage(value))
         {
-            RowsPerPage = 10;
+            RowsPerPage = DashboardDetailsPager.DefaultRowsPerPage;
             return;
         }
 
@@ -530,9 +538,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
     private void UpdateCurrentWindowTitleText()
     {
-        CurrentWindowTitleText = Settings.IsWindowTitleVisible
-            ? TextOrDefault(_currentWindowTitle, "No window title")
-            : "Window title hidden by privacy settings";
+        CurrentWindowTitleText = _currentActivityMapper.FormatCurrentWindowTitle(
+            _currentWindowTitle,
+            Settings.IsWindowTitleVisible);
     }
 
     private void ApplyDatabaseActionResult(DashboardDatabaseActionResult result)
@@ -556,23 +564,21 @@ public sealed partial class DashboardViewModel : ObservableObject
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
         IReadOnlyList<WebSession> persistedWebSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
         IReadOnlyList<WebSession> webSessions = IncludeActiveWebSession(persistedWebSessions, range);
-        DailySummary summary = BuildRangeSummary(focusSessions, webSessions, range);
-        long totalForegroundMs = focusSessions.Sum(session => session.DurationMs);
-        string periodDescriptor = FormatPeriodDescriptor(SelectedPeriod);
+        DashboardSummarySnapshot summarySnapshot = DashboardSummaryBuilder.Build(
+            focusSessions,
+            webSessions,
+            range,
+            SelectedPeriod,
+            _timeZone.Id);
+        DailySummary summary = summarySnapshot.Summary;
 
-        TotalActiveMs = summary.TotalActiveMs;
-        TotalForegroundMs = totalForegroundMs;
-        TotalIdleMs = summary.TotalIdleMs;
-        TotalWebMs = summary.TotalWebMs;
-        TopAppName = summary.TopApps.FirstOrDefault()?.Key ?? "";
-        TopDomainName = summary.TopDomains.FirstOrDefault()?.Key ?? "";
-        SummaryCards =
-        [
-            new("Active Focus", FormatDuration(summary.TotalActiveMs), $"{periodDescriptor} focused foreground time"),
-            new("Foreground", FormatDuration(totalForegroundMs), $"{periodDescriptor} foreground time"),
-            new("Idle", FormatDuration(summary.TotalIdleMs), $"{periodDescriptor} idle foreground time"),
-            new("Web Focus", FormatDuration(summary.TotalWebMs), $"{periodDescriptor} browser domain time")
-        ];
+        TotalActiveMs = summarySnapshot.TotalActiveMs;
+        TotalForegroundMs = summarySnapshot.TotalForegroundMs;
+        TotalIdleMs = summarySnapshot.TotalIdleMs;
+        TotalWebMs = summarySnapshot.TotalWebMs;
+        TopAppName = summarySnapshot.TopAppName;
+        TopDomainName = summarySnapshot.TopDomainName;
+        SummaryCards = summarySnapshot.SummaryCards;
         HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
         IReadOnlyList<DashboardChartPoint> allAppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
         IReadOnlyList<DashboardChartPoint> allDomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
@@ -583,9 +589,9 @@ public sealed partial class DashboardViewModel : ObservableObject
         HourlyActivityChart = DashboardLiveChartsMapper.BuildColumnChart("Activity", HourlyActivityPoints);
         AppUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Apps", AppUsagePoints);
         DomainUsageChart = DashboardLiveChartsMapper.BuildHorizontalBarChart("Domains", DomainUsagePoints);
-        RecentSessions = BuildRecentSessionRows(focusSessions);
-        RecentWebSessions = BuildRecentWebSessionRows(webSessions);
-        _persistedLiveEvents = BuildLiveEventRows(focusSessions, webSessions);
+        RecentSessions = _rowMapper.BuildRecentSessionRows(focusSessions, Settings.IsWindowTitleVisible);
+        RecentWebSessions = _rowMapper.BuildRecentWebSessionRows(webSessions, Settings.IsWindowTitleVisible);
+        _persistedLiveEvents = _rowMapper.BuildLiveEventRows(focusSessions, webSessions);
         PublishLiveEvents();
         CurrentDetailsPage = 1;
         UpdateVisibleDetailsRows();
@@ -611,9 +617,9 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         _runtimeLiveEvents.Insert(
             0,
-            new DashboardEventLogRow(
+            _rowMapper.BuildRuntimeEventRow(
+                occurredAtUtc,
                 eventType,
-                FormatLocalTime(occurredAtUtc, _timeZone),
                 resolvedAppName,
                 resolvedDomain,
                 message));
@@ -667,69 +673,27 @@ public sealed partial class DashboardViewModel : ObservableObject
             .Concat(_persistedLiveEvents)
             .ToList();
 
-    private int CalculateTotalDetailsPages()
-    {
-        int selectedRowCount = SelectedDetailsTab switch
-        {
-            DetailsTab.AppSessions => RecentSessions.Count,
-            DetailsTab.WebSessions => RecentWebSessions.Count,
-            DetailsTab.LiveEventLog => LiveEvents.Count,
-            DetailsTab.Settings => 0,
-            _ => 0
-        };
-
-        return (int)Math.Ceiling(selectedRowCount / (double)Math.Max(1, RowsPerPage));
-    }
-
     private void UpdateVisibleDetailsRows()
     {
-        int totalPages = TotalDetailsPages;
-        if (CurrentDetailsPage > totalPages)
+        DashboardDetailsPage page = _detailsPager.BuildPage(
+            SelectedDetailsTab,
+            CurrentDetailsPage,
+            RowsPerPage,
+            RecentSessions,
+            RecentWebSessions,
+            LiveEvents);
+        if (CurrentDetailsPage != page.CurrentPage)
         {
-            CurrentDetailsPage = totalPages;
+            CurrentDetailsPage = page.CurrentPage;
         }
 
-        int skip = (CurrentDetailsPage - 1) * RowsPerPage;
-        VisibleAppSessionRows = RecentSessions.Skip(skip).Take(RowsPerPage).ToList();
-        VisibleWebSessionRows = RecentWebSessions.Skip(skip).Take(RowsPerPage).ToList();
-        VisibleLiveEventRows = LiveEvents.Skip(skip).Take(RowsPerPage).ToList();
+        VisibleAppSessionRows = page.VisibleAppSessionRows;
+        VisibleWebSessionRows = page.VisibleWebSessionRows;
+        VisibleLiveEventRows = page.VisibleLiveEventRows;
         OnPropertyChanged(nameof(TotalDetailsPages));
         OnPropertyChanged(nameof(DetailsPageText));
         PreviousDetailsPageCommand.NotifyCanExecuteChanged();
         NextDetailsPageCommand.NotifyCanExecuteChanged();
-    }
-
-    private DailySummary BuildRangeSummary(
-        IEnumerable<FocusSession> focusSessions,
-        IEnumerable<WebSession> webSessions,
-        TimeRange range)
-    {
-        List<FocusSession> focusSessionList = focusSessions.ToList();
-        List<WebSession> webSessionList = webSessions.ToList();
-        DateOnly summaryDate = LocalDateCalculator.GetLocalDate(range.StartedAtUtc, _timeZone.Id);
-        long totalActiveMs = focusSessionList
-            .Where(session => !session.IsIdle)
-            .Sum(session => session.DurationMs);
-        long totalIdleMs = focusSessionList
-            .Where(session => session.IsIdle)
-            .Sum(session => session.DurationMs);
-        List<UsageTotal> topApps = focusSessionList
-            .Where(session => !session.IsIdle)
-            .GroupBy(session => session.PlatformAppKey)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
-            .OrderByDescending(total => total.DurationMs)
-            .ThenBy(total => total.Key, StringComparer.Ordinal)
-            .ToList();
-        long totalWebMs = webSessionList.Sum(session => session.DurationMs);
-        List<UsageTotal> topDomains = webSessionList
-            .Where(session => !string.IsNullOrWhiteSpace(session.Domain))
-            .GroupBy(session => session.Domain)
-            .Select(group => new UsageTotal(group.Key, group.Sum(session => session.DurationMs)))
-            .OrderByDescending(total => total.DurationMs)
-            .ThenBy(total => total.Key, StringComparer.Ordinal)
-            .ToList();
-
-        return new DailySummary(summaryDate, totalActiveMs, totalIdleMs, totalWebMs, topApps, topDomains);
     }
 
     private IReadOnlyDictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>> BuildPeriodPointSets(
@@ -750,7 +714,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private IReadOnlyList<DashboardChartPoint> BuildAppUsageDetailPoints(TimeRange range)
     {
         IReadOnlyList<FocusSession> focusSessions = _dataSource.QueryFocusSessions(range.StartedAtUtc, range.EndedAtUtc);
-        DailySummary summary = BuildRangeSummary(focusSessions, [], range);
+        DailySummary summary = DashboardSummaryBuilder.BuildDailySummary(focusSessions, [], range, _timeZone.Id);
 
         return DashboardChartMapper.BuildAppUsagePoints(summary).Take(10).ToList();
     }
@@ -759,7 +723,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     {
         IReadOnlyList<WebSession> persistedWebSessions = _dataSource.QueryWebSessions(range.StartedAtUtc, range.EndedAtUtc);
         IReadOnlyList<WebSession> webSessions = IncludeActiveWebSession(persistedWebSessions, range);
-        DailySummary summary = BuildRangeSummary([], webSessions, range);
+        DailySummary summary = DashboardSummaryBuilder.BuildDailySummary([], webSessions, range, _timeZone.Id);
 
         return DashboardChartMapper.BuildDomainUsagePoints(summary).Take(10).ToList();
     }
@@ -778,191 +742,19 @@ public sealed partial class DashboardViewModel : ObservableObject
     }
 
     private WebSession? CreateActiveWebSessionForRange(TimeRange range)
-    {
-        if (_activeWebSession is null)
-        {
-            return null;
-        }
-
-        DateTimeOffset startedAtUtc = _activeWebSession.StartedAtUtc > range.StartedAtUtc
-            ? _activeWebSession.StartedAtUtc
-            : range.StartedAtUtc;
-        DateTimeOffset endedAtUtc = _activeWebSession.EndedAtUtc < range.EndedAtUtc
-            ? _activeWebSession.EndedAtUtc
-            : range.EndedAtUtc;
-        if (endedAtUtc <= startedAtUtc)
-        {
-            return null;
-        }
-
-        return new WebSession(
-            "current-active-web-session",
-            _activeWebSession.BrowserFamily,
-            url: null,
-            _activeWebSession.Domain,
-            pageTitle: null,
-            TimeRange.FromUtc(startedAtUtc, endedAtUtc),
-            captureMethod: "LiveDashboardPreview",
-            captureConfidence: "Live",
-            isPrivateOrUnknown: false);
-    }
+        => _currentActivityMapper.CreateActiveWebSessionForRange(_activeWebSession, range);
 
     private TimeRange ResolveRange(DashboardPeriod period)
-    {
-        DateTimeOffset utcNow = _clock.UtcNow.ToUniversalTime();
-
-        return period switch
-        {
-            DashboardPeriod.Today => ResolveTodayRange(utcNow),
-            DashboardPeriod.LastHour => TimeRange.FromUtc(utcNow.AddHours(-1), utcNow),
-            DashboardPeriod.Last6Hours => TimeRange.FromUtc(utcNow.AddHours(-6), utcNow),
-            DashboardPeriod.Last24Hours => TimeRange.FromUtc(utcNow.AddHours(-24), utcNow),
-            DashboardPeriod.Custom => _customRange ?? TimeRange.FromUtc(utcNow.AddHours(-1), utcNow),
-            _ => throw new ArgumentOutOfRangeException(nameof(period), period, "Unsupported dashboard period.")
-        };
-    }
-
-    private TimeRange ResolveTodayRange(DateTimeOffset utcNow)
-    {
-        DateTimeOffset localNow = TimeZoneInfo.ConvertTime(utcNow, _timeZone);
-        var localStart = new DateTimeOffset(localNow.Date, localNow.Offset);
-
-        return TimeRange.FromUtc(localStart.ToUniversalTime(), utcNow);
-    }
+        => _periodRangeResolver.ResolveRange(period, _clock.UtcNow, _customRange);
 
     private void InitializeCustomRangeDefaults()
     {
-        DateTimeOffset localNow = TimeZoneInfo.ConvertTime(_clock.UtcNow, _timeZone);
-        CustomStartDate = localNow.Date;
-        CustomEndDate = localNow.Date;
-        CustomStartTimeText = localNow.AddHours(-1).ToString("HH:mm", CultureInfo.InvariantCulture);
-        CustomEndTimeText = localNow.ToString("HH:mm", CultureInfo.InvariantCulture);
+        DashboardCustomRangeDefaults defaults = _periodRangeResolver.CreateCustomRangeDefaults(_clock.UtcNow);
+        CustomStartDate = defaults.StartDate;
+        CustomEndDate = defaults.EndDate;
+        CustomStartTimeText = defaults.StartTimeText;
+        CustomEndTimeText = defaults.EndTimeText;
     }
-
-    private DateTimeOffset ConvertLocalDashboardDateTimeToUtc(DateTime date, TimeSpan time)
-    {
-        DateTime localDateTime = DateTime.SpecifyKind(date.Date.Add(time), DateTimeKind.Unspecified);
-        TimeSpan offset = _timeZone.GetUtcOffset(localDateTime);
-
-        return new DateTimeOffset(localDateTime, offset).ToUniversalTime();
-    }
-
-    private string FormatCustomRangeStatus(TimeRange range)
-    {
-        DateTimeOffset localStart = TimeZoneInfo.ConvertTime(range.StartedAtUtc, _timeZone);
-        DateTimeOffset localEnd = TimeZoneInfo.ConvertTime(range.EndedAtUtc, _timeZone);
-
-        return $"{localStart:yyyy-MM-dd HH:mm} - {localEnd:yyyy-MM-dd HH:mm}";
-    }
-
-    private static bool TryParseClockTime(string value, out TimeSpan time)
-        => TimeSpan.TryParseExact(value, "hh\\:mm", CultureInfo.InvariantCulture, out time)
-           || TimeSpan.TryParseExact(value, "h\\:mm", CultureInfo.InvariantCulture, out time);
-
-    private static string FormatPeriodDescriptor(DashboardPeriod period)
-        => period switch
-        {
-            DashboardPeriod.Today => "Today's",
-            DashboardPeriod.LastHour => "Last 1h",
-            DashboardPeriod.Last6Hours => "Last 6h",
-            DashboardPeriod.Last24Hours => "Last 24h",
-            DashboardPeriod.Custom => "Custom range",
-            _ => "Selected range"
-        };
-
-    private IReadOnlyList<DashboardSessionRow> BuildRecentSessionRows(IEnumerable<FocusSession> focusSessions)
-    {
-        return focusSessions
-            .OrderByDescending(session => session.StartedAtUtc)
-            .Select(session => new DashboardSessionRow(
-                session.PlatformAppKey,
-                TextOrDefault(session.ProcessName, session.PlatformAppKey),
-                TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                FormatSessionDuration(session.DurationMs),
-                session.IsIdle ? "Idle" : "Active",
-                Settings.IsWindowTitleVisible
-                    ? TextOrDefault(session.WindowTitle, "No window title")
-                    : "Hidden by privacy setting",
-                session.Source,
-                session.IsIdle,
-                session.ProcessPath))
-            .ToList();
-    }
-
-    private IReadOnlyList<DashboardWebSessionRow> BuildRecentWebSessionRows(IEnumerable<WebSession> webSessions)
-    {
-        return webSessions
-            .OrderByDescending(session => session.StartedAtUtc)
-            .Select(session => new DashboardWebSessionRow(
-                session.Domain,
-                Settings.IsWindowTitleVisible
-                    ? TextOrDefault(session.PageTitle, "No page title")
-                    : "Page title hidden by privacy settings",
-                FormatUrlMode(session),
-                TimeZoneInfo.ConvertTime(session.StartedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                TimeZoneInfo.ConvertTime(session.EndedAtUtc, _timeZone).ToString("HH:mm", CultureInfo.InvariantCulture),
-                FormatSessionDuration(session.DurationMs),
-                session.BrowserFamily,
-                TextOrDefault(session.CaptureConfidence, "Unknown")))
-            .ToList();
-    }
-
-    private ActiveWebSessionSnapshot? CreateActiveWebSessionSnapshot(DashboardTrackingSnapshot snapshot)
-    {
-        if (snapshot.CurrentWebSessionStartedAtUtc is null ||
-            snapshot.CurrentWebSessionDuration <= TimeSpan.Zero ||
-            string.IsNullOrWhiteSpace(snapshot.CurrentBrowserDomain))
-        {
-            return null;
-        }
-
-        DateTimeOffset endedAtUtc = snapshot.LastPollAtUtc
-            ?? snapshot.CurrentWebSessionStartedAtUtc.Value.Add(snapshot.CurrentWebSessionDuration);
-        if (endedAtUtc <= snapshot.CurrentWebSessionStartedAtUtc.Value)
-        {
-            return null;
-        }
-
-        return new ActiveWebSessionSnapshot(
-            FormatBrowserDomain(snapshot.CurrentBrowserDomain),
-            TextOrDefault(snapshot.AppName, "Current browser"),
-            snapshot.CurrentWebSessionStartedAtUtc.Value,
-            endedAtUtc);
-    }
-
-    private IReadOnlyList<DashboardEventLogRow> BuildLiveEventRows(
-        IEnumerable<FocusSession> focusSessions,
-        IEnumerable<WebSession> webSessions)
-    {
-        IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> focusRows = focusSessions
-            .Select(session => (
-                session.StartedAtUtc,
-                new DashboardEventLogRow(
-                    "Focus",
-                    FormatLocalTime(session.StartedAtUtc, _timeZone),
-                    session.PlatformAppKey,
-                    "",
-                    session.PlatformAppKey)));
-        IEnumerable<(DateTimeOffset OccurredAtUtc, DashboardEventLogRow Row)> webRows = webSessions
-            .Select(session => (
-                session.StartedAtUtc,
-                new DashboardEventLogRow(
-                    "Web",
-                    FormatLocalTime(session.StartedAtUtc, _timeZone),
-                    "",
-                    session.Domain,
-                    session.Domain)));
-
-        return focusRows
-            .Concat(webRows)
-            .OrderByDescending(row => row.OccurredAtUtc)
-            .Select(row => row.Row)
-            .ToList();
-    }
-
-    private static string FormatLocalTime(DateTimeOffset utcValue, TimeZoneInfo timeZone)
-        => TimeZoneInfo.ConvertTime(utcValue, timeZone).ToString("HH:mm", CultureInfo.InvariantCulture);
 
     private void UpdateSyncBadge()
     {
@@ -981,55 +773,6 @@ public sealed partial class DashboardViewModel : ObservableObject
     private static string TextOrDefault(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value;
 
-    private static string FormatBrowserDomain(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return BrowserDomainUnavailableText;
-        }
-
-        string trimmed = value.Trim();
-        if (Uri.TryCreate(trimmed, UriKind.Absolute, out Uri? absoluteUri) && !string.IsNullOrWhiteSpace(absoluteUri.Host))
-        {
-            return absoluteUri.Host.ToLowerInvariant();
-        }
-
-        string candidate = trimmed;
-        int pathStart = candidate.IndexOfAny(['/', '?', '#']);
-        if (pathStart >= 0)
-        {
-            candidate = candidate[..pathStart];
-        }
-
-        int portStart = candidate.LastIndexOf(':');
-        if (portStart > 0)
-        {
-            candidate = candidate[..portStart];
-        }
-
-        return candidate.Trim().ToLowerInvariant();
-    }
-
-    private static string FormatUrlMode(WebSession session)
-    {
-        if (string.IsNullOrWhiteSpace(session.Url))
-        {
-            return "Domain only";
-        }
-
-        return Uri.TryCreate(session.Url, UriKind.Absolute, out Uri? uri) &&
-               string.Equals($"{uri.GetLeftPart(UriPartial.Authority)}/", session.Url, StringComparison.OrdinalIgnoreCase)
-            ? "Domain only"
-            : "Full URL disabled";
-    }
-
-    private static string FormatClockDuration(TimeSpan duration)
-    {
-        TimeSpan safeDuration = duration < TimeSpan.Zero ? TimeSpan.Zero : duration;
-
-        return $"{(int)safeDuration.TotalHours:D2}:{safeDuration.Minutes:D2}:{safeDuration.Seconds:D2}";
-    }
-
     private string FormatPersistedSession(DashboardPersistedSessionSnapshot? session)
     {
         if (session is null)
@@ -1040,63 +783,4 @@ public sealed partial class DashboardViewModel : ObservableObject
         return session.ToDisplayText(_timeZone.Id);
     }
 
-    private static string FormatDuration(long durationMs)
-    {
-        if (durationMs <= 0)
-        {
-            return "0m";
-        }
-
-        long totalMinutes = durationMs / 60_000;
-        long hours = totalMinutes / 60;
-        long minutes = totalMinutes % 60;
-
-        return hours > 0
-            ? $"{hours}h {minutes:D2}m"
-            : $"{Math.Max(1, minutes)}m";
-    }
-
-    private static string FormatSessionDuration(long durationMs)
-    {
-        if (durationMs <= 0)
-        {
-            return "0s";
-        }
-
-        long totalSeconds = Math.Max(1, (durationMs + 999) / 1_000);
-        long hours = totalSeconds / 3_600;
-        long minutes = totalSeconds % 3_600 / 60;
-        long seconds = totalSeconds % 60;
-
-        if (hours > 0)
-        {
-            return seconds > 0
-                ? $"{hours}h {minutes:D2}m {seconds:D2}s"
-                : $"{hours}h {minutes:D2}m";
-        }
-
-        if (minutes > 0)
-        {
-            return seconds > 0
-                ? $"{minutes}m {seconds:D2}s"
-                : $"{minutes}m";
-        }
-
-        return $"{seconds}s";
-    }
-
-    private static string FormatBrowserCaptureStatus(DashboardBrowserCaptureStatus status)
-        => status switch
-        {
-            DashboardBrowserCaptureStatus.ExtensionConnected => "Browser extension connected",
-            DashboardBrowserCaptureStatus.UiAutomationFallbackActive => "Domain from address bar fallback",
-            DashboardBrowserCaptureStatus.Error => "Browser capture error",
-            _ => "Browser capture unavailable"
-        };
-
-    private sealed record ActiveWebSessionSnapshot(
-        string Domain,
-        string BrowserFamily,
-        DateTimeOffset StartedAtUtc,
-        DateTimeOffset EndedAtUtc);
 }

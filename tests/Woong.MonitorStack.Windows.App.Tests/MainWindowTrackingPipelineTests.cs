@@ -409,11 +409,16 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
                 DrainDispatcher();
 
                 Assert.True(ticker.IsRunning);
+                Assert.Equal(1, ticker.SubscriberCount);
 
                 window.Close();
                 DrainDispatcher();
 
                 Assert.False(ticker.IsRunning);
+                Assert.Equal(0, ticker.SubscriberCount);
+
+                ticker.RaiseTick();
+                Assert.Equal("Stopped", viewModel.TrackingStatusText);
             }
             finally
             {
@@ -1212,9 +1217,18 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
 
     private sealed class ManualTrackingTicker : ITrackingTicker
     {
-        public event EventHandler? Tick;
+        private EventHandler? _tick;
+
+        public event EventHandler? Tick
+        {
+            add => _tick += value;
+            remove => _tick -= value;
+        }
 
         public bool IsRunning { get; private set; }
+
+        public int SubscriberCount
+            => _tick?.GetInvocationList().Length ?? 0;
 
         public void Start()
             => IsRunning = true;
@@ -1223,7 +1237,7 @@ public sealed class MainWindowTrackingPipelineTests : IDisposable
             => IsRunning = false;
 
         public void RaiseTick()
-            => Tick?.Invoke(this, EventArgs.Empty);
+            => _tick?.Invoke(this, EventArgs.Empty);
     }
 
     private sealed class EmptyDashboardDataSource : IDashboardDataSource

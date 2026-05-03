@@ -5,6 +5,32 @@ namespace Woong.MonitorStack.Windows.App.Tests;
 
 public sealed class WindowsAppOptionsTests
 {
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("", true)]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    [InlineData("1", true)]
+    [InlineData("0", false)]
+    public void CreateDefault_WhenAutoStartTrackingEnvironmentIsSet_ParsesStartupOption(
+        string? configuredValue,
+        bool expectedAutoStart)
+    {
+        string? previousValue = Environment.GetEnvironmentVariable(WindowsAppOptions.AutoStartTrackingEnvironmentVariable);
+        try
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.AutoStartTrackingEnvironmentVariable, configuredValue);
+
+            WindowsAppOptions options = WindowsAppOptions.CreateDefault(new DashboardOptions("Asia/Seoul"));
+
+            Assert.Equal(expectedAutoStart, options.AutoStartTracking);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(WindowsAppOptions.AutoStartTrackingEnvironmentVariable, previousValue);
+        }
+    }
+
     [Fact]
     public void CreateDefault_WhenEnvironmentOverridesLocalDb_UsesOverrideAsSqlitePath()
     {

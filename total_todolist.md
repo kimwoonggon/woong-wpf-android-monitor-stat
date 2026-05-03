@@ -358,6 +358,24 @@ milestones below are finished.
 - [x] Run restore/build/test/coverage/report generation/smoke validation.
 - [x] Commit and push architecture quality gate.
 
+## Milestone 14.1: WPF Architecture Refactor Follow-Up
+
+- [x] Re-audit WPF architecture with `wpf-best-practices`, `tdd`, and skill discovery guidance.
+- [x] Confirm WPF project reference rules still protect Domain, Presentation, Windows infrastructure, Windows App, and Server boundaries.
+- [x] Extract dashboard summary aggregation into `DashboardSummaryBuilder`.
+- [x] Extract dashboard app/web/live row mapping into `DashboardRowMapper`.
+- [x] Extract dashboard period and custom range calculation into `DashboardPeriodRangeResolver`.
+- [x] Extract current activity, browser capture, and active web preview formatting into `DashboardCurrentActivityMapper`.
+- [x] Extract details paging into `DashboardDetailsPager`.
+- [x] Split the large `MainWindowUiExpectationTests` suite into focused partial files and shared helpers.
+- [x] Add WPF lifecycle characterization tests for closed-window ticker unsubscribe behavior.
+- [x] Add Windows auto-start option parsing tests.
+- [x] Split Windows app DI registration helpers while preserving registration order, lifetimes, and acceptance/sample overrides.
+- [x] Run WPF presentation tests after refactor.
+- [x] Run WPF app tests after refactor.
+- [x] Run full solution restore/test/build after refactor.
+- [x] Commit and push WPF architecture refactor follow-up.
+
 ## Milestone 15: Completion Audit
 
 - [x] Check `docs/prd.md` and `total_todolist.md` for conflicts.

@@ -5725,3 +5725,19 @@ Validation update:
 - `/dashboard` now renders `Windows current app` and `Android current app` cards with app label, source device, platform app key, duration, idle flag, and sync time.
 - Focused validation passed: `dotnet test tests\Woong.MonitorStack.Server.Tests\Woong.MonitorStack.Server.Tests.csproj --no-restore --filter "FullyQualifiedName~IntegratedDashboard" -v minimal`.
 - Full validation passed after the Blazor current app cards change: `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (637 passed, 6 PostgreSQL-environment skips) and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+
+## 2026-05-03 WPF Architecture Refactor Follow-Up
+
+- Re-audited the WPF architecture with the installed WPF/TDD skill guidance and skill discovery. No new skill install was needed.
+- `DashboardViewModel` was decomposed into focused Presentation helpers while preserving public bindings and command behavior:
+  - `DashboardSummaryBuilder`
+  - `DashboardRowMapper`
+  - `DashboardPeriodRangeResolver`
+  - `DashboardCurrentActivityMapper`
+  - `DashboardDetailsPager`
+- `MainWindowUiExpectationTests` was split into smaller partial test files for component, control bar, charts, current focus/summary, details tabs, settings, style, and shared helper concerns.
+- Added lifecycle characterization coverage for close/unsubscribe behavior and Windows auto-start option parsing.
+- Split `AddWindowsInfrastructure` registration into private helper groups while preserving service lifetimes and acceptance/sample override ordering.
+- Focused validation passed during the refactor: WPF Presentation tests reached 110 passing tests, and WPF App tests reached 193 passing tests.
+- Next required validation before commit: full solution restore/test/build.
+- Final validation for the WPF architecture refactor follow-up passed: `dotnet restore tests\Woong.MonitorStack.Domain.Tests\Woong.MonitorStack.Domain.Tests.csproj --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (667 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
