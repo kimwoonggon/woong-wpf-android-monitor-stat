@@ -897,11 +897,19 @@ if "{{logcatPrefix}}"=="logcat" (
 )
 if "%1"=="pull" (
   if "{{pullRemoteFileName}}"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    echo {{PassingRoomAssertionsJson(4)}}>"{{pullTarget}}"
     exit /b 0
   )
   if "{{pullRemoteFileName}}"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"{{pullTarget}}"
+    echo {{PassingDashboardCurrentFocusJson(4)}}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if "{{pullRemoteFileName}}"=="dashboard-location-map-evidence.json" (
+    echo {{PassingLocationMapEvidenceJson()}}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if "{{pullRemoteFileName}}"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"{{pullTarget}}"
     exit /b 0
   )
   if /I "{{pullRemoteFileName}}"=="dashboard-current-focus-after-chrome-return.xml" (
@@ -933,11 +941,19 @@ if "%1"=="pull" (
 )
 if "%3"=="pull" (
   if "{{pullRemoteFileName}}"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"{{pullTarget}}"
+    echo {{PassingRoomAssertionsJson(4)}}>"{{pullTarget}}"
     exit /b 0
   )
   if "{{pullRemoteFileName}}"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"{{pullTarget}}"
+    echo {{PassingDashboardCurrentFocusJson(4)}}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if "{{pullRemoteFileName}}"=="dashboard-location-map-evidence.json" (
+    echo {{PassingLocationMapEvidenceJson()}}>"{{pullTarget}}"
+    exit /b 0
+  )
+  if "{{pullRemoteFileName}}"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"{{pullTarget}}"
     exit /b 0
   )
   if /I "{{pullRemoteFileName}}"=="dashboard-current-focus-after-chrome-return.xml" (
@@ -1007,9 +1023,13 @@ if "%3"=="logcat" (
 )
 if "%3"=="pull" (
   if "%~nx5"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":9,"syncOutboxChromeRows":9}>"%5"
+    echo {{PassingRoomAssertionsJson(9)}}>"%5"
   ) else if "%~nx5"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":9}>"%5"
+    echo {{PassingDashboardCurrentFocusJson(9)}}>"%5"
+  ) else if "%~nx5"=="dashboard-location-map-evidence.json" (
+    echo {{PassingLocationMapEvidenceJson()}}>"%5"
+  ) else if "%~nx5"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"%5"
   ) else if /I "%~nx5"=="dashboard-current-focus-after-chrome-return.xml" (
     >"%5" echo ^<hierarchy^>
     >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1099,9 +1119,13 @@ if "%1"=="pull" (
     )
   )
   if "%~nx3"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+    echo {{PassingRoomAssertionsJson(4)}}>"%3"
   ) else if "%~nx3"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%3"
+    echo {{PassingDashboardCurrentFocusJson(4)}}>"%3"
+  ) else if "%~nx3"=="dashboard-location-map-evidence.json" (
+    echo {{PassingLocationMapEvidenceJson()}}>"%3"
+  ) else if "%~nx3"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"%3"
   ) else if /I "%~nx3"=="dashboard-current-focus-after-chrome-return.xml" (
     >"%3" echo ^<hierarchy^>
     >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1160,9 +1184,13 @@ if "%1"=="pull" (
     exit /b 0
   )
   if "%~nx3"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%3"
+    echo {{PassingRoomAssertionsJson(4)}}>"%3"
   ) else if "%~nx3"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%3"
+    echo {{PassingDashboardCurrentFocusJson(4)}}>"%3"
+  ) else if "%~nx3"=="dashboard-location-map-evidence.json" (
+    echo {{PassingLocationMapEvidenceJson()}}>"%3"
+  ) else if "%~nx3"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"%3"
   ) else if /I "%~nx3"=="dashboard-current-focus-after-chrome-return.xml" (
     >"%3" echo ^<hierarchy^>
     >>"%3" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
@@ -1267,6 +1295,15 @@ exit /b 0
         return (debugApk, androidTestApk);
     }
 
+    private static string PassingRoomAssertionsJson(int rowCount) =>
+        $$"""{"status":"PASS","focusSessionChromeRows":{{rowCount}},"syncOutboxChromeRows":{{rowCount}},"currentAppStateRows":1,"latestCurrentAppStatePackageName":"com.woong.monitorstack","hasLatestWoongCurrentAppState":true,"pendingCurrentAppStateOutboxRows":1,"hasPendingWoongCurrentAppStateOutbox":true,"priorExternalChromeMetadataOnly":true,"currentAppStateOutboxMetadataOnly":true}""";
+
+    private static string PassingDashboardCurrentFocusJson(int chromeRows) =>
+        $$"""{"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":{{chromeRows}},"latestCurrentAppStatePackageName":"com.woong.monitorstack","hasLatestWoongCurrentAppState":true,"pendingCurrentAppStateOutboxRows":1,"hasPendingWoongCurrentAppStateOutbox":true,"currentAppStateOutboxMetadataOnly":true}""";
+
+    private static string PassingLocationMapEvidenceJson() =>
+        """{"status":"PASS","visitCount":1,"topVisitLocationKey":"37.5665,126.9780","topVisitDurationMs":600000,"topVisitSampleCount":2,"metadataOnly":true,"mapScreenshot":"dashboard-location-map.png"}""";
+
     private static string FakeAdbScriptWithInstallTimeout(string adbLog)
     {
         return $$"""
@@ -1351,9 +1388,13 @@ if "%3"=="shell" (
 )
 if "%3"=="pull" (
   if "%~nx4"=="room-assertions.json" (
-    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4}>"%5"
+    echo {"status":"PASS","focusSessionChromeRows":4,"syncOutboxChromeRows":4,"currentAppStateRows":1,"latestCurrentAppStatePackageName":"com.woong.monitorstack","hasLatestWoongCurrentAppState":true,"pendingCurrentAppStateOutboxRows":1,"hasPendingWoongCurrentAppStateOutbox":true,"priorExternalChromeMetadataOnly":true,"currentAppStateOutboxMetadataOnly":true}>"%5"
   ) else if "%~nx4"=="dashboard-current-focus-evidence.json" (
-    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4}>"%5"
+    echo {"status":"PASS","actualCurrentPackageText":"com.woong.monitorstack","actualLatestExternalPackageText":"com.android.chrome","roomFocusSessionMonitorRows":2,"roomFocusSessionChromeRows":4,"latestCurrentAppStatePackageName":"com.woong.monitorstack","hasLatestWoongCurrentAppState":true,"pendingCurrentAppStateOutboxRows":1,"hasPendingWoongCurrentAppStateOutbox":true,"currentAppStateOutboxMetadataOnly":true}>"%5"
+  ) else if "%~nx4"=="dashboard-location-map-evidence.json" (
+    echo {"status":"PASS","visitCount":1,"topVisitLocationKey":"37.5665,126.9780","topVisitDurationMs":600000,"topVisitSampleCount":2,"metadataOnly":true,"mapScreenshot":"dashboard-location-map.png"}>"%5"
+  ) else if "%~nx4"=="dashboard-location-map.png" (
+    echo fake location map screenshot>"%5"
   ) else if /I "%~nx4"=="dashboard-current-focus-after-chrome-return.xml" (
     >"%5" echo ^<hierarchy^>
     >>"%5" echo ^<node resource-id="com.woong.monitorstack:id/bottomNavigation" bounds="[0,2200][1080,2280]"^>
