@@ -14,6 +14,7 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly IDashboardRuntimeLogSink _runtimeLogSink;
     private readonly IDashboardApplicationLifetime _applicationLifetime;
     private readonly IDashboardChartDetailsPresenter _chartDetailsPresenter;
+    private readonly IDashboardSyncRegistrationService _syncRegistrationService;
     private readonly TimeZoneInfo _timeZone;
     private readonly DashboardRowMapper _rowMapper;
     private readonly DashboardPeriodRangeResolver _periodRangeResolver;
@@ -190,7 +191,8 @@ public sealed partial class DashboardViewModel : ObservableObject
         IDashboardDatabaseController? databaseController = null,
         IDashboardRuntimeLogSink? runtimeLogSink = null,
         IDashboardApplicationLifetime? applicationLifetime = null,
-        IDashboardChartDetailsPresenter? chartDetailsPresenter = null)
+        IDashboardChartDetailsPresenter? chartDetailsPresenter = null,
+        IDashboardSyncRegistrationService? syncRegistrationService = null)
     {
         _dataSource = dataSource;
         _clock = clock;
@@ -199,6 +201,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         _runtimeLogSink = runtimeLogSink ?? new NullDashboardRuntimeLogSink();
         _applicationLifetime = applicationLifetime ?? new NullDashboardApplicationLifetime();
         _chartDetailsPresenter = chartDetailsPresenter ?? new NullDashboardChartDetailsPresenter();
+        _syncRegistrationService = syncRegistrationService ?? NullDashboardSyncRegistrationService.Instance;
         ArgumentNullException.ThrowIfNull(options);
         _timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId);
         _rowMapper = new DashboardRowMapper(_timeZone);
@@ -402,6 +405,40 @@ public sealed partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private void SyncNow()
         => RunDashboardOperation(nameof(SyncNow), SyncNowCore);
+
+    [RelayCommand]
+    private async Task RegisterRepairDeviceAsync()
+    {
+        if (!Settings.IsSyncEnabled)
+        {
+            const string skippedStatus = "Register / repair skipped. Enable sync to register this device.";
+            Settings.SyncDeviceRegistrationStatusText =
+                "Device not registered. Register / repair requires sync opt-in.";
+            Settings.SyncStatusLabel = skippedStatus;
+            LastSyncStatusText = skippedStatus;
+            UpdateSyncBadge();
+
+            return;
+        }
+
+        try
+        {
+            DashboardSyncRegistrationResult result = await _syncRegistrationService.RegisterOrRepairAsync();
+            Settings.SyncDeviceRegistrationStatusText = result.StatusText;
+            Settings.SyncStatusLabel = result.StatusText;
+            Settings.HasSyncFailure = !result.Succeeded;
+            LastSyncStatusText = result.StatusText;
+            UpdateSyncBadge();
+        }
+        catch (Exception exception)
+        {
+            ReportRuntimeError(nameof(RegisterRepairDeviceAsync), exception);
+            Settings.SyncDeviceRegistrationStatusText = "Register / repair failed. See runtime log.";
+            Settings.ReportSyncFailure("Register / repair failed. See runtime log.");
+            LastSyncStatusText = Settings.SyncStatusLabel;
+            UpdateSyncBadge();
+        }
+    }
 
     private void SyncNowCore()
     {

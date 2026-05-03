@@ -1,6 +1,7 @@
 package com.woong.monitorstack.usage
 
 import android.content.Context
+import com.woong.monitorstack.data.local.CurrentAppStateEntity
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import java.time.Instant
@@ -12,6 +13,9 @@ class AndroidUsageCollectionRunner(
     private val store: UsageSessionStore,
     private val timezoneId: ZoneId = ZoneId.systemDefault(),
     private val outboxEnqueuer: UsageSyncOutboxEnqueuer = NoopUsageSyncOutboxEnqueuer,
+    private val currentAppStateResolver: CurrentAppStateResolver = CurrentAppStateResolver(),
+    private val currentAppStateStore: CurrentAppStateStore = NoopCurrentAppStateStore,
+    private val currentAppStateOutboxEnqueuer: CurrentAppStateOutboxEnqueuer = NoopCurrentAppStateOutboxEnqueuer,
     private val anchorLookbackMs: Long = DefaultAnchorLookbackMs,
     private val debugHook: UsageCollectionDebugHook = NoopUsageCollectionDebugHook
 ) : UsageCollectionRunner {
@@ -29,14 +33,23 @@ class AndroidUsageCollectionRunner(
                 queryToUtcMillis = toUtcMillis
             )
         )
+        val events = collector.collect(anchoredFromUtcMillis, toUtcMillis)
         val sessions = sessionizer.sessionize(
-            events = collector.collect(anchoredFromUtcMillis, toUtcMillis),
+            events = events,
             collectionStartUtcMillis = fromUtcMillis,
             collectionEndUtcMillis = toUtcMillis
         )
         val entities = sessions.map { it.toFocusSessionEntity(timezoneId) }
         store.insertAll(entities)
         outboxEnqueuer.enqueueFocusSessions(entities)
+        currentAppStateResolver.resolve(
+            events = events,
+            collectionEndUtcMillis = toUtcMillis
+        )?.let { snapshot ->
+            val state = snapshot.toCurrentAppStateEntity(timezoneId)
+            currentAppStateStore.insert(state)
+            currentAppStateOutboxEnqueuer.enqueueCurrentAppState(state)
+        }
 
         return entities.size
     }
@@ -58,8 +71,26 @@ class AndroidUsageCollectionRunner(
         )
     }
 
+    private fun CurrentAppStateSnapshot.toCurrentAppStateEntity(timezoneId: ZoneId): CurrentAppStateEntity {
+        return CurrentAppStateEntity(
+            clientStateId = "android-current:$packageName:$observedAtUtcMillis",
+            packageName = packageName,
+            appLabel = appLabel,
+            status = status,
+            observedAtUtcMillis = observedAtUtcMillis,
+            localDate = Instant.ofEpochMilli(observedAtUtcMillis)
+                .atZone(timezoneId)
+                .toLocalDate()
+                .toString(),
+            timezoneId = timezoneId.id,
+            source = SOURCE_CURRENT_APP_STATE,
+            createdAtUtcMillis = observedAtUtcMillis
+        )
+    }
+
     companion object {
         private const val SOURCE_USAGE_STATS = "android_usage_stats"
+        private const val SOURCE_CURRENT_APP_STATE = "android_usage_stats_current_app"
         private const val DefaultAnchorLookbackMs = 24 * 60 * 60 * 1_000L
 
         fun create(context: Context): AndroidUsageCollectionRunner {
@@ -72,7 +103,9 @@ class AndroidUsageCollectionRunner(
                     ignoredPackageNames = AndroidForegroundNoise.PackageNames
                 ),
                 store = RoomUsageSessionStore(database.focusSessionDao()),
-                outboxEnqueuer = FocusSessionSyncOutboxEnqueuer(database.syncOutboxDao())
+                outboxEnqueuer = FocusSessionSyncOutboxEnqueuer(database.syncOutboxDao()),
+                currentAppStateStore = RoomCurrentAppStateStore(database.currentAppStateDao()),
+                currentAppStateOutboxEnqueuer = CurrentAppStateSyncOutboxEnqueuer(database.syncOutboxDao())
             )
         }
     }

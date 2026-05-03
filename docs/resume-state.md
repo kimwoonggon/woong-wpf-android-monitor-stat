@@ -5916,3 +5916,15 @@ Validation update:
 - Focused validation passed: browser parser/raw-event tests (9), domain upload contract tests (5), server current-app/dashboard/migration tests (26), production migration runbook tests (7).
 - Full validation passed after updating docs/production-migrations.md for the new migration: dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal (754 passed, 6 PostgreSQL-environment skips), dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal (0 warnings/errors), clean coverage generation with ReportGenerator line 87.9% and branch 70.7%.
 - Next queue: atomic browser native-message ingestion transaction; WPF Register/Repair device flow using IWindowsSyncTokenStore; Android current_app_states Room persistence and bridge upload.
+
+## 2026-05-03 Current-App Sync And Registration Integration
+
+- Integrated atomic Chrome/native browser ingestion: duplicate client event ids are ignored before sessionization, and browser raw-event/web-session/outbox writes now roll back together on failure.
+- Added WPF Register/Repair device groundwork: Settings exposes a safe action, successful registration stores server device id plus protected token state, sync-off remains local-only, and tokens are not displayed.
+- Hardened WPF sync upload so the HTTP client reads protected token/server registration at send time and rewrites only the outbound device id while leaving local outbox payloads unchanged.
+- Added Windows local `current_app_state` SQLite persistence from the tracking coordinator. The table stores metadata-only current app state and intentionally excludes window titles, URLs, page titles, typed text, clipboard, screenshots, and page contents.
+- Extended LocalDashboardBridge to read Windows SQLite and Android Room current-app snapshots, upload them to `/api/current-app-states/upload`, and advance checkpoints only after accepted uploads.
+- Added Android Room `current_app_states`, UsageStats current-app resolution, current-app outbox enqueue, and metadata-only current-app sync upload support.
+- Validation passed: focused WPF/Windows/Bridge/Android tests, `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (756 passed, 6 PostgreSQL-environment skips), `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, Android `:app:testDebugUnitTest`, Android `:app:assembleDebug`, and coverage collection/report generation.
+- Coverage summary from `artifacts/coverage/SummaryGithub.md`: line 88.2%, branch 71.0%; Domain 89.8%, LocalDashboardBridge 90.4%, Server 82.9%, Windows 93.1%, Windows.App 83.7%, Windows.Presentation 94.0%.
+- Remaining queue: constrain legacy raw-token sync constructor path, add local integrated dashboard E2E evidence for WPF+Android current-app cards, capture connected Android emulator evidence when a device is available, and add WPF disconnect/revoke flow.

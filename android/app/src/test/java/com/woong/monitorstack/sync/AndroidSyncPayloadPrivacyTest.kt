@@ -3,6 +3,8 @@ package com.woong.monitorstack.sync
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.woong.monitorstack.data.local.CurrentAppStateEntity
+import com.woong.monitorstack.data.local.CurrentAppStateStatus
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.LocationCaptureMode
 import com.woong.monitorstack.data.local.LocationContextSnapshotEntity
@@ -11,6 +13,7 @@ import com.woong.monitorstack.data.local.SyncOutboxEntity
 import com.woong.monitorstack.data.local.SyncOutboxWriter
 import com.woong.monitorstack.settings.AndroidLocationSettings
 import com.woong.monitorstack.settings.AndroidSyncSettings
+import com.woong.monitorstack.usage.CurrentAppStateSyncOutboxEnqueuer
 import com.woong.monitorstack.usage.FocusSessionSyncOutboxEnqueuer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
@@ -124,6 +127,52 @@ class AndroidSyncPayloadPrivacyTest {
         val payloadJson = moshi.adapter(SyncLocationContextUploadRequest::class.java).toJson(payload)
 
         assertNoForbiddenPayloadFields(payloadJson)
+    }
+
+    @Test
+    fun currentAppStateUploadPayloadExcludesBrowserContentAndInputCaptureFields() {
+        val payloadJson = moshi.adapter(SyncCurrentAppStateUploadRequest::class.java)
+            .toJson(
+                SyncCurrentAppStateUploadRequest(
+                    deviceId = "android-device-1",
+                    states = listOf(
+                        SyncCurrentAppStateUploadItem(
+                            clientStateId = "android-current:com.android.chrome:1777809600000",
+                            platform = 2,
+                            platformAppKey = "com.android.chrome",
+                            observedAtUtc = "2026-05-03T12:00:00Z",
+                            localDate = "2026-05-03",
+                            timezoneId = "Asia/Seoul",
+                            status = "Active",
+                            source = "android_usage_stats_current_app"
+                        )
+                    )
+                )
+            )
+
+        assertNoForbiddenPayloadFields(payloadJson)
+    }
+
+    @Test
+    fun currentAppStateOutboxMappingExcludesBrowserContentAndInputCaptureFields() = runBlocking {
+        val writer = FakeSyncOutboxWriter()
+        val enqueuer = CurrentAppStateSyncOutboxEnqueuer(outbox = writer)
+
+        enqueuer.enqueueCurrentAppState(
+            CurrentAppStateEntity(
+                clientStateId = "android-current:com.android.chrome:1777809600000",
+                packageName = "com.android.chrome",
+                appLabel = "Chrome",
+                status = CurrentAppStateStatus.Active,
+                observedAtUtcMillis = 1_777_809_600_000L,
+                localDate = "2026-05-03",
+                timezoneId = "Asia/Seoul",
+                source = "android_usage_stats_current_app",
+                createdAtUtcMillis = 1_777_809_600_000L
+            )
+        )
+
+        assertNoForbiddenPayloadFields(writer.items.single().payloadJson)
     }
 
     private fun assertNoForbiddenPayloadFields(payloadJson: String) {

@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using Woong.MonitorStack.Domain.Common;
+using Woong.MonitorStack.Domain.Contracts;
 
 namespace Woong.MonitorStack.LocalDashboardBridge.Tests;
 
@@ -249,6 +251,186 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
         Assert.DoesNotContain("Chrome", checkpointJson, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RunAsync_UploadsCurrentAppStatesThroughApiDto()
+    {
+        string databasePath = CreateAndroidDatabaseWithCurrentAppState("android-current-1");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(httpClient);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--androidDb",
+            databasePath
+        ]);
+
+        LocalBridgeSummary summary = await runner.RunAsync(options);
+
+        Assert.Equal(1, handler.CurrentAppUploadCount);
+        Assert.Equal("/api/current-app-states/upload", handler.CurrentAppUploadPaths.Single());
+        Assert.Contains("\"states\"", handler.CurrentAppUploadBodies.Single(), StringComparison.Ordinal);
+        Assert.Contains("\"clientStateId\":\"android-current-1\"", handler.CurrentAppUploadBodies.Single(), StringComparison.Ordinal);
+        Assert.Contains("\"platform\":2", handler.CurrentAppUploadBodies.Single(), StringComparison.Ordinal);
+        Assert.Contains("\"platformAppKey\":\"com.android.chrome\"", handler.CurrentAppUploadBodies.Single(), StringComparison.Ordinal);
+        Assert.Equal(1, summary.AndroidCurrentApp.Attempted);
+        Assert.Equal(1, summary.AndroidCurrentApp.Accepted);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithAcceptedCurrentAppState_UploadsServerContractAndAdvancesCheckpoint()
+    {
+        string databasePath = CreateAndroidDatabaseWithCurrentAppState("android-current-1");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-current-contract-checkpoints.json");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(httpClient);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--androidDb",
+            databasePath,
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary summary = await runner.RunAsync(options);
+
+        Assert.Equal(1, handler.CurrentAppUploadCount);
+        Assert.Equal("/api/current-app-states/upload", handler.CurrentAppUploadPaths.Single());
+        Assert.Equal("token-1", handler.CurrentAppUploadDeviceTokens.Single());
+        UploadCurrentAppStatesRequest request = Assert.Single(handler.CurrentAppUploadRequests);
+        Assert.Equal("android-device-1", request.DeviceId);
+        CurrentAppStateUploadItem state = Assert.Single(request.States);
+        Assert.Equal("android-current-1", state.ClientStateId);
+        Assert.Equal(Platform.Android, state.Platform);
+        Assert.Equal("com.android.chrome", state.PlatformAppKey);
+        Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds(1777792500000), state.ObservedAtUtc);
+        Assert.Equal(new DateOnly(2026, 5, 3), state.LocalDate);
+        Assert.Equal("UTC", state.TimezoneId);
+        Assert.Equal("Active", state.Status);
+        Assert.Equal("android_current_app_state", state.Source);
+        Assert.Null(state.ProcessId);
+        Assert.Null(state.ProcessName);
+        Assert.Null(state.ProcessPath);
+        Assert.Null(state.WindowHandle);
+        Assert.Null(state.WindowTitle);
+        Assert.Equal(1, summary.AndroidCurrentApp.Attempted);
+        Assert.Equal(1, summary.AndroidCurrentApp.Accepted);
+
+        string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+        Assert.Contains("android.current_app_states", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("android-current-1", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("2026-05-03T07:15:00", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("com.android.chrome", checkpointJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithCheckpoint_DoesNotReattemptUnchangedCurrentAppStates()
+    {
+        string databasePath = CreateAndroidDatabaseWithCurrentAppState("android-current-1");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-current-checkpoints.json");
+        using var handler = new RecordingBridgeHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(
+            httpClient,
+            delayAsync: (_, _) => Task.CompletedTask);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--androidDb",
+            databasePath,
+            "--intervalSeconds",
+            "0",
+            "--maxIterations",
+            "2",
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary summary = await runner.RunAsync(options);
+
+        Assert.Equal(2, summary.Iterations);
+        Assert.Equal(1, handler.CurrentAppUploadCount);
+        Assert.Equal(1, summary.AndroidCurrentApp.Attempted);
+        Assert.Equal(1, summary.AndroidCurrentApp.Accepted);
+
+        string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+        Assert.Contains("android.current_app_states", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("android-current-1", checkpointJson, StringComparison.Ordinal);
+        Assert.Contains("2026-05-03T07:15:00", checkpointJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("com.android.chrome", checkpointJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenCurrentAppUploadErrors_DoesNotAdvanceAndroidCurrentAppCheckpoint()
+    {
+        string databasePath = CreateAndroidDatabaseWithCurrentAppState("android-current-1");
+        string checkpointPath = Path.Combine(_tempDirectory, "bridge-current-error-checkpoints.json");
+        using var handler = new RecordingBridgeHandler(currentAppStatus: 3);
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5087")
+        };
+        var runner = new LocalDashboardBridgeRunner(
+            httpClient,
+            delayAsync: (_, _) => Task.CompletedTask);
+        LocalBridgeOptions options = LocalBridgeOptions.Parse(
+        [
+            "--server",
+            "http://127.0.0.1:5087",
+            "--userId",
+            "local-user",
+            "--timezoneId",
+            "UTC",
+            "--androidDb",
+            databasePath,
+            "--intervalSeconds",
+            "0",
+            "--maxIterations",
+            "2",
+            "--checkpointPath",
+            checkpointPath
+        ]);
+
+        LocalBridgeSummary summary = await runner.RunAsync(options);
+
+        Assert.Equal(2, handler.CurrentAppUploadCount);
+        Assert.Equal(2, summary.AndroidCurrentApp.Attempted);
+        Assert.Equal(0, summary.AndroidCurrentApp.Accepted);
+        Assert.Equal(2, summary.AndroidCurrentApp.Error);
+        if (File.Exists(checkpointPath))
+        {
+            string checkpointJson = await File.ReadAllTextAsync(checkpointPath);
+            Assert.DoesNotContain("android.current_app_states", checkpointJson, StringComparison.Ordinal);
+            Assert.DoesNotContain("android-current-1", checkpointJson, StringComparison.Ordinal);
+        }
+    }
+
     public void Dispose()
     {
         try
@@ -320,6 +502,37 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
             );
             """);
         InsertWindowsWebSession(connection, focusSessionId, webStartedAtUtc, webEndedAtUtc, 540000);
+
+        return databasePath;
+    }
+
+    private string CreateAndroidDatabaseWithCurrentAppState(string clientStateId)
+    {
+        string databasePath = Path.Combine(_tempDirectory, $"{Guid.NewGuid():N}.db");
+        using var connection = new SqliteConnection($"Data Source={databasePath}");
+        connection.Open();
+        Execute(connection, """
+            CREATE TABLE current_app_states (
+                clientStateId TEXT NOT NULL,
+                packageName TEXT NOT NULL,
+                observedAtUtcMillis INTEGER NOT NULL,
+                localDate TEXT NOT NULL,
+                timezoneId TEXT NULL,
+                status TEXT NULL,
+                source TEXT NULL
+            );
+            """);
+        Execute(connection, $"""
+            INSERT INTO current_app_states VALUES (
+                '{clientStateId}',
+                'com.android.chrome',
+                1777792500000,
+                '2026-05-03',
+                'UTC',
+                'Active',
+                'android_current_app_state'
+            );
+            """);
 
         return databasePath;
     }
@@ -410,28 +623,48 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private readonly bool _idempotentFocusUploads;
+        private readonly int _currentAppStatus;
         private readonly HashSet<string> _storedFocusSessionIds = new(StringComparer.Ordinal);
 
-        public RecordingBridgeHandler(bool idempotentFocusUploads = false)
+        public RecordingBridgeHandler(bool idempotentFocusUploads = false, int currentAppStatus = 1)
         {
             _idempotentFocusUploads = idempotentFocusUploads;
+            _currentAppStatus = currentAppStatus;
         }
 
         public int FocusUploadCount { get; private set; }
 
         public int WebUploadCount { get; private set; }
 
+        public int CurrentAppUploadCount { get; private set; }
+
+        public List<string> CurrentAppUploadPaths { get; } = [];
+
+        public List<string> CurrentAppUploadBodies { get; } = [];
+
+        public List<string?> CurrentAppUploadDeviceTokens { get; } = [];
+
+        public List<UploadCurrentAppStatesRequest> CurrentAppUploadRequests { get; } = [];
+
         public int StoredFocusSessionCount => _storedFocusSessionIds.Count;
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (request.RequestUri?.AbsolutePath == "/api/devices/register")
             {
-                return Task.FromResult(JsonResponse(new
+                string registerBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+                RegisterDeviceRequest? registerRequest = JsonSerializer.Deserialize<RegisterDeviceRequest>(
+                    registerBody,
+                    JsonOptions);
+                string deviceId = registerRequest?.Platform == Platform.Android
+                    ? "android-device-1"
+                    : "windows-device-1";
+
+                return JsonResponse(new
                 {
-                    deviceId = "windows-device-1",
+                    deviceId,
                     deviceToken = "token-1"
-                }));
+                });
             }
 
             if (request.RequestUri?.AbsolutePath == "/api/focus-sessions/upload")
@@ -447,7 +680,7 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                     _storedFocusSessionIds.Add($"win-session-{FocusUploadCount}");
                 }
 
-                return Task.FromResult(JsonResponse(new
+                return JsonResponse(new
                 {
                     items = new[]
                     {
@@ -458,13 +691,13 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                             errorMessage = (string?)null
                         }
                     }
-                }));
+                });
             }
 
             if (request.RequestUri?.AbsolutePath == "/api/web-sessions/upload")
             {
                 WebUploadCount++;
-                return Task.FromResult(JsonResponse(new
+                return JsonResponse(new
                 {
                     items = new[]
                     {
@@ -475,10 +708,44 @@ public sealed class LocalDashboardBridgePollingTests : IDisposable
                             errorMessage = (string?)null
                         }
                     }
-                }));
+                });
             }
 
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            if (request.RequestUri?.AbsolutePath == "/api/current-app-states/upload")
+            {
+                CurrentAppUploadCount++;
+                CurrentAppUploadPaths.Add(request.RequestUri.AbsolutePath);
+                CurrentAppUploadDeviceTokens.Add(
+                    request.Headers.TryGetValues("X-Device-Token", out IEnumerable<string>? values)
+                        ? values.SingleOrDefault()
+                        : null);
+                string body = await request.Content!.ReadAsStringAsync(cancellationToken);
+                CurrentAppUploadBodies.Add(body);
+                UploadCurrentAppStatesRequest? uploadRequest = JsonSerializer.Deserialize<UploadCurrentAppStatesRequest>(
+                    body,
+                    JsonOptions);
+                if (uploadRequest is not null)
+                {
+                    CurrentAppUploadRequests.Add(uploadRequest);
+                }
+
+                string clientId = uploadRequest?.States.FirstOrDefault()?.ClientStateId ?? "android-current-1";
+
+                return JsonResponse(new
+                {
+                    items = new[]
+                    {
+                        new
+                        {
+                            clientId,
+                            status = _currentAppStatus,
+                            errorMessage = _currentAppStatus == 3 ? "current app upload failed" : null
+                        }
+                    }
+                });
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
         }
 
         private static HttpResponseMessage JsonResponse<T>(T value)

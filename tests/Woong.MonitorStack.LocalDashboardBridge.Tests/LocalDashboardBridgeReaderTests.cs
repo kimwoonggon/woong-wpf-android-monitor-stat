@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using Woong.MonitorStack.Domain.Common;
 
 namespace Woong.MonitorStack.LocalDashboardBridge.Tests;
 
@@ -116,6 +117,104 @@ public sealed class LocalDashboardBridgeReaderTests : IDisposable
                 Assert.Equal("domain_only", session.CaptureConfidence);
             });
         Assert.Empty(batch.LocationContexts);
+        Assert.Empty(batch.CurrentAppStates);
+    }
+
+    [Fact]
+    public void WindowsSqliteReader_WhenCurrentAppStateTableMissing_ReturnsNoCurrentAppStates()
+    {
+        string databasePath = CreateDatabasePath();
+        using (SqliteConnection connection = OpenDatabase(databasePath))
+        {
+            Execute(connection, """
+                CREATE TABLE focus_session (
+                    client_session_id TEXT NOT NULL,
+                    platform_app_key TEXT NOT NULL,
+                    started_at_utc TEXT NOT NULL,
+                    ended_at_utc TEXT NOT NULL,
+                    duration_ms INTEGER NOT NULL,
+                    local_date TEXT NOT NULL,
+                    timezone_id TEXT NULL,
+                    is_idle INTEGER NOT NULL,
+                    source TEXT NULL,
+                    process_id INTEGER NULL,
+                    process_name TEXT NULL,
+                    process_path TEXT NULL,
+                    window_handle INTEGER NULL,
+                    window_title TEXT NULL
+                );
+                """);
+        }
+
+        LocalUploadBatch batch = global::WindowsSqliteReader.Read(databasePath, "server-device", "UTC");
+
+        Assert.Empty(batch.CurrentAppStates);
+    }
+
+    [Fact]
+    public void WindowsSqliteReader_ReadsCurrentAppStateMetadataFromTempDatabase()
+    {
+        string databasePath = CreateDatabasePath();
+        DateTimeOffset observedAtUtc = new(2026, 5, 3, 7, 15, 0, TimeSpan.Zero);
+
+        using (SqliteConnection connection = OpenDatabase(databasePath))
+        {
+            Execute(connection, """
+                CREATE TABLE current_app_state (
+                    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+                    client_state_id TEXT NOT NULL,
+                    device_id TEXT NOT NULL,
+                    platform_app_key TEXT NOT NULL,
+                    process_id INTEGER NULL,
+                    process_name TEXT NULL,
+                    process_path TEXT NULL,
+                    window_handle INTEGER NULL,
+                    observed_at_utc TEXT NOT NULL,
+                    local_date TEXT NOT NULL,
+                    timezone_id TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    source TEXT NOT NULL
+                );
+                """);
+            Execute(connection, $"""
+                INSERT INTO current_app_state VALUES (
+                    1,
+                    'windows-current-1',
+                    'windows-device-1',
+                    'chrome.exe',
+                    20,
+                    'chrome.exe',
+                    'C:\Apps\chrome.exe',
+                    200,
+                    '{observedAtUtc:O}',
+                    '2026-05-03',
+                    'UTC',
+                    'Active',
+                    'windows_foreground_current_app'
+                );
+                """);
+        }
+
+        LocalUploadBatch batch = global::WindowsSqliteReader.Read(databasePath, "server-device", "UTC");
+
+        Assert.Collection(
+            batch.CurrentAppStates,
+            state =>
+            {
+                Assert.Equal("windows-current-1", state.ClientStateId);
+                Assert.Equal(Platform.Windows, state.Platform);
+                Assert.Equal("chrome.exe", state.PlatformAppKey);
+                Assert.Equal(observedAtUtc, state.ObservedAtUtc);
+                Assert.Equal(new DateOnly(2026, 5, 3), state.LocalDate);
+                Assert.Equal("UTC", state.TimezoneId);
+                Assert.Equal("Active", state.Status);
+                Assert.Equal("windows_foreground_current_app", state.Source);
+                Assert.Equal(20, state.ProcessId);
+                Assert.Equal("chrome.exe", state.ProcessName);
+                Assert.Equal(@"C:\Apps\chrome.exe", state.ProcessPath);
+                Assert.Equal(200, state.WindowHandle);
+                Assert.Null(state.WindowTitle);
+            });
     }
 
     [Fact]
@@ -203,6 +302,88 @@ public sealed class LocalDashboardBridgeReaderTests : IDisposable
                 Assert.Equal("GrantedApproximate", context.PermissionState);
             });
         Assert.Empty(batch.WebSessions);
+        Assert.Empty(batch.CurrentAppStates);
+    }
+
+    [Fact]
+    public void AndroidRoomReader_WhenCurrentAppStateTableMissing_ReturnsNoCurrentAppStates()
+    {
+        string databasePath = CreateDatabasePath();
+        using (SqliteConnection connection = OpenDatabase(databasePath))
+        {
+            Execute(connection, """
+                CREATE TABLE focus_sessions (
+                    clientSessionId TEXT NOT NULL,
+                    packageName TEXT NOT NULL,
+                    startedAtUtcMillis INTEGER NOT NULL,
+                    endedAtUtcMillis INTEGER NOT NULL,
+                    durationMs INTEGER NOT NULL,
+                    localDate TEXT NOT NULL,
+                    timezoneId TEXT NULL,
+                    isIdle INTEGER NOT NULL,
+                    source TEXT NULL
+                );
+                """);
+        }
+
+        LocalUploadBatch batch = global::AndroidRoomReader.Read(databasePath, "server-device", "UTC");
+
+        Assert.Empty(batch.CurrentAppStates);
+    }
+
+    [Fact]
+    public void AndroidRoomReader_ReadsCurrentAppStateMetadataFromTempDatabase()
+    {
+        string databasePath = CreateDatabasePath();
+        string timezoneId = FindPacificTimeZoneId();
+        DateTimeOffset observedAtUtc = new(2026, 5, 3, 7, 15, 0, TimeSpan.Zero);
+
+        using (SqliteConnection connection = OpenDatabase(databasePath))
+        {
+            Execute(connection, """
+                CREATE TABLE current_app_states (
+                    clientStateId TEXT NOT NULL,
+                    packageName TEXT NOT NULL,
+                    observedAtUtcMillis INTEGER NOT NULL,
+                    localDate TEXT NOT NULL,
+                    timezoneId TEXT NULL,
+                    status TEXT NULL,
+                    source TEXT NULL
+                );
+                """);
+            Execute(connection, $"""
+                INSERT INTO current_app_states VALUES (
+                    'android-current-1',
+                    'com.android.chrome',
+                    {observedAtUtc.ToUnixTimeMilliseconds()},
+                    '2026-05-03',
+                    '{timezoneId}',
+                    'Active',
+                    'android_current_app_state'
+                );
+                """);
+        }
+
+        LocalUploadBatch batch = global::AndroidRoomReader.Read(databasePath, "server-device", timezoneId);
+
+        Assert.Collection(
+            batch.CurrentAppStates,
+            state =>
+            {
+                Assert.Equal("android-current-1", state.ClientStateId);
+                Assert.Equal(Platform.Android, state.Platform);
+                Assert.Equal("com.android.chrome", state.PlatformAppKey);
+                Assert.Equal(observedAtUtc, state.ObservedAtUtc);
+                Assert.Equal(new DateOnly(2026, 5, 3), state.LocalDate);
+                Assert.Equal(timezoneId, state.TimezoneId);
+                Assert.Equal("Active", state.Status);
+                Assert.Equal("android_current_app_state", state.Source);
+                Assert.Null(state.ProcessId);
+                Assert.Null(state.ProcessName);
+                Assert.Null(state.ProcessPath);
+                Assert.Null(state.WindowHandle);
+                Assert.Null(state.WindowTitle);
+            });
     }
 
     public void Dispose()

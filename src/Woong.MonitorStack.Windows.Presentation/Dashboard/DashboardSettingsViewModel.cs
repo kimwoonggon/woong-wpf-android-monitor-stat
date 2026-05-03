@@ -47,6 +47,10 @@ public sealed partial class DashboardSettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _syncStatusLabel = "Sync is off. Data stays on this Windows device.";
 
+    [ObservableProperty]
+    private string _syncDeviceRegistrationStatusText =
+        "Device not registered. Register / repair is available after sync is turned on.";
+
     public string SyncModeLabel => IsSyncEnabled ? "Sync enabled" : "Local only";
 
     public void ReportSyncFailure(string errorMessage)

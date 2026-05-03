@@ -12,9 +12,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         FocusSessionEntity::class,
         SyncOutboxEntity::class,
         LocationContextSnapshotEntity::class,
-        LocationVisitEntity::class
+        LocationVisitEntity::class,
+        CurrentAppStateEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class MonitorDatabase : RoomDatabase() {
@@ -22,6 +23,7 @@ abstract class MonitorDatabase : RoomDatabase() {
     abstract fun syncOutboxDao(): SyncOutboxDao
     abstract fun locationContextSnapshotDao(): LocationContextSnapshotDao
     abstract fun locationVisitDao(): LocationVisitDao
+    abstract fun currentAppStateDao(): CurrentAppStateDao
 
     companion object {
         @Volatile
@@ -104,6 +106,32 @@ abstract class MonitorDatabase : RoomDatabase() {
             }
         }
 
+        private val Migration4To5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS current_app_states (
+                        clientStateId TEXT NOT NULL PRIMARY KEY,
+                        packageName TEXT NOT NULL,
+                        appLabel TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        observedAtUtcMillis INTEGER NOT NULL,
+                        localDate TEXT NOT NULL,
+                        timezoneId TEXT NOT NULL,
+                        source TEXT NOT NULL,
+                        createdAtUtcMillis INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE INDEX IF NOT EXISTS index_current_app_states_observed_client
+                    ON current_app_states(observedAtUtcMillis, clientStateId)
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): MonitorDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -111,7 +139,7 @@ abstract class MonitorDatabase : RoomDatabase() {
                     MonitorDatabase::class.java,
                     "woong-monitor.db"
                 )
-                    .addMigrations(Migration1To2, Migration2To3, Migration3To4)
+                    .addMigrations(Migration1To2, Migration2To3, Migration3To4, Migration4To5)
                     .build()
                     .also { instance = it }
             }

@@ -20,6 +20,7 @@ class AndroidSyncClient(
         .build()
     private val focusSessionRequestAdapter = moshi.adapter(SyncFocusSessionUploadRequest::class.java)
     private val locationContextRequestAdapter = moshi.adapter(SyncLocationContextUploadRequest::class.java)
+    private val currentAppStateRequestAdapter = moshi.adapter(SyncCurrentAppStateUploadRequest::class.java)
     private val deviceRegistrationRequestAdapter =
         moshi.adapter(SyncDeviceRegistrationRequest::class.java)
     private val deviceRegistrationResponseAdapter =
@@ -103,6 +104,27 @@ class AndroidSyncClient(
             val responseJson = response.body.string()
             return resultAdapter.fromJson(responseJson)
                 ?: throw IOException("Location context upload returned an empty response.")
+        }
+    }
+
+    override fun uploadCurrentAppStates(request: SyncCurrentAppStateUploadRequest): SyncUploadBatchResult {
+        val httpRequest = Request.Builder()
+            .url("$normalizedBaseUrl/api/current-app-states/upload")
+            .post(currentAppStateRequestAdapter.toJson(request).toRequestBody(JsonMediaType))
+            .addDeviceTokenHeader()
+            .build()
+
+        httpClient.newCall(httpRequest).execute().use { response ->
+            if (!response.isSuccessful) {
+                throwUploadFailure(
+                    operation = "Current app state upload",
+                    statusCode = response.code
+                )
+            }
+
+            val responseJson = response.body.string()
+            return resultAdapter.fromJson(responseJson)
+                ?: throw IOException("Current app state upload returned an empty response.")
         }
     }
 

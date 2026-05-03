@@ -75,6 +75,54 @@ public sealed class DashboardTrackingStateTests
     }
 
     [Fact]
+    public async Task RegisterRepairDeviceCommand_WhenSyncIsOff_DoesNotCallRegistrationAndKeepsLocalOnly()
+    {
+        var registrationService = new RecordingSyncRegistrationService
+        {
+            Result = DashboardSyncRegistrationResult.Success("secret-device-token")
+        };
+        DashboardViewModel viewModel = CreateViewModel(registrationService: registrationService);
+
+        await viewModel.RegisterRepairDeviceCommand.ExecuteAsync(null);
+
+        Assert.Equal(0, registrationService.RegisterCallCount);
+        Assert.False(viewModel.Settings.IsSyncEnabled);
+        Assert.Equal(
+            "Device not registered. Register / repair requires sync opt-in.",
+            viewModel.Settings.SyncDeviceRegistrationStatusText);
+        Assert.Equal(
+            "Register / repair skipped. Enable sync to register this device.",
+            viewModel.LastSyncStatusText);
+        Assert.DoesNotContain("secret-device-token", viewModel.Settings.SyncDeviceRegistrationStatusText, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret-device-token", viewModel.LastSyncStatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RegisterRepairDeviceCommand_WhenRegistrationSucceeds_UpdatesSafeStatusWithoutToken()
+    {
+        var registrationService = new RecordingSyncRegistrationService
+        {
+            Result = DashboardSyncRegistrationResult.Success(
+                "Device registered. Sync will use this device registration.")
+        };
+        DashboardViewModel viewModel = CreateViewModel(registrationService: registrationService);
+        viewModel.Settings.IsSyncEnabled = true;
+
+        await viewModel.RegisterRepairDeviceCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, registrationService.RegisterCallCount);
+        Assert.True(viewModel.Settings.IsSyncEnabled);
+        Assert.Equal(
+            "Device registered. Sync will use this device registration.",
+            viewModel.Settings.SyncDeviceRegistrationStatusText);
+        Assert.Equal(
+            "Device registered. Sync will use this device registration.",
+            viewModel.LastSyncStatusText);
+        Assert.DoesNotContain("secret-device-token", viewModel.Settings.SyncDeviceRegistrationStatusText, StringComparison.Ordinal);
+        Assert.DoesNotContain("token", viewModel.Settings.SyncDeviceRegistrationStatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Settings_WhenSyncFailureIsReported_UpdatesDashboardSyncStatusAndBadge()
     {
         DashboardViewModel viewModel = CreateViewModel();
@@ -671,12 +719,15 @@ public sealed class DashboardTrackingStateTests
         Assert.Equal("Private issue title", row.PageTitle);
     }
 
-    private static DashboardViewModel CreateViewModel(IDashboardTrackingCoordinator? coordinator = null)
+    private static DashboardViewModel CreateViewModel(
+        IDashboardTrackingCoordinator? coordinator = null,
+        IDashboardSyncRegistrationService? registrationService = null)
         => new(
             new EmptyDataSource(),
             new FixedClock(new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero)),
             new DashboardOptions("Asia/Seoul"),
-            coordinator);
+            coordinator,
+            syncRegistrationService: registrationService);
 
     private class FakeDashboardDataSource(
         IReadOnlyList<Domain.Common.FocusSession> focusSessions,
@@ -770,6 +821,21 @@ public sealed class DashboardTrackingStateTests
             return syncEnabled
                 ? SyncResult
                 : new DashboardSyncResult("Sync skipped. Enable sync to upload.");
+        }
+    }
+
+    private sealed class RecordingSyncRegistrationService : IDashboardSyncRegistrationService
+    {
+        public DashboardSyncRegistrationResult Result { get; init; } =
+            DashboardSyncRegistrationResult.Success("Device registered.");
+
+        public int RegisterCallCount { get; private set; }
+
+        public Task<DashboardSyncRegistrationResult> RegisterOrRepairAsync(CancellationToken cancellationToken = default)
+        {
+            RegisterCallCount++;
+
+            return Task.FromResult(Result);
         }
     }
 }

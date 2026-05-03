@@ -85,7 +85,19 @@ public static class WindowsAppServiceCollectionExtensions
         => services.AddWindowsInfrastructure(WindowsAppSyncOptions.LocalOnly);
 
     private static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services, WindowsAppOptions options)
-        => services.AddWindowsInfrastructure(options.SyncOptions);
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(options);
+
+        services.AddWindowsCaptureServices();
+        services.AddBrowserCaptureServices();
+        services.AddTrackingPipelineServices();
+        services.AddStorageServices();
+        services.AddSyncServices(options);
+        services.AddDashboardAdapterServices();
+
+        return services;
+    }
 
     private static IServiceCollection AddWindowsInfrastructure(this IServiceCollection services, WindowsAppSyncOptions syncOptions)
     {
@@ -159,7 +171,15 @@ public static class WindowsAppServiceCollectionExtensions
             repository.Initialize();
             return repository;
         });
+        services.AddSingleton(provider =>
+        {
+            var repository = new SqliteCurrentAppStateRepository(
+                () => provider.GetRequiredService<WindowsLocalDatabaseState>().ConnectionString);
+            repository.Initialize();
+            return repository;
+        });
         services.AddSingleton<ISyncOutboxRepository>(provider => provider.GetRequiredService<SqliteSyncOutboxRepository>());
+        services.AddSingleton<WindowsCurrentAppStatePersistenceService>();
         services.AddSingleton<WindowsFocusSessionPersistenceService>();
         services.AddSingleton(provider => new WindowsWebSessionPersistenceService(
             provider.GetRequiredService<SqliteWebSessionRepository>(),
@@ -183,9 +203,10 @@ public static class WindowsAppServiceCollectionExtensions
             provider.GetRequiredService<IBrowserActivityReader>(),
             provider.GetRequiredService<IBrowserUrlSanitizer>(),
             BrowserUrlStoragePolicy.DomainOnly,
-            provider.GetService<IWindowsSyncApiClient>() is null
+            syncWorker: provider.GetService<IWindowsSyncApiClient>() is null
                 ? null
-                : provider.GetRequiredService<WindowsSyncWorker>()));
+                : provider.GetRequiredService<WindowsSyncWorker>(),
+            currentAppStatePersistenceService: provider.GetRequiredService<WindowsCurrentAppStatePersistenceService>()));
 
         return services;
     }
@@ -212,6 +233,38 @@ public static class WindowsAppServiceCollectionExtensions
         return services;
     }
 
+    private static IServiceCollection AddSyncServices(this IServiceCollection services, WindowsAppOptions options)
+    {
+        WindowsAppSyncOptions syncOptions = options.SyncOptions;
+
+        services.TryAddSingleton<IWindowsUserDataProtector, DpapiWindowsUserDataProtector>();
+        services.TryAddSingleton<IWindowsSyncTokenStore>(provider => new FileWindowsSyncTokenStore(
+            BuildSyncTokenFilePath(options),
+            provider.GetRequiredService<IWindowsUserDataProtector>()));
+        services.TryAddSingleton<IWindowsSyncRegistrationStore>(
+            new FileWindowsSyncRegistrationStore(BuildSyncRegistrationFilePath(options)));
+
+        if (syncOptions.HasServerEndpoint)
+        {
+            services.TryAddSingleton(provider => new HttpClient
+            {
+                BaseAddress = syncOptions.ServerBaseUri
+            });
+            services.TryAddSingleton<IWindowsDeviceRegistrationClient, HttpWindowsDeviceRegistrationClient>();
+            services.TryAddSingleton<IDashboardSyncRegistrationService, WindowsDashboardSyncRegistrationService>();
+        }
+
+        if (syncOptions.IsUploadConfigured)
+        {
+            services.TryAddSingleton(syncOptions.CreateClientOptions());
+            services.TryAddSingleton<IWindowsSyncApiClient, HttpWindowsSyncApiClient>();
+        }
+
+        services.AddSingleton<WindowsSyncWorker>();
+
+        return services;
+    }
+
     private static string BuildSyncTokenFilePath(WindowsAppOptions? options)
     {
         string? databaseDirectory = options is null
@@ -224,6 +277,18 @@ public static class WindowsAppServiceCollectionExtensions
             : databaseDirectory;
 
         return Path.Combine(tokenDirectory, "windows-sync-device-token.dat");
+    }
+
+    private static string BuildSyncRegistrationFilePath(WindowsAppOptions options)
+    {
+        string? databaseDirectory = Path.GetDirectoryName(options.LocalDatabasePath);
+        string registrationDirectory = string.IsNullOrWhiteSpace(databaseDirectory)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "WoongMonitorStack")
+            : databaseDirectory;
+
+        return Path.Combine(registrationDirectory, "windows-sync-registration.json");
     }
 
     private static IServiceCollection AddTrackingPipelineAcceptanceMode(this IServiceCollection services)

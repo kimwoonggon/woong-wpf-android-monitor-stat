@@ -17,6 +17,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
     private readonly IBrowserUrlSanitizer _browserUrlSanitizer;
     private readonly BrowserUrlStoragePolicy _browserStoragePolicy;
     private readonly WindowsSyncWorker? _syncWorker;
+    private readonly WindowsCurrentAppStatePersistenceService? _currentAppStatePersistenceService;
     private TrackingPoller? _trackingPoller;
     private BrowserWebSessionizer? _webSessionizer;
     private string? _webSessionizerFocusSessionId;
@@ -27,13 +28,15 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         Func<TrackingPoller> trackingPollerFactory,
         SqliteFocusSessionRepository focusSessionRepository,
         SqliteSyncOutboxRepository outboxRepository,
-        ISystemClock clock)
+        ISystemClock clock,
+        WindowsCurrentAppStatePersistenceService? currentAppStatePersistenceService = null)
         : this(
             trackingPollerFactory,
             new WindowsFocusSessionPersistenceService(focusSessionRepository, outboxRepository, clock),
             webSessionPersistenceService: null,
             clock,
-            browserActivityReader: null)
+            browserActivityReader: null,
+            currentAppStatePersistenceService: currentAppStatePersistenceService)
     {
     }
 
@@ -67,7 +70,8 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         IBrowserActivityReader? browserActivityReader,
         IBrowserUrlSanitizer? browserUrlSanitizer = null,
         BrowserUrlStoragePolicy browserStoragePolicy = BrowserUrlStoragePolicy.DomainOnly,
-        WindowsSyncWorker? syncWorker = null)
+        WindowsSyncWorker? syncWorker = null,
+        WindowsCurrentAppStatePersistenceService? currentAppStatePersistenceService = null)
     {
         _trackingPollerFactory = trackingPollerFactory ?? throw new ArgumentNullException(nameof(trackingPollerFactory));
         _focusSessionPersistenceService = focusSessionPersistenceService ?? throw new ArgumentNullException(nameof(focusSessionPersistenceService));
@@ -77,6 +81,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         _browserUrlSanitizer = browserUrlSanitizer ?? new BrowserUrlSanitizer();
         _browserStoragePolicy = browserStoragePolicy;
         _syncWorker = syncWorker;
+        _currentAppStatePersistenceService = currentAppStatePersistenceService;
     }
 
     public DashboardTrackingSnapshot StartTracking()
@@ -90,6 +95,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
         _isRunning = true;
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = _trackingPoller.Poll();
+        PersistCurrentAppState(result);
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
 
@@ -114,6 +120,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
+        PersistCurrentAppState(result);
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
         bool closedFocusWebSession = CompleteCurrentWebSessionForClosedFocus(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
@@ -145,6 +152,7 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
         DateTimeOffset pollAtUtc = _clock.UtcNow;
         FocusSessionizerResult result = RequirePoller().Poll();
+        PersistCurrentAppState(result);
         DashboardPersistedSessionSnapshot? persisted = PersistIfPresent(result.ClosedSession);
         bool closedFocusWebSession = CompleteCurrentWebSessionForClosedFocus(result.ClosedSession);
         BrowserPersistenceResult browserPersistence = PersistBrowserActivity(result);
@@ -181,6 +189,9 @@ public sealed class WindowsTrackingDashboardCoordinator : IDashboardTrackingCoor
 
     private DashboardPersistedSessionSnapshot? PersistIfPresent(FocusSession? session)
         => session is null ? null : Persist(session);
+
+    private void PersistCurrentAppState(FocusSessionizerResult result)
+        => _currentAppStatePersistenceService?.SaveCurrentAppState(result);
 
     private TrackingPoller RequirePoller()
         => _trackingPoller ?? throw new InvalidOperationException("Tracking has not been started.");

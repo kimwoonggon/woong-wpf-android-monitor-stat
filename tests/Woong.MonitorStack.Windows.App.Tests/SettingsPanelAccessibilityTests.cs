@@ -22,6 +22,10 @@ public sealed class SettingsPanelAccessibilityTests
                     "Domain-only browser storage");
                 AssertAutomationName<CheckBox>(panel, "SyncEnabledCheckBox", "Sync enabled");
                 AssertAutomationName<TextBox>(panel, "SyncEndpointTextBox", "Sync endpoint");
+                AssertAutomationName<Button>(
+                    panel,
+                    "RegisterRepairDeviceButton",
+                    "Register or repair sync device");
             });
 
 }

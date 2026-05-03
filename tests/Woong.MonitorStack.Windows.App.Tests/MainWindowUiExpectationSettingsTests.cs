@@ -188,6 +188,8 @@ public sealed partial class MainWindowUiExpectationTests
                 TextBlock syncMode = FindByAutomationId<TextBlock>(panel, "SyncModeLabel");
                 TextBlock syncStatus = FindByAutomationId<TextBlock>(panel, "SyncStatusLabel");
                 TextBox syncEndpoint = FindByAutomationId<TextBox>(panel, "SyncEndpointTextBox");
+                Button registerRepairDevice = FindByAutomationId<Button>(panel, "RegisterRepairDeviceButton");
+                TextBlock registrationStatus = FindByAutomationId<TextBlock>(panel, "SyncDeviceRegistrationStatusText");
 
                 Assert.Equal("Sync enabled", syncEnabled.Content);
                 Assert.False(syncEnabled.IsChecked);
@@ -195,6 +197,12 @@ public sealed partial class MainWindowUiExpectationTests
                 Assert.Equal("Sync is off. Data stays on this Windows device.", syncStatus.Text);
                 Assert.Equal("No sync endpoint configured", syncEndpoint.Text);
                 Assert.False(syncEndpoint.IsEnabled);
+                Assert.Equal("Register / repair device", registerRepairDevice.Content);
+                Assert.Same(dashboard.ViewModel.RegisterRepairDeviceCommand, registerRepairDevice.Command);
+                Assert.Equal(
+                    "Device not registered. Register / repair is available after sync is turned on.",
+                    registrationStatus.Text);
+                AssertReadableButton(registerRepairDevice);
 
                 syncEnabled.IsChecked = true;
                 window.UpdateLayout();
@@ -202,6 +210,39 @@ public sealed partial class MainWindowUiExpectationTests
                 Assert.True(dashboard.ViewModel.Settings.IsSyncEnabled);
                 Assert.Equal("Sync enabled", syncMode.Text);
                 Assert.True(syncEndpoint.IsEnabled);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+    [Fact]
+    public void SettingsPanel_ShowsRegisterRepairDeviceButtonWithoutTokenInput()
+        => RunOnStaThread(() =>
+        {
+            TestDashboard dashboard = CreateDashboard();
+            var window = new MainWindow(dashboard.ViewModel);
+
+            try
+            {
+                SettingsPanel panel = ShowSettingsPanel(window);
+                Button registerRepairDevice = FindByAutomationId<Button>(panel, "RegisterRepairDeviceButton");
+                TextBlock registrationStatus = FindByAutomationId<TextBlock>(panel, "SyncDeviceRegistrationStatusText");
+                IReadOnlyList<TextBox> textBoxes = FindVisualDescendants<TextBox>(panel);
+                IReadOnlyList<PasswordBox> passwordBoxes = FindVisualDescendants<PasswordBox>(panel);
+                IReadOnlySet<string> visibleText = CollectText(panel);
+
+                Assert.Equal("Register / repair device", registerRepairDevice.Content);
+                Assert.Same(dashboard.ViewModel.RegisterRepairDeviceCommand, registerRepairDevice.Command);
+                Assert.Equal(
+                    "Device not registered. Register / repair is available after sync is turned on.",
+                    registrationStatus.Text);
+                Assert.Empty(passwordBoxes);
+                Assert.DoesNotContain(textBoxes, textBox =>
+                    AutomationProperties.GetAutomationId(textBox).Contains("Token", StringComparison.OrdinalIgnoreCase));
+                Assert.DoesNotContain(visibleText, text =>
+                    text.Contains("device token", StringComparison.OrdinalIgnoreCase));
             }
             finally
             {

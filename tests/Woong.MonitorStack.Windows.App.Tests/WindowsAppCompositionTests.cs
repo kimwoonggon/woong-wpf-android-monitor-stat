@@ -203,6 +203,10 @@ public sealed class WindowsAppCompositionTests
                 provider.GetRequiredService<IDashboardTrackingCoordinator>());
             Assert.IsType<SqliteDashboardDataSource>(
                 provider.GetRequiredService<IDashboardDataSource>());
+            Assert.IsType<SqliteCurrentAppStateRepository>(
+                provider.GetRequiredService<SqliteCurrentAppStateRepository>());
+            Assert.IsType<WindowsCurrentAppStatePersistenceService>(
+                provider.GetRequiredService<WindowsCurrentAppStatePersistenceService>());
         }
         finally
         {

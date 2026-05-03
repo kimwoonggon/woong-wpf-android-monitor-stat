@@ -117,6 +117,15 @@ public sealed class LocalDashboardBridgeRunner
                 LocalBridgeCheckpointCursor.FromWebSessions(windowsBatch.WebSessions),
                 summary.WindowsWeb);
             checkpoints?.Save();
+            summary.WindowsCurrentApp = await UploadCurrentAppStatesAsync(
+                windowsDevice,
+                windowsBatch.CurrentAppStates,
+                cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.WindowsCurrentAppState,
+                LocalBridgeCheckpointCursor.FromCurrentAppStates(windowsBatch.CurrentAppStates),
+                summary.WindowsCurrentApp);
+            checkpoints?.Save();
         }
 
         if (!string.IsNullOrWhiteSpace(options.AndroidDatabasePath))
@@ -152,6 +161,15 @@ public sealed class LocalDashboardBridgeRunner
                 LocalBridgeCheckpointKeys.AndroidLocationContext,
                 LocalBridgeCheckpointCursor.FromLocationContexts(androidBatch.LocationContexts),
                 summary.AndroidLocation);
+            checkpoints?.Save();
+            summary.AndroidCurrentApp = await UploadCurrentAppStatesAsync(
+                androidDevice,
+                androidBatch.CurrentAppStates,
+                cancellationToken);
+            checkpoints?.AdvanceAfterSuccessfulUpload(
+                LocalBridgeCheckpointKeys.AndroidCurrentAppState,
+                LocalBridgeCheckpointCursor.FromCurrentAppStates(androidBatch.CurrentAppStates),
+                summary.AndroidCurrentApp);
             checkpoints?.Save();
         }
 
@@ -238,6 +256,26 @@ public sealed class LocalDashboardBridgeRunner
         return await ReadUploadSummaryAsync(response, contexts.Count, cancellationToken);
     }
 
+    private async Task<UploadStatusSummary> UploadCurrentAppStatesAsync(
+        DeviceRegistrationResponse device,
+        IReadOnlyList<CurrentAppStateUploadItem> states,
+        CancellationToken cancellationToken)
+    {
+        if (states.Count == 0)
+        {
+            return UploadStatusSummary.Empty;
+        }
+
+        using HttpRequestMessage request = CreateJsonPost(
+            "/api/current-app-states/upload",
+            new UploadCurrentAppStatesRequest(device.DeviceId, states),
+            device.DeviceToken);
+        using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await ReadUploadSummaryAsync(response, states.Count, cancellationToken);
+    }
+
     private async Task<UploadStatusSummary> ReadUploadSummaryAsync(
         HttpResponseMessage response,
         int attempted,
@@ -272,8 +310,10 @@ public sealed class LocalBridgeSummary
     public int Iterations { get; set; }
     public UploadStatusSummary WindowsFocus { get; set; } = new();
     public UploadStatusSummary WindowsWeb { get; set; } = new();
+    public UploadStatusSummary WindowsCurrentApp { get; set; } = new();
     public UploadStatusSummary AndroidFocus { get; set; } = new();
     public UploadStatusSummary AndroidLocation { get; set; } = new();
+    public UploadStatusSummary AndroidCurrentApp { get; set; } = new();
 
     public int WindowsFocusUploaded
     {
@@ -285,6 +325,12 @@ public sealed class LocalBridgeSummary
     {
         get => WindowsWeb.Accepted;
         set => WindowsWeb.Accepted = value;
+    }
+
+    public int WindowsCurrentAppUploaded
+    {
+        get => WindowsCurrentApp.Accepted;
+        set => WindowsCurrentApp.Accepted = value;
     }
 
     public int AndroidFocusUploaded
@@ -299,13 +345,21 @@ public sealed class LocalBridgeSummary
         set => AndroidLocation.Accepted = value;
     }
 
+    public int AndroidCurrentAppUploaded
+    {
+        get => AndroidCurrentApp.Accepted;
+        set => AndroidCurrentApp.Accepted = value;
+    }
+
     public void Add(LocalBridgeSummary iteration)
     {
         Iterations += iteration.Iterations;
         WindowsFocus.Add(iteration.WindowsFocus);
         WindowsWeb.Add(iteration.WindowsWeb);
+        WindowsCurrentApp.Add(iteration.WindowsCurrentApp);
         AndroidFocus.Add(iteration.AndroidFocus);
         AndroidLocation.Add(iteration.AndroidLocation);
+        AndroidCurrentApp.Add(iteration.AndroidCurrentApp);
     }
 }
 
@@ -356,9 +410,10 @@ public sealed class UploadStatusSummary
 public sealed record LocalUploadBatch(
     IReadOnlyList<FocusSessionUploadItem> FocusSessions,
     IReadOnlyList<WebSessionUploadItem> WebSessions,
-    IReadOnlyList<LocationContextUploadItem> LocationContexts)
+    IReadOnlyList<LocationContextUploadItem> LocationContexts,
+    IReadOnlyList<CurrentAppStateUploadItem> CurrentAppStates)
 {
-    public static LocalUploadBatch Empty { get; } = new([], [], []);
+    public static LocalUploadBatch Empty { get; } = new([], [], [], []);
 }
 
 public sealed class LocalBridgeOptions
@@ -495,8 +550,10 @@ public static class LocalBridgeCheckpointKeys
 {
     public const string WindowsFocusSession = "windows.focus_session";
     public const string WindowsWebSession = "windows.web_session";
+    public const string WindowsCurrentAppState = "windows.current_app_state";
     public const string AndroidFocusSession = "android.focus_sessions";
     public const string AndroidLocationContext = "android.location_context_snapshots";
+    public const string AndroidCurrentAppState = "android.current_app_states";
 }
 
 public sealed class LocalBridgeCheckpointStore
@@ -624,6 +681,10 @@ public sealed record LocalBridgeCheckpointCursor(
         IReadOnlyList<LocationContextUploadItem> contexts)
         => FromItems(contexts, context => context.CapturedAtUtc, context => context.ClientContextId);
 
+    public static LocalBridgeCheckpointCursor? FromCurrentAppStates(
+        IReadOnlyList<CurrentAppStateUploadItem> states)
+        => FromItems(states, state => state.ObservedAtUtc, state => state.ClientStateId);
+
     private static LocalBridgeCheckpointCursor? FromItems<T>(
         IReadOnlyList<T> items,
         Func<T, DateTimeOffset> timestamp,
@@ -675,8 +736,14 @@ public static class WindowsSqliteReader
                 connection,
                 checkpoints?.Get(LocalBridgeCheckpointKeys.WindowsWebSession))
             : [];
+        IReadOnlyList<CurrentAppStateUploadItem> currentAppStates = TableExists(connection, "current_app_state")
+            ? ReadCurrentAppStates(
+                connection,
+                fallbackTimezoneId,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.WindowsCurrentAppState))
+            : [];
 
-        return new LocalUploadBatch(focusSessions, webSessions, []);
+        return new LocalUploadBatch(focusSessions, webSessions, [], currentAppStates);
     }
 
     private static IReadOnlyList<FocusSessionUploadItem> ReadFocusSessions(
@@ -784,11 +851,68 @@ public static class WindowsSqliteReader
         return sessions;
     }
 
+    private static IReadOnlyList<CurrentAppStateUploadItem> ReadCurrentAppStates(
+        SqliteConnection connection,
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointCursor? checkpoint)
+    {
+        string windowTitleProjection = ColumnExists(connection, "current_app_state", "window_title")
+            ? "window_title"
+            : "NULL AS window_title";
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = $"""
+            SELECT client_state_id, platform_app_key, observed_at_utc, local_date,
+                   timezone_id, status, source, process_id, process_name,
+                   process_path, window_handle, {windowTitleProjection}
+            FROM current_app_state
+            WHERE (
+                $cursorTimestamp IS NULL
+                OR julianday(observed_at_utc) > julianday($cursorTimestamp)
+                OR (
+                    julianday(observed_at_utc) = julianday($cursorTimestamp)
+                    AND client_state_id > $cursorId
+                )
+            )
+            ORDER BY observed_at_utc, client_state_id
+            """;
+        AddCursorParameters(command, checkpoint);
+
+        using SqliteDataReader reader = command.ExecuteReader();
+        var states = new List<CurrentAppStateUploadItem>();
+        while (reader.Read())
+        {
+            states.Add(new CurrentAppStateUploadItem(
+                clientStateId: reader.GetString(0),
+                platform: Platform.Windows,
+                platformAppKey: reader.GetString(1),
+                observedAtUtc: DateTimeOffset.Parse(reader.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal),
+                localDate: ParseDateOnly(reader.GetString(3)),
+                timezoneId: ReadOptionalString(reader, 4) ?? fallbackTimezoneId,
+                status: ReadOptionalString(reader, 5) ?? "Active",
+                source: ReadOptionalString(reader, 6) ?? "windows_current_app_state",
+                processId: ReadOptionalInt(reader, 7),
+                processName: ReadOptionalString(reader, 8),
+                processPath: ReadOptionalString(reader, 9),
+                windowHandle: ReadOptionalLong(reader, 10),
+                windowTitle: ReadOptionalString(reader, 11)));
+        }
+
+        return states;
+    }
+
     private static bool TableExists(SqliteConnection connection, string tableName)
     {
         using SqliteCommand command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name";
         command.Parameters.AddWithValue("$name", tableName);
+        return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+    }
+
+    private static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{tableName}') WHERE name = $columnName";
+        command.Parameters.AddWithValue("$columnName", columnName);
         return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
     }
 
@@ -860,8 +984,14 @@ public static class AndroidRoomReader
                 fallbackTimezoneId,
                 checkpoints?.Get(LocalBridgeCheckpointKeys.AndroidLocationContext))
             : [];
+        IReadOnlyList<CurrentAppStateUploadItem> currentAppStates = TableExists(connection, "current_app_states")
+            ? ReadCurrentAppStates(
+                connection,
+                fallbackTimezoneId,
+                checkpoints?.Get(LocalBridgeCheckpointKeys.AndroidCurrentAppState))
+            : [];
 
-        return new LocalUploadBatch(focusSessions, [], locationContexts);
+        return new LocalUploadBatch(focusSessions, [], locationContexts, currentAppStates);
     }
 
     private static IReadOnlyList<FocusSessionUploadItem> ReadFocusSessions(
@@ -943,6 +1073,43 @@ public static class AndroidRoomReader
         }
 
         return contexts;
+    }
+
+    private static IReadOnlyList<CurrentAppStateUploadItem> ReadCurrentAppStates(
+        SqliteConnection connection,
+        string fallbackTimezoneId,
+        LocalBridgeCheckpointCursor? checkpoint)
+    {
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT clientStateId, packageName, observedAtUtcMillis, localDate,
+                   timezoneId, status, source
+            FROM current_app_states
+            WHERE (
+                $cursorMillis IS NULL
+                OR observedAtUtcMillis > $cursorMillis
+                OR (observedAtUtcMillis = $cursorMillis AND clientStateId > $cursorId)
+            )
+            ORDER BY observedAtUtcMillis, clientStateId
+            """;
+        AddCursorParameters(command, checkpoint);
+
+        using SqliteDataReader reader = command.ExecuteReader();
+        var states = new List<CurrentAppStateUploadItem>();
+        while (reader.Read())
+        {
+            states.Add(new CurrentAppStateUploadItem(
+                clientStateId: reader.GetString(0),
+                platform: Platform.Android,
+                platformAppKey: reader.GetString(1),
+                observedAtUtc: DateTimeOffset.FromUnixTimeMilliseconds(reader.GetInt64(2)),
+                localDate: DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                timezoneId: ReadOptionalString(reader, 4) ?? fallbackTimezoneId,
+                status: ReadOptionalString(reader, 5) ?? "Active",
+                source: ReadOptionalString(reader, 6) ?? "android_current_app_state"));
+        }
+
+        return states;
     }
 
     private static bool TableExists(SqliteConnection connection, string tableName)

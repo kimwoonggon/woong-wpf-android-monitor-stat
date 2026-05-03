@@ -552,6 +552,12 @@ class AndroidSyncWorkerTest {
             locationRequest = request
             return locationResult
         }
+
+        override fun uploadCurrentAppStates(
+            request: SyncCurrentAppStateUploadRequest
+        ): SyncUploadBatchResult {
+            throw AssertionError("Current app state upload is not expected in this test.")
+        }
     }
 
     private class ThrowingFocusAndroidSyncApi(
@@ -571,6 +577,12 @@ class AndroidSyncWorkerTest {
             request: SyncLocationContextUploadRequest
         ): SyncUploadBatchResult {
             throw AssertionError("Location context upload is not expected in this test.")
+        }
+
+        override fun uploadCurrentAppStates(
+            request: SyncCurrentAppStateUploadRequest
+        ): SyncUploadBatchResult {
+            throw AssertionError("Current app state upload is not expected in this test.")
         }
     }
 

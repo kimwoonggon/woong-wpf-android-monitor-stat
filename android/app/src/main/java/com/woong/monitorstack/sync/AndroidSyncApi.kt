@@ -4,4 +4,6 @@ interface AndroidSyncApi {
     fun uploadFocusSessions(request: SyncFocusSessionUploadRequest): SyncUploadBatchResult
 
     fun uploadLocationContexts(request: SyncLocationContextUploadRequest): SyncUploadBatchResult
+
+    fun uploadCurrentAppStates(request: SyncCurrentAppStateUploadRequest): SyncUploadBatchResult
 }

@@ -3111,9 +3111,9 @@ milestones below are finished.
   exposed in Settings text, SQLite schema, or plaintext files.
 - [x] Validate focused bridge, storage, and WPF harness tests before full
   solution validation.
-- [ ] Follow-up: add WPF Register/Repair device flow with protected token
+- [x] Follow-up: add WPF Register/Repair device flow with protected token
   storage; keep environment token as development/config bridge only.
-- [ ] Follow-up: migrate WPF sync composition from environment device tokens to
+- [x] Follow-up: migrate WPF sync composition from environment device tokens to
   `IWindowsSyncTokenStore` after the Register/Repair flow exists.
 - [ ] Follow-up: add WPF disconnect/revoke flow that deletes the protected
   sync token and keeps sync opt-in off until explicitly re-enabled.
@@ -3128,7 +3128,7 @@ milestones below are finished.
 - [x] Follow-up: add durable browser raw-event identity, legacy
   `browser_raw_event` backfill, unique client-event index, and duplicate-safe
   raw-event persistence.
-- [ ] Follow-up: add atomic browser raw event + web-session + outbox ingestion
+- [x] Follow-up: add atomic browser raw event + web-session + outbox ingestion
   transaction so partial native-message writes cannot persist on failure.
 - [x] Follow-up: add metadata-only current-app state upload contracts and
   server ingestion foundation so the local Blazor dashboard can prefer current
@@ -3136,9 +3136,38 @@ milestones below are finished.
 - [x] Validate browser raw-event identity and current-app server foundation
   with focused tests, production migration runbook guard, full .NET
   test/build, and clean coverage generation.
-- [ ] Follow-up: persist and upload Windows/Android current-app snapshots so the
+- [x] Follow-up: persist and upload Windows/Android current-app snapshots so the
   local Blazor dashboard can distinguish true live/current Windows and Android
   app state from the latest completed focus session.
+
+## 2026-05-03 Current-App Sync And Registration Integration
+
+- [x] Add atomic browser native-message ingestion so duplicate browser events
+  are ignored before sessionization and raw-event/web-session/outbox writes
+  roll back together on failure.
+- [x] Add WPF Register/Repair device groundwork with protected token storage,
+  server device-id persistence, safe Settings UI text, and no token display.
+- [x] Make WPF sync uploads read server registration and protected token state
+  at send time while keeping raw local outbox payloads unchanged.
+- [x] Persist Windows `current_app_state` metadata to local SQLite from the
+  tracking coordinator without storing window titles, URLs, page titles, typed
+  text, clipboard, screenshots, or page contents.
+- [x] Teach LocalDashboardBridge to read Windows SQLite and Android Room
+  current-app state tables and upload metadata-only snapshots with checkpoint
+  safety.
+- [x] Add Android Room `current_app_states`, UsageStats current-app resolution,
+  outbox enqueue, and `/api/current-app-states/upload` sync support.
+- [x] Validate focused WPF/Windows/Bridge/Android tests, full `.NET`
+  restore/test/build, Android unit/build checks, and coverage generation.
+- [ ] Follow-up: retire or tightly constrain the legacy raw-token
+  `HttpWindowsSyncApiClient` constructor path after the Register/Repair flow
+  becomes the default production path.
+- [ ] Follow-up: add local integrated dashboard E2E evidence proving WPF
+  SQLite and Android Room current-app snapshots appear in Blazor current-app
+  cards after bridge upload.
+- [ ] Follow-up: capture connected Android emulator screenshots/evidence for
+  current app, location map/history, and all major screens when a device is
+  available.
 
 ## 2026-05-03 WPF Detail Top-10 Readability Regression
 

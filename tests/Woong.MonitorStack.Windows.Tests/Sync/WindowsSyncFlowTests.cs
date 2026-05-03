@@ -42,6 +42,44 @@ public sealed class WindowsSyncFlowTests : IDisposable
         Assert.Equal(syncedAtUtc, saved.SyncedAtUtc);
     }
 
+    [Fact]
+    public async Task ProcessPendingAsync_WhenOutboxPayloadHasLocalDeviceId_MapsRequestToRegisteredServerDeviceId()
+    {
+        var repository = new SqliteSyncOutboxRepository($"Data Source={_dbPath};Pooling=False");
+        repository.Initialize();
+        const string localPayload = """{"deviceId":"local-windows-device","sessions":[{"clientSessionId":"session-1"}]}""";
+        var item = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: localPayload,
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        repository.Add(item);
+        var handler = new CapturingHandler(
+            """{"items":[{"clientId":"session-1","status":1,"errorMessage":null}]}""");
+        using var httpClient = new HttpClient(handler);
+        var apiClient = new HttpWindowsSyncApiClient(
+            httpClient,
+            new WindowsSyncClientOptions(
+                new Uri("https://monitor.example"),
+                "raw-ui-token"),
+            new FakeTokenStore("stored-device-token"),
+            new FakeRegistrationStore("server-device-1"));
+        var syncedAtUtc = new DateTimeOffset(2026, 4, 28, 4, 0, 0, TimeSpan.Zero);
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(syncedAtUtc));
+
+        WindowsSyncResult result = await worker.ProcessPendingAsync();
+
+        Assert.Equal(1, result.SyncedCount);
+        Assert.Contains("\"deviceId\":\"server-device-1\"", handler.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("local-windows-device", handler.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("stored-device-token", handler.Body, StringComparison.Ordinal);
+        Assert.Equal("stored-device-token", Assert.Single(handler.Request!.Headers.GetValues("X-Device-Token")));
+        SyncOutboxItem saved = Assert.Single(repository.QueryAll());
+        Assert.Equal(localPayload, saved.PayloadJson);
+        Assert.Equal(SyncOutboxStatus.Synced, saved.Status);
+    }
+
     public void Dispose()
     {
         if (File.Exists(_dbPath))
@@ -87,5 +125,49 @@ public sealed class WindowsSyncFlowTests : IDisposable
         }
 
         public DateTimeOffset UtcNow { get; }
+    }
+
+    private sealed class FakeTokenStore : IWindowsSyncTokenStore
+    {
+        private readonly string? _deviceToken;
+
+        public FakeTokenStore(string? deviceToken)
+        {
+            _deviceToken = deviceToken;
+        }
+
+        public string? GetDeviceToken()
+            => _deviceToken;
+
+        public void SaveDeviceToken(string deviceToken)
+        {
+        }
+
+        public void DeleteDeviceToken()
+        {
+        }
+    }
+
+    private sealed class FakeRegistrationStore : IWindowsSyncRegistrationStore
+    {
+        private readonly string? _serverDeviceId;
+
+        public FakeRegistrationStore(string? serverDeviceId)
+        {
+            _serverDeviceId = serverDeviceId;
+        }
+
+        public WindowsSyncRegistration? GetRegistration()
+            => string.IsNullOrWhiteSpace(_serverDeviceId)
+                ? null
+                : new WindowsSyncRegistration(_serverDeviceId);
+
+        public void SaveRegistration(WindowsSyncRegistration registration)
+        {
+        }
+
+        public void ClearRegistration()
+        {
+        }
     }
 }

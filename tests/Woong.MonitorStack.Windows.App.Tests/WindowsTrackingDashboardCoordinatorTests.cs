@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using Woong.MonitorStack.Domain.Common;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.App.Dashboard;
@@ -67,6 +68,62 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         Assert.Equal(100, firstSession.GetProperty("windowHandle").GetInt64());
         Assert.True(firstSession.TryGetProperty("windowTitle", out JsonElement windowTitle));
         Assert.Equal(JsonValueKind.Null, windowTitle.ValueKind);
+    }
+
+    [Fact]
+    public void PollOnce_WhenForegroundChanges_UpsertsLatestCurrentAppStateWithoutWindowTitleContent()
+    {
+        var startedAtUtc = new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero);
+        var clock = new MutableClock(startedAtUtc);
+        var foregroundReader = new MutableForegroundWindowReader(new ForegroundWindowInfo(
+            hwnd: 100,
+            processId: 10,
+            processName: "Code.exe",
+            executablePath: "C:\\Apps\\Code.exe",
+            windowTitle: "Private draft typed text - Visual Studio Code"));
+        SqliteFocusSessionRepository focusRepository = CreateFocusRepository();
+        SqliteSyncOutboxRepository outboxRepository = CreateOutboxRepository();
+        SqliteCurrentAppStateRepository currentAppStateRepository = CreateCurrentAppStateRepository();
+        var coordinator = new WindowsTrackingDashboardCoordinator(
+            () => new TrackingPoller(
+                new ForegroundWindowCollector(foregroundReader, clock),
+                new AlwaysActiveLastInputReader(),
+                new IdleDetector(TimeSpan.FromMinutes(5)),
+                new FocusSessionizer("windows-device-1", "Asia/Seoul")),
+            focusRepository,
+            outboxRepository,
+            clock,
+            new WindowsCurrentAppStatePersistenceService(currentAppStateRepository));
+
+        coordinator.StartTracking();
+        CurrentAppStateRecord? initialStateOrNull = currentAppStateRepository.GetLatest();
+        Assert.NotNull(initialStateOrNull);
+        CurrentAppStateRecord initialState = initialStateOrNull;
+        clock.UtcNow = startedAtUtc.AddMinutes(3);
+        foregroundReader.ForegroundWindow = new ForegroundWindowInfo(
+            hwnd: 200,
+            processId: 20,
+            processName: "chrome.exe",
+            executablePath: "C:\\Apps\\chrome.exe",
+            windowTitle: "Secret search results - Chrome");
+
+        coordinator.PollOnce();
+
+        CurrentAppStateRecord? latestStateOrNull = currentAppStateRepository.GetLatest();
+        Assert.NotNull(latestStateOrNull);
+        CurrentAppStateRecord latestState = latestStateOrNull;
+        Assert.Equal("Code.exe", initialState.PlatformAppKey);
+        Assert.Equal("chrome.exe", latestState.PlatformAppKey);
+        Assert.Equal("chrome.exe", latestState.ProcessName);
+        Assert.Equal(@"C:\Apps\chrome.exe", latestState.ProcessPath);
+        Assert.Equal(20, latestState.ProcessId);
+        Assert.Equal(200, latestState.WindowHandle);
+        Assert.Equal(clock.UtcNow, latestState.ObservedAtUtc);
+        string storedText = ReadCurrentAppStateStorageText();
+        Assert.DoesNotContain("Private draft typed text", storedText, StringComparison.Ordinal);
+        Assert.DoesNotContain("Secret search results", storedText, StringComparison.Ordinal);
+        Assert.DoesNotContain("page_title", storedText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("url", storedText, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -605,6 +662,35 @@ public sealed class WindowsTrackingDashboardCoordinatorTests : IDisposable
         repository.Initialize();
 
         return repository;
+    }
+
+    private SqliteCurrentAppStateRepository CreateCurrentAppStateRepository()
+    {
+        var repository = new SqliteCurrentAppStateRepository($"Data Source={_dbPath};Pooling=False");
+        repository.Initialize();
+
+        return repository;
+    }
+
+    private string ReadCurrentAppStateStorageText()
+    {
+        using var connection = new SqliteConnection($"Data Source={_dbPath};Pooling=False");
+        connection.Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT group_concat(
+                coalesce(device_id, '') || '|' ||
+                coalesce(platform_app_key, '') || '|' ||
+                coalesce(process_name, '') || '|' ||
+                coalesce(process_path, '') || '|' ||
+                coalesce(process_id, '') || '|' ||
+                coalesce(window_handle, '') || '|' ||
+                coalesce(observed_at_utc, ''),
+                char(10))
+            FROM current_app_state;
+            """;
+
+        return command.ExecuteScalar() as string ?? "";
     }
 
     private static BrowserActivitySnapshot CreateBrowserSnapshot(

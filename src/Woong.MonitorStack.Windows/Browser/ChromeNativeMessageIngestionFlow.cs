@@ -10,8 +10,9 @@ public sealed class ChromeNativeMessageIngestionFlow
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly SqliteBrowserRawEventRepository _rawEvents;
-    private readonly SqliteWebSessionRepository _webSessions;
+    private readonly SqliteBrowserRawEventRepository? _rawEvents;
+    private readonly SqliteWebSessionRepository? _webSessions;
+    private readonly SqliteBrowserIngestionRepository? _ingestionRepository;
     private readonly BrowserWebSessionizer _sessionizer;
     private readonly SqliteSyncOutboxRepository? _outbox;
     private readonly string? _deviceId;
@@ -56,6 +57,7 @@ public sealed class ChromeNativeMessageIngestionFlow
     {
         _rawEvents = rawEvents ?? throw new ArgumentNullException(nameof(rawEvents));
         _webSessions = webSessions ?? throw new ArgumentNullException(nameof(webSessions));
+        _ingestionRepository = null;
         _sessionizer = sessionizer ?? throw new ArgumentNullException(nameof(sessionizer));
         _outbox = outbox;
         _deviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId;
@@ -63,6 +65,29 @@ public sealed class ChromeNativeMessageIngestionFlow
         _storagePolicy = storagePolicy;
         _rawEventRetention = rawEventRetention;
     }
+
+    public ChromeNativeMessageIngestionFlow(
+        SqliteBrowserIngestionRepository ingestionRepository,
+        SqliteSyncOutboxRepository? outbox,
+        string? deviceId,
+        BrowserWebSessionizer sessionizer,
+        IBrowserUrlSanitizer urlSanitizer,
+        BrowserUrlStoragePolicy storagePolicy,
+        BrowserRawEventRetentionPolicy? rawEventRetentionPolicy = null)
+    {
+        _rawEvents = null;
+        _webSessions = null;
+        _ingestionRepository = ingestionRepository ?? throw new ArgumentNullException(nameof(ingestionRepository));
+        _sessionizer = sessionizer ?? throw new ArgumentNullException(nameof(sessionizer));
+        _outbox = outbox;
+        _deviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId;
+        _urlSanitizer = urlSanitizer ?? throw new ArgumentNullException(nameof(urlSanitizer));
+        _storagePolicy = storagePolicy;
+        _rawEventRetention = null;
+        RawEventRetentionPolicy = rawEventRetentionPolicy;
+    }
+
+    private BrowserRawEventRetentionPolicy? RawEventRetentionPolicy { get; }
 
     public async Task IngestAsync(Stream nativeMessageStream, CancellationToken cancellationToken)
         => _ = await TryIngestNextAsync(nativeMessageStream, cancellationToken).ConfigureAwait(false);
@@ -78,11 +103,22 @@ public sealed class ChromeNativeMessageIngestionFlow
         }
 
         BrowserActivitySnapshot sanitized = _urlSanitizer.Sanitize(ToSnapshot(message), _storagePolicy);
-        _rawEvents.Save(ToRawEvent(message, sanitized));
+        BrowserRawEventRecord rawEvent = ToRawEvent(message, sanitized);
+        if (_ingestionRepository is not null)
+        {
+            DateTimeOffset? retentionCutoffUtc = RawEventRetentionPolicy?.CutoffFor(sanitized.CapturedAtUtc);
+            return _ingestionRepository.IngestInsertedRawEvent(
+                rawEvent,
+                retentionCutoffUtc,
+                () => _sessionizer.Apply(sanitized),
+                CreateOutboxItemIfConfigured);
+        }
+
+        _rawEvents!.Save(rawEvent);
         _ = _rawEventRetention?.PruneExpired(sanitized.CapturedAtUtc);
         foreach (var session in _sessionizer.Apply(sanitized))
         {
-            _webSessions.Save(session);
+            _webSessions!.Save(session);
             EnqueueIfConfigured(session);
         }
 
@@ -91,18 +127,27 @@ public sealed class ChromeNativeMessageIngestionFlow
 
     private void EnqueueIfConfigured(WebSession session)
     {
+        SyncOutboxItem? outboxItem = CreateOutboxItemIfConfigured(session);
+        if (outboxItem is not null)
+        {
+            _outbox!.Add(outboxItem);
+        }
+    }
+
+    private SyncOutboxItem? CreateOutboxItemIfConfigured(WebSession session)
+    {
         if (_outbox is null || _deviceId is null)
         {
-            return;
+            return null;
         }
 
         string aggregateId = CreateAggregateId(session);
-        _outbox.Add(SyncOutboxItem.Pending(
+        return SyncOutboxItem.Pending(
             id: $"web-session:{aggregateId}",
             aggregateType: "web_session",
             aggregateId,
             payloadJson: CreatePayload(session, aggregateId),
-            createdAtUtc: session.EndedAtUtc));
+            createdAtUtc: session.EndedAtUtc);
     }
 
     private string CreatePayload(WebSession session, string aggregateId)
@@ -158,5 +203,6 @@ public sealed class ChromeNativeMessageIngestionFlow
             sanitized.Url,
             sanitized.TabTitle,
             sanitized.Domain,
-            sanitized.CapturedAtUtc);
+            sanitized.CapturedAtUtc,
+            message.ClientEventId);
 }

@@ -159,6 +159,61 @@ class AndroidOutboxSyncProcessorTest {
     }
 
     @Test
+    fun processPendingUploadsCurrentAppStatesAndMarksAcceptedRowsSynced() {
+        val outbox = FakeSyncOutboxStore(
+            listOf(
+                currentAppStateOutboxItem("current-outbox-1", "current-state-1"),
+                currentAppStateOutboxItem("current-outbox-2", "current-state-2")
+            )
+        )
+        val syncApi = FakeAndroidSyncApi(
+            focusResult = SyncUploadBatchResult(items = emptyList()),
+            currentAppStateResult = SyncUploadBatchResult(
+                items = listOf(
+                    SyncUploadItemResult(
+                        clientId = "current-state-1",
+                        status = SyncUploadItemStatus.Accepted,
+                        errorMessage = null
+                    ),
+                    SyncUploadItemResult(
+                        clientId = "current-state-2",
+                        status = SyncUploadItemStatus.Duplicate,
+                        errorMessage = null
+                    )
+                )
+            )
+        )
+        val processor = AndroidOutboxSyncProcessor(
+            deviceId = "device-1",
+            outbox = outbox,
+            syncApi = syncApi,
+            clock = { 9_000L }
+        )
+
+        val result = processor.processPending(limit = 10)
+
+        val request = requireNotNull(syncApi.currentAppStateRequest)
+        assertEquals("device-1", request.deviceId)
+        assertEquals(
+            listOf("current-state-1", "current-state-2"),
+            request.states.map { it.clientStateId }
+        )
+        assertEquals(2, request.states[0].platform)
+        assertEquals("com.android.chrome", request.states[0].platformAppKey)
+        assertEquals("2026-05-03T12:00:00Z", request.states[0].observedAtUtc)
+        assertEquals("2026-05-03", request.states[0].localDate)
+        assertEquals("Asia/Seoul", request.states[0].timezoneId)
+        assertEquals("Active", request.states[0].status)
+        assertEquals("android_usage_stats_current_app", request.states[0].source)
+        assertEquals(listOf("current-outbox-1", "current-outbox-2"), outbox.syncedClientItemIds)
+        assertEquals(emptyList<FailedOutboxItem>(), outbox.failedItems)
+        assertEquals(
+            AndroidOutboxSyncResult(syncedCount = 2, failedCount = 0),
+            result
+        )
+    }
+
+    @Test
     fun processPendingMarksRejectedLocationContextRowsAsRetryableFailure() {
         val outbox = FakeSyncOutboxStore(
             listOf(locationOutboxItem("location-outbox-error", "location-context-error"))
@@ -259,6 +314,33 @@ class AndroidOutboxSyncProcessorTest {
         )
     }
 
+    private fun currentAppStateOutboxItem(
+        clientItemId: String,
+        clientStateId: String
+    ): SyncOutboxEntity {
+        return SyncOutboxEntity(
+            clientItemId = clientItemId,
+            aggregateType = "current_app_state",
+            payloadJson = """
+                {
+                  "clientStateId": "$clientStateId",
+                  "platform": 2,
+                  "platformAppKey": "com.android.chrome",
+                  "observedAtUtc": "2026-05-03T12:00:00Z",
+                  "localDate": "2026-05-03",
+                  "timezoneId": "Asia/Seoul",
+                  "status": "Active",
+                  "source": "android_usage_stats_current_app"
+                }
+            """.trimIndent(),
+            status = SyncOutboxStatus.Pending,
+            retryCount = 0,
+            lastError = null,
+            createdAtUtcMillis = 1_000,
+            updatedAtUtcMillis = 1_000
+        )
+    }
+
     private class FakeSyncOutboxStore(
         private val pendingItems: List<SyncOutboxEntity>
     ) : SyncOutboxStore {
@@ -285,12 +367,16 @@ class AndroidOutboxSyncProcessorTest {
 
     private class FakeAndroidSyncApi(
         private val focusResult: SyncUploadBatchResult,
-        private val locationResult: SyncUploadBatchResult = SyncUploadBatchResult(items = emptyList())
+        private val locationResult: SyncUploadBatchResult = SyncUploadBatchResult(items = emptyList()),
+        private val currentAppStateResult: SyncUploadBatchResult = SyncUploadBatchResult(items = emptyList())
     ) : AndroidSyncApi {
         lateinit var request: SyncFocusSessionUploadRequest
             private set
 
         var locationRequest: SyncLocationContextUploadRequest? = null
+            private set
+
+        var currentAppStateRequest: SyncCurrentAppStateUploadRequest? = null
             private set
 
         override fun uploadFocusSessions(
@@ -305,6 +391,13 @@ class AndroidOutboxSyncProcessorTest {
         ): SyncUploadBatchResult {
             locationRequest = request
             return locationResult
+        }
+
+        override fun uploadCurrentAppStates(
+            request: SyncCurrentAppStateUploadRequest
+        ): SyncUploadBatchResult {
+            currentAppStateRequest = request
+            return currentAppStateResult
         }
     }
 

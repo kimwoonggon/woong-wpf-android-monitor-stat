@@ -250,6 +250,38 @@ class AndroidSyncClientTest {
         assertEquals(SyncUploadItemStatus.Accepted, result.items.single().status)
     }
 
+    @Test
+    fun uploadCurrentAppStatesPostsServerContractPayloadAndParsesBatchResult() {
+        val interceptor = CapturingInterceptor(
+            responseJson = """{"items":[{"clientId":"current-state-1","status":1,"errorMessage":null}]}"""
+        )
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+        val syncClient = AndroidSyncClient(
+            baseUrl = "https://server.example",
+            httpClient = httpClient,
+            deviceToken = "device-token-secret"
+        )
+
+        val result = syncClient.uploadCurrentAppStates(currentAppStateUploadRequest())
+
+        assertEquals("/api/current-app-states/upload", interceptor.path)
+        assertEquals("device-token-secret", interceptor.deviceTokenHeader)
+        assertTrue(interceptor.body.contains(""""deviceId":"android-device-1""""))
+        assertTrue(interceptor.body.contains(""""states":["""))
+        assertTrue(interceptor.body.contains(""""clientStateId":"current-state-1""""))
+        assertTrue(interceptor.body.contains(""""platform":2"""))
+        assertTrue(interceptor.body.contains(""""platformAppKey":"com.android.chrome""""))
+        assertTrue(interceptor.body.contains(""""observedAtUtc":"2026-05-03T12:00:00Z""""))
+        assertTrue(interceptor.body.contains(""""localDate":"2026-05-03""""))
+        assertTrue(interceptor.body.contains(""""timezoneId":"Asia/Seoul""""))
+        assertTrue(interceptor.body.contains(""""status":"Active""""))
+        assertTrue(interceptor.body.contains(""""source":"android_usage_stats_current_app""""))
+        assertEquals("current-state-1", result.items.single().clientId)
+        assertEquals(SyncUploadItemStatus.Accepted, result.items.single().status)
+    }
+
     private class CapturingInterceptor(
         private val responseJson: String,
         private val responseCode: Int = 200
@@ -319,6 +351,24 @@ class AndroidSyncClientTest {
                     captureMode = "AppUsageContext",
                     permissionState = "GrantedApproximate",
                     source = "android_location_context"
+                )
+            )
+        )
+    }
+
+    private fun currentAppStateUploadRequest(): SyncCurrentAppStateUploadRequest {
+        return SyncCurrentAppStateUploadRequest(
+            deviceId = "android-device-1",
+            states = listOf(
+                SyncCurrentAppStateUploadItem(
+                    clientStateId = "current-state-1",
+                    platform = 2,
+                    platformAppKey = "com.android.chrome",
+                    observedAtUtc = "2026-05-03T12:00:00Z",
+                    localDate = "2026-05-03",
+                    timezoneId = "Asia/Seoul",
+                    status = "Active",
+                    source = "android_usage_stats_current_app"
                 )
             )
         )

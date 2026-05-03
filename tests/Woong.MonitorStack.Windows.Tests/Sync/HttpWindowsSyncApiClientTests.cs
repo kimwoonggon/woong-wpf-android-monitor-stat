@@ -37,6 +37,39 @@ public sealed class HttpWindowsSyncApiClientTests
         Assert.Equal(UploadItemStatus.Accepted, uploadResult.Status);
     }
 
+    [Fact]
+    public async Task UploadAsync_ReadsTokenAndServerDeviceIdFromStoresAtSendTime()
+    {
+        var handler = new CapturingHandler(
+            """{"items":[{"clientId":"session-1","status":1,"errorMessage":null}]}""");
+        using var httpClient = new HttpClient(handler);
+        var tokenStore = new MutableTokenStore("stored-token-before-send");
+        var registrationStore = new MutableRegistrationStore("server-device-before-send");
+        var client = new HttpWindowsSyncApiClient(
+            httpClient,
+            new WindowsSyncClientOptions(
+                new Uri("https://monitor.example"),
+                deviceToken: "raw-ui-token"),
+            tokenStore,
+            registrationStore);
+        tokenStore.DeviceToken = "stored-token-at-send";
+        registrationStore.ServerDeviceId = "server-device-at-send";
+        var item = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: """{"deviceId":"local-windows-device","sessions":[{"clientSessionId":"session-1"}]}""",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+
+        _ = await client.UploadAsync(item);
+
+        Assert.Equal("stored-token-at-send", Assert.Single(handler.Request!.Headers.GetValues("X-Device-Token")));
+        Assert.DoesNotContain("raw-ui-token", handler.Request.Headers.GetValues("X-Device-Token"));
+        Assert.Contains("\"deviceId\":\"server-device-at-send\"", handler.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("local-windows-device", handler.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("stored-token-at-send", handler.Body, StringComparison.Ordinal);
+    }
+
     private sealed class CapturingHandler : HttpMessageHandler
     {
         private readonly string _responseJson;
@@ -63,6 +96,54 @@ public sealed class HttpWindowsSyncApiClientTests
             {
                 Content = new StringContent(_responseJson)
             };
+        }
+    }
+
+    private sealed class MutableTokenStore : IWindowsSyncTokenStore
+    {
+        public MutableTokenStore(string? deviceToken)
+        {
+            DeviceToken = deviceToken;
+        }
+
+        public string? DeviceToken { get; set; }
+
+        public string? GetDeviceToken()
+            => DeviceToken;
+
+        public void SaveDeviceToken(string deviceToken)
+        {
+            DeviceToken = deviceToken;
+        }
+
+        public void DeleteDeviceToken()
+        {
+            DeviceToken = null;
+        }
+    }
+
+    private sealed class MutableRegistrationStore : IWindowsSyncRegistrationStore
+    {
+        public MutableRegistrationStore(string serverDeviceId)
+        {
+            ServerDeviceId = serverDeviceId;
+        }
+
+        public string? ServerDeviceId { get; set; }
+
+        public WindowsSyncRegistration? GetRegistration()
+            => string.IsNullOrWhiteSpace(ServerDeviceId)
+                ? null
+                : new WindowsSyncRegistration(ServerDeviceId);
+
+        public void SaveRegistration(WindowsSyncRegistration registration)
+        {
+            ServerDeviceId = registration.ServerDeviceId;
+        }
+
+        public void ClearRegistration()
+        {
+            ServerDeviceId = null;
         }
     }
 }

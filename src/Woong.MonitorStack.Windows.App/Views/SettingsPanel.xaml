@@ -84,6 +84,18 @@
                      IsEnabled="{Binding Settings.IsSyncEnabled}"
                      Style="{StaticResource SettingsInputTextBoxStyle}"
                      Margin="0,12,0,0" />
+            <Button Content="Register / repair device"
+                    AutomationProperties.AutomationId="RegisterRepairDeviceButton"
+                    AutomationProperties.Name="Register or repair sync device"
+                    Command="{Binding RegisterRepairDeviceCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,12,0,0" />
+            <TextBlock AutomationProperties.AutomationId="SyncDeviceRegistrationStatusText"
+                       AutomationProperties.Name="Sync device registration status"
+                       Text="{Binding Settings.SyncDeviceRegistrationStatusText}"
+                       Style="{StaticResource SettingsMutedTextStyle}"
+                       TextWrapping="Wrap"
+                       Margin="0,8,0,0" />
         </StackPanel>
 
         <StackPanel Grid.Column="2">

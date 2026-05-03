@@ -1,5 +1,7 @@
 package com.woong.monitorstack.usage
 
+import com.woong.monitorstack.data.local.CurrentAppStateEntity
+import com.woong.monitorstack.data.local.CurrentAppStateStatus
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import java.time.ZoneId
 import kotlinx.coroutines.runBlocking
@@ -104,6 +106,106 @@ class AndroidUsageCollectionRunnerTest {
         )
     }
 
+    @Test
+    fun collectPersistsCurrentAppSnapshotFromLatestActivePackage() = runBlocking {
+        val currentAppStateStore = FakeCurrentAppStateStore()
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(
+                FakeUsageEventsReader(
+                    listOf(
+                        UsageEventSnapshot(
+                            packageName = "com.android.chrome",
+                            eventType = UsageEventType.ACTIVITY_RESUMED,
+                            occurredAtUtcMillis = 1_000L
+                        ),
+                        UsageEventSnapshot(
+                            packageName = "com.slack",
+                            eventType = UsageEventType.ACTIVITY_RESUMED,
+                            occurredAtUtcMillis = 5_000L
+                        )
+                    )
+                )
+            ),
+            sessionizer = UsageSessionizer(),
+            store = FakeUsageSessionStore(),
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            currentAppStateStore = currentAppStateStore
+        )
+
+        runner.collect(1_000L, 10_000L)
+
+        val state = currentAppStateStore.states.single()
+        assertEquals("android-current:com.slack:10000", state.clientStateId)
+        assertEquals("com.slack", state.packageName)
+        assertEquals("Slack", state.appLabel)
+        assertEquals(CurrentAppStateStatus.Active, state.status)
+        assertEquals(10_000L, state.observedAtUtcMillis)
+        assertEquals("1970-01-01", state.localDate)
+        assertEquals("Asia/Seoul", state.timezoneId)
+        assertEquals("android_usage_stats_current_app", state.source)
+    }
+
+    @Test
+    fun collectEnqueuesCurrentAppSnapshotForSync() = runBlocking {
+        val currentAppStateOutbox = FakeCurrentAppStateOutboxEnqueuer()
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(
+                FakeUsageEventsReader(
+                    listOf(
+                        UsageEventSnapshot(
+                            packageName = "com.android.chrome",
+                            eventType = UsageEventType.ACTIVITY_RESUMED,
+                            occurredAtUtcMillis = 1_000L
+                        )
+                    )
+                )
+            ),
+            sessionizer = UsageSessionizer(),
+            store = FakeUsageSessionStore(),
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            currentAppStateOutboxEnqueuer = currentAppStateOutbox
+        )
+
+        runner.collect(1_000L, 10_000L)
+
+        val state = currentAppStateOutbox.states.single()
+        assertEquals("android-current:com.android.chrome:10000", state.clientStateId)
+        assertEquals("com.android.chrome", state.packageName)
+        assertEquals("Chrome", state.appLabel)
+        assertEquals("android_usage_stats_current_app", state.source)
+    }
+
+    @Test
+    fun collectDoesNotPersistCurrentAppSnapshotWhenNoActivePackageExists() = runBlocking {
+        val currentAppStateStore = FakeCurrentAppStateStore()
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(
+                FakeUsageEventsReader(
+                    listOf(
+                        UsageEventSnapshot(
+                            packageName = "com.android.chrome",
+                            eventType = UsageEventType.ACTIVITY_RESUMED,
+                            occurredAtUtcMillis = 1_000L
+                        ),
+                        UsageEventSnapshot(
+                            packageName = "com.android.chrome",
+                            eventType = UsageEventType.ACTIVITY_PAUSED,
+                            occurredAtUtcMillis = 5_000L
+                        )
+                    )
+                )
+            ),
+            sessionizer = UsageSessionizer(),
+            store = FakeUsageSessionStore(),
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            currentAppStateStore = currentAppStateStore
+        )
+
+        runner.collect(1_000L, 10_000L)
+
+        assertEquals(emptyList<CurrentAppStateEntity>(), currentAppStateStore.states)
+    }
+
     private class FakeUsageEventsReader(
         private val events: List<UsageEventSnapshot>
     ) : UsageEventsReader {
@@ -132,6 +234,22 @@ class AndroidUsageCollectionRunnerTest {
 
         override suspend fun enqueueFocusSessions(sessions: List<FocusSessionEntity>) {
             this.sessions += sessions
+        }
+    }
+
+    private class FakeCurrentAppStateStore : CurrentAppStateStore {
+        val states = mutableListOf<CurrentAppStateEntity>()
+
+        override suspend fun insert(state: CurrentAppStateEntity) {
+            states += state
+        }
+    }
+
+    private class FakeCurrentAppStateOutboxEnqueuer : CurrentAppStateOutboxEnqueuer {
+        val states = mutableListOf<CurrentAppStateEntity>()
+
+        override suspend fun enqueueCurrentAppState(state: CurrentAppStateEntity) {
+            states += state
         }
     }
 

@@ -33,6 +33,22 @@ data class SyncFocusSessionUploadItem(
     val source: String
 )
 
+data class SyncCurrentAppStateUploadRequest(
+    val deviceId: String,
+    val states: List<SyncCurrentAppStateUploadItem>
+)
+
+data class SyncCurrentAppStateUploadItem(
+    val clientStateId: String,
+    val platform: Int,
+    val platformAppKey: String,
+    val observedAtUtc: String,
+    val localDate: String,
+    val timezoneId: String,
+    val status: String,
+    val source: String
+)
+
 data class SyncUploadBatchResult(
     val items: List<SyncUploadItemResult>
 )

@@ -19,6 +19,7 @@ class AndroidOutboxSyncProcessor(
         .build()
     private val focusSessionAdapter = moshi.adapter(SyncFocusSessionUploadItem::class.java)
     private val locationContextAdapter = moshi.adapter(SyncLocationContextUploadItem::class.java)
+    private val currentAppStateAdapter = moshi.adapter(SyncCurrentAppStateUploadItem::class.java)
 
     fun processPending(limit: Int = DefaultLimit): AndroidOutboxSyncResult {
         val pendingItems = outbox.queryPending(limit)
@@ -32,8 +33,15 @@ class AndroidOutboxSyncProcessor(
         } else {
             emptyList()
         }
+        val pendingCurrentAppStates = pendingItems
+            .filter { it.aggregateType == CurrentAppStateAggregateType }
+            .map { PendingCurrentAppStateOutbox(it, parseCurrentAppState(it)) }
 
-        if (pendingFocusSessions.isEmpty() && pendingLocationContexts.isEmpty()) {
+        if (
+            pendingFocusSessions.isEmpty() &&
+            pendingLocationContexts.isEmpty() &&
+            pendingCurrentAppStates.isEmpty()
+        ) {
             return AndroidOutboxSyncResult(syncedCount = 0, failedCount = 0)
         }
 
@@ -74,6 +82,26 @@ class AndroidOutboxSyncProcessor(
                     outboxItem = pending.outboxItem,
                     itemResult = resultsByClientId[pending.context.clientContextId],
                     missingResultMessage = "Missing upload result for ${pending.context.clientContextId}.",
+                    updatedAtUtcMillis = updatedAtUtcMillis
+                )
+                syncedCount += result.syncedCount
+                failedCount += result.failedCount
+            }
+        }
+
+        if (pendingCurrentAppStates.isNotEmpty()) {
+            val uploadResult = syncApi.uploadCurrentAppStates(
+                SyncCurrentAppStateUploadRequest(
+                    deviceId = deviceId,
+                    states = pendingCurrentAppStates.map { it.state }
+                )
+            )
+            val resultsByClientId = uploadResult.items.associateBy { it.clientId }
+            pendingCurrentAppStates.forEach { pending ->
+                val result = applyUploadResult(
+                    outboxItem = pending.outboxItem,
+                    itemResult = resultsByClientId[pending.state.clientStateId],
+                    missingResultMessage = "Missing upload result for ${pending.state.clientStateId}.",
                     updatedAtUtcMillis = updatedAtUtcMillis
                 )
                 syncedCount += result.syncedCount
@@ -132,6 +160,13 @@ class AndroidOutboxSyncProcessor(
             )
     }
 
+    private fun parseCurrentAppState(outboxItem: SyncOutboxEntity): SyncCurrentAppStateUploadItem {
+        return currentAppStateAdapter.fromJson(outboxItem.payloadJson)
+            ?: throw IllegalArgumentException(
+                "Current app state outbox payload is empty: ${outboxItem.clientItemId}"
+            )
+    }
+
     private data class PendingFocusSessionOutbox(
         val outboxItem: SyncOutboxEntity,
         val session: SyncFocusSessionUploadItem
@@ -142,9 +177,15 @@ class AndroidOutboxSyncProcessor(
         val context: SyncLocationContextUploadItem
     )
 
+    private data class PendingCurrentAppStateOutbox(
+        val outboxItem: SyncOutboxEntity,
+        val state: SyncCurrentAppStateUploadItem
+    )
+
     companion object {
         const val FocusSessionAggregateType = "focus_session"
         const val LocationContextAggregateType = "location_context"
+        const val CurrentAppStateAggregateType = "current_app_state"
         private const val DefaultLimit = 50
         private const val DefaultUploadError = "Upload failed."
     }

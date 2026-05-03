@@ -1,3 +1,4 @@
+using System.Net;
 using Woong.MonitorStack.Domain.Contracts;
 using Woong.MonitorStack.Windows.Storage;
 using Woong.MonitorStack.Windows.Sync;
@@ -178,6 +179,34 @@ public sealed class WindowsSyncWorkerTests
         Assert.Equal(syncedAtUtc, checkpointStore.LastSavedAtUtc);
     }
 
+    [Fact]
+    public async Task ProcessPendingAsync_WhenUploadIsRejected_DoesNotStoreDeviceTokenInFailureStatus()
+    {
+        var item = SyncOutboxItem.Pending(
+            id: "outbox-1",
+            aggregateType: "focus_session",
+            aggregateId: "session-1",
+            payloadJson: """{"deviceId":"local-device-1","sessions":[{"clientSessionId":"session-1"}]}""",
+            createdAtUtc: new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero));
+        var repository = new FakeSyncOutboxRepository([item]);
+        using var httpClient = new HttpClient(new RejectedHandler("secret-device-token rejected"));
+        var apiClient = new HttpWindowsSyncApiClient(
+            httpClient,
+            new WindowsSyncClientOptions(new Uri("https://monitor.example"), "raw-ui-token"),
+            new FakeTokenStore("secret-device-token"),
+            new FakeRegistrationStore("server-device-1"));
+        var worker = new WindowsSyncWorker(repository, apiClient, new FakeClock(DateTimeOffset.UtcNow));
+
+        WindowsSyncResult result = await worker.ProcessPendingAsync();
+
+        Assert.Equal(0, result.SyncedCount);
+        Assert.Equal(1, result.FailedCount);
+        SyncOutboxItem saved = Assert.Single(repository.Items);
+        Assert.Equal(SyncOutboxStatus.Failed, saved.Status);
+        Assert.DoesNotContain("secret-device-token", saved.LastError, StringComparison.Ordinal);
+        Assert.DoesNotContain("raw-ui-token", saved.LastError, StringComparison.Ordinal);
+    }
+
     private sealed class FakeSyncApiClient : IWindowsSyncApiClient
     {
         private readonly UploadBatchResult _result;
@@ -280,6 +309,69 @@ public sealed class WindowsSyncWorkerTests
         public void Save(DateTimeOffset syncedAtUtc)
         {
             LastSavedAtUtc = syncedAtUtc;
+        }
+    }
+
+    private sealed class RejectedHandler : HttpMessageHandler
+    {
+        private readonly string _reasonPhrase;
+
+        public RejectedHandler(string reasonPhrase)
+        {
+            _reasonPhrase = reasonPhrase;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                ReasonPhrase = _reasonPhrase,
+                Content = new StringContent(_reasonPhrase)
+            });
+    }
+
+    private sealed class FakeTokenStore : IWindowsSyncTokenStore
+    {
+        private readonly string? _deviceToken;
+
+        public FakeTokenStore(string? deviceToken)
+        {
+            _deviceToken = deviceToken;
+        }
+
+        public string? GetDeviceToken()
+            => _deviceToken;
+
+        public void SaveDeviceToken(string deviceToken)
+        {
+        }
+
+        public void DeleteDeviceToken()
+        {
+        }
+    }
+
+    private sealed class FakeRegistrationStore : IWindowsSyncRegistrationStore
+    {
+        private readonly string? _serverDeviceId;
+
+        public FakeRegistrationStore(string? serverDeviceId)
+        {
+            _serverDeviceId = serverDeviceId;
+        }
+
+        public WindowsSyncRegistration? GetRegistration()
+            => string.IsNullOrWhiteSpace(_serverDeviceId)
+                ? null
+                : new WindowsSyncRegistration(_serverDeviceId);
+
+        public void SaveRegistration(WindowsSyncRegistration registration)
+        {
+        }
+
+        public void ClearRegistration()
+        {
         }
     }
 }
