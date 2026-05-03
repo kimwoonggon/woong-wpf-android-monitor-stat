@@ -7,4 +7,5 @@ public sealed record BrowserRawEventRecord(
     string? Url,
     string? Title,
     string? Domain,
-    DateTimeOffset ObservedAtUtc);
+    DateTimeOffset ObservedAtUtc,
+    string ClientEventId = "");

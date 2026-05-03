@@ -10,6 +10,7 @@ public sealed class ChromeNativeMessageParserTests
         const string json = """
             {
               "type": "activeTabChanged",
+              "clientEventId": "chrome-event-1",
               "browserFamily": "Chrome",
               "windowId": 7,
               "tabId": 42,
@@ -21,6 +22,7 @@ public sealed class ChromeNativeMessageParserTests
 
         var message = ChromeNativeMessageParser.ParseActiveTabChanged(json);
 
+        Assert.Equal("chrome-event-1", message.ClientEventId);
         Assert.Equal("Chrome", message.BrowserFamily);
         Assert.Equal(7, message.WindowId);
         Assert.Equal(42, message.TabId);
@@ -47,5 +49,41 @@ public sealed class ChromeNativeMessageParserTests
 
         Assert.Equal("", message.Title);
         Assert.Equal("github.example", message.Domain);
+    }
+
+    [Fact]
+    public void ParseActiveTabChanged_WhenClientEventIdIsMissing_DerivesStableMetadataOnlyId()
+    {
+        const string firstJson = """
+            {
+              "type": "activeTabChanged",
+              "browserFamily": "Chrome",
+              "windowId": 7,
+              "tabId": 42,
+              "url": "https://example.com/private/path?token=secret-token",
+              "title": "Sensitive private title",
+              "observedAtUtc": "2026-04-28T01:02:03Z"
+            }
+            """;
+        const string secondJson = """
+            {
+              "type": "activeTabChanged",
+              "browserFamily": "Chrome",
+              "windowId": 7,
+              "tabId": 42,
+              "url": "https://example.com/another/private/path?message=secret-message",
+              "title": "Another sensitive title",
+              "observedAtUtc": "2026-04-28T01:02:03Z"
+            }
+            """;
+
+        var first = ChromeNativeMessageParser.ParseActiveTabChanged(firstJson);
+        var second = ChromeNativeMessageParser.ParseActiveTabChanged(secondJson);
+
+        Assert.StartsWith("chrome-active-tab:", first.ClientEventId, StringComparison.Ordinal);
+        Assert.Equal(first.ClientEventId, second.ClientEventId);
+        Assert.DoesNotContain("secret", first.ClientEventId, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("private", first.ClientEventId, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("title", first.ClientEventId, StringComparison.OrdinalIgnoreCase);
     }
 }

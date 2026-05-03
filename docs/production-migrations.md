@@ -1,6 +1,6 @@
 # Production Migration Review
 
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 ## Generated Migration
 
@@ -11,6 +11,7 @@ Updated: 2026-05-02
 - Migration: `20260429102602_AddServerSessionForeignKeys`
 - Migration: `20260429163620_AddLocationContextTable`
 - Migration: `20260501225456_AddDeviceTokenVerifier`
+- Migration: `20260503130736_AddCurrentAppStateTable`
 - Context: `MonitorDbContext`
 - Provider: Npgsql / PostgreSQL
 - Local tool: `dotnet-ef` 10.0.4 in `dotnet-tools.json`
@@ -26,6 +27,7 @@ Updated: 2026-05-02
 - `app_families`
 - `app_family_mappings`
 - `location_contexts`
+- `current_app_states`
 
 ## Schema Restoration Migration
 
@@ -88,6 +90,15 @@ for upload device-token enforcement:
 - Upload endpoints use the verifier fields to reject missing, invalid, or
   mismatched device tokens before accepting client batches.
 
+`20260503130736_AddCurrentAppStateTable` adds a metadata-only current app
+state table for local integrated dashboard freshness:
+
+- `current_app_states` stores the latest observed app/window metadata per
+  registered device without requiring an ended session or duration.
+- `DeviceId` is unique so each device has one latest current state row.
+- The table is server/PostgreSQL integrated state only. Clients still persist
+  their local metadata in their own local stores and upload through API DTOs.
+
 ## Idempotency Indexes
 
 - `devices`: unique `(UserId, Platform, DeviceKey)`
@@ -99,6 +110,7 @@ for upload device-token enforcement:
 - `app_families`: unique `(Key)`
 - `app_family_mappings`: unique `(MappingType, MatchKey)`
 - `location_contexts`: unique `(DeviceId, ClientContextId)`
+- `current_app_states`: unique `(DeviceId)`
 
 ## Relationship Constraints
 
@@ -108,6 +120,7 @@ for upload device-token enforcement:
 - `raw_events.DeviceId -> devices.Id`
 - `device_state_sessions.DeviceId -> devices.Id`
 - `location_contexts.DeviceId -> devices.Id`
+- `current_app_states.DeviceId -> devices.Id`
 
 ## Production Deployment Path
 

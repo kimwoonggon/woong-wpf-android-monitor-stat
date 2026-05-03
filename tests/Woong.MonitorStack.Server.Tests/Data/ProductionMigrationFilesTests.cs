@@ -109,6 +109,36 @@ public sealed class ProductionMigrationFilesTests
         Assert.DoesNotContain("DeviceToken\"", migrationText, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void CurrentAppStateMigration_AddsMetadataOnlyLatestStateTable()
+    {
+        var migrationsDirectory = Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "Woong.MonitorStack.Server",
+            "Data",
+            "Migrations");
+        var migrationFile = Directory
+            .EnumerateFiles(migrationsDirectory, "*_AddCurrentAppStateTable.cs")
+            .Single();
+        string migrationText = File.ReadAllText(migrationFile);
+
+        Assert.Contains("current_app_states", migrationText, StringComparison.Ordinal);
+        Assert.Contains("ObservedAtUtc", migrationText, StringComparison.Ordinal);
+        Assert.Contains("PlatformAppKey", migrationText, StringComparison.Ordinal);
+        Assert.Contains("ProcessName", migrationText, StringComparison.Ordinal);
+        Assert.Contains("WindowTitle", migrationText, StringComparison.Ordinal);
+        Assert.Contains("IX_current_app_states_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.Contains("FK_current_app_states_devices_DeviceId", migrationText, StringComparison.Ordinal);
+        Assert.DoesNotContain("TypedText", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("PageContent", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Screenshot", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Clipboard", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Password", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("FormInput", migrationText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("TouchCoordinate", migrationText, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -261,6 +261,51 @@ public sealed class IntegratedDashboardQueryServiceTests
         Assert.Equal(600_000, snapshot.Devices[0].WebMs);
     }
 
+    [Fact]
+    public async Task GetAsync_UsesCurrentAppStateAheadOfLatestCompletedFocusSession()
+    {
+        await using RelationalTestDatabase database = await RelationalTestDatabase.CreateAsync();
+        Guid windowsDeviceId = Guid.NewGuid();
+        DateTimeOffset dayStartUtc = new(2026, 5, 3, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset observedAtUtc = dayStartUtc.AddHours(12);
+
+        database.Context.Devices.Add(
+            Device(windowsDeviceId, "user-1", Platform.Windows, "windows-key", "Windows PC"));
+        database.Context.FocusSessions.Add(
+            Focus(windowsDeviceId, "completed-code-session", "Code.exe", dayStartUtc.AddHours(10), 1_800_000, isIdle: false));
+        database.Context.CurrentAppStates.Add(new CurrentAppStateEntity
+        {
+            DeviceId = windowsDeviceId,
+            ClientStateId = "current-chrome-state",
+            Platform = Platform.Windows,
+            PlatformAppKey = "chrome.exe",
+            ObservedAtUtc = observedAtUtc,
+            LocalDate = new DateOnly(2026, 5, 3),
+            TimezoneId = "UTC",
+            Status = "Active",
+            Source = "foreground_window",
+            ProcessName = "chrome.exe",
+            CreatedAtUtc = observedAtUtc,
+            UpdatedAtUtc = observedAtUtc
+        });
+        await database.Context.SaveChangesAsync();
+        var service = new IntegratedDashboardQueryService(database.Context);
+
+        IntegratedDashboardSnapshot snapshot = await service.GetAsync(
+            "user-1",
+            new DateOnly(2026, 5, 3),
+            new DateOnly(2026, 5, 3),
+            "UTC");
+
+        IntegratedCurrentApp currentApp = Assert.Single(snapshot.CurrentApps);
+        Assert.Equal("windows", currentApp.Platform);
+        Assert.Equal("Chrome", currentApp.AppLabel);
+        Assert.Equal("chrome.exe", currentApp.PlatformAppKey);
+        Assert.Equal(observedAtUtc, currentApp.EndedAtUtc);
+        Assert.Equal(0, currentApp.DurationMs);
+        Assert.False(currentApp.IsIdle);
+    }
+
     private static DeviceEntity Device(
         Guid id,
         string userId,

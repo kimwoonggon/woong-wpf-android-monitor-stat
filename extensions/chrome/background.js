@@ -15,6 +15,15 @@ async function detectBrowserFamily() {
   return "Chrome";
 }
 
+function createClientEventId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+    return `chrome-active-tab:${globalThis.crypto.randomUUID()}`;
+  }
+
+  const randomPart = Math.random().toString(36).slice(2);
+  return `chrome-active-tab:${Date.now().toString(36)}-${randomPart}`;
+}
+
 function getNativePort() {
   if (nativePort) {
     return nativePort;
@@ -46,6 +55,7 @@ async function sendActiveTab(tab) {
 
   const message = {
     type: "activeTabChanged",
+    clientEventId: createClientEventId(),
     browserFamily: await detectBrowserFamily(),
     windowId: tab.windowId,
     tabId: tab.id,

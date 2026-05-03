@@ -3125,9 +3125,18 @@ milestones below are finished.
 - [x] Validate protected sync token storage, WPF helper migration, Android DB
   refresh bridge loop, focus/outbox idempotency, full .NET test/build,
   coverage, and Windows smoke before integration commit.
-- [ ] Follow-up: add durable browser raw-event identity and atomic browser raw
-  event + web-session + outbox persistence.
-- [ ] Follow-up: add metadata-only current-app state upload contracts so the
+- [x] Follow-up: add durable browser raw-event identity, legacy
+  `browser_raw_event` backfill, unique client-event index, and duplicate-safe
+  raw-event persistence.
+- [ ] Follow-up: add atomic browser raw event + web-session + outbox ingestion
+  transaction so partial native-message writes cannot persist on failure.
+- [x] Follow-up: add metadata-only current-app state upload contracts and
+  server ingestion foundation so the local Blazor dashboard can prefer current
+  state over the latest completed focus session.
+- [x] Validate browser raw-event identity and current-app server foundation
+  with focused tests, production migration runbook guard, full .NET
+  test/build, and clean coverage generation.
+- [ ] Follow-up: persist and upload Windows/Android current-app snapshots so the
   local Blazor dashboard can distinguish true live/current Windows and Android
   app state from the latest completed focus session.
 

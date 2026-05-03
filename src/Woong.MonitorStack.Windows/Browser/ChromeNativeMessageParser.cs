@@ -20,12 +20,17 @@ public static class ChromeNativeMessageParser
             throw new InvalidOperationException($"Unsupported Chrome native message type '{type}'.");
         }
 
+        string? clientEventId = root.TryGetProperty("clientEventId", out JsonElement clientEventIdElement)
+            ? clientEventIdElement.GetString()
+            : null;
+
         return ChromeTabChangedMessage.FromExtensionPayload(
             windowId: root.GetProperty("windowId").GetInt32(),
             tabId: root.GetProperty("tabId").GetInt32(),
             url: root.GetProperty("url").GetString() ?? "",
             title: root.GetProperty("title").GetString() ?? "",
             observedAtUtc: root.GetProperty("observedAtUtc").GetDateTimeOffset(),
-            browserFamily: root.GetProperty("browserFamily").GetString() ?? "");
+            browserFamily: root.GetProperty("browserFamily").GetString() ?? "",
+            clientEventId: clientEventId);
     }
 }

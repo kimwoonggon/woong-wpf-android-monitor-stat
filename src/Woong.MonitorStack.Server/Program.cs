@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Woong.MonitorStack.Domain.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Woong.MonitorStack.Server.Components;
+using Woong.MonitorStack.Server.CurrentApps;
 using Woong.MonitorStack.Server.Data;
 using Woong.MonitorStack.Server.Devices;
 using Woong.MonitorStack.Server.Dashboard;
@@ -46,6 +47,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     builder.Services.AddHostedService<RawEventRetentionBackgroundService>();
 }
 builder.Services.AddScoped<LocationContextUploadService>();
+builder.Services.AddScoped<CurrentAppStateUploadService>();
 builder.Services.AddScoped<DailySummaryQueryService>();
 builder.Services.AddScoped<DailySummaryAggregationService>();
 builder.Services.AddScoped<IntegratedDashboardQueryService>();
@@ -180,6 +182,23 @@ app.MapPost("/api/location-contexts/upload", async (
     UploadLocationContextsRequest request,
     DeviceTokenAuthenticationService deviceTokens,
     LocationContextUploadService uploads) =>
+{
+    IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
+    if (unauthorized is not null)
+    {
+        return unauthorized;
+    }
+
+    UploadBatchResult response = await uploads.UploadAsync(request);
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/api/current-app-states/upload", async (
+    HttpRequest httpRequest,
+    UploadCurrentAppStatesRequest request,
+    DeviceTokenAuthenticationService deviceTokens,
+    CurrentAppStateUploadService uploads) =>
 {
     IResult? unauthorized = await RejectUnauthorizedDeviceTokenAsync(httpRequest, request.DeviceId, deviceTokens);
     if (unauthorized is not null)

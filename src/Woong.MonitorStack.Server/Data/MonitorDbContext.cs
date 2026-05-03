@@ -22,6 +22,8 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
 
     public DbSet<LocationContextEntity> LocationContexts => Set<LocationContextEntity>();
 
+    public DbSet<CurrentAppStateEntity> CurrentAppStates => Set<CurrentAppStateEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DeviceEntity>(entity =>
@@ -157,6 +159,25 @@ public sealed class MonitorDbContext(DbContextOptions<MonitorDbContext> options)
             entity.HasOne<DeviceEntity>()
                 .WithMany()
                 .HasForeignKey(context => context.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CurrentAppStateEntity>(entity =>
+        {
+            entity.ToTable("current_app_states");
+            entity.HasKey(state => state.Id);
+            entity.Property(state => state.ClientStateId).HasMaxLength(128).IsRequired();
+            entity.Property(state => state.PlatformAppKey).HasMaxLength(256).IsRequired();
+            entity.Property(state => state.TimezoneId).HasMaxLength(128).IsRequired();
+            entity.Property(state => state.Status).HasMaxLength(64).IsRequired();
+            entity.Property(state => state.Source).HasMaxLength(128).IsRequired();
+            entity.Property(state => state.ProcessName).HasMaxLength(256);
+            entity.Property(state => state.ProcessPath).HasMaxLength(1024);
+            entity.Property(state => state.WindowTitle).HasMaxLength(512);
+            entity.HasIndex(state => state.DeviceId).IsUnique();
+            entity.HasOne<DeviceEntity>()
+                .WithMany()
+                .HasForeignKey(state => state.DeviceId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

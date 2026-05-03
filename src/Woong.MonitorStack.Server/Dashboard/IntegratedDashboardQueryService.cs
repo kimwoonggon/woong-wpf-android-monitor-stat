@@ -61,6 +61,13 @@ public sealed class IntegratedDashboardQueryService
                 context.Latitude.HasValue &&
                 context.Longitude.HasValue)
             .ToList();
+        List<CurrentAppStateEntity> currentStates = (await _dbContext.CurrentAppStates
+            .Where(state => deviceIds.Contains(state.DeviceId))
+            .ToListAsync())
+            .Where(state =>
+                state.ObservedAtUtc >= rangeStartUtc &&
+                state.ObservedAtUtc < rangeEndUtc)
+            .ToList();
 
         Dictionary<Guid, Platform> platformByDeviceId = devices.ToDictionary(
             device => device.Id,
@@ -123,36 +130,14 @@ public sealed class IntegratedDashboardQueryService
                 TopDomainsForPlatform(total.Platform)))
             .ToList();
         List<IntegratedCurrentApp> currentApps = devices
-            .Select(device => new
-            {
-                Device = device,
-                Session = focusSessions
-                    .Where(session => session.DeviceId == device.Id)
-                    .OrderByDescending(session => session.EndedAtUtc)
-                    .ThenByDescending(session => session.StartedAtUtc)
-                    .FirstOrDefault()
-            })
-            .Where(item => item.Session is not null)
-            .GroupBy(item => ToPlatformKey(item.Device.Platform))
+            .Select(CurrentAppForDevice)
+            .Where(currentApp => currentApp is not null)
+            .GroupBy(currentApp => currentApp!.Platform)
             .OrderBy(group => PlatformSortOrder(group.Key))
-            .Select(group =>
-            {
-                var latest = group
-                    .OrderByDescending(item => item.Session!.EndedAtUtc)
-                    .ThenByDescending(item => item.Session!.StartedAtUtc)
-                    .First();
-                FocusSessionEntity session = latest.Session!;
-
-                return new IntegratedCurrentApp(
-                    ToPlatformKey(latest.Device.Platform),
-                    latest.Device.DeviceName,
-                    AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey),
-                    session.PlatformAppKey,
-                    session.StartedAtUtc,
-                    session.EndedAtUtc,
-                    OverlapDurationMs(session.StartedAtUtc, session.EndedAtUtc, rangeStartUtc, rangeEndUtc),
-                    session.IsIdle);
-            })
+            .Select(group => group
+                .OrderByDescending(currentApp => currentApp!.EndedAtUtc)
+                .ThenByDescending(currentApp => currentApp!.StartedAtUtc)
+                .First()!)
             .ToList();
         List<IntegratedLocationRoutePoint> locationRoute = locationContexts
             .OrderBy(context => context.CapturedAtUtc)
@@ -210,6 +195,47 @@ public sealed class IntegratedDashboardQueryService
                 .OrderByDescending(total => total.DurationMs)
                 .ThenBy(total => total.Label, StringComparer.Ordinal)
                 .ToList();
+
+        IntegratedCurrentApp? CurrentAppForDevice(DeviceEntity device)
+        {
+            CurrentAppStateEntity? state = currentStates
+                .Where(candidate => candidate.DeviceId == device.Id)
+                .OrderByDescending(candidate => candidate.ObservedAtUtc)
+                .ThenByDescending(candidate => candidate.ClientStateId, StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (state is not null)
+            {
+                return new IntegratedCurrentApp(
+                    ToPlatformKey(device.Platform),
+                    device.DeviceName,
+                    AppFamilyMapper.GetFamilyLabel(state.PlatformAppKey),
+                    state.PlatformAppKey,
+                    state.ObservedAtUtc,
+                    state.ObservedAtUtc,
+                    0,
+                    IsIdleState(state.Status));
+            }
+
+            FocusSessionEntity? session = focusSessions
+                .Where(candidate => candidate.DeviceId == device.Id)
+                .OrderByDescending(candidate => candidate.EndedAtUtc)
+                .ThenByDescending(candidate => candidate.StartedAtUtc)
+                .FirstOrDefault();
+            if (session is null)
+            {
+                return null;
+            }
+
+            return new IntegratedCurrentApp(
+                ToPlatformKey(device.Platform),
+                device.DeviceName,
+                AppFamilyMapper.GetFamilyLabel(session.PlatformAppKey),
+                session.PlatformAppKey,
+                session.StartedAtUtc,
+                session.EndedAtUtc,
+                OverlapDurationMs(session.StartedAtUtc, session.EndedAtUtc, rangeStartUtc, rangeEndUtc),
+                session.IsIdle);
+        }
     }
 
     private static string FormatLocationCell(double latitude, double longitude)
@@ -255,6 +281,9 @@ public sealed class IntegratedDashboardQueryService
             "android" => 1,
             _ => 2
         };
+
+    private static bool IsIdleState(string status)
+        => string.Equals(status, "Idle", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record IntegratedDashboardSnapshot(

@@ -157,6 +157,36 @@ public sealed class ServerDbContextModelTests
     }
 
     [Fact]
+    public void CurrentAppStateEntity_HasDeviceUniqueIndexAndMetadataOnlyColumns()
+    {
+        using var dbContext = CreateModelContext();
+
+        var entityType = dbContext.Model.FindEntityType(typeof(CurrentAppStateEntity));
+        var uniqueIndex = Assert.Single(entityType!.GetIndexes(), index =>
+            index.IsUnique &&
+            index.Properties.Select(property => property.Name).SequenceEqual(
+                [nameof(CurrentAppStateEntity.DeviceId)]));
+
+        Assert.Equal("current_app_states", entityType.GetTableName());
+        Assert.True(uniqueIndex.IsUnique);
+        Assert.Equal(128, entityType.FindProperty(nameof(CurrentAppStateEntity.ClientStateId))!.GetMaxLength());
+        Assert.Equal(256, entityType.FindProperty(nameof(CurrentAppStateEntity.PlatformAppKey))!.GetMaxLength());
+        Assert.Equal(128, entityType.FindProperty(nameof(CurrentAppStateEntity.TimezoneId))!.GetMaxLength());
+        Assert.Equal(64, entityType.FindProperty(nameof(CurrentAppStateEntity.Status))!.GetMaxLength());
+        Assert.Equal(128, entityType.FindProperty(nameof(CurrentAppStateEntity.Source))!.GetMaxLength());
+        Assert.Equal(256, entityType.FindProperty(nameof(CurrentAppStateEntity.ProcessName))!.GetMaxLength());
+        Assert.Equal(1024, entityType.FindProperty(nameof(CurrentAppStateEntity.ProcessPath))!.GetMaxLength());
+        Assert.Equal(512, entityType.FindProperty(nameof(CurrentAppStateEntity.WindowTitle))!.GetMaxLength());
+        Assert.Null(entityType.FindProperty("TypedText"));
+        Assert.Null(entityType.FindProperty("PageContent"));
+        Assert.Null(entityType.FindProperty("Screenshot"));
+        Assert.Null(entityType.FindProperty("Clipboard"));
+        Assert.Null(entityType.FindProperty("Password"));
+        Assert.Null(entityType.FindProperty("FormInput"));
+        Assert.Null(entityType.FindProperty("TouchCoordinate"));
+    }
+
+    [Fact]
     public void ServerSessionEntities_HaveRequiredDeviceForeignKeys()
     {
         using var dbContext = CreateModelContext();
@@ -176,6 +206,9 @@ public sealed class ServerDbContextModelTests
         AssertForeignKey<LocationContextEntity, DeviceEntity>(
             dbContext,
             nameof(LocationContextEntity.DeviceId));
+        AssertForeignKey<CurrentAppStateEntity, DeviceEntity>(
+            dbContext,
+            nameof(CurrentAppStateEntity.DeviceId));
     }
 
     [Fact]
