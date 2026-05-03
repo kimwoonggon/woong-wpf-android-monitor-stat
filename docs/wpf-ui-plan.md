@@ -710,6 +710,9 @@ Current implementation:
 8. Verify UI contents.
 9. Capture screenshots at 1920, 1366, and 1024 widths, plus focused regions.
 10. Generate `report.md`, `manifest.json`, and `visual-review-prompt.md`.
+11. Clean up the launched WPF process through Settings `Exit app` when
+    available, not by treating X close-to-tray as app exit.
+12. If a leftover process must be killed, record that fact in cleanup evidence.
 
 The script must never use the user's production/local database and must never
 upload to a real server unless a future explicit opt-in flag is added and
@@ -730,6 +733,9 @@ Current implementation:
   requested viewport width.
 - `manifest.json` records `viewportWidths` and `skippedScreenshotReasons` so
   reviewers can distinguish missing crops from successful captures.
+- UI snapshot and RealStart acceptance reports include cleanup evidence. The
+  expected path is explicit `Exit app`; X close remains close-to-tray behavior,
+  and any forced leftover kill is reported.
 
 ## Test Inventory
 

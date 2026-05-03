@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\tools\Woong.MonitorStack.Windows.AcceptanceCleanup\WpfAppCleanupCoordinator.cs" Link="AcceptanceCleanup\WpfAppCleanupCoordinator.cs" />
     <ProjectReference Include="..\..\src\Woong.MonitorStack.Windows.App\Woong.MonitorStack.Windows.App.csproj" />
     <ProjectReference Include="..\..\src\Woong.MonitorStack.Windows.Presentation\Woong.MonitorStack.Windows.Presentation.csproj" />
     <ProjectReference Include="..\..\src\Woong.MonitorStack.Domain\Woong.MonitorStack.Domain.csproj" />

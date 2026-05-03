@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Controls;
 using Woong.MonitorStack.Windows.App.Controls;
 using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
@@ -9,29 +8,18 @@ public sealed class SectionCardAccessibilityTests
 {
     [Fact]
     public void SectionCard_ActionButtonUsesActionTextAsReadableAutomationName()
-        => RunOnStaThread(() =>
-        {
-            var card = new SectionCard
+        => RunContentWindowTest(
+            () => new SectionCard
             {
                 Title = "Focus by app",
                 ActionText = "Show app details",
                 ActionCommand = new CountingCommand(),
                 CardContent = new TextBlock { Text = "Chrome" }
-            };
-            var window = new Window { Content = card };
-
-            try
+            },
+            card =>
             {
-                window.Show();
-                window.UpdateLayout();
-
                 AssertAutomationName<Button>(card, "SectionCardActionButton", "Show app details");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     private sealed class CountingCommand : System.Windows.Input.ICommand
     {

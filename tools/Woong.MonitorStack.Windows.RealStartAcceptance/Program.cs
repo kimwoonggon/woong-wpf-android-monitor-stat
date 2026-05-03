@@ -4,6 +4,7 @@ using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
 using Microsoft.Data.Sqlite;
+using Woong.MonitorStack.Windows.AcceptanceCleanup;
 
 var exitCode = RealStartAcceptanceRunner.Run(args);
 return exitCode;
@@ -34,117 +35,188 @@ internal static class RealStartAcceptanceRunner
         }
 
         Process? process = null;
+        UIA3Automation? automation = null;
+        Application? application = null;
+        Window? mainWindow = null;
+        IReadOnlyCollection<RealStartEvidence> evidence = [];
+        WpfAppCleanupEvidence[] realStartCleanupEvidence = [];
+        Exception? runException = null;
+        string? failure = null;
+        var isSuccess = false;
+        var exitCode = 1;
+
         try
         {
             if (options.VerifyDatabaseOnly)
             {
-                RealStartEvidence[] databaseEvidence = BuildDatabaseOnlyEvidence(options);
-                bool isDatabaseEvidenceSuccess = databaseEvidence.All(item => item.Status is AcceptanceStatus.Pass);
-                WriteRealStartArtifacts(options, databaseEvidence, isDatabaseEvidenceSuccess);
-                if (isDatabaseEvidenceSuccess)
+                evidence = BuildDatabaseOnlyEvidence(options);
+                isSuccess = evidence.All(item => item.Status is AcceptanceStatus.Pass);
+                exitCode = isSuccess ? 0 : 1;
+            }
+            else
+            {
+                string appPath = options.AppPath ?? throw new InvalidOperationException("--app is required outside --verify-db-only mode.");
+                if (!File.Exists(appPath))
                 {
-                    Console.WriteLine("PASS: verified domain-only web_session duration evidence from local SQLite.");
-                    return 0;
+                    throw new FileNotFoundException("WPF app executable was not found.", appPath);
                 }
 
-                Console.Error.WriteLine("FAIL: local SQLite web_session evidence did not satisfy domain-only privacy requirements.");
-                return 1;
+                Directory.CreateDirectory(Path.GetDirectoryName(options.DatabasePath)!);
+                var startInfo = new ProcessStartInfo(appPath)
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = Path.GetDirectoryName(appPath) ?? Environment.CurrentDirectory
+                };
+                startInfo.Environment["WOONG_MONITOR_LOCAL_DB"] = options.DatabasePath;
+                startInfo.Environment["WOONG_MONITOR_DEVICE_ID"] = "real-start-local";
+                startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
+
+                process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to launch WPF app.");
+                automation = new UIA3Automation();
+                application = Application.Attach(process);
+                mainWindow = application.GetMainWindow(automation, options.Timeout)
+                    ?? throw new InvalidOperationException("Main window did not appear.");
+
+                mainWindow.Focus();
+                EnsureTrackingRunning(mainWindow);
+                Thread.Sleep(options.ObservationDuration);
+                Invoke(mainWindow, "StopTrackingButton");
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+
+                int focusCount = CountRows(options.DatabasePath, "focus_session");
+                int outboxCount = CountRows(options.DatabasePath, "sync_outbox");
+                if (focusCount <= 0)
+                {
+                    throw new InvalidOperationException("No focus_session rows were persisted.");
+                }
+
+                if (outboxCount <= 0)
+                {
+                    throw new InvalidOperationException("No sync_outbox rows were queued.");
+                }
+
+                string processName = ReadLatestFocusSessionProcessName(options.DatabasePath);
+                VerifyRecentAppSessionVisible(mainWindow, processName, options.Timeout);
+
+                evidence =
+                [
+                    new(
+                        "focus_session persisted",
+                        "> 0 rows in local SQLite focus_session",
+                        focusCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        AcceptanceStatus.Pass),
+                    new(
+                        "sync_outbox queued",
+                        "> 0 rows queued while sync remains opt-in",
+                        outboxCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        AcceptanceStatus.Pass),
+                    new(
+                        "latest focus session app/process readable",
+                        "non-empty app or process name",
+                        processName,
+                        AcceptanceStatus.Pass),
+                    new(
+                        "server sync disabled unless explicitly allowed",
+                        "AllowServerSync=false by default",
+                        options.AllowServerSync ? "AllowServerSync=true" : "AllowServerSync=false",
+                        options.AllowServerSync ? AcceptanceStatus.Warn : AcceptanceStatus.Pass)
+                ];
+                isSuccess = true;
+                exitCode = 0;
             }
-
-            string appPath = options.AppPath ?? throw new InvalidOperationException("--app is required outside --verify-db-only mode.");
-            if (!File.Exists(appPath))
-            {
-                throw new FileNotFoundException("WPF app executable was not found.", appPath);
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(options.DatabasePath)!);
-            var startInfo = new ProcessStartInfo(appPath)
-            {
-                UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(appPath) ?? Environment.CurrentDirectory
-            };
-            startInfo.Environment["WOONG_MONITOR_LOCAL_DB"] = options.DatabasePath;
-            startInfo.Environment["WOONG_MONITOR_DEVICE_ID"] = "real-start-local";
-            startInfo.Environment["WOONG_MONITOR_ALLOW_SERVER_SYNC"] = options.AllowServerSync ? "1" : "0";
-
-            process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to launch WPF app.");
-            using var automation = new UIA3Automation();
-            using Application application = Application.Attach(process);
-            Window mainWindow = application.GetMainWindow(automation, options.Timeout)
-                ?? throw new InvalidOperationException("Main window did not appear.");
-
-            mainWindow.Focus();
-            EnsureTrackingRunning(mainWindow);
-            Thread.Sleep(options.ObservationDuration);
-            Invoke(mainWindow, "StopTrackingButton");
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-
-            int focusCount = CountRows(options.DatabasePath, "focus_session");
-            int outboxCount = CountRows(options.DatabasePath, "sync_outbox");
-            if (focusCount <= 0)
-            {
-                throw new InvalidOperationException("No focus_session rows were persisted.");
-            }
-
-            if (outboxCount <= 0)
-            {
-                throw new InvalidOperationException("No sync_outbox rows were queued.");
-            }
-
-            string processName = ReadLatestFocusSessionProcessName(options.DatabasePath);
-            VerifyRecentAppSessionVisible(mainWindow, processName, options.Timeout);
-
-            RealStartEvidence[] evidence =
-            [
-                new(
-                    "focus_session persisted",
-                    "> 0 rows in local SQLite focus_session",
-                    focusCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    AcceptanceStatus.Pass),
-                new(
-                    "sync_outbox queued",
-                    "> 0 rows queued while sync remains opt-in",
-                    outboxCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    AcceptanceStatus.Pass),
-                new(
-                    "latest focus session app/process readable",
-                    "non-empty app or process name",
-                    processName,
-                    AcceptanceStatus.Pass),
-                new(
-                    "server sync disabled unless explicitly allowed",
-                    "AllowServerSync=false by default",
-                    options.AllowServerSync ? "AllowServerSync=true" : "AllowServerSync=false",
-                    options.AllowServerSync ? AcceptanceStatus.Warn : AcceptanceStatus.Pass)
-            ];
-            WriteRealStartArtifacts(options, evidence, isSuccess: true);
-
-            Console.WriteLine($"PASS: persisted {focusCount} focus_session row(s) and queued {outboxCount} sync_outbox row(s).");
-            return 0;
         }
         catch (Exception exception)
         {
-            WriteRealStartFailureArtifacts(options, exception);
-            Console.Error.WriteLine($"[FAIL] RealStart acceptance failed: {exception.Message}");
-            return 1;
+            runException = exception;
+            failure = exception.Message;
+            evidence =
+            [
+                new(
+                    "real-start acceptance completed",
+                    "real WPF app start persists focus_session and queues sync_outbox",
+                    exception.Message,
+                    AcceptanceStatus.Fail)
+            ];
+            isSuccess = false;
+            exitCode = 1;
         }
         finally
         {
-            try
+            realStartCleanupEvidence =
+            [
+                WpfAppCleanupCoordinator.Cleanup(
+                    process is null ? null : new LaunchedWpfAppProcess(process),
+                    () => RequestExplicitExitFromSettings(mainWindow),
+                    TimeSpan.FromSeconds(5))
+            ];
+            application?.Dispose();
+            automation?.Dispose();
+        }
+
+        if (realStartCleanupEvidence.Any(item => item.Status == WpfAppCleanupStatus.Fail))
+        {
+            isSuccess = false;
+            exitCode = 1;
+        }
+
+        WriteRealStartArtifacts(options, evidence, realStartCleanupEvidence, isSuccess, failure);
+        if (runException is not null)
+        {
+            Console.Error.WriteLine($"[FAIL] RealStart acceptance failed: {runException.Message}");
+        }
+        else if (isSuccess && options.VerifyDatabaseOnly)
+        {
+            Console.WriteLine("PASS: verified domain-only web_session duration evidence from local SQLite.");
+        }
+        else if (!isSuccess && options.VerifyDatabaseOnly)
+        {
+            Console.Error.WriteLine("FAIL: local SQLite web_session evidence did not satisfy domain-only privacy requirements.");
+        }
+        else if (isSuccess)
+        {
+            Console.WriteLine("PASS: persisted focus_session row(s), queued sync_outbox row(s), and recorded explicit cleanup evidence.");
+        }
+
+        return exitCode;
+    }
+
+    private static ExplicitExitRequestResult RequestExplicitExitFromSettings(Window? mainWindow)
+    {
+        if (mainWindow is null)
+        {
+            return ExplicitExitRequestResult.Unavailable(
+                "MainWindow was unavailable; could not reach SettingsTab or ExitApplicationButton.");
+        }
+
+        try
+        {
+            AutomationElement? settingsTab = mainWindow.FindFirstDescendant("SettingsTab")
+                ?? mainWindow.FindFirstDescendant(condition => condition.ByName("Settings"));
+            if (settingsTab is null)
             {
-                if (process is { HasExited: false })
-                {
-                    process.CloseMainWindow();
-                    if (!process.WaitForExit(5000))
-                    {
-                        process.Kill(entireProcessTree: true);
-                    }
-                }
+                return ExplicitExitRequestResult.Unavailable(
+                    "SettingsTab was not found; could not reach ExitApplicationButton.");
             }
-            catch (Exception exception)
+
+            settingsTab.AsTabItem().Select();
+            Thread.Sleep(TimeSpan.FromMilliseconds(200));
+
+            AutomationElement? exitButton = mainWindow.FindFirstDescendant("ExitApplicationButton");
+            if (exitButton is null)
             {
-                Console.Error.WriteLine($"[WARN] Failed to close app process cleanly: {exception.Message}");
+                return ExplicitExitRequestResult.Unavailable(
+                    "ExitApplicationButton was not found on SettingsTab.");
             }
+
+            exitButton.AsButton().Invoke();
+
+            return ExplicitExitRequestResult.Invoked(
+                "ExitApplicationButton on SettingsTab; X-close-to-tray was not used as app exit.");
+        }
+        catch (Exception exception)
+        {
+            return ExplicitExitRequestResult.Failed(
+                $"{exception.GetType().Name}: {exception.Message}");
         }
     }
 
@@ -248,29 +320,10 @@ internal static class RealStartAcceptanceRunner
         Console.WriteLine($"PASS: persisted focus session appeared in RecentAppSessionsList: {processName}");
     }
 
-    private static void WriteRealStartFailureArtifacts(RealStartOptions options, Exception exception)
-    {
-        try
-        {
-            RealStartEvidence[] evidence =
-            [
-                new(
-                    "real-start acceptance completed",
-                    "real WPF app start persists focus_session and queues sync_outbox",
-                    exception.Message,
-                    AcceptanceStatus.Fail)
-            ];
-            WriteRealStartArtifacts(options, evidence, isSuccess: false, exception.Message);
-        }
-        catch (Exception artifactException)
-        {
-            Console.Error.WriteLine($"[WARN] Failed to write RealStart failure artifacts: {artifactException.Message}");
-        }
-    }
-
     private static void WriteRealStartArtifacts(
         RealStartOptions options,
         IReadOnlyCollection<RealStartEvidence> evidence,
+        IReadOnlyCollection<WpfAppCleanupEvidence> realStartCleanupEvidence,
         bool isSuccess,
         string? failure = null)
     {
@@ -278,8 +331,8 @@ internal static class RealStartAcceptanceRunner
         Directory.CreateDirectory(outputDirectory);
         IReadOnlyCollection<RealStartEvidence> safety = BuildRealStartSafetyEvidence(options);
 
-        WriteRealStartReport(outputDirectory, evidence, safety, isSuccess, failure);
-        WriteRealStartManifest(outputDirectory, options, evidence, safety, isSuccess, failure);
+        WriteRealStartReport(outputDirectory, evidence, safety, realStartCleanupEvidence, isSuccess, failure);
+        WriteRealStartManifest(outputDirectory, options, evidence, safety, realStartCleanupEvidence, isSuccess, failure);
     }
 
     private static RealStartEvidence[] BuildDatabaseOnlyEvidence(RealStartOptions options)
@@ -316,6 +369,7 @@ internal static class RealStartAcceptanceRunner
         string outputDirectory,
         IReadOnlyCollection<RealStartEvidence> evidence,
         IReadOnlyCollection<RealStartEvidence> safety,
+        IReadOnlyCollection<WpfAppCleanupEvidence> realStartCleanupEvidence,
         bool isSuccess,
         string? failure)
     {
@@ -351,6 +405,17 @@ internal static class RealStartAcceptanceRunner
             writer.WriteLine(
                 $"| {EscapeMarkdownCell(item.Claim)} | {EscapeMarkdownCell(item.Expected)} | {EscapeMarkdownCell(item.Actual)} | {item.Status} |");
         }
+
+        writer.WriteLine();
+        writer.WriteLine("## RealStart Cleanup Evidence");
+        writer.WriteLine();
+        writer.WriteLine("| Claim | Expected | Actual | ExplicitExitAttempted | WasKilled | Status |");
+        writer.WriteLine("| --- | --- | --- | --- | --- | --- |");
+        foreach (WpfAppCleanupEvidence item in realStartCleanupEvidence)
+        {
+            writer.WriteLine(
+                $"| {EscapeMarkdownCell(item.Claim)} | {EscapeMarkdownCell(item.Expected)} | {EscapeMarkdownCell(item.Actual)} | {item.ExplicitExitAttempted} | {item.WasKilled} | {item.Status} |");
+        }
     }
 
     private static void WriteRealStartManifest(
@@ -358,6 +423,7 @@ internal static class RealStartAcceptanceRunner
         RealStartOptions options,
         IReadOnlyCollection<RealStartEvidence> evidence,
         IReadOnlyCollection<RealStartEvidence> safety,
+        IReadOnlyCollection<WpfAppCleanupEvidence> realStartCleanupEvidence,
         bool isSuccess,
         string? failure)
     {
@@ -384,6 +450,15 @@ internal static class RealStartAcceptanceRunner
                 expected = item.Expected,
                 actual = item.Actual,
                 status = item.Status.ToString()
+            }).ToArray(),
+            realStartCleanupEvidence = realStartCleanupEvidence.Select(item => new
+            {
+                claim = item.Claim,
+                expected = item.Expected,
+                actual = item.Actual,
+                status = item.Status.ToString(),
+                explicitExitAttempted = item.ExplicitExitAttempted,
+                wasKilled = item.WasKilled
             }).ToArray()
         };
 
@@ -412,7 +487,7 @@ internal static class RealStartAcceptanceRunner
                 options.AllowServerSync ? AcceptanceStatus.Warn : AcceptanceStatus.Pass),
             new(
                 "Process cleanup scoped to launched WPF app",
-                "Cleanup closes only the process launched by this RealStart acceptance run.",
+                "Cleanup uses explicit Exit app when available and only kills the process launched by this RealStart acceptance run if it remains alive.",
                 options.AppPath ?? "database-only mode",
                 AcceptanceStatus.Pass)
         ];

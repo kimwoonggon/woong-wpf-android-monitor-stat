@@ -1,4 +1,3 @@
-using System.Windows;
 using Woong.MonitorStack.Windows.App.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using Woong.MonitorStack.Windows.Presentation.Dashboard;
@@ -10,19 +9,19 @@ public sealed class HeaderStatusBarAccessibilityTests
 {
     [Fact]
     public void HeaderStatusBar_StatusBadgesExposeReadableNamesMatchingStateText()
-        => RunOnStaThread(() =>
-        {
-            var viewModel = new DashboardViewModel(
-                new EmptyDashboardDataSource(),
-                new FixedDashboardClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero)),
-                new DashboardOptions("Asia/Seoul"));
-            var header = new HeaderStatusBar { DataContext = viewModel };
-            var window = new Window { Content = header };
-
-            try
+        => RunContentWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var viewModel = new DashboardViewModel(
+                    new EmptyDashboardDataSource(),
+                    new FixedDashboardClock(new DateTimeOffset(2026, 4, 28, 0, 0, 0, TimeSpan.Zero)),
+                    new DashboardOptions("Asia/Seoul"));
+
+                return new HeaderStatusBar { DataContext = viewModel };
+            },
+            (window, header) =>
+            {
+                var viewModel = Assert.IsType<DashboardViewModel>(header.DataContext);
 
                 AssertAutomationName<StatusBadge>(header, "TrackingStatusBadge", "Tracking Stopped");
                 AssertAutomationName<StatusBadge>(header, "SyncStatusBadge", "Sync Off");
@@ -36,12 +35,7 @@ public sealed class HeaderStatusBarAccessibilityTests
                 AssertAutomationName<StatusBadge>(header, "TrackingStatusBadge", "Tracking Running");
                 AssertAutomationName<StatusBadge>(header, "SyncStatusBadge", "Sync Error");
                 AssertAutomationName<StatusBadge>(header, "PrivacyStatusBadge", "Privacy Custom");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     private sealed class EmptyDashboardDataSource : IDashboardDataSource
     {

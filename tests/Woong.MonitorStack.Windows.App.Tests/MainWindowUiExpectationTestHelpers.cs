@@ -430,29 +430,7 @@ public sealed partial class MainWindowUiExpectationTests
     }
 
     private static void RunOnStaThread(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-
-        if (failure is not null)
-        {
-            throw failure;
-        }
-    }
+        => WpfTestHelpers.RunOnStaThread(action);
 
     private sealed record TestDashboard(
         DateTimeOffset Now,

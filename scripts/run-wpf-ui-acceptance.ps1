@@ -27,6 +27,9 @@ Write-Host "This will observe foreground window metadata for local WPF UI accept
 Write-Host "It will not record keystrokes."
 Write-Host "It will not capture screen contents as product telemetry."
 Write-Host "It will use a temp DB unless configured otherwise: $dbPath"
+Write-Host "Child tools use the in-app Exit app button when available."
+Write-Host "X close is close-to-tray behavior and is not treated as app exit."
+Write-Host "Fallback process kills are reported in realStartCleanupEvidence or cleanupEvidence."
 if (-not $AllowServerSync) {
     Write-Host "Server sync is disabled. Pass -AllowServerSync only for an explicit real sync test."
 }
@@ -119,6 +122,12 @@ try {
         "- Latest snapshot manifest: ``$snapshotManifest``",
         "- Latest visual review prompt: ``$visualReviewPrompt``",
         "",
+        "## App Cleanup",
+        "",
+        "- Child tools use the in-app Exit app button for explicit shutdown when available.",
+        "- X close is close-to-tray behavior and is not treated as app exit.",
+        "- Forced leftover process kills are reported in ``realStartCleanupEvidence`` or ``cleanupEvidence``.",
+        "",
         "## Runtime Log Excerpt",
         "",
         "Path: ``$runtimeLogPath``",
@@ -162,6 +171,11 @@ try {
             "Server sync disabled unless explicitly allowed",
             "Temp SQLite databases only"
         )
+        cleanup = [ordered]@{
+            explicitExitPath = "Exit app"
+            xCloseBehavior = "close-to-tray"
+            childEvidence = @("realStartCleanupEvidence", "cleanupEvidence")
+        }
         realStart = [ordered]@{
             databasePath = $dbPath
             realStartReport = $realStartReport

@@ -891,6 +891,41 @@ public sealed class WpfUiAcceptanceScriptTests
         Assert.Contains("SampleDashboard", script);
     }
 
+    [Fact]
+    public void UiSnapshotsTool_CleansUpThroughExplicitExitAndReportsFallbackKills()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.UiSnapshots", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF UI snapshot tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("WpfAppCleanupCoordinator.Cleanup", tool);
+        Assert.Contains("RequestExplicitExitFromSettings", tool);
+        Assert.Contains("ExitApplicationButton", tool);
+        Assert.Contains("cleanupEvidence", tool);
+        Assert.Contains("## App Cleanup Evidence", tool);
+        Assert.Contains("ExplicitExitAttempted", tool);
+        Assert.Contains("WasKilled", tool);
+        Assert.Contains("X-close-to-tray", tool);
+        Assert.DoesNotContain("CloseMainWindow", tool);
+    }
+
+    [Fact]
+    public void UiSnapshotScript_DocumentsExplicitExitVersusCloseToTrayCleanup()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-ui-snapshots.ps1");
+
+        Assert.True(File.Exists(scriptPath), "WPF UI snapshot script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("Exit app", script);
+        Assert.Contains("X close", script);
+        Assert.Contains("close-to-tray", script);
+        Assert.Contains("cleanupEvidence", script);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

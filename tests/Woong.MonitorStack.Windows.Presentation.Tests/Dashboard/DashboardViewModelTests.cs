@@ -400,6 +400,73 @@ public sealed class DashboardViewModelTests
     }
 
     [Fact]
+    public void SelectCustomRange_WithOverlappingSessions_ClipsDashboardTotalsAndTopPointsToRange()
+    {
+        var now = new DateTimeOffset(2026, 4, 28, 5, 0, 0, TimeSpan.Zero);
+        var customStart = new DateTimeOffset(2026, 4, 28, 3, 15, 0, TimeSpan.Zero);
+        var customEnd = new DateTimeOffset(2026, 4, 28, 4, 15, 0, TimeSpan.Zero);
+        var dataSource = new FakeDashboardDataSource(
+            [
+                Session(
+                    "focus-overlaps-start",
+                    "Code.exe",
+                    new DateTimeOffset(2026, 4, 28, 2, 45, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 3, 45, 0, TimeSpan.Zero),
+                    isIdle: false),
+                Session(
+                    "focus-overlaps-end",
+                    "chrome.exe",
+                    new DateTimeOffset(2026, 4, 28, 4, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 4, 45, 0, TimeSpan.Zero),
+                    isIdle: false),
+                Session(
+                    "idle-overlaps-end",
+                    "away.exe",
+                    new DateTimeOffset(2026, 4, 28, 3, 30, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 4, 30, 0, TimeSpan.Zero),
+                    isIdle: true)
+            ],
+            [
+                WebSession.FromUtc(
+                    "focus-overlaps-start",
+                    "Chrome",
+                    "https://docs.example.com/start",
+                    "Docs",
+                    new DateTimeOffset(2026, 4, 28, 2, 50, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 3, 25, 0, TimeSpan.Zero)),
+                WebSession.FromUtc(
+                    "focus-overlaps-end",
+                    "Chrome",
+                    "https://chatgpt.com/codex",
+                    "Codex",
+                    new DateTimeOffset(2026, 4, 28, 4, 5, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 4, 28, 4, 35, 0, TimeSpan.Zero))
+            ]);
+        var viewModel = new DashboardViewModel(dataSource, new FixedClock(now), new DashboardOptions("Asia/Seoul"));
+
+        viewModel.SelectCustomRange(customStart, customEnd);
+
+        Assert.Equal(2_700_000, viewModel.TotalActiveMs);
+        Assert.Equal(5_400_000, viewModel.TotalForegroundMs);
+        Assert.Equal(2_700_000, viewModel.TotalIdleMs);
+        Assert.Equal(1_200_000, viewModel.TotalWebMs);
+        Assert.Equal("Code.exe", viewModel.TopAppName);
+        Assert.Equal("chatgpt.com", viewModel.TopDomainName);
+        Assert.Collection(
+            viewModel.AppUsagePoints,
+            point => Assert.Equal(("Code.exe", 1_800_000), (point.Label, point.ValueMs)),
+            point => Assert.Equal(("chrome.exe", 900_000), (point.Label, point.ValueMs)));
+        Assert.Collection(
+            viewModel.DomainUsagePoints,
+            point => Assert.Equal(("chatgpt.com", 600_000), (point.Label, point.ValueMs)),
+            point => Assert.Equal(("example.com", 600_000), (point.Label, point.ValueMs)));
+        Assert.Collection(
+            viewModel.HourlyActivityPoints,
+            point => Assert.Equal(("12", 1_800_000), (point.Label, point.ValueMs)),
+            point => Assert.Equal(("13", 900_000), (point.Label, point.ValueMs)));
+    }
+
+    [Fact]
     public void SelectPeriod_PublishesChartPoints()
     {
         var now = new DateTimeOffset(2026, 4, 28, 3, 0, 0, TimeSpan.Zero);
@@ -497,25 +564,35 @@ public sealed class DashboardViewModelTests
         FocusSession[] sessions =
         [
             ..Enumerable.Range(1, 10)
-                .Select(index => Session(
-                    $"session-app-{index}",
-                    $"app-{index}",
-                    now.AddMinutes(-index),
-                    now.AddMinutes(-index).AddMinutes(11 - index),
-                    isIdle: false)),
+                .Select(index =>
+                {
+                    DateTimeOffset startedAtUtc = now.AddMinutes(-40 + index);
+
+                    return Session(
+                        $"session-app-{index}",
+                        $"app-{index}",
+                        startedAtUtc,
+                        startedAtUtc.AddMinutes(11 - index),
+                        isIdle: false);
+                }),
             Session("session-chrome-1", "Chrome", now.AddMinutes(-20), now.AddMinutes(-15), isIdle: false),
             Session("session-chrome-2", "Chrome", now.AddMinutes(-25), now.AddMinutes(-20), isIdle: false)
         ];
         WebSession[] webSessions =
         [
             ..Enumerable.Range(1, 10)
-                .Select(index => WebSession.FromUtc(
-                    $"web-domain-{index}",
-                    "Chrome",
-                    $"https://domain-{index}.example/",
-                    $"Domain {index}",
-                    now.AddMinutes(-index),
-                    now.AddMinutes(-index).AddMinutes(11 - index))),
+                .Select(index =>
+                {
+                    DateTimeOffset startedAtUtc = now.AddMinutes(-40 + index);
+
+                    return WebSession.FromUtc(
+                        $"web-domain-{index}",
+                        "Chrome",
+                        $"https://domain-{index}.example/",
+                        $"Domain {index}",
+                        startedAtUtc,
+                        startedAtUtc.AddMinutes(11 - index));
+                }),
             WebSession.FromUtc(
                 "web-chatgpt-1",
                 "Chrome",

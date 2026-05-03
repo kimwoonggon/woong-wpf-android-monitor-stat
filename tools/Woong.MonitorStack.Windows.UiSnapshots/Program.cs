@@ -6,6 +6,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
 using Microsoft.Data.Sqlite;
+using Woong.MonitorStack.Windows.AcceptanceCleanup;
 
 var exitCode = UiSnapshotRunner.Run(args);
 return exitCode;
@@ -31,6 +32,13 @@ internal static class UiSnapshotRunner
 
         var context = new UiSnapshotContext(options);
         Process? process = null;
+        UIA3Automation? automation = null;
+        Application? application = null;
+        Window? mainWindow = null;
+        Exception? runException = null;
+        var shouldReplaceLatest = false;
+        var exitCode = 1;
+
         try
         {
             if (!File.Exists(options.AppPath))
@@ -44,9 +52,9 @@ internal static class UiSnapshotRunner
             ProcessStartInfo startInfo = CreateStartInfo(options);
             process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to launch WPF app.");
 
-            using var automation = new UIA3Automation();
-            using Application application = Application.Attach(process);
-            Window mainWindow = application.GetMainWindow(automation, options.Timeout)
+            automation = new UIA3Automation();
+            application = Application.Attach(process);
+            mainWindow = application.GetMainWindow(automation, options.Timeout)
                 ?? throw new InvalidOperationException($"Main window for '{AppFileName}' did not appear within {options.Timeout.TotalSeconds:N0} seconds.");
 
             string? automationId = TryGetAutomationId(mainWindow, context);
@@ -78,39 +86,106 @@ internal static class UiSnapshotRunner
                 RunEmptyDataSnapshots(mainWindow, context);
             }
 
-            WriteArtifacts(context, isSuccess: context.Results.All(result => result.Status != CheckStatus.Fail));
-            ReplaceLatest(options.OutputRoot, options.RunDirectory);
-            Console.WriteLine($"UI snapshots saved to: {options.RunDirectory}");
-            Console.WriteLine($"Latest snapshots copied to: {Path.Combine(options.OutputRoot, "latest")}");
-
-            return context.Results.All(result => result.Status != CheckStatus.Fail) ? 0 : 1;
+            shouldReplaceLatest = true;
+            exitCode = context.Results.All(result => result.Status != CheckStatus.Fail) ? 0 : 1;
         }
         catch (Exception exception)
         {
+            runException = exception;
             context.Fail("Tool execution", "No unhandled exception", $"{exception.GetType().Name}: {exception.Message}");
-            WriteArtifacts(context, isSuccess: false);
-            Console.Error.WriteLine($"[FAIL] UI snapshot automation failed: {exception.Message}");
-            Console.Error.WriteLine($"Report written to: {Path.Combine(options.RunDirectory, "report.md")}");
-
-            return 1;
+            exitCode = 1;
         }
         finally
         {
-            try
+            RecordCleanupEvidence(process, mainWindow, context);
+            application?.Dispose();
+            automation?.Dispose();
+        }
+
+        bool isSuccess = context.Results.All(result => result.Status != CheckStatus.Fail);
+        if (!isSuccess)
+        {
+            exitCode = 1;
+        }
+
+        Directory.CreateDirectory(options.RunDirectory);
+        WriteArtifacts(context, isSuccess);
+        if (shouldReplaceLatest)
+        {
+            ReplaceLatest(options.OutputRoot, options.RunDirectory);
+            Console.WriteLine($"UI snapshots saved to: {options.RunDirectory}");
+            Console.WriteLine($"Latest snapshots copied to: {Path.Combine(options.OutputRoot, "latest")}");
+        }
+
+        if (runException is not null)
+        {
+            Console.Error.WriteLine($"[FAIL] UI snapshot automation failed: {runException.Message}");
+            Console.Error.WriteLine($"Report written to: {Path.Combine(options.RunDirectory, "report.md")}");
+        }
+
+        return exitCode;
+    }
+
+    private static void RecordCleanupEvidence(Process? process, Window? mainWindow, UiSnapshotContext context)
+    {
+        try
+        {
+            WpfAppCleanupEvidence cleanupEvidence = WpfAppCleanupCoordinator.Cleanup(
+                process is null ? null : new LaunchedWpfAppProcess(process),
+                () => RequestExplicitExitFromSettings(mainWindow, context),
+                TimeSpan.FromSeconds(5));
+
+            context.RecordCleanupEvidence(cleanupEvidence);
+        }
+        catch (Exception exception)
+        {
+            context.Fail(
+                "WPF app cleanup",
+                "Cleanup evidence is recorded and leftover process state is explicit.",
+                $"{exception.GetType().Name}: {exception.Message}");
+        }
+    }
+
+    private static ExplicitExitRequestResult RequestExplicitExitFromSettings(
+        Window? mainWindow,
+        UiSnapshotContext context)
+    {
+        if (mainWindow is null)
+        {
+            return ExplicitExitRequestResult.Unavailable(
+                "MainWindow was unavailable; could not reach SettingsTab or ExitApplicationButton.");
+        }
+
+        try
+        {
+            AutomationElement? settingsTab = mainWindow.FindFirstDescendant("SettingsTab")
+                ?? mainWindow.FindFirstDescendant(condition => condition.ByName("Settings"));
+            if (settingsTab is null)
             {
-                if (process is { HasExited: false })
-                {
-                    process.CloseMainWindow();
-                    if (!process.WaitForExit(5000))
-                    {
-                        process.Kill(entireProcessTree: true);
-                    }
-                }
+                return ExplicitExitRequestResult.Unavailable(
+                    "SettingsTab was not found; could not reach ExitApplicationButton.");
             }
-            catch (Exception exception)
+
+            settingsTab.AsTabItem().Select();
+            Thread.Sleep(200);
+
+            AutomationElement? exitButton = mainWindow.FindFirstDescendant("ExitApplicationButton");
+            if (exitButton is null)
             {
-                Console.Error.WriteLine($"[WARN] Failed to close WPF app cleanly: {exception.Message}");
+                return ExplicitExitRequestResult.Unavailable(
+                    "ExitApplicationButton was not found on SettingsTab.");
             }
+
+            exitButton.AsButton().Invoke();
+            context.RecordControlAction("Explicit exit", "ExitApplicationButton", "Invoked", CheckStatus.Pass);
+
+            return ExplicitExitRequestResult.Invoked(
+                "ExitApplicationButton on SettingsTab; X-close-to-tray was not used as app exit.");
+        }
+        catch (Exception exception)
+        {
+            return ExplicitExitRequestResult.Failed(
+                $"{exception.GetType().Name}: {exception.Message}");
         }
     }
 
@@ -1381,6 +1456,24 @@ internal static class UiSnapshotRunner
         }
 
         lines.Add("");
+        lines.Add("## App Cleanup Evidence");
+        lines.Add("");
+        lines.Add("| Claim | Expected | Actual | ExplicitExitAttempted | WasKilled | Status |");
+        lines.Add("|:---|:---|:---|:---|:---|:---|");
+        if (context.CleanupEvidence.Count == 0)
+        {
+            lines.Add("| Not collected |  |  | false | false | Warn |");
+        }
+        else
+        {
+            foreach (WpfAppCleanupEvidence evidence in context.CleanupEvidence)
+            {
+                lines.Add(
+                    $"| {Escape(evidence.Claim)} | {Escape(evidence.Expected)} | {Escape(evidence.Actual)} | {evidence.ExplicitExitAttempted} | {evidence.WasKilled} | {evidence.Status} |");
+            }
+        }
+
+        lines.Add("");
         lines.Add("## Screenshots");
         lines.Add("");
         foreach (string screenshot in context.Screenshots.Distinct(StringComparer.Ordinal))
@@ -1568,6 +1661,15 @@ internal static class UiSnapshotRunner
                 result = evidence.Result,
                 status = evidence.Status.ToString()
             }).ToArray(),
+            cleanupEvidence = context.CleanupEvidence.Select(evidence => new
+            {
+                claim = evidence.Claim,
+                expected = evidence.Expected,
+                actual = evidence.Actual,
+                status = evidence.Status.ToString(),
+                explicitExitAttempted = evidence.ExplicitExitAttempted,
+                wasKilled = evidence.WasKilled
+            }).ToArray(),
             checks = context.Results.Select(result => new
             {
                 result.Name,
@@ -1658,6 +1760,8 @@ internal sealed class UiSnapshotContext
 
     public List<MinimumSizeReachabilityEvidence> MinimumSizeReachabilityEvidence { get; } = [];
 
+    public List<WpfAppCleanupEvidence> CleanupEvidence { get; } = [];
+
     public List<string> Notes { get; } = [];
 
     public List<string> Screenshots { get; } = [];
@@ -1736,6 +1840,20 @@ internal sealed class UiSnapshotContext
             automationId,
             screenshot,
             status));
+
+    public void RecordCleanupEvidence(WpfAppCleanupEvidence evidence)
+    {
+        CleanupEvidence.Add(evidence);
+        Add(evidence.Claim, evidence.Expected, evidence.Actual, MapCleanupStatus(evidence.Status));
+    }
+
+    private static CheckStatus MapCleanupStatus(WpfAppCleanupStatus status)
+        => status switch
+        {
+            WpfAppCleanupStatus.Pass => CheckStatus.Pass,
+            WpfAppCleanupStatus.Warn => CheckStatus.Warn,
+            _ => CheckStatus.Fail
+        };
 
     private void AddSectionScreenshotEvidence(
         string fileName,

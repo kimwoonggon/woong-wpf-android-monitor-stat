@@ -11,9 +11,9 @@ public static class DashboardSummaryBuilder
         DashboardPeriod period,
         string timeZoneId)
     {
-        List<FocusSession> focusSessionList = focusSessions.ToList();
-        List<WebSession> webSessionList = webSessions.ToList();
-        DailySummary summary = BuildDailySummary(focusSessionList, webSessionList, range, timeZoneId);
+        IReadOnlyList<FocusSession> focusSessionList = DashboardRangeClipper.ClipFocusSessions(focusSessions, range);
+        IReadOnlyList<WebSession> webSessionList = DashboardRangeClipper.ClipWebSessions(webSessions, range);
+        DailySummary summary = BuildDailySummaryFromClipped(focusSessionList, webSessionList, range, timeZoneId);
         long totalForegroundMs = focusSessionList.Sum(session => session.DurationMs);
         string periodDescriptor = FormatPeriodDescriptor(period);
         IReadOnlyList<DashboardSummaryCard> summaryCards =
@@ -33,6 +33,18 @@ public static class DashboardSummaryBuilder
     }
 
     public static DailySummary BuildDailySummary(
+        IEnumerable<FocusSession> focusSessions,
+        IEnumerable<WebSession> webSessions,
+        TimeRange range,
+        string timeZoneId)
+    {
+        IReadOnlyList<FocusSession> focusSessionList = DashboardRangeClipper.ClipFocusSessions(focusSessions, range);
+        IReadOnlyList<WebSession> webSessionList = DashboardRangeClipper.ClipWebSessions(webSessions, range);
+
+        return BuildDailySummaryFromClipped(focusSessionList, webSessionList, range, timeZoneId);
+    }
+
+    private static DailySummary BuildDailySummaryFromClipped(
         IEnumerable<FocusSession> focusSessions,
         IEnumerable<WebSession> webSessions,
         TimeRange range,

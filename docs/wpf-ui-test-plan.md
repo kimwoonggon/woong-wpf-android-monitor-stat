@@ -65,6 +65,10 @@ correctly to user-like interaction.
   `LiveEvents`.
 - The Settings tab exposes visible collection status, window title visibility,
   sync enabled state, sync mode label, and sync status label.
+- Acceptance tooling invokes the Settings `Exit app` explicit shutdown path for
+  cleanup when available. X close is close-to-tray behavior and must not be
+  treated as app exit; forced leftover process kills must be called out in the
+  report/manifest cleanup evidence.
 
 ## Commands
 

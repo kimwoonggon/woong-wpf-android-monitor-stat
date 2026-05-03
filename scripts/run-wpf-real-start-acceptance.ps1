@@ -24,6 +24,9 @@ Write-Host "This will observe foreground window metadata for local testing."
 Write-Host "It will not record keystrokes."
 Write-Host "It will not capture screen contents."
 Write-Host "It will use a temp DB unless configured otherwise: $dbPath"
+Write-Host "Cleanup uses the in-app Exit app button when available."
+Write-Host "X close is close-to-tray behavior and is not treated as app exit."
+Write-Host "If a leftover WPF process must be killed, realStartCleanupEvidence in the report/manifest says so."
 if (-not $AllowServerSync) {
     Write-Host "Server sync is disabled. Pass -AllowServerSync only for an explicit real sync test."
 }

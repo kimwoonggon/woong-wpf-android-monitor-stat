@@ -121,7 +121,10 @@ fake tracking data.
 12. Selects Live Event Log and captures an optional crop.
 13. Selects Settings.
 14. Captures Settings.
-15. Closes the app cleanly.
+15. Invokes the in-app `Exit app` explicit shutdown when available.
+16. Treats X close as close-to-tray behavior, not app exit.
+17. Records `cleanupEvidence` in the report and manifest; if a leftover WPF
+    process must be killed, the artifact says so clearly.
 
 ## Not Implemented Yet
 

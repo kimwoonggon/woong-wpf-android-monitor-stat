@@ -20,6 +20,19 @@ public static class DashboardChartMapper
             .ToList();
     }
 
+    public static IReadOnlyList<DashboardChartPoint> BuildHourlyActivityPoints(
+        IEnumerable<FocusSession> sessions,
+        TimeRange range,
+        string timezoneId)
+    {
+        ArgumentNullException.ThrowIfNull(sessions);
+        ArgumentNullException.ThrowIfNull(range);
+
+        return BuildHourlyActivityPoints(
+            DashboardRangeClipper.ClipFocusSessions(sessions, range),
+            timezoneId);
+    }
+
     public static IReadOnlyList<DashboardChartPoint> BuildAppUsagePoints(DailySummary summary)
     {
         ArgumentNullException.ThrowIfNull(summary);

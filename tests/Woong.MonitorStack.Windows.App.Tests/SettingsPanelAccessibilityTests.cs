@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
@@ -9,16 +8,10 @@ public sealed class SettingsPanelAccessibilityTests
 {
     [Fact]
     public void SettingsPanel_PrimarySettingsControlsExposeReadableAutomationNames()
-        => RunOnStaThread(() =>
-        {
-            var panel = new SettingsPanel();
-            var window = new Window { Content = panel };
-
-            try
+        => RunContentWindowTest(
+            () => new SettingsPanel(),
+            panel =>
             {
-                window.Show();
-                window.UpdateLayout();
-
                 AssertAutomationName<CheckBox>(panel, "CollectionVisibleCheckBox", "Collection visible");
                 AssertAutomationName<CheckBox>(panel, "WindowTitleVisibleCheckBox", "Capture window title");
                 AssertAutomationName<CheckBox>(panel, "PageTitleCaptureCheckBox", "Capture page title");
@@ -29,11 +22,6 @@ public sealed class SettingsPanelAccessibilityTests
                     "Domain-only browser storage");
                 AssertAutomationName<CheckBox>(panel, "SyncEnabledCheckBox", "Sync enabled");
                 AssertAutomationName<TextBox>(panel, "SyncEndpointTextBox", "Sync endpoint");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
 }

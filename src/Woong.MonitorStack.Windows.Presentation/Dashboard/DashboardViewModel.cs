@@ -579,7 +579,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         TopAppName = summarySnapshot.TopAppName;
         TopDomainName = summarySnapshot.TopDomainName;
         SummaryCards = summarySnapshot.SummaryCards;
-        HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, _timeZone.Id);
+        HourlyActivityPoints = DashboardChartMapper.BuildHourlyActivityPoints(focusSessions, range, _timeZone.Id);
         IReadOnlyList<DashboardChartPoint> allAppUsagePoints = DashboardChartMapper.BuildAppUsagePoints(summary);
         IReadOnlyList<DashboardChartPoint> allDomainUsagePoints = DashboardChartMapper.BuildDomainUsagePoints(summary);
         AppUsageDetailPoints = allAppUsagePoints.Take(10).ToList();

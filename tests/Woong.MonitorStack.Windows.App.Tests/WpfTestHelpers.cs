@@ -1,6 +1,8 @@
+using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Woong.MonitorStack.Windows.App.Tests;
 
@@ -38,16 +40,26 @@ internal static class WpfTestHelpers
 
     public static void RunOnStaThread(Action action)
     {
-        Exception? failure = null;
+        ExceptionDispatchInfo? failure = null;
         var thread = new Thread(() =>
         {
+            Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
+            SynchronizationContext? previousContext = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
+
             try
             {
                 action();
+                DrainDispatcher();
             }
             catch (Exception exception)
             {
-                failure = exception;
+                failure = ExceptionDispatchInfo.Capture(exception);
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(previousContext);
+                dispatcher.InvokeShutdown();
             }
         });
 
@@ -55,10 +67,63 @@ internal static class WpfTestHelpers
         thread.Start();
         thread.Join();
 
-        if (failure is not null)
+        failure?.Throw();
+    }
+
+    public static void RunWindowTest<TWindow>(Func<TWindow> createWindow, Action<TWindow> assertion)
+        where TWindow : Window
+        => RunOnStaThread(() =>
         {
-            throw failure;
+            TWindow? window = null;
+
+            try
+            {
+                window = createWindow();
+                window.Show();
+                window.UpdateLayout();
+                DrainDispatcher();
+
+                assertion(window);
+            }
+            finally
+            {
+                window?.Close();
+                DrainDispatcher();
+            }
+        });
+
+    public static void RunContentWindowTest<TContent>(Func<TContent> createContent, Action<TContent> assertion)
+        where TContent : FrameworkElement
+        => RunContentWindowTest(createContent, (_, content) => assertion(content));
+
+    public static void RunContentWindowTest<TContent>(Func<TContent> createContent, Action<Window, TContent> assertion)
+        where TContent : FrameworkElement
+        => RunWindowTest(
+            () =>
+            {
+                TContent content = createContent();
+
+                return new Window { Content = content };
+            },
+            window =>
+            {
+                var content = Assert.IsType<TContent>(window.Content);
+                assertion(window, content);
+            });
+
+    public static void DrainDispatcher()
+    {
+        Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
+        if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+        {
+            return;
         }
+
+        var frame = new DispatcherFrame();
+        dispatcher.BeginInvoke(
+            DispatcherPriority.Background,
+            () => frame.Continue = false);
+        Dispatcher.PushFrame(frame);
     }
 
     private static IEnumerable<DependencyObject> GetChildren(DependencyObject root)

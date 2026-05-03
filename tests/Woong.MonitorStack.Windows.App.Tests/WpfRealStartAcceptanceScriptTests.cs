@@ -175,6 +175,41 @@ public sealed class WpfRealStartAcceptanceScriptTests
         }
     }
 
+    [Fact]
+    public void RealStartTool_CleansUpThroughExplicitExitAndReportsFallbackKills()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string toolPath = Path.Combine(repoRoot, "tools", "Woong.MonitorStack.Windows.RealStartAcceptance", "Program.cs");
+
+        Assert.True(File.Exists(toolPath), "WPF real-start acceptance tool must exist.");
+        string tool = File.ReadAllText(toolPath);
+
+        Assert.Contains("WpfAppCleanupCoordinator.Cleanup", tool);
+        Assert.Contains("RequestExplicitExitFromSettings", tool);
+        Assert.Contains("ExitApplicationButton", tool);
+        Assert.Contains("realStartCleanupEvidence", tool);
+        Assert.Contains("## RealStart Cleanup Evidence", tool);
+        Assert.Contains("ExplicitExitAttempted", tool);
+        Assert.Contains("WasKilled", tool);
+        Assert.Contains("X-close-to-tray", tool);
+        Assert.DoesNotContain("CloseMainWindow", tool);
+    }
+
+    [Fact]
+    public void RealStartScript_DocumentsExplicitExitVersusCloseToTrayCleanup()
+    {
+        string repoRoot = FindRepositoryRoot();
+        string scriptPath = Path.Combine(repoRoot, "scripts", "run-wpf-real-start-acceptance.ps1");
+
+        Assert.True(File.Exists(scriptPath), "RealStart acceptance script must exist.");
+        string script = File.ReadAllText(scriptPath);
+
+        Assert.Contains("Exit app", script);
+        Assert.Contains("X close", script);
+        Assert.Contains("close-to-tray", script);
+        Assert.Contains("realStartCleanupEvidence", script);
+    }
+
     private static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);

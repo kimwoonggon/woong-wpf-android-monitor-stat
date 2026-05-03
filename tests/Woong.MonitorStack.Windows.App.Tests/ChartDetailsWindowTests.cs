@@ -13,147 +13,123 @@ public sealed class ChartDetailsWindowTests
 {
     [Fact]
     public void ChartDetailsWindow_RendersHorizontalBarChartRequest()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "App focus details",
-                "Apps",
-                Enumerable.Range(1, 10)
-                    .Select(index => new DashboardChartPoint($"app-{index}", index * 60_000))
-                    .ToList());
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "App focus details",
+                    "Apps",
+                    Enumerable.Range(1, 10)
+                        .Select(index => new DashboardChartPoint($"app-{index}", index * 60_000))
+                        .ToList());
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 Assert.Equal("App focus details", window.Title);
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart"));
                 var title = FindByAutomationId<TextBlock>(window, "ChartDetailsTitleText");
                 Assert.Equal("App focus details", title.Text);
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 Assert.Equal(["app-10", "app-9", "app-8", "app-7", "app-6", "app-5", "app-4", "app-3", "app-2", "app-1"], viewModel.Chart.Labels);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindow_ShowsFullLabelsAndDurationValuesForTopTenDetails()
-        => RunOnStaThread(() =>
-        {
-            const string longDomain = "very-long-domain-name-for-review.example.com";
-            var request = new DashboardChartDetailsRequest(
-                "Domain focus details",
-                "Domains",
-                [
-                    new DashboardChartPoint(longDomain, 600_000),
-                    new DashboardChartPoint("chatgpt.com", 3_661_000)
-                ]);
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                const string longDomain = "very-long-domain-name-for-review.example.com";
+                var request = new DashboardChartDetailsRequest(
+                    "Domain focus details",
+                    "Domains",
+                    [
+                        new DashboardChartPoint(longDomain, 600_000),
+                        new DashboardChartPoint("chatgpt.com", 3_661_000)
+                    ]);
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
+                const string longDomain = "very-long-domain-name-for-review.example.com";
                 Assert.NotNull(FindByAutomationId<ListView>(window, "ChartDetailsRowsList"));
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 Assert.Equal(["chatgpt.com", longDomain], viewModel.DetailRows.Select(row => row.Label));
                 Assert.Equal("1h 01m 01s", viewModel.DetailRows[0].DurationText);
                 Assert.Equal("10m", viewModel.DetailRows[1].DurationText);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindow_RendersOneHorizontalBarPerLabelWithAlignedValues()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "Domain focus details",
-                "Domains",
-                [
-                    new DashboardChartPoint("github.com", 120_000),
-                    new DashboardChartPoint("openai.com", 60_000),
-                    new DashboardChartPoint("github.com", 180_000)
-                ]);
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "Domain focus details",
+                    "Domains",
+                    [
+                        new DashboardChartPoint("github.com", 120_000),
+                        new DashboardChartPoint("openai.com", 60_000),
+                        new DashboardChartPoint("github.com", 180_000)
+                    ]);
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart"));
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 Assert.Equal(["github.com", "openai.com"], viewModel.Chart.Labels);
                 Assert.Equal(["github.com", "openai.com"], Assert.Single(viewModel.Chart.YAxes).Labels);
                 var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(viewModel.Chart.Series));
                 Assert.Equal([300_000, 60_000], rowSeries.Values);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindow_GroupsDuplicateAppLabelsIntoOneSummedHorizontalBar()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "App focus details",
-                "Apps",
-                [
-                    new DashboardChartPoint("Chrome", 600_000),
-                    new DashboardChartPoint("Code.exe", 300_000),
-                    new DashboardChartPoint("Chrome", 900_000)
-                ]);
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "App focus details",
+                    "Apps",
+                    [
+                        new DashboardChartPoint("Chrome", 600_000),
+                        new DashboardChartPoint("Code.exe", 300_000),
+                        new DashboardChartPoint("Chrome", 900_000)
+                    ]);
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 Assert.NotNull(FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart"));
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 Assert.Equal(["Chrome", "Code.exe"], viewModel.Chart.Labels);
                 Assert.Equal(["Chrome", "Code.exe"], Assert.Single(viewModel.Chart.YAxes).Labels);
                 var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(viewModel.Chart.Series));
                 Assert.Equal([1_500_000, 300_000], rowSeries.Values);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindow_GroupsCaseVariantsIntoOneHorizontalBar()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "App focus details",
-                "Apps",
-                [
-                    new DashboardChartPoint("Chrome.exe", 600_000),
-                    new DashboardChartPoint("chrome.exe", 300_000)
-                ]);
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "App focus details",
+                    "Apps",
+                    [
+                        new DashboardChartPoint("Chrome.exe", 600_000),
+                        new DashboardChartPoint("chrome.exe", 300_000)
+                    ]);
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 DashboardChartPoint row = Assert.Single(
                     viewModel.DetailRows.Select(detail => new DashboardChartPoint(detail.Label, detail.ValueMs)));
@@ -161,12 +137,7 @@ public sealed class ChartDetailsWindowTests
                 Assert.Equal(900_000, row.ValueMs);
                 var rowSeries = Assert.IsType<RowSeries<long>>(Assert.Single(viewModel.Chart.Series));
                 Assert.Equal([900_000], rowSeries.Values);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindowViewModel_SelectPeriodUpdatesChartRowsAndKeepsOrderAligned()
@@ -208,68 +179,63 @@ public sealed class ChartDetailsWindowTests
 
     [Fact]
     public void ChartDetailsWindow_RendersPeriodFilterOptions()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "Domain focus details",
-                "Domains",
-                Points: [new DashboardChartPoint("github.com", 600_000)],
-                SelectedPeriod: DashboardPeriod.Today,
-                PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
-                {
-                    [DashboardPeriod.Today] = [new DashboardChartPoint("github.com", 600_000)],
-                    [DashboardPeriod.LastHour] = [new DashboardChartPoint("github.com", 60_000)],
-                    [DashboardPeriod.Last6Hours] = [new DashboardChartPoint("github.com", 360_000)],
-                    [DashboardPeriod.Last24Hours] = [new DashboardChartPoint("github.com", 1_200_000)],
-                    [DashboardPeriod.Custom] = [new DashboardChartPoint("github.com", 120_000)]
-                });
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "Domain focus details",
+                    "Domains",
+                    Points: [new DashboardChartPoint("github.com", 600_000)],
+                    SelectedPeriod: DashboardPeriod.Today,
+                    PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
+                    {
+                        [DashboardPeriod.Today] = [new DashboardChartPoint("github.com", 600_000)],
+                        [DashboardPeriod.LastHour] = [new DashboardChartPoint("github.com", 60_000)],
+                        [DashboardPeriod.Last6Hours] = [new DashboardChartPoint("github.com", 360_000)],
+                        [DashboardPeriod.Last24Hours] = [new DashboardChartPoint("github.com", 1_200_000)],
+                        [DashboardPeriod.Custom] = [new DashboardChartPoint("github.com", 120_000)]
+                    });
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 var periodSelector = FindByAutomationId<ListBox>(window, "ChartDetailsPeriodSelector");
                 Assert.Equal(5, periodSelector.Items.Count);
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 Assert.Equal(
                     ["Today", "1h", "6h", "24h", "Custom"],
                     viewModel.PeriodOptions.Select(option => option.Label));
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 
     [Fact]
     public void ChartDetailsWindow_CustomPeriodShowsRangeEditorAndAppliesCustomRange()
-        => RunOnStaThread(() =>
-        {
-            TimeRange? requestedRange = null;
-            var request = new DashboardChartDetailsRequest(
-                "App focus details",
-                "Apps",
-                Points: [new DashboardChartPoint("Chrome", 60_000)],
-                SelectedPeriod: DashboardPeriod.Today,
-                PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
-                {
-                    [DashboardPeriod.Today] = [new DashboardChartPoint("Chrome", 60_000)]
-                },
-                CustomRangePointsProvider: range =>
-                {
-                    requestedRange = range;
-                    return [new DashboardChartPoint("Terminal", 300_000)];
-                },
-                TimeZoneId: "Asia/Seoul");
-            var window = new ChartDetailsWindow(request);
+    {
+        TimeRange? requestedRange = null;
 
-            try
+        RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "App focus details",
+                    "Apps",
+                    Points: [new DashboardChartPoint("Chrome", 60_000)],
+                    SelectedPeriod: DashboardPeriod.Today,
+                    PeriodPoints: new Dictionary<DashboardPeriod, IReadOnlyList<DashboardChartPoint>>
+                    {
+                        [DashboardPeriod.Today] = [new DashboardChartPoint("Chrome", 60_000)]
+                    },
+                    CustomRangePointsProvider: range =>
+                    {
+                        requestedRange = range;
+                        return [new DashboardChartPoint("Terminal", 300_000)];
+                    },
+                    TimeZoneId: "Asia/Seoul");
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 var viewModel = Assert.IsType<ChartDetailsWindowViewModel>(window.DataContext);
                 viewModel.SelectPeriod(DashboardPeriod.Custom);
                 window.UpdateLayout();
@@ -294,30 +260,25 @@ public sealed class ChartDetailsWindowTests
                 Assert.Equal(new DateTimeOffset(2026, 5, 3, 1, 45, 0, TimeSpan.Zero), requestedRange.EndedAtUtc);
                 Assert.Equal(["Terminal"], viewModel.DetailRows.Select(row => row.Label));
                 Assert.Contains("2026-05-03 09:15 - 2026-05-03 10:45", viewModel.CustomRangeStatusText);
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
+    }
 
     [Fact]
     public void ChartDetailsWindow_GivesTopTenDetailChartEnoughVerticalSpace()
-        => RunOnStaThread(() =>
-        {
-            var request = new DashboardChartDetailsRequest(
-                "App focus details",
-                "Apps",
-                Enumerable.Range(1, 10)
-                    .Select(index => new DashboardChartPoint($"app-{index}", (11 - index) * 60_000))
-                    .ToList());
-            var window = new ChartDetailsWindow(request);
-
-            try
+        => RunWindowTest(
+            () =>
             {
-                window.Show();
-                window.UpdateLayout();
+                var request = new DashboardChartDetailsRequest(
+                    "App focus details",
+                    "Apps",
+                    Enumerable.Range(1, 10)
+                        .Select(index => new DashboardChartPoint($"app-{index}", (11 - index) * 60_000))
+                        .ToList());
 
+                return new ChartDetailsWindow(request);
+            },
+            window =>
+            {
                 var chart = FindByAutomationId<CartesianChart>(window, "ChartDetailsHorizontalBarChart");
                 Assert.True(
                     window.MinHeight >= 760,
@@ -329,10 +290,5 @@ public sealed class ChartDetailsWindowTests
                 Assert.True(
                     chart.MinHeight >= 520,
                     "Top-10 detail charts need enough height to avoid overlapping forced Y-axis labels.");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 }

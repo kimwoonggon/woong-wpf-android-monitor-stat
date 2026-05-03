@@ -2842,3 +2842,47 @@ milestones below are finished.
 - [x] Blazor `/dashboard` renders Windows current app and Android current app cards near the top of the combined view.
 - [x] Labels clarify these are PostgreSQL/API-backed latest synced app facts, preserving the local DB -> bridge -> server -> dashboard flow.
 - [x] Focused server dashboard API/page tests cover the current app data and rendered card labels.
+
+## 2026-05-03 WPF Acceptance Cleanup Hardening
+
+- [x] Add test coverage for WPF acceptance cleanup preferring explicit Exit app over process kill.
+- [x] Update UI snapshot and RealStart acceptance cleanup to invoke the explicit exit path when available.
+- [x] Report any forced leftover process kill clearly in acceptance report and manifest artifacts.
+- [x] Document explicit Exit app versus X-close-to-tray behavior in WPF acceptance scripts/docs.
+- [x] Run focused WPF acceptance tooling tests and build.
+
+## 2026-05-03 WPF Presentation Range Clipping Follow-Up
+
+- [x] Add RED Presentation dashboard test for overlapping focus/web sessions
+  selected through a Custom range.
+- [x] Clip focus and web session contributions to the selected dashboard range
+  before summary totals, top app/domain points, and hourly activity buckets are
+  calculated.
+- [x] Preserve UTC-only persisted instants and keep display timezone conversion
+  at the Presentation boundary.
+- [x] Validate focused Presentation tests and solution build; commit/push
+  deferred to the main agent by explicit Worker C instruction.
+
+## 2026-05-03 WPF App Test Harness Consolidation
+
+- [x] Add focused tests for the shared WPF App STA/window harness.
+- [x] Set a dispatcher synchronization context for shared STA test execution
+  and preserve assertion stack traces across the worker thread boundary.
+- [x] Add shared shown-window/content-window helpers that show, update layout,
+  drain dispatcher work, and close windows in `finally`.
+- [x] Migrate chart detail, panel accessibility, and smoke/expectation helper
+  tests away from duplicated STA/window setup.
+- [x] Validate focused migrated WPF App tests, all WPF App tests, and solution
+  build; commit/push deferred to the main agent by explicit Worker B
+  instruction.
+
+## 2026-05-03 WPF Refactor Batch Integration
+
+- [x] Integrate WPF acceptance cleanup hardening, Presentation range clipping,
+  and App test harness consolidation without overlapping ownership conflicts.
+- [x] Run full solution restore after the combined WPF batch.
+- [x] Run full solution tests after the combined WPF batch: 686 passed, 6
+  PostgreSQL-environment tests skipped.
+- [x] Run full solution build after the combined WPF batch: 0 warnings, 0
+  errors.
+- [x] Commit and push the combined WPF refactor batch.

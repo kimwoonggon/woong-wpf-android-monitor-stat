@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Controls;
 using Woong.MonitorStack.Windows.App.Views;
 using static Woong.MonitorStack.Windows.App.Tests.WpfTestHelpers;
@@ -9,16 +8,10 @@ public sealed class DetailsTabsPanelAccessibilityTests
 {
     [Fact]
     public void DetailsTabsPanel_PrimaryTabsAndListsExposeReadableAutomationNames()
-        => RunOnStaThread(() =>
-        {
-            var panel = new DetailsTabsPanel();
-            var window = new Window { Content = panel };
-
-            try
+        => RunContentWindowTest(
+            () => new DetailsTabsPanel(),
+            (window, panel) =>
             {
-                window.Show();
-                window.UpdateLayout();
-
                 AssertAutomationName<TabControl>(panel, "DashboardTabs", "Dashboard details tabs");
                 AssertAutomationName<TabItem>(panel, "AppSessionsTab", "App Sessions");
                 AssertAutomationName<TabItem>(panel, "WebSessionsTab", "Web Sessions");
@@ -39,10 +32,5 @@ public sealed class DetailsTabsPanelAccessibilityTests
                 tabs.SelectedIndex = 2;
                 window.UpdateLayout();
                 AssertAutomationName<DataGrid>(panel, "LiveEventsList", "Live event log");
-            }
-            finally
-            {
-                window.Close();
-            }
-        });
+            });
 }

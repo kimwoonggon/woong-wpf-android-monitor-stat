@@ -1,6 +1,54 @@
 # Resume State
 
-Updated: 2026-05-02
+Updated: 2026-05-03
+
+## 2026-05-03 WPF Presentation Range Clipping Follow-Up
+
+- Worker C fixed Presentation dashboard aggregation for overlapping sessions
+  returned by SQLite-backed overlap queries.
+- Added RED/GREEN coverage:
+  `SelectCustomRange_WithOverlappingSessions_ClipsDashboardTotalsAndTopPointsToRange`.
+- `DashboardSummaryBuilder` now clips focus/web session contributions to the
+  selected `TimeRange` before active, foreground, idle, web, top app, and top
+  domain totals are calculated.
+- `DashboardChartMapper` now has a range-aware hourly activity path, and
+  `DashboardViewModel` uses it so hourly buckets do not include time outside
+  Today, 1h, 6h, 24h, or Custom selections.
+- Existing duplicate-label dashboard test data was adjusted so its generated
+  sessions stay wholly inside the selected hour; the new range-clipping test
+  owns overlap assertions.
+- Privacy boundary unchanged: no typed text, clipboard, page contents,
+  screenshots, or new collection surface was added. UTC instants remain clipped
+  as UTC `TimeRange` values at the Presentation boundary.
+- Validation passed:
+  `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore --filter "FullyQualifiedName~SelectCustomRange_WithOverlappingSessions_ClipsDashboardTotalsAndTopPointsToRange" -v minimal`
+  failed before implementation with expected 2700000 vs actual 6300000, then
+  passed after the fix;
+  `dotnet test tests\Woong.MonitorStack.Windows.Presentation.Tests\Woong.MonitorStack.Windows.Presentation.Tests.csproj --no-restore -v minimal`
+  passed 111 tests; and
+  `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`
+  passed with 0 warnings and 0 errors.
+- Commit/push intentionally deferred to the main agent per Worker C instruction.
+
+## 2026-05-03 WPF Acceptance Cleanup Hardening
+
+- Worker A hardened WPF UI acceptance cleanup for
+  `tools/Woong.MonitorStack.Windows.UiSnapshots` and
+  `tools/Woong.MonitorStack.Windows.RealStartAcceptance`.
+- Added shared tooling helper `WpfAppCleanupCoordinator` so tools try the
+  Settings `Exit app` explicit shutdown path first, wait for process exit, and
+  only kill the launched leftover WPF process when it remains alive.
+- Cleanup evidence now appears in UI snapshot `cleanupEvidence` and RealStart
+  `realStartCleanupEvidence` report/manifest sections, including whether
+  explicit exit was attempted and whether a forced kill occurred.
+- Scripts/docs now state that X close is close-to-tray behavior, not app exit.
+- Focused validation passed:
+  `dotnet test tests\Woong.MonitorStack.Windows.App.Tests\Woong.MonitorStack.Windows.App.Tests.csproj --no-restore --filter "FullyQualifiedName~WpfUiAcceptanceScriptTests|FullyQualifiedName~WpfRealStartAcceptanceScriptTests|FullyQualifiedName~WpfAcceptanceCleanupCoordinatorTests" -maxcpucount:1 -v minimal`,
+  both tool project builds, and
+  `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+- Remaining blocker: none for this Worker A slice. Main agent should integrate
+  with the other dirty WPF changes already present in the worktree before
+  commit/push.
 
 ## 2026-05-02 Android Manual App-Switch/Performance Evidence
 
@@ -5754,3 +5802,12 @@ Validation update:
 - Focused validation passed: WPF App tests reached 197 passing tests, and Architecture tests reached 141 passing tests.
 - Next required validation before commit: full solution restore/test/build.
 - Final validation for the WPF lifecycle hardening follow-up passed: `dotnet restore tests\Woong.MonitorStack.Domain.Tests\Woong.MonitorStack.Domain.Tests.csproj --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (675 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`.
+
+## 2026-05-03 WPF Refactor Batch Integration
+
+- Integrated three subagent slices: WPF acceptance cleanup hardening, Presentation range clipping, and WPF App STA/window test harness consolidation.
+- Acceptance cleanup now records explicit-exit evidence and only kills the launched leftover WPF process when it remains alive after the explicit Settings `Exit app` path is unavailable or stuck.
+- Dashboard aggregation now clips overlapping focus/web sessions to the selected UTC range before summary totals, top app/domain points, and hourly buckets are calculated.
+- WPF App tests now share STA/dispatcher/window helpers for shown-window and content-window assertions.
+- Final validation passed: `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (686 passed, 6 PostgreSQL-environment skips), and `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (0 warnings, 0 errors).
+- Next WPF correctness queue: normalize app/domain top-N labels before ranking, then make local web-session persistence idempotent.

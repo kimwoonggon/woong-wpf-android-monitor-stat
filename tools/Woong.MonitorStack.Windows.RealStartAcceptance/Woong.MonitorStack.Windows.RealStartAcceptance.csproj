@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Woong.MonitorStack.Windows.AcceptanceCleanup\WpfAppCleanupCoordinator.cs" Link="AcceptanceCleanup\WpfAppCleanupCoordinator.cs" />
     <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
   </ItemGroup>

@@ -13,6 +13,10 @@ $toolProject = Join-Path $repoRoot "tools/Woong.MonitorStack.Windows.UiSnapshots
 
 Push-Location $repoRoot
 try {
+    Write-Host "Cleanup uses the in-app Exit app button when available."
+    Write-Host "X close is close-to-tray behavior and is not treated as app exit."
+    Write-Host "If a leftover WPF process must be killed, cleanupEvidence in the report/manifest says so."
+
     dotnet build $appProject
     dotnet build $toolProject
 
