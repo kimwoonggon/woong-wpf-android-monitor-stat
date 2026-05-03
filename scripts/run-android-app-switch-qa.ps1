@@ -47,6 +47,25 @@ $installDiagnosticArtifactContract = @(
 
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
+function Get-AppSwitchBlockedGuidance {
+    $serial = if ([string]::IsNullOrWhiteSpace($DeviceSerial)) { "emulator-5554" } else { $DeviceSerial }
+    $startCommand = "powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart"
+    $rerunCommand = "powershell -ExecutionPolicy Bypass -File scripts\run-android-app-switch-qa.ps1 -DeviceSerial $serial"
+
+    return [ordered]@{
+        nextAction = "Start the local Android emulator, confirm adb devices -l lists $serial as device and sys.boot_completed is 1, then rerun after starting the emulator."
+        rerunCommands = @(
+            $startCommand,
+            "adb devices -l",
+            "adb -s $serial shell getprop sys.boot_completed",
+            $rerunCommand
+        )
+        defaultLatestReport = "artifacts/android-app-switch-qa/latest/report.md"
+        actualLatestReport = Join-Path $latestRoot "report.md"
+        runbook = "docs/android-emulator-runbook.md"
+    }
+}
+
 $status = "PASS"
 $blockedReason = ""
 $classification = "none"
@@ -233,6 +252,7 @@ function Write-AppSwitchArtifacts {
         [string]$BlockedReason
     )
 
+    $blockedGuidance = Get-AppSwitchBlockedGuidance
     if (-not (Test-Path (Join-Path $runRoot "room-assertions.json"))) {
         Write-RoomAssertionPlaceholder -Status $Status -Reason $BlockedReason
     }
@@ -285,6 +305,21 @@ function Write-AppSwitchArtifacts {
         $reportLines += "- PASS: Android app-switch QA commands completed."
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) {
+        $reportLines += @(
+            "",
+            "## Local Emulator Rerun",
+            "",
+            "- Start emulator: ``$($blockedGuidance.rerunCommands[0])``",
+            "- Confirm adb sees it: ``$($blockedGuidance.rerunCommands[1])``",
+            "- Confirm Android boot completed: ``$($blockedGuidance.rerunCommands[2])``",
+            "- Rerun after starting the emulator: ``$($blockedGuidance.rerunCommands[3])``",
+            "- Default latest report: ``$($blockedGuidance.defaultLatestReport)``",
+            "- This run's latest report: ``$($blockedGuidance.actualLatestReport)``",
+            "- Detailed runbook: ``$($blockedGuidance.runbook)``"
+        )
+    }
+
     $reportLines += @(
         "",
         "## Classification",
@@ -325,6 +360,12 @@ function Write-AppSwitchArtifacts {
         skipBuild = [bool]$SkipBuild
         classification = $classification
         nextAction = $nextAction
+        rerunCommands = $blockedGuidance.rerunCommands
+        artifactLocations = [ordered]@{
+            defaultLatestReport = $blockedGuidance.defaultLatestReport
+            actualLatestReport = $blockedGuidance.actualLatestReport
+            runbook = $blockedGuidance.runbook
+        }
         artifacts = $artifacts
         blockedReason = $BlockedReason
     }
@@ -1005,11 +1046,14 @@ try {
 
     if ($deviceLines.Count -eq 0) {
         $status = "BLOCKED"
+        $classification = "no-device"
         $blockedReason = "No connected Android device or running emulator was reported by adb devices -l."
-        $notes.Add("Start an emulator or connect a physical Android device, then rerun this script.")
+        $nextAction = (Get-AppSwitchBlockedGuidance).nextAction
+        $notes.Add("Start an emulator or connect a physical Android device, confirm adb device selection, then rerun this script.")
         Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
         Write-Host "No connected Android device. Android app-switch QA is blocked."
         Write-Host "Android app-switch QA artifacts: $runRoot"
+        Write-Host "Latest report: $(Join-Path $latestRoot 'report.md')"
         exit 0
     }
 

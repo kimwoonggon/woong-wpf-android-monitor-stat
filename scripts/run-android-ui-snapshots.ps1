@@ -78,6 +78,25 @@ $expectedHierarchyChecks = @(
     "Settings hierarchy: figma-07-settings.xml and 06-settings-location-permission.xml must include Settings, sync, location opt-in, precise-coordinate opt-in, and permission controls.",
     "Bottom navigation hierarchy: Dashboard/Sessions/Report/Settings captures must include all four tab labels and pass the blank-floor gate."
 )
+
+function Get-AndroidSnapshotBlockedGuidance {
+    $serial = if ([string]::IsNullOrWhiteSpace($DeviceSerial)) { "emulator-5554" } else { $DeviceSerial }
+    $startCommand = "powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart"
+    $rerunCommand = "powershell -ExecutionPolicy Bypass -File scripts\run-android-ui-snapshots.ps1 -DeviceSerial $serial"
+
+    return [ordered]@{
+        nextAction = "Start the local Android emulator, confirm adb devices -l lists $serial as device and sys.boot_completed is 1, then rerun after starting the emulator."
+        rerunCommands = @(
+            $startCommand,
+            "adb devices -l",
+            "adb -s $serial shell getprop sys.boot_completed",
+            $rerunCommand
+        )
+        defaultLatestReport = "artifacts/android-ui-snapshots/latest/report.md"
+        actualLatestReport = Join-Path $latestRoot "report.md"
+        runbook = "docs/android-emulator-runbook.md"
+    }
+}
 $status = "PASS"
 $blockedReason = ""
 $screenshots = @()
@@ -475,6 +494,9 @@ function Write-AndroidSnapshotArtifacts {
     )
 
     $canonicalScreenStatuses = Get-AndroidCanonicalScreenStatuses
+    $blockedGuidance = Get-AndroidSnapshotBlockedGuidance
+    $blockedNextAction = if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) { $blockedGuidance.nextAction } else { "" }
+    $blockedRerunCommands = if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) { $blockedGuidance.rerunCommands } else { @() }
     $reportLines = @(
         "# Android UI Snapshot Report",
         "",
@@ -528,9 +550,23 @@ function Write-AndroidSnapshotArtifacts {
     )
     if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) {
         $reportLines += "- BLOCKED: $BlockedReason"
-        $reportLines += "- NEXT: start or attach an Android device/emulator and rerun this script; PASS evidence requires screenshots plus matching UI hierarchy XML."
+        $reportLines += "- NEXT: $($blockedGuidance.nextAction)"
     } else {
         $reportLines += "- PASS: Android UI screenshot flow completed with pixel, hierarchy, and bottom-navigation gates."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($BlockedReason)) {
+        $reportLines += @(
+            "",
+            "## Local Emulator Rerun",
+            "",
+            "- Start emulator: ``$($blockedGuidance.rerunCommands[0])``",
+            "- Confirm adb sees it: ``$($blockedGuidance.rerunCommands[1])``",
+            "- Confirm Android boot completed: ``$($blockedGuidance.rerunCommands[2])``",
+            "- Rerun after starting the emulator: ``$($blockedGuidance.rerunCommands[3])``",
+            "- Default latest report: ``$($blockedGuidance.defaultLatestReport)``",
+            "- This run's latest report: ``$($blockedGuidance.actualLatestReport)``",
+            "- Detailed runbook: ``$($blockedGuidance.runbook)``"
+        )
     }
     $reportLines += @(
         "",
@@ -580,6 +616,13 @@ function Write-AndroidSnapshotArtifacts {
         beginnerReviewAliases = $beginnerReviewAliases
         screenshots = $screenshots
         hierarchies = $hierarchies
+        nextAction = $blockedNextAction
+        rerunCommands = $blockedRerunCommands
+        artifactLocations = [ordered]@{
+            defaultLatestReport = $blockedGuidance.defaultLatestReport
+            actualLatestReport = $blockedGuidance.actualLatestReport
+            runbook = $blockedGuidance.runbook
+        }
         blockedReason = $BlockedReason
     }
     $manifest | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $runRoot "manifest.json") -Encoding UTF8

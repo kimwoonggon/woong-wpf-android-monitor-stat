@@ -454,6 +454,10 @@ For Chrome/app-switch QA, use the stable launcher instead:
 powershell -ExecutionPolicy Bypass -File scripts\start-android-emulator-stable.ps1 -AvdName Medium_Phone -Restart
 ```
 
+The focused local evidence runbook for emulator startup, adb serial selection,
+no-device `Status: BLOCKED` reports, artifact locations, and screenshot/app-switch
+reruns is `docs/android-emulator-runbook.md`.
+
 This launches the AVD with 4 GB RAM, no boot animation, and no snapshot
 restore. The default GPU mode is `auto` because the current
 `Medium_Phone` Play Store Android 37 image boots reliably that way. If a

@@ -2977,3 +2977,29 @@ milestones below are finished.
 - [x] Integrated Android UI snapshot and app-switch evidence hardening in the
   main worktree, fixed fake-ADB architecture fixtures for the new current-focus
   evidence contract, then reran full .NET and Android validation before commit.
+
+## 2026-05-03 Android Emulator Evidence Local Runbook Hardening
+
+- [x] Add RED architecture coverage for local emulator evidence runbook and
+  no-device rerun guidance.
+- [x] Harden Android UI snapshot no-device BLOCKED artifacts with emulator
+  start, adb device selection, artifact, and rerun instructions.
+- [x] Harden Android app-switch no-device BLOCKED artifacts with the same
+  local emulator guidance while preserving Chrome privacy boundaries.
+- [x] Add `docs/android-emulator-runbook.md` and README Android links for
+  screenshot/app-switch evidence.
+- [x] Validate focused architecture tests and no-device script runs.
+
+## 2026-05-03 Architecture And Local Dashboard Audit Batch
+
+- [x] Add `docs/wpf-architecture-refactor-audit.md` with WPF architecture and
+  test-quality findings after the lifecycle/DI refactor.
+- [x] Add `docs/local-integrated-dashboard-audit.md` documenting that Blazor
+  polls PostgreSQL only, while `LocalDashboardBridge` is currently the one-shot
+  SQLite/Room uploader.
+- [x] Identify next TDD slices: WPF Sync Now real worker path, atomic
+  session+outbox writes, sync exception handling, continuous local bridge
+  polling, bridge-to-server-to-dashboard E2E tests, and post-upload dashboard
+  verification.
+- [x] Validate focused Android runbook architecture tests before committing the
+  audit/runbook batch.
