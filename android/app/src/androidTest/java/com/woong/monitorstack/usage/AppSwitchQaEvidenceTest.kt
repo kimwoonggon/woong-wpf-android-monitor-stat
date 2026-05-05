@@ -10,8 +10,10 @@ import androidx.test.uiautomator.UiDevice
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.woong.monitorstack.MainActivity
 import com.woong.monitorstack.R
+import com.woong.monitorstack.data.local.CurrentAppStateEntity
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
+import com.woong.monitorstack.data.local.SyncOutboxEntity
 import com.woong.monitorstack.display.AppDisplayNameFormatter
 import com.woong.monitorstack.sync.AndroidOutboxSyncProcessor
 import java.io.File
@@ -20,6 +22,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -47,7 +50,12 @@ class AppSwitchQaEvidenceTest {
     fun collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val arguments = InstrumentationRegistry.getArguments()
+        assumeTrue(
+            "App-switch QA requires scripts/run-android-app-switch-qa.ps1 to pass fromUtcMillis/toUtcMillis after a real Chrome foreground interval.",
+            arguments.containsKey("fromUtcMillis") && arguments.containsKey("toUtcMillis")
+        )
         val chromePackageName = arguments.getString("chromePackageName") ?: "com.android.chrome"
+        val monitorPackageName = context.packageName
         val toUtcMillis = arguments.getString("toUtcMillis")?.toLongOrNull()
             ?: System.currentTimeMillis()
         val fromUtcMillis = arguments.getString("fromUtcMillis")?.toLongOrNull()
@@ -70,29 +78,65 @@ class AppSwitchQaEvidenceTest {
                 session.localDate.isNotBlank() &&
                 session.timezoneId.isNotBlank()
         }
+        val currentAppStates = database.currentAppStateDao()
+            .queryAfterCheckpoint(observedAtUtcMillis = 0L, clientStateId = "", limit = 100)
+        val latestCurrentAppState = currentAppStates.latestCurrentAppState()
+        val pendingCurrentAppStateOutboxItems =
+            database.pendingCurrentAppStateOutboxItems(monitorPackageName)
+        val hasWoongCurrentAppState =
+            currentAppStates.any { it.isValidCurrentAppStateFor(monitorPackageName) }
+        val hasPendingWoongCurrentAppStateOutbox =
+            pendingCurrentAppStateOutboxItems.isNotEmpty()
+        val priorExternalChromeMetadataOnly = hasValidChromeSession &&
+            chromeSessions.all { it.toMetadataJson().toString().containsOnlyMetadataFields() } &&
+            chromeOutboxItems.all { it.payloadJson.containsOnlyMetadataFields() }
+        val currentAppStateOutboxMetadataOnly =
+            pendingCurrentAppStateOutboxItems.isNotEmpty() &&
+                pendingCurrentAppStateOutboxItems.all {
+                    it.payloadJson.containsOnlyMetadataFields()
+                }
+        val passed =
+            hasValidChromeSession &&
+                chromeOutboxItems.isNotEmpty() &&
+                hasWoongCurrentAppState &&
+                hasPendingWoongCurrentAppStateOutbox &&
+                priorExternalChromeMetadataOnly &&
+                currentAppStateOutboxMetadataOnly
 
         val assertions = JSONObject()
-            .put("status", if (hasValidChromeSession && chromeOutboxItems.isNotEmpty()) "PASS" else "FAIL")
+            .put("status", if (passed) "PASS" else "FAIL")
             .put("privacy", PrivacyBoundary)
             .put("chromePackageName", chromePackageName)
             .put("fromUtcMillis", fromUtcMillis)
             .put("toUtcMillis", toUtcMillis)
             .put("focusSessionChromeRows", chromeSessions.size)
             .put("syncOutboxChromeRows", chromeOutboxItems.size)
+            .put("currentAppStateRows", currentAppStates.size)
+            .put(
+                "latestCurrentAppState",
+                latestCurrentAppState?.toMetadataJson() ?: JSONObject.NULL
+            )
+            .put(
+                "latestCurrentAppStatePackageName",
+                latestCurrentAppState?.packageName ?: ""
+            )
+            .put("pendingCurrentAppStateOutboxRows", pendingCurrentAppStateOutboxItems.size)
+            .put("hasWoongCurrentAppState", hasWoongCurrentAppState)
+            .put("hasPendingWoongCurrentAppStateOutbox", hasPendingWoongCurrentAppStateOutbox)
+            .put("priorExternalChromeMetadataOnly", priorExternalChromeMetadataOnly)
+            .put("currentAppStateOutboxMetadataOnly", currentAppStateOutboxMetadataOnly)
             .put(
                 "chromeFocusSessions",
                 JSONArray(
                     chromeSessions.map { session ->
-                        JSONObject()
-                            .put("clientSessionId", session.clientSessionId)
-                            .put("packageName", session.packageName)
-                            .put("startedAtUtcMillis", session.startedAtUtcMillis)
-                            .put("endedAtUtcMillis", session.endedAtUtcMillis)
-                            .put("durationMs", session.durationMs)
-                            .put("localDate", session.localDate)
-                            .put("timezoneId", session.timezoneId)
-                            .put("source", session.source)
+                        session.toMetadataJson()
                     }
+                )
+            )
+            .put(
+                "currentAppStateOutboxItems",
+                JSONArray(
+                    pendingCurrentAppStateOutboxItems.map { it.toMetadataJson() }
                 )
             )
 
@@ -106,6 +150,22 @@ class AppSwitchQaEvidenceTest {
             "Expected at least one pending focus_session sync_outbox item for Chrome.",
             chromeOutboxItems.isNotEmpty()
         )
+        assertTrue(
+            "Expected at least one Woong Monitor current_app_states row after returning from Chrome.",
+            hasWoongCurrentAppState
+        )
+        assertTrue(
+            "Expected a pending current_app_state sync_outbox item for Woong Monitor.",
+            hasPendingWoongCurrentAppStateOutbox
+        )
+        assertTrue(
+            "Expected prior Chrome evidence to remain metadata-only.",
+            priorExternalChromeMetadataOnly
+        )
+        assertTrue(
+            "Expected current_app_state outbox payloads to remain metadata-only.",
+            currentAppStateOutboxMetadataOnly
+        )
     }
 
     @Test
@@ -114,6 +174,10 @@ class AppSwitchQaEvidenceTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val device = UiDevice.getInstance(instrumentation)
         val arguments = InstrumentationRegistry.getArguments()
+        assumeTrue(
+            "Dashboard current-focus QA requires scripts/run-android-app-switch-qa.ps1 to prepare Chrome usage evidence first.",
+            arguments.containsKey("chromePackageName")
+        )
         val monitorPackageName = context.packageName
         val chromePackageName = arguments.getString("chromePackageName") ?: "com.android.chrome"
         val expectedCurrentAppName = AppDisplayNameFormatter.format(monitorPackageName)
@@ -140,6 +204,23 @@ class AppSwitchQaEvidenceTest {
                     outputDir = outputDir,
                     baseName = DashboardCurrentFocusAfterChromeReturnBaseName
                 )
+                Thread.sleep(750)
+                val currentAppStates = database.currentAppStateDao()
+                    .queryAfterCheckpoint(observedAtUtcMillis = 0L, clientStateId = "", limit = 100)
+                val latestCurrentAppState = currentAppStates.latestCurrentAppState()
+                val pendingCurrentAppStateOutboxItems =
+                    database.pendingCurrentAppStateOutboxItems(monitorPackageName)
+                val hasWoongCurrentAppState =
+                    currentAppStates.any { it.isValidCurrentAppStateFor(monitorPackageName) }
+                val hasLatestWoongCurrentAppState =
+                    latestCurrentAppState?.isValidCurrentAppStateFor(monitorPackageName) == true
+                val hasPendingWoongCurrentAppStateOutbox =
+                    pendingCurrentAppStateOutboxItems.isNotEmpty()
+                val currentAppStateOutboxMetadataOnly =
+                    pendingCurrentAppStateOutboxItems.isNotEmpty() &&
+                        pendingCurrentAppStateOutboxItems.all {
+                            it.payloadJson.containsOnlyMetadataFields()
+                        }
 
                 val status = if (
                     values.currentAppName == expectedCurrentAppName &&
@@ -147,7 +228,10 @@ class AppSwitchQaEvidenceTest {
                     values.latestExternalAppName == expectedExternalAppName &&
                     values.latestExternalPackageName == chromePackageName &&
                     hasValidMonitorSession &&
-                    hasValidChromeSession
+                    hasValidChromeSession &&
+                    hasWoongCurrentAppState &&
+                    hasPendingWoongCurrentAppStateOutbox &&
+                    currentAppStateOutboxMetadataOnly
                 ) {
                     "PASS"
                 } else {
@@ -171,6 +255,35 @@ class AppSwitchQaEvidenceTest {
                         .put("roomFocusSessionChromeRows", chromeSessions.size)
                         .put("hasValidMonitorUsageStatsSession", hasValidMonitorSession)
                         .put("hasValidChromeUsageStatsSession", hasValidChromeSession)
+                        .put("currentAppStateRows", currentAppStates.size)
+                        .put(
+                            "latestCurrentAppState",
+                            latestCurrentAppState?.toMetadataJson() ?: JSONObject.NULL
+                        )
+                        .put(
+                            "latestCurrentAppStatePackageName",
+                            latestCurrentAppState?.packageName ?: ""
+                        )
+                        .put(
+                            "hasLatestWoongCurrentAppState",
+                            hasLatestWoongCurrentAppState
+                        )
+                        .put(
+                            "hasWoongCurrentAppState",
+                            hasWoongCurrentAppState
+                        )
+                        .put(
+                            "pendingCurrentAppStateOutboxRows",
+                            pendingCurrentAppStateOutboxItems.size
+                        )
+                        .put(
+                            "hasPendingWoongCurrentAppStateOutbox",
+                            hasPendingWoongCurrentAppStateOutbox
+                        )
+                        .put(
+                            "currentAppStateOutboxMetadataOnly",
+                            currentAppStateOutboxMetadataOnly
+                        )
                         .put(
                             "monitorFocusSessions",
                             JSONArray(monitorSessions.map { it.toMetadataJson() })
@@ -200,6 +313,18 @@ class AppSwitchQaEvidenceTest {
                 assertTrue(
                     "Expected at least one valid Chrome UsageStats focus_session row.",
                     hasValidChromeSession
+                )
+                assertTrue(
+                    "Expected at least one Woong Monitor current_app_states row after returning from Chrome.",
+                    hasWoongCurrentAppState
+                )
+                assertTrue(
+                    "Expected pending current_app_state outbox evidence.",
+                    hasPendingWoongCurrentAppStateOutbox
+                )
+                assertTrue(
+                    "Expected current_app_state outbox evidence to stay metadata-only.",
+                    currentAppStateOutboxMetadataOnly
                 )
             }
         }
@@ -315,10 +440,68 @@ class AppSwitchQaEvidenceTest {
             .put("source", source)
     }
 
+    private fun CurrentAppStateEntity.isValidCurrentAppStateFor(packageName: String): Boolean {
+        return this.packageName == packageName &&
+            appLabel.isNotBlank() &&
+            observedAtUtcMillis > 0L &&
+            localDate.isNotBlank() &&
+            timezoneId.isNotBlank() &&
+            source == "android_usage_stats_current_app"
+    }
+
+    private fun CurrentAppStateEntity.toMetadataJson(): JSONObject {
+        return JSONObject()
+            .put("clientStateId", clientStateId)
+            .put("packageName", packageName)
+            .put("appLabel", appLabel)
+            .put("status", status.name)
+            .put("observedAtUtcMillis", observedAtUtcMillis)
+            .put("localDate", localDate)
+            .put("timezoneId", timezoneId)
+            .put("source", source)
+    }
+
+    private fun SyncOutboxEntity.toMetadataJson(): JSONObject {
+        return JSONObject()
+            .put("clientItemId", clientItemId)
+            .put("aggregateType", aggregateType)
+            .put("status", status.name)
+            .put("retryCount", retryCount)
+            .put("createdAtUtcMillis", createdAtUtcMillis)
+            .put("updatedAtUtcMillis", updatedAtUtcMillis)
+            .put("payloadMetadataOnly", payloadJson.containsOnlyMetadataFields())
+            .put("payloadJson", payloadJson)
+    }
+
+    private fun List<CurrentAppStateEntity>.latestCurrentAppState(): CurrentAppStateEntity? {
+        return maxWithOrNull(
+            compareBy<CurrentAppStateEntity> { it.observedAtUtcMillis }
+                .thenBy { it.clientStateId }
+        )
+    }
+
+    private fun MonitorDatabase.pendingCurrentAppStateOutboxItems(
+        packageName: String
+    ): List<SyncOutboxEntity> {
+        return syncOutboxDao()
+            .queryPending(limit = 100)
+            .filter { item ->
+                item.aggregateType == AndroidOutboxSyncProcessor.CurrentAppStateAggregateType &&
+                    item.payloadJson.contains("\"platformAppKey\":\"$packageName\"")
+            }
+    }
+
+    private fun String.containsOnlyMetadataFields(): Boolean {
+        val lower = lowercase()
+        return ForbiddenEvidenceFragments.none { fragment -> fragment in lower }
+    }
+
     private fun withMainActivityTestGates(block: () -> Unit) {
         val originalUsageAccessGateFactory = MainActivity.usageAccessGateFactory
         val originalUsageCollectionReconcilerFactory = MainActivity.usageCollectionReconcilerFactory
         val originalUsageImmediateCollectorFactory = MainActivity.usageImmediateCollectorFactory
+        val originalForegroundAppStateRecorderFactory =
+            MainActivity.foregroundAppStateRecorderFactory
         val originalSplashDelayMillis = MainActivity.splashDelayMillis
 
         MainActivity.usageAccessGateFactory = {
@@ -337,6 +520,9 @@ class AppSwitchQaEvidenceTest {
                 override fun collectRecentUsage(): Int = 0
             }
         }
+        MainActivity.foregroundAppStateRecorderFactory = {
+            RoomAndroidForegroundAppStateRecorder.create(it.applicationContext)
+        }
         MainActivity.splashDelayMillis = 0L
 
         try {
@@ -347,6 +533,8 @@ class AppSwitchQaEvidenceTest {
                 originalUsageCollectionReconcilerFactory
             MainActivity.usageImmediateCollectorFactory =
                 originalUsageImmediateCollectorFactory
+            MainActivity.foregroundAppStateRecorderFactory =
+                originalForegroundAppStateRecorderFactory
             MainActivity.splashDelayMillis = originalSplashDelayMillis
         }
     }
@@ -378,6 +566,29 @@ class AppSwitchQaEvidenceTest {
         private const val SessionsAfterAppSwitchScreenshot = "sessions-after-app-switch.png"
         private const val PrivacyBoundary =
             "No Chrome screenshots, no Chrome UI hierarchy, no typed text, no form contents, no browser/page contents."
+        private val ForbiddenEvidenceFragments = listOf(
+            "windowtitle",
+            "window_title",
+            "pagetitle",
+            "page_title",
+            "url",
+            "domain",
+            "pagecontent",
+            "page_content",
+            "contenttext",
+            "content_text",
+            "typedtext",
+            "typed_text",
+            "clipboard",
+            "password",
+            "messagebody",
+            "message_body",
+            "forminput",
+            "form_input",
+            "touchcoordinate",
+            "touch_coordinate",
+            "screenshot"
+        )
     }
 
     private data class DashboardCurrentFocusValues(

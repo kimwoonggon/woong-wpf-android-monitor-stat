@@ -31,11 +31,10 @@ class RoomDashboardRepository(
         val today = todayProvider()
         val range = period.toUtcRange(today, nowProvider(), timezoneId)
         val dateRange = range.toLocalDateRange(timezoneId)
-        val sessions = dao.queryByLocalDateRange(
-            dateRange.first.toString(),
-            dateRange.second.toString()
+        val sessions = dao.queryByUtcOverlap(
+            fromUtcMillis = range.from.toEpochMilli(),
+            toUtcMillis = range.to.toEpochMilli()
         )
-            .filter { it.overlaps(range) }
             .map { FilteredDashboardSession(it, it.durationWithin(range)) }
         val activeSessions = sessions.filterNot { it.entity.isIdle }
 

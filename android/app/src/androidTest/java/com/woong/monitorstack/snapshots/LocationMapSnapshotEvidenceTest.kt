@@ -20,6 +20,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.TimeZone
+import org.json.JSONArray
+import org.json.JSONObject
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +40,7 @@ class LocationMapSnapshotEvidenceTest {
         val outputDir = File(requireNotNull(context.getExternalFilesDir(null)), "ui-snapshots-location")
         outputDir.mkdirs()
         val output = File(outputDir, "dashboard-location-map.png")
+        val evidenceOutput = File(outputDir, "dashboard-location-map-evidence.json")
 
         ActivityScenario.launch(DashboardActivity::class.java).use { scenario ->
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
@@ -55,6 +59,80 @@ class LocationMapSnapshotEvidenceTest {
 
         assertTrue("Expected dashboard location screenshot file to exist: $output", output.isFile)
         assertTrue("Expected dashboard location screenshot to be non-empty: $output", output.length() > 0)
+
+        val evidence = buildLocationMapEvidence(database, mapScreenshotFileName = output.name)
+        writeJson(evidenceOutput, evidence)
+
+        assertEquals("PASS", evidence.getString("status"))
+        assertEquals(2, evidence.getInt("visitCount"))
+        assertEquals("37.5665,126.9780", evidence.getString("topVisitLocationKey"))
+        assertTrue(
+            "Location map evidence must stay metadata-only and exclude typed/page content fields.",
+            evidence.getBoolean("metadataOnly")
+        )
+    }
+
+    private fun buildLocationMapEvidence(
+        database: MonitorDatabase,
+        mapScreenshotFileName: String
+    ): JSONObject {
+        val visits = database.locationVisitDao().queryByRange(
+            deviceId = RoomDashboardRepository.DefaultDeviceId,
+            fromUtcMillis = 0L,
+            toUtcMillis = Long.MAX_VALUE
+        )
+        val topVisit = visits.maxWithOrNull(
+            compareBy<LocationVisitEntity> { it.durationMs }
+                .thenBy { it.sampleCount }
+                .thenByDescending { it.lastCapturedAtUtcMillis }
+        )
+        val visitsJson = JSONArray(visits.map { it.toMetadataJson() })
+        val metadataOnlyJson = JSONObject()
+            .put("visits", visitsJson)
+            .put("topVisit", topVisit?.toMetadataJson() ?: JSONObject.NULL)
+        val metadataOnly = metadataOnlyJson.toString().containsOnlyMetadataFields()
+        val passed = visits.size == 2 &&
+            topVisit?.locationKey == "37.5665,126.9780" &&
+            metadataOnly
+
+        return JSONObject()
+            .put("status", if (passed) "PASS" else "FAIL")
+            .put("privacy", PrivacyBoundary)
+            .put("deviceId", RoomDashboardRepository.DefaultDeviceId)
+            .put("visitCount", visits.size)
+            .put("topVisitLocationKey", topVisit?.locationKey ?: "")
+            .put("topVisitDurationMs", topVisit?.durationMs ?: 0L)
+            .put("topVisitSampleCount", topVisit?.sampleCount ?: 0)
+            .put("metadataOnly", metadataOnly)
+            .put("mapScreenshot", mapScreenshotFileName)
+            .put("visits", visitsJson)
+    }
+
+    private fun LocationVisitEntity.toMetadataJson(): JSONObject {
+        return JSONObject()
+            .put("id", id)
+            .put("deviceId", deviceId)
+            .put("locationKey", locationKey)
+            .put("latitude", latitude)
+            .put("longitude", longitude)
+            .put("coordinatePrecisionDecimals", coordinatePrecisionDecimals)
+            .put("firstCapturedAtUtcMillis", firstCapturedAtUtcMillis)
+            .put("lastCapturedAtUtcMillis", lastCapturedAtUtcMillis)
+            .put("durationMs", durationMs)
+            .put("sampleCount", sampleCount)
+            .put("accuracyMeters", accuracyMeters)
+            .put("permissionState", permissionState.name)
+            .put("captureMode", captureMode.name)
+    }
+
+    private fun writeJson(file: File, value: JSONObject) {
+        file.parentFile?.mkdirs()
+        file.writeText(value.toString(2))
+    }
+
+    private fun String.containsOnlyMetadataFields(): Boolean {
+        val lower = lowercase()
+        return ForbiddenEvidenceFragments.none { fragment -> fragment in lower }
     }
 
     private fun seedLocationRows(database: MonitorDatabase) {
@@ -120,6 +198,33 @@ class LocationMapSnapshotEvidenceTest {
                 createdAtUtcMillis = firstCaptured + 60 * 60_000L,
                 updatedAtUtcMillis = firstCaptured + 75 * 60_000L
             )
+        )
+    }
+
+    companion object {
+        private const val PrivacyBoundary =
+            "No typed text, page content, browser content, clipboard, passwords, messages, or touch coordinates are collected."
+        private val ForbiddenEvidenceFragments = listOf(
+            "windowtitle",
+            "window_title",
+            "pagetitle",
+            "page_title",
+            "url",
+            "domain",
+            "pagecontent",
+            "page_content",
+            "contenttext",
+            "content_text",
+            "typedtext",
+            "typed_text",
+            "clipboard",
+            "password",
+            "messagebody",
+            "message_body",
+            "forminput",
+            "form_input",
+            "touchcoordinate",
+            "touch_coordinate"
         )
     }
 }

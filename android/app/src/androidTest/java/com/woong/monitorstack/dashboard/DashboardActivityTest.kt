@@ -36,11 +36,10 @@ class DashboardActivityTest {
         onView(withId(R.id.activeFocusCard)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.activeFocusValueText)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.topAppsCard)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.topAppsRecyclerView)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.idleGapCard)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.idleValueText)).perform(scrollTo()).check(matches(isDisplayed()))
         onView(withId(R.id.hourlyFocusChart)).perform(scrollTo()).check(matches(isDisplayed()))
-        onView(withId(R.id.recentSessionsRecyclerView)).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(withId(R.id.recentSessionsCard)).perform(scrollTo()).check(matches(isDisplayed()))
     }
 
     @Test

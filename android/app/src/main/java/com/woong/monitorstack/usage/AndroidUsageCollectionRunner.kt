@@ -56,7 +56,7 @@ class AndroidUsageCollectionRunner(
 
     private fun UsageAppSession.toFocusSessionEntity(timezoneId: ZoneId): FocusSessionEntity {
         return FocusSessionEntity(
-            clientSessionId = "android:$packageName:$startedAtUtcMillis:$endedAtUtcMillis",
+            clientSessionId = "android:$packageName:$startedAtUtcMillis",
             packageName = packageName,
             startedAtUtcMillis = startedAtUtcMillis,
             endedAtUtcMillis = endedAtUtcMillis,

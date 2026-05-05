@@ -96,6 +96,29 @@ class RoomSessionsRepositoryTest {
     }
 
     @Test
+    fun loadSessionsIncludesRowsThatStartedBeforeTheSelectedPeriodButAreStillVisibleInsideIt() {
+        val zoneId = ZoneId.of("Asia/Seoul")
+        val now = Instant.parse("2026-04-29T12:00:00Z")
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "chrome-spanning",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = now.minusSeconds(90 * 60).toEpochMilli(),
+                durationMs = 120 * 60_000L
+            )
+        )
+        val repository = RoomSessionsRepository(
+            focusSessionDao = database.focusSessionDao(),
+            timezoneId = zoneId,
+            nowProvider = { now }
+        )
+
+        val rows = repository.loadSessions(SessionsPeriod.LastHour)
+
+        assertEquals(listOf("Chrome"), rows.map { it.appName })
+    }
+
+    @Test
     fun loadAppDetailAggregatesSelectedPackageSessions() {
         database.focusSessionDao().insert(
             focusSession(

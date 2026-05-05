@@ -3191,3 +3191,28 @@ milestones below are finished.
 - [x] Verify detail period controls still expose Today/1h/6h/24h/Custom and
   custom range selection through the existing MVVM/provider infrastructure.
 - [x] Run focused WPF detail tests and a focused WPF app build.
+
+## 2026-05-06 Android UsageStats Duplicate Aggregation Regression
+
+- [x] Add/fix RED Android coverage for UsageStats sessions preserving actual
+  foreground start/end times rather than clamping each collection window.
+- [x] Make collected Android `clientSessionId` stable by package and start
+  instant so revisiting Dashboard/Report updates an open row instead of
+  inserting duplicate rows with a later end instant.
+- [x] Add Room UTC-overlap range queries and use them from Dashboard, Sessions,
+  and Report repositories so sessions spanning a selected range boundary are
+  not missed.
+- [x] Make Dashboard Current Focus show `Woong Monitor / com.woong.monitorstack`
+  while the app is foreground, while preserving latest collected external app
+  metadata such as Chrome separately.
+- [x] Persist metadata-only Android `current_app_states` rows/outbox evidence
+  when Woong returns to foreground; do not collect typed text, screenshots,
+  browser contents, messages, passwords, form input, clipboard, or global touch
+  coordinates.
+- [x] Harden Android app-switch QA so it accepts Woong current-state evidence
+  even when UsageStats latest external rows lag after returning from Chrome.
+- [x] Harden Android app-switch evidence timeouts and bottom-nav hierarchy
+  validation so real emulator screenshot/hierarchy evidence can complete.
+- [x] Validate with Android unit tests, Debug/Release builds, connected
+  instrumentation tests, and real Chrome -> Woong app-switch QA artifacts at
+  `artifacts/android-app-switch-qa/latest/report.md`.

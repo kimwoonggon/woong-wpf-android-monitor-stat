@@ -455,8 +455,16 @@ class MainActivityTest {
         activity.supportFragmentManager.executePendingTransactions()
         waitForMainThreadWork()
 
-        assertEquals("Chrome", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
-        assertEquals("com.android.chrome", activity.findViewById<TextView>(R.id.currentPackageText).text.toString())
+        assertEquals("Woong Monitor", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+        assertEquals("com.woong.monitorstack", activity.findViewById<TextView>(R.id.currentPackageText).text.toString())
+        assertEquals(
+            "Chrome",
+            activity.findViewById<TextView>(R.id.latestCollectedExternalAppText).text.toString()
+        )
+        assertEquals(
+            "com.android.chrome",
+            activity.findViewById<TextView>(R.id.latestCollectedExternalPackageText).text.toString()
+        )
         assertEquals("2m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
     }
 
@@ -542,11 +550,11 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals(
-            "No app",
+            "Woong Monitor",
             activity.findViewById<TextView>(R.id.currentAppText).text.toString()
         )
         assertEquals(
-            "No package",
+            "com.woong.monitorstack",
             activity.findViewById<TextView>(R.id.currentPackageText).text.toString()
         )
     }
@@ -609,7 +617,8 @@ class MainActivityTest {
         waitForMainThreadWork()
 
         assertEquals("20m", activity.findViewById<TextView>(R.id.activeFocusValueText).text.toString())
-        assertEquals("Chrome", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+        assertEquals("Woong Monitor", activity.findViewById<TextView>(R.id.currentAppText).text.toString())
+        assertEquals("Chrome", activity.findViewById<TextView>(R.id.latestCollectedExternalAppText).text.toString())
 
         activity.findViewById<Button>(R.id.sixHourFilterButton).performClick()
         waitForMainThreadWork()

@@ -30,6 +30,20 @@ interface FocusSessionDao {
         """
         SELECT *
         FROM focus_sessions
+        WHERE endedAtUtcMillis > :fromUtcMillis
+            AND startedAtUtcMillis < :toUtcMillis
+        ORDER BY startedAtUtcMillis
+        """
+    )
+    fun queryByUtcOverlap(
+        fromUtcMillis: Long,
+        toUtcMillis: Long
+    ): List<FocusSessionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM focus_sessions
         ORDER BY startedAtUtcMillis DESC
         LIMIT :limit
         """

@@ -5938,3 +5938,15 @@ Validation update:
 - Subagent queue returned next plans for store-backed-only WPF upload, local integrated dashboard current-app E2E evidence, WPF chart detail/packaging evidence, and Android connected emulator evidence.
 - Final validation for the WPF disconnect/revoke slice passed: `dotnet restore Woong.MonitorStack.sln --configfile NuGet.config`, `dotnet test Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal` (778 passed, 6 PostgreSQL-environment skips), `dotnet build Woong.MonitorStack.sln --no-restore -maxcpucount:1 -v minimal`, coverage collection, and ReportGenerator.
 - Updated coverage summary after disconnect/revoke: line 88.2% (7860/8911), branch 71.0% (1418/1995).
+
+## 2026-05-06 Android UsageStats Duplicate Aggregation Regression
+
+- Fixed the Android issue where navigating Report -> Dashboard could make usage totals grow as if the same app usage had been duplicated. Root cause: `UsageSessionizer` clamped session starts/ends to each collection window and `AndroidUsageCollectionRunner` included the mutable end time in `clientSessionId`, so recollecting an open foreground interval could insert a new Room row.
+- `UsageSessionizer` now preserves actual foreground session boundaries, and Android focus-session ids are stable by package + start instant so later collection updates the same logical usage instead of duplicating it.
+- Dashboard, Sessions, and Report repositories now use UTC overlap queries instead of local-date-only queries, so sessions crossing range boundaries are visible and clipped correctly for the selected period.
+- Added metadata-only `AndroidForegroundAppStateRecorder` wiring in `MainActivity`: when Woong is foreground it records `current_app_states` and outbox rows for `com.woong.monitorstack`. Dashboard Current Focus displays Woong as current while keeping Chrome/latest external usage separate.
+- Hardened app-switch QA: the script now validates Woong current-state evidence instead of requiring the latest UsageStats-derived current row to always be Woong, because Android UsageStats can lag briefly after returning from Chrome.
+- Hardened Android evidence tooling: app-switch instrumentation timeout is now long enough for real screenshot/hierarchy evidence, and bottom-nav hierarchy validation falls back to resource-id/bounds parsing when UIAutomator dumps malformed text attributes.
+- Validation passed: `./gradlew.bat testDebugUnitTest`, `./gradlew.bat assembleDebug assembleRelease`, `./gradlew.bat connectedDebugAndroidTest`, and `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -SkipBuild`.
+- Fresh PASS evidence: `artifacts/android-app-switch-qa/latest/report.md`; screenshots include `dashboard-current-focus-after-chrome-return.png`, `dashboard-after-app-switch.png`, `sessions-after-app-switch.png`, and `dashboard-location-map.png`.
+- Privacy boundary unchanged: this remains app/package/time/location metadata only. No typed text, browser/page contents, screenshots of other apps, passwords, messages, form input, clipboard data, or global touch coordinates are collected.

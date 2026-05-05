@@ -20,8 +20,10 @@ import com.woong.monitorstack.settings.SettingsFragment
 import com.woong.monitorstack.summary.ReportFragment
 import com.woong.monitorstack.usage.AndroidUsageAccessPermissionReader
 import com.woong.monitorstack.usage.AndroidUsageCollectionScheduler
+import com.woong.monitorstack.usage.AndroidForegroundAppStateRecorder
 import com.woong.monitorstack.usage.AndroidRecentUsageCollector
 import com.woong.monitorstack.usage.PermissionOnboardingFragment
+import com.woong.monitorstack.usage.RoomAndroidForegroundAppStateRecorder
 import com.woong.monitorstack.usage.RunnerBackedAndroidRecentUsageCollector
 import com.woong.monitorstack.usage.UsageAccessPermissionChecker
 import com.woong.monitorstack.usage.UsageCollectionScheduleResult
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var usageAccessGate: UsageAccessGate
     private lateinit var usageCollectionReconciler: UsageCollectionReconciler
     private lateinit var usageImmediateCollector: AndroidRecentUsageCollector
+    private lateinit var foregroundAppStateRecorder: AndroidForegroundAppStateRecorder
     private var completedInitialResume = false
     private var shellChromeVisible = true
     private var fragmentTopMarginWithChrome = 0
@@ -49,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         usageAccessGate = usageAccessGateFactory(applicationContext)
         usageCollectionReconciler = usageCollectionReconcilerFactory(applicationContext)
         usageImmediateCollector = usageImmediateCollectorFactory(applicationContext)
+        foregroundAppStateRecorder = foregroundAppStateRecorderFactory(applicationContext)
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -80,6 +84,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        recordOwnForegroundState()
         if (completedInitialResume && ::binding.isInitialized) {
             val scheduleResult = usageCollectionReconciler.reconcile(packageName)
             if (binding.bottomNavigation.selectedItemId == R.id.navDashboard) {
@@ -87,6 +92,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
         completedInitialResume = true
+    }
+
+    private fun recordOwnForegroundState() {
+        if (!::foregroundAppStateRecorder.isInitialized) {
+            return
+        }
+
+        Thread {
+            foregroundAppStateRecorder.recordForegroundApp(packageName)
+        }.start()
     }
 
     private fun showDashboardOrPermissionOnboarding() {
@@ -270,6 +285,11 @@ class MainActivity : AppCompatActivity() {
             RunnerBackedAndroidRecentUsageCollector.create(context.applicationContext)
         }
 
+        fun defaultForegroundAppStateRecorderFactory(): (Context) -> AndroidForegroundAppStateRecorder = {
+            context ->
+            RoomAndroidForegroundAppStateRecorder.create(context.applicationContext)
+        }
+
         var usageAccessGateFactory: (Context) -> UsageAccessGate =
             defaultUsageAccessGateFactory()
 
@@ -278,6 +298,9 @@ class MainActivity : AppCompatActivity() {
 
         var usageImmediateCollectorFactory: (Context) -> AndroidRecentUsageCollector =
             defaultUsageImmediateCollectorFactory()
+
+        var foregroundAppStateRecorderFactory: (Context) -> AndroidForegroundAppStateRecorder =
+            defaultForegroundAppStateRecorderFactory()
 
         const val DefaultSplashDelayMillis = 700L
         var splashDelayMillis: Long = DefaultSplashDelayMillis

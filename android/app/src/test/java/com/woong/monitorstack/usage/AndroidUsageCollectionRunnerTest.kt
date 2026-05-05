@@ -45,7 +45,7 @@ class AndroidUsageCollectionRunnerTest {
     }
 
     @Test
-    fun collectReadsAnchoredLookbackAndStoresOnlyRequestedWindow() = runBlocking {
+    fun collectReadsAnchoredLookbackAndPreservesActualSessionBoundaryForStableReplacement() = runBlocking {
         val store = FakeUsageSessionStore()
         val reader = FakeUsageEventsReader(
             listOf(
@@ -75,10 +75,42 @@ class AndroidUsageCollectionRunnerTest {
         assertEquals(1_000L, reader.fromUtcMillis)
         assertEquals(30_000L, reader.toUtcMillis)
         val session = store.sessions.single()
+        assertEquals("android:com.android.chrome:1000", session.clientSessionId)
         assertEquals("com.android.chrome", session.packageName)
-        assertEquals(10_000L, session.startedAtUtcMillis)
+        assertEquals(1_000L, session.startedAtUtcMillis)
         assertEquals(20_000L, session.endedAtUtcMillis)
-        assertEquals(10_000L, session.durationMs)
+        assertEquals(19_000L, session.durationMs)
+    }
+
+    @Test
+    fun collectUsesSameClientSessionIdWhenRepeatedCollectionsSeeTheSameOpenSession() = runBlocking {
+        val store = ReplacingUsageSessionStore()
+        val runner = AndroidUsageCollectionRunner(
+            collector = UsageStatsCollector(
+                FakeUsageEventsReader(
+                    listOf(
+                        UsageEventSnapshot(
+                            packageName = "com.android.chrome",
+                            eventType = UsageEventType.ACTIVITY_RESUMED,
+                            occurredAtUtcMillis = 1_000L
+                        )
+                    )
+                )
+            ),
+            sessionizer = UsageSessionizer(),
+            store = store,
+            timezoneId = ZoneId.of("Asia/Seoul"),
+            anchorLookbackMs = 30_000L
+        )
+
+        runner.collect(10_000L, 30_000L)
+        runner.collect(15_000L, 40_000L)
+
+        val session = store.sessions.single()
+        assertEquals("android:com.android.chrome:1000", session.clientSessionId)
+        assertEquals(1_000L, session.startedAtUtcMillis)
+        assertEquals(40_000L, session.endedAtUtcMillis)
+        assertEquals(39_000L, session.durationMs)
     }
 
     @Test
@@ -226,6 +258,16 @@ class AndroidUsageCollectionRunnerTest {
 
         override suspend fun insertAll(sessions: List<FocusSessionEntity>) {
             this.sessions += sessions
+        }
+    }
+
+    private class ReplacingUsageSessionStore : UsageSessionStore {
+        private val byId = linkedMapOf<String, FocusSessionEntity>()
+        val sessions: List<FocusSessionEntity>
+            get() = byId.values.toList()
+
+        override suspend fun insertAll(sessions: List<FocusSessionEntity>) {
+            sessions.forEach { byId[it.clientSessionId] = it }
         }
     }
 

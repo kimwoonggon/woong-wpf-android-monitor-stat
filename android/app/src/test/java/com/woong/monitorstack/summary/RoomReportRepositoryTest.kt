@@ -46,6 +46,7 @@ class RoomReportRepositoryTest {
         dao.insert(session("too-old", "com.slack", "2026-03-30T09:00:00", 60, false))
         val repository = RoomReportRepository(
             dao = dao,
+            timezoneId = timezoneId,
             todayProvider = { LocalDate.of(2026, 4, 30) }
         )
 
@@ -78,6 +79,7 @@ class RoomReportRepositoryTest {
         dao.insert(session("too-old", "com.slack", "2026-01-29T09:00:00", 90, false))
         val repository = RoomReportRepository(
             dao = dao,
+            timezoneId = timezoneId,
             todayProvider = { LocalDate.of(2026, 4, 30) }
         )
 
@@ -106,6 +108,7 @@ class RoomReportRepositoryTest {
         dao.insert(session("after-range", "com.slack", "2026-04-26T09:00:00", 90, false))
         val repository = RoomReportRepository(
             dao = dao,
+            timezoneId = timezoneId,
             todayProvider = { LocalDate.of(2026, 4, 30) }
         )
 
@@ -124,6 +127,28 @@ class RoomReportRepositoryTest {
             listOf("2026-04-20", "2026-04-25"),
             snapshot.dailyActivity.map { it.localDate }
         )
+    }
+
+    @Test
+    fun loadCustomRangeIncludesAndClipsSessionsThatOverlapTheRequestedDates() {
+        val dao = database.focusSessionDao()
+        dao.insert(session("spanning-chrome", "com.android.chrome", "2026-04-14T23:30:00", 90, false))
+        val repository = RoomReportRepository(
+            dao = dao,
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 30) }
+        )
+
+        val snapshot = repository.load(
+            ReportPeriod.Custom(
+                from = LocalDate.of(2026, 4, 15),
+                to = LocalDate.of(2026, 4, 15)
+            )
+        )
+
+        assertEquals(60 * 60_000L, snapshot.totalActiveMs)
+        assertEquals(listOf("2026-04-15"), snapshot.dailyActivity.map { it.localDate })
+        assertEquals(listOf(60 * 60_000L), snapshot.dailyActivity.map { it.durationMs })
     }
 
     private fun session(

@@ -78,6 +78,32 @@ class FocusSessionDaoTest {
         assertEquals(listOf("new-session", "old-session"), sessions.map { it.clientSessionId })
     }
 
+    @Test
+    fun queryByUtcOverlapReturnsSessionsThatIntersectTheRangeEvenWhenLocalDateStartsOutsideIt() {
+        val dao = database.focusSessionDao()
+        dao.insert(
+            focusSession(
+                clientSessionId = "overlap-from-before",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = 1_000
+            )
+        )
+        dao.insert(
+            focusSession(
+                clientSessionId = "starts-after-range",
+                packageName = "com.slack",
+                startedAtUtcMillis = 90_000
+            )
+        )
+
+        val sessions = dao.queryByUtcOverlap(
+            fromUtcMillis = 30_000,
+            toUtcMillis = 70_000
+        )
+
+        assertEquals(listOf("overlap-from-before"), sessions.map { it.clientSessionId })
+    }
+
     private fun focusSession(
         clientSessionId: String,
         packageName: String,

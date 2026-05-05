@@ -24,12 +24,11 @@ class RoomSessionsRepository(
     ): List<SessionRow> {
         val now = nowProvider()
         val range = period.toUtcRange(now, timezoneId)
-        val fromLocalDate = range.from.atZone(timezoneId).toLocalDate().toString()
-        val toLocalDate = range.to.atZone(timezoneId).toLocalDate().toString()
-
-        return focusSessionDao.queryByLocalDateRange(fromLocalDate, toLocalDate)
+        return focusSessionDao.queryByUtcOverlap(
+            fromUtcMillis = range.from.toEpochMilli(),
+            toUtcMillis = range.to.toEpochMilli()
+        )
             .asSequence()
-            .filter { it.overlaps(range) }
             .sortedByDescending { it.startedAtUtcMillis }
             .take(limit)
             .map { it.toSessionRow() }

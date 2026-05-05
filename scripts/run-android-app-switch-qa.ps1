@@ -37,6 +37,8 @@ $prepareTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#prepare
 $collectTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#collectUsageStatsAfterChromeReturnPersistsFocusSessionAndOutbox"
 $currentFocusTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#dashboardAfterChromeReturnShowsWoongAsCurrentAndChromeAsLatestExternal"
 $captureTestName = "com.woong.monitorstack.usage.AppSwitchQaEvidenceTest#captureWoongDashboardAndSessionsOnlyAfterReturn"
+$locationEvidenceTestName = "com.woong.monitorstack.snapshots.LocationMapSnapshotEvidenceTest#captureDashboardLocationMapWithSeoulTimeLabels"
+$locationEvidenceRemoteDir = "/sdcard/Android/data/$PackageName/files/ui-snapshots-location"
 $installDiagnosticArtifactContract = @(
     "package-manager-preflight.txt",
     "install-debug-apk-stdout.txt",
@@ -219,6 +221,13 @@ function Write-RoomAssertionPlaceholder {
         chromePackageName = $ChromePackageName
         focusSessionChromeRows = 0
         syncOutboxChromeRows = 0
+        currentAppStateRows = 0
+        latestCurrentAppStatePackageName = ""
+        pendingCurrentAppStateOutboxRows = 0
+        hasLatestWoongCurrentAppState = $false
+        hasPendingWoongCurrentAppStateOutbox = $false
+        priorExternalChromeMetadataOnly = $false
+        currentAppStateOutboxMetadataOnly = $false
     } | ConvertTo-Json -Depth 4 | Set-Content -Path $path -Encoding UTF8
     Add-Artifact -Name "Room assertions" -FileName "room-assertions.json" -Path $path
 }
@@ -242,8 +251,35 @@ function Write-DashboardCurrentFocusEvidencePlaceholder {
         roomFocusSessionChromeRows = 0
         hasValidMonitorUsageStatsSession = $false
         hasValidChromeUsageStatsSession = $false
+        currentAppStateRows = 0
+        latestCurrentAppStatePackageName = ""
+        hasLatestWoongCurrentAppState = $false
+        pendingCurrentAppStateOutboxRows = 0
+        hasPendingWoongCurrentAppStateOutbox = $false
+        currentAppStateOutboxMetadataOnly = $false
     } | ConvertTo-Json -Depth 4 | Set-Content -Path $path -Encoding UTF8
     Add-Artifact -Name "Dashboard current focus evidence" -FileName "dashboard-current-focus-evidence.json" -Path $path
+}
+
+function Write-LocationMapEvidencePlaceholder {
+    param(
+        [string]$Status,
+        [string]$Reason
+    )
+
+    $path = Join-Path $runRoot "dashboard-location-map-evidence.json"
+    [ordered]@{
+        status = $Status
+        reason = $Reason
+        privacy = "No typed text, page content, browser content, clipboard, passwords, messages, or touch coordinates are collected."
+        visitCount = 0
+        topVisitLocationKey = ""
+        topVisitDurationMs = 0
+        topVisitSampleCount = 0
+        metadataOnly = $false
+        mapScreenshot = ""
+    } | ConvertTo-Json -Depth 4 | Set-Content -Path $path -Encoding UTF8
+    Add-Artifact -Name "Location map visit evidence" -FileName "dashboard-location-map-evidence.json" -Path $path
 }
 
 function Write-AppSwitchArtifacts {
@@ -267,6 +303,17 @@ function Write-AppSwitchArtifacts {
         }
         Write-DashboardCurrentFocusEvidencePlaceholder -Status $Status -Reason $BlockedReason
     }
+    if (-not (Test-Path (Join-Path $runRoot "dashboard-location-map-evidence.json"))) {
+        if ($Status -eq "PASS") {
+            $Status = "FAIL"
+            $script:status = "FAIL"
+            $script:classification = "location-map-evidence-missing"
+            $script:nextAction = "Inspect the app-switch instrumentation run; dashboard-location-map-evidence.json must be present before accepting QA."
+            $BlockedReason = "Location map visit evidence artifact was missing from an otherwise passing app-switch QA run."
+            $script:blockedReason = $BlockedReason
+        }
+        Write-LocationMapEvidencePlaceholder -Status $Status -Reason $BlockedReason
+    }
 
     $reportLines = @(
         "# Android UsageStats App-Switch QA",
@@ -285,6 +332,9 @@ function Write-AppSwitchArtifacts {
         "- Returns to Woong Monitor Stack.",
         "- Runs production UsageStats collection through Android instrumentation.",
         "- Asserts Room ``focus_session`` and ``sync_outbox`` metadata evidence.",
+        "- Asserts Woong Monitor ``current_app_states`` metadata evidence exists after returning from Chrome.",
+        "- Asserts pending ``current_app_state`` outbox metadata exists.",
+        "- Asserts deterministic location visit/map evidence includes visit count and top visit.",
         "- Asserts Dashboard Current Focus shows Woong Monitor as current and Chrome as latest collected external app.",
         "- Captures Dashboard and Sessions evidence only after Woong is foreground.",
         "",
@@ -619,7 +669,8 @@ function Invoke-AppSwitchInstrumentationForEvidence {
     param(
         [string]$TestName,
         [hashtable]$ExtraArguments,
-        [string]$ArtifactPrefix
+        [string]$ArtifactPrefix,
+        [int]$TimeoutSeconds = 180
     )
 
     $arguments = @(
@@ -642,7 +693,8 @@ function Invoke-AppSwitchInstrumentationForEvidence {
 
     $result = Invoke-AdbProcess `
         -Arguments $arguments `
-        -Description "Run $TestName instrumentation"
+        -Description "Run $TestName instrumentation" `
+        -TimeoutSeconds $TimeoutSeconds
 
     Save-TextArtifact `
         -Name "$ArtifactPrefix instrumentation stdout" `
@@ -722,13 +774,14 @@ function Pull-AppSwitchArtifact {
         [string]$Name,
         [string]$FileName,
         [switch]$RetryBlankScreenshot,
-        [string]$RetryCaptureTestName = $captureTestName
+        [string]$RetryCaptureTestName = $captureTestName,
+        [string]$RemoteDirectory = $remoteDir
     )
 
     $localPath = Join-Path $runRoot $FileName
     Invoke-AdbChecked -Arguments @(
         "pull",
-        "$remoteDir/$FileName",
+        "$RemoteDirectory/$FileName",
         $localPath
     ) -Description "Pull $Name" | Out-Null
 
@@ -746,10 +799,10 @@ function Pull-AppSwitchArtifact {
                 -TestName $RetryCaptureTestName `
                 -ExtraArguments @{
                     chromePackageName = $ChromePackageName
-                }
+            }
             Invoke-AdbChecked -Arguments @(
                 "pull",
-                "$remoteDir/$FileName",
+                "$RemoteDirectory/$FileName",
                 $localPath
             ) -Description "Retry pull $Name after blank screenshot" | Out-Null
 
@@ -779,16 +832,35 @@ function Assert-RoomAssertionsPassed {
     }
 
     $roomStatus = [string]$roomAssertions.status
-    if ($roomStatus -eq "PASS") {
+    $latestCurrentAppStatePackageName = [string]$roomAssertions.latestCurrentAppStatePackageName
+    $hasWoongCurrentAppState = if ($null -ne $roomAssertions.hasWoongCurrentAppState) {
+        [bool]$roomAssertions.hasWoongCurrentAppState
+    } else {
+        [bool]$roomAssertions.hasLatestWoongCurrentAppState
+    }
+    $hasPendingCurrentAppStateOutbox = [bool]$roomAssertions.hasPendingWoongCurrentAppStateOutbox
+    $priorExternalChromeMetadataOnly = [bool]$roomAssertions.priorExternalChromeMetadataOnly
+    $currentAppStateOutboxMetadataOnly = [bool]$roomAssertions.currentAppStateOutboxMetadataOnly
+    $pendingCurrentAppStateOutboxRows = if ($null -ne $roomAssertions.pendingCurrentAppStateOutboxRows) { [int]$roomAssertions.pendingCurrentAppStateOutboxRows } else { 0 }
+    if (
+        $roomStatus -eq "PASS" -and
+        $hasWoongCurrentAppState -and
+        $hasPendingCurrentAppStateOutbox -and
+        $pendingCurrentAppStateOutboxRows -gt 0 -and
+        $priorExternalChromeMetadataOnly -and
+        $currentAppStateOutboxMetadataOnly
+    ) {
+        $notes.Add("Room assertions passed: Woong current_app_states evidence exists, latest current_app_states package '$latestCurrentAppStatePackageName', pending current_app_state outbox rows $pendingCurrentAppStateOutboxRows.")
         return
     }
 
     $focusRows = if ($null -ne $roomAssertions.focusSessionChromeRows) { [string]$roomAssertions.focusSessionChromeRows } else { "unknown" }
     $outboxRows = if ($null -ne $roomAssertions.syncOutboxChromeRows) { [string]$roomAssertions.syncOutboxChromeRows } else { "unknown" }
+    $currentRows = if ($null -ne $roomAssertions.currentAppStateRows) { [string]$roomAssertions.currentAppStateRows } else { "unknown" }
     $script:status = "FAIL"
     $script:classification = "room-assertions-failed"
-    $script:nextAction = "Inspect room-assertions.json and fix Android UsageStats collection/outbox persistence before accepting app-switch QA."
-    $script:blockedReason = "Room assertions failed: status=$roomStatus, focusSessionChromeRows=$focusRows, syncOutboxChromeRows=$outboxRows."
+    $script:nextAction = "Inspect room-assertions.json and fix Android UsageStats current_app_states/outbox evidence before accepting app-switch QA."
+    $script:blockedReason = "Room assertions failed: status=$roomStatus, focusSessionChromeRows=$focusRows, syncOutboxChromeRows=$outboxRows, currentAppStateRows=$currentRows, latestCurrentAppStatePackageName=$latestCurrentAppStatePackageName, hasWoongCurrentAppState=$hasWoongCurrentAppState, pendingCurrentAppStateOutboxRows=$pendingCurrentAppStateOutboxRows, priorExternalChromeMetadataOnly=$priorExternalChromeMetadataOnly, currentAppStateOutboxMetadataOnly=$currentAppStateOutboxMetadataOnly."
 }
 
 function Assert-DashboardCurrentFocusEvidencePassed {
@@ -809,20 +881,69 @@ function Assert-DashboardCurrentFocusEvidencePassed {
     $externalPackage = [string]$evidence.actualLatestExternalPackageText
     $monitorRows = if ($null -ne $evidence.roomFocusSessionMonitorRows) { [string]$evidence.roomFocusSessionMonitorRows } else { "unknown" }
     $chromeRows = if ($null -ne $evidence.roomFocusSessionChromeRows) { [string]$evidence.roomFocusSessionChromeRows } else { "unknown" }
+    $latestCurrentAppStatePackageName = [string]$evidence.latestCurrentAppStatePackageName
+    $hasWoongCurrentAppState = if ($null -ne $evidence.hasWoongCurrentAppState) {
+        [bool]$evidence.hasWoongCurrentAppState
+    } else {
+        [bool]$evidence.hasLatestWoongCurrentAppState
+    }
+    $hasPendingCurrentAppStateOutbox = [bool]$evidence.hasPendingWoongCurrentAppStateOutbox
+    $currentAppStateOutboxMetadataOnly = [bool]$evidence.currentAppStateOutboxMetadataOnly
+    $pendingCurrentAppStateOutboxRows = if ($null -ne $evidence.pendingCurrentAppStateOutboxRows) { [int]$evidence.pendingCurrentAppStateOutboxRows } else { 0 }
 
     if (
         $evidenceStatus -eq "PASS" -and
         $currentPackage -eq $PackageName -and
-        $externalPackage -eq $ChromePackageName
+        $externalPackage -eq $ChromePackageName -and
+        $hasWoongCurrentAppState -and
+        $hasPendingCurrentAppStateOutbox -and
+        $pendingCurrentAppStateOutboxRows -gt 0 -and
+        $currentAppStateOutboxMetadataOnly
     ) {
-        $notes.Add("Dashboard Current Focus evidence passed: current '$currentPackage', latest external '$externalPackage'.")
+        $notes.Add("Dashboard Current Focus evidence passed: current '$currentPackage', latest external '$externalPackage', Woong current_app_states evidence exists; latest current_app_states package was '$latestCurrentAppStatePackageName' because UsageStats can lag after returning.")
         return
     }
 
     $script:status = "FAIL"
     $script:classification = "dashboard-current-focus-evidence-failed"
     $script:nextAction = "Inspect dashboard-current-focus-evidence.json and the Woong-only Dashboard hierarchy/screenshot; fix stale Current Focus if Chrome is shown as current after return."
-    $script:blockedReason = "Dashboard Current Focus evidence failed: status=$evidenceStatus, currentPackage=$currentPackage, latestExternalPackage=$externalPackage, monitorRows=$monitorRows, chromeRows=$chromeRows."
+    $script:blockedReason = "Dashboard Current Focus evidence failed: status=$evidenceStatus, currentPackage=$currentPackage, latestExternalPackage=$externalPackage, monitorRows=$monitorRows, chromeRows=$chromeRows, latestCurrentAppStatePackageName=$latestCurrentAppStatePackageName, hasWoongCurrentAppState=$hasWoongCurrentAppState, pendingCurrentAppStateOutboxRows=$pendingCurrentAppStateOutboxRows, currentAppStateOutboxMetadataOnly=$currentAppStateOutboxMetadataOnly."
+}
+
+function Assert-LocationMapEvidencePassed {
+    $evidencePath = Join-Path $runRoot "dashboard-location-map-evidence.json"
+    if (-not (Test-Path $evidencePath)) {
+        throw "Location map visit evidence artifact was not found after pull: $evidencePath"
+    }
+
+    try {
+        $evidence = Get-Content -Path $evidencePath -Raw | ConvertFrom-Json
+    }
+    catch {
+        throw "Location map visit evidence artifact is not valid JSON: $($_.Exception.Message)"
+    }
+
+    $evidenceStatus = [string]$evidence.status
+    $visitCount = if ($null -ne $evidence.visitCount) { [int]$evidence.visitCount } else { 0 }
+    $topVisitLocationKey = [string]$evidence.topVisitLocationKey
+    $metadataOnly = [bool]$evidence.metadataOnly
+    $mapScreenshot = [string]$evidence.mapScreenshot
+
+    if (
+        $evidenceStatus -eq "PASS" -and
+        $visitCount -gt 0 -and
+        -not [string]::IsNullOrWhiteSpace($topVisitLocationKey) -and
+        $metadataOnly -and
+        -not [string]::IsNullOrWhiteSpace($mapScreenshot)
+    ) {
+        $notes.Add("Location map visit evidence passed: visitCount=$visitCount, topVisit=$topVisitLocationKey, screenshot=$mapScreenshot.")
+        return
+    }
+
+    $script:status = "FAIL"
+    $script:classification = "location-map-evidence-failed"
+    $script:nextAction = "Inspect dashboard-location-map-evidence.json and dashboard-location-map.png; fix deterministic location visit/map evidence before accepting app-switch QA."
+    $script:blockedReason = "Location map visit evidence failed: status=$evidenceStatus, visitCount=$visitCount, topVisitLocationKey=$topVisitLocationKey, metadataOnly=$metadataOnly, mapScreenshot=$mapScreenshot."
 }
 
 function Test-PackageManagerPreflight {
@@ -1178,7 +1299,8 @@ try {
         -ExtraArguments @{
             chromePackageName = $ChromePackageName
         } `
-        -ArtifactPrefix "dashboard-current-focus"
+        -ArtifactPrefix "dashboard-current-focus" `
+        -TimeoutSeconds 180
 
     Pull-AppSwitchArtifact -Name "Dashboard current focus evidence" -FileName "dashboard-current-focus-evidence.json"
     Pull-AppSwitchArtifact `
@@ -1221,6 +1343,38 @@ try {
             (Join-Path $runRoot "sessions-after-app-switch.xml")
         )
     $notes.Add("Bottom navigation hierarchy floor validation passed for app-switch Dashboard and Sessions evidence.")
+
+    $locationEvidenceInstrumentation = Invoke-AppSwitchInstrumentationForEvidence `
+        -TestName $locationEvidenceTestName `
+        -ExtraArguments @{} `
+        -ArtifactPrefix "location-map-evidence"
+
+    Pull-AppSwitchArtifact `
+        -Name "Location map visit evidence" `
+        -FileName "dashboard-location-map-evidence.json" `
+        -RemoteDirectory $locationEvidenceRemoteDir
+    Pull-AppSwitchArtifact `
+        -Name "Location map screenshot" `
+        -FileName "dashboard-location-map.png" `
+        -RemoteDirectory $locationEvidenceRemoteDir
+    Assert-LocationMapEvidencePassed
+
+    if (
+        ($locationEvidenceInstrumentation.timedOut -or $locationEvidenceInstrumentation.exitCode -ne 0) -and
+        $status -ne "FAIL"
+    ) {
+        $status = "FAIL"
+        $classification = "location-map-evidence-instrumentation-failed"
+        $nextAction = "Inspect location-map-evidence-instrumentation-stdout.txt, location-map-evidence-instrumentation-stderr.txt, and dashboard-location-map-evidence.json."
+        $blockedReason = "Location map evidence instrumentation failed with exitCode=$($locationEvidenceInstrumentation.exitCode), timedOut=$($locationEvidenceInstrumentation.timedOut)."
+    }
+
+    if ($status -eq "FAIL" -and $classification -like "location-map-*") {
+        Write-AppSwitchArtifacts -Status $status -BlockedReason $blockedReason
+        Write-Host $blockedReason
+        Write-Host "Android app-switch QA artifacts: $runRoot"
+        exit 1
+    }
 
     if (-not (Test-Path (Join-Path $runRoot "logcat-crash.txt"))) {
         Save-CrashLogcatArtifact | Out-Null

@@ -13,6 +13,7 @@ import com.google.android.material.button.MaterialButton
 import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentDashboardBinding
+import com.woong.monitorstack.display.AppDisplayNameFormatter
 import com.woong.monitorstack.databinding.ItemAppUsageBinding
 import com.woong.monitorstack.databinding.ItemFocusSessionBinding
 import com.woong.monitorstack.ui.PeriodButtonStyler
@@ -115,14 +116,12 @@ class DashboardFragment : Fragment() {
     private fun render(state: DashboardUiState) {
         val topApp = state.topAppName ?: getString(R.string.no_top_app)
         val currentFocusSelection = currentFocusResolver.resolve(state.recentSessions)
-        val latestSession = currentFocusSelection.currentSession
         val latestExternalSession = currentFocusSelection.latestExternalSession
-        val currentAppName = latestSession?.appName
-            ?: latestExternalSession?.appName
-            ?: getString(R.string.no_top_app)
-        val currentPackageName = latestSession?.packageName
-            ?: latestExternalSession?.packageName
-            ?: getString(R.string.no_package)
+        val monitorPackageName = requireContext().packageName
+        val latestSession = currentFocusSelection.currentSession
+            ?.takeIf { it.packageName == monitorPackageName }
+        val currentAppName = AppDisplayNameFormatter.format(monitorPackageName)
+        val currentPackageName = monitorPackageName
         val latestExternalAppName = latestExternalSession?.appName ?: getString(R.string.no_top_app)
         val latestExternalPackageName = latestExternalSession?.packageName ?: getString(R.string.no_package)
 

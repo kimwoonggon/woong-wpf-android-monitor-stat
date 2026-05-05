@@ -53,6 +53,38 @@ function Get-Bounds {
     }
 }
 
+function ConvertTo-BoundsFromText {
+    param([string]$Bounds)
+
+    if ($Bounds -notmatch "^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$") {
+        return $null
+    }
+
+    return [pscustomobject]@{
+        left = [int]$Matches[1]
+        top = [int]$Matches[2]
+        right = [int]$Matches[3]
+        bottom = [int]$Matches[4]
+    }
+}
+
+function Get-NodeBoundsByResourceIdRegex {
+    param(
+        [string]$Raw,
+        [string]$ResourceIdPattern
+    )
+
+    $matches = [regex]::Matches(
+        $Raw,
+        '<node\b(?=[^>]*resource-id="' + $ResourceIdPattern + '")[^>]*bounds="(?<bounds>\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\])"',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+    )
+
+    return @($matches | ForEach-Object {
+        ConvertTo-BoundsFromText -Bounds $_.Groups["bounds"].Value
+    } | Where-Object { $null -ne $_ })
+}
+
 function Get-DescendantNodes {
     param([System.Xml.XmlElement]$Node)
 
@@ -69,10 +101,45 @@ function Get-DescendantNodes {
     return $descendants
 }
 
+function Test-BottomNavHierarchyFallback {
+    param([string]$Path)
+
+    $raw = Get-Content -Raw -LiteralPath $Path
+    $bottomNavigationBounds = Get-NodeBoundsByResourceIdRegex `
+        -Raw $raw `
+        -ResourceIdPattern "com\.woong\.monitorstack:id/bottomNavigation"
+    if ($bottomNavigationBounds.Count -eq 0) {
+        Write-Host "Android bottom navigation floor: SKIP (no bottomNavigation node) - $Path"
+        return
+    }
+
+    $visibleItemBounds = Get-NodeBoundsByResourceIdRegex `
+        -Raw $raw `
+        -ResourceIdPattern "com\.woong\.monitorstack:id/(navigation_bar_item_content_container|navigation_bar_item_labels_group|navigation_bar_item_(large|small)_label_view)"
+    if ($visibleItemBounds.Count -eq 0) {
+        throw "bottomNavigation has no parseable tab item descendants in $Path"
+    }
+
+    $maxVisibleItemBottom = @($visibleItemBounds | Measure-Object -Property bottom -Maximum).Maximum
+    foreach ($bottomNavigation in $bottomNavigationBounds) {
+        $blankFloorPx = $bottomNavigation.bottom - [int]$maxVisibleItemBottom
+        if ($blankFloorPx -gt $MaxBlankFloorPx) {
+            throw "Android bottom navigation blank floor is ${blankFloorPx}px in $Path; max allowed is ${MaxBlankFloorPx}px."
+        }
+
+        Write-Host "Android bottom navigation floor: PASS ($blankFloorPx px blank floor, regex fallback) - $Path"
+    }
+}
+
 function Test-BottomNavHierarchy {
     param([string]$Path)
 
-    $document = Get-XmlDocument -Path $Path
+    try {
+        $document = Get-XmlDocument -Path $Path
+    } catch {
+        Test-BottomNavHierarchyFallback -Path $Path
+        return
+    }
     $bottomNavigationNodes = @($document.SelectNodes("//*[@resource-id='com.woong.monitorstack:id/bottomNavigation']"))
     if ($bottomNavigationNodes.Count -eq 0) {
         Write-Host "Android bottom navigation floor: SKIP (no bottomNavigation node) - $Path"

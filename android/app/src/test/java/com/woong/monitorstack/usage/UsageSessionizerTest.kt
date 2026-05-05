@@ -80,7 +80,7 @@ class UsageSessionizerTest {
     }
 
     @Test
-    fun sessionizeWhenResumeBeforeCollectionStartAndPauseInsideWindowClampsStart() {
+    fun sessionizeWhenResumeBeforeCollectionStartAndPauseInsideWindowPreservesActualSessionStart() {
         val sessionizer = UsageSessionizer()
         val events = listOf(
             UsageEventSnapshot("com.android.chrome", UsageEventType.ACTIVITY_RESUMED, 1_000),
@@ -95,13 +95,13 @@ class UsageSessionizerTest {
 
         val session = sessions.single()
         assertEquals("com.android.chrome", session.packageName)
-        assertEquals(10_000, session.startedAtUtcMillis)
+        assertEquals(1_000, session.startedAtUtcMillis)
         assertEquals(20_000, session.endedAtUtcMillis)
-        assertEquals(10_000, session.durationMs)
+        assertEquals(19_000, session.durationMs)
     }
 
     @Test
-    fun sessionizeWhenResumeBeforeCollectionStartHasNoPauseClampsToCollectionWindow() {
+    fun sessionizeWhenResumeBeforeCollectionStartHasNoPausePreservesActualStartAndClosesAtCollectionEnd() {
         val sessionizer = UsageSessionizer()
         val events = listOf(
             UsageEventSnapshot("com.android.chrome", UsageEventType.ACTIVITY_RESUMED, 1_000)
@@ -115,9 +115,9 @@ class UsageSessionizerTest {
 
         val session = sessions.single()
         assertEquals("com.android.chrome", session.packageName)
-        assertEquals(10_000, session.startedAtUtcMillis)
+        assertEquals(1_000, session.startedAtUtcMillis)
         assertEquals(30_000, session.endedAtUtcMillis)
-        assertEquals(20_000, session.durationMs)
+        assertEquals(29_000, session.durationMs)
     }
 
     @Test
