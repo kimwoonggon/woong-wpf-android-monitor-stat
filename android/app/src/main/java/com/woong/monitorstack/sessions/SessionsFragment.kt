@@ -1,9 +1,11 @@
 package com.woong.monitorstack.sessions
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
@@ -11,11 +13,13 @@ import com.woong.monitorstack.R
 import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentSessionsBinding
 import com.woong.monitorstack.ui.PeriodButtonStyler
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 class SessionsFragment : Fragment() {
     private lateinit var binding: FragmentSessionsBinding
     private val adapter = SessionRowAdapter { row -> openAppDetail(row.packageName) }
-    private var selectedPeriod = SessionsPeriod.Today
+    private var selectedPeriod: SessionsPeriod = SessionsPeriod.Today
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,10 +51,30 @@ class SessionsFragment : Fragment() {
         binding.sessionsSevenDayButton.setOnClickListener {
             loadSelectedSessions(binding.sessionsSevenDayButton, SessionsPeriod.LastSevenDays)
         }
+        binding.sessionsFilterButton.setOnClickListener {
+            binding.sessionsCustomRangePanel.visibility = View.VISIBLE
+            binding.sessionsCustomRangeErrorText.visibility = View.GONE
+            ensureCustomDateDefaults()
+            selectPeriodButton(binding.sessionsFilterButton)
+        }
+        binding.sessionsCustomStartDateEditText.setOnClickListener {
+            showDatePicker(binding.sessionsCustomStartDateEditText)
+        }
+        binding.sessionsCustomEndDateEditText.setOnClickListener {
+            showDatePicker(binding.sessionsCustomEndDateEditText)
+        }
+        binding.sessionsApplyCustomRangeButton.setOnClickListener {
+            applyCustomRange()
+        }
         loadSelectedSessions(buttonForPeriod(selectedPeriod), selectedPeriod)
     }
 
     private fun loadSelectedSessions(selectedButton: MaterialButton, period: SessionsPeriod) {
+        binding.sessionsCustomRangePanel.visibility = if (period is SessionsPeriod.Custom) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
         selectedPeriod = period
         selectPeriodButton(selectedButton)
         loadSessions(period)
@@ -63,6 +87,7 @@ class SessionsFragment : Fragment() {
             SessionsPeriod.LastSixHours -> binding.sessionsSixHourButton
             SessionsPeriod.LastTwentyFourHours -> binding.sessionsTwentyFourHourButton
             SessionsPeriod.LastSevenDays -> binding.sessionsSevenDayButton
+            is SessionsPeriod.Custom -> binding.sessionsFilterButton
         }
     }
 
@@ -74,9 +99,52 @@ class SessionsFragment : Fragment() {
                 binding.sessionsOneHourButton,
                 binding.sessionsSixHourButton,
                 binding.sessionsTwentyFourHourButton,
-                binding.sessionsSevenDayButton
+                binding.sessionsSevenDayButton,
+                binding.sessionsFilterButton
             )
         )
+    }
+
+    private fun applyCustomRange() {
+        try {
+            val from = LocalDate.parse(binding.sessionsCustomStartDateEditText.text.toString().trim())
+            val to = LocalDate.parse(binding.sessionsCustomEndDateEditText.text.toString().trim())
+            binding.sessionsCustomRangeErrorText.visibility = View.GONE
+            loadSelectedSessions(
+                binding.sessionsFilterButton,
+                SessionsPeriod.Custom(from = from, to = to)
+            )
+        } catch (_: DateTimeParseException) {
+            binding.sessionsCustomRangeErrorText.visibility = View.VISIBLE
+        } catch (_: IllegalArgumentException) {
+            binding.sessionsCustomRangeErrorText.visibility = View.VISIBLE
+        }
+    }
+
+    private fun ensureCustomDateDefaults() {
+        val today = LocalDate.now()
+        if (binding.sessionsCustomStartDateEditText.text.isNullOrBlank()) {
+            binding.sessionsCustomStartDateEditText.setText(today.toString())
+        }
+        if (binding.sessionsCustomEndDateEditText.text.isNullOrBlank()) {
+            binding.sessionsCustomEndDateEditText.setText(today.toString())
+        }
+    }
+
+    private fun showDatePicker(target: EditText) {
+        val initialDate = runCatching {
+            LocalDate.parse(target.text.toString())
+        }.getOrDefault(LocalDate.now())
+
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                target.setText(LocalDate.of(year, month + 1, dayOfMonth).toString())
+            },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth
+        ).show()
     }
 
     private fun loadSessions(period: SessionsPeriod) {

@@ -138,6 +138,14 @@
     <string name="privacy_storage_title">Privacy / Storage</string>
     <string name="storage_title">Storage</string>
     <string name="android_storage_boundary">Room keeps Android-only local app usage data. Windows data is never read directly from Android.</string>
+    <string name="clear_local_android_data">Clear local Android data</string>
+    <string name="clear_local_android_data_confirm_title">Clear local Android database?</string>
+    <string name="clear_local_android_data_confirm_message">This removes Android sessions, location context, current app state, and pending local outbox rows from this device. It does not affect Windows or server data.</string>
+    <string name="clear_local_android_data_confirm_positive">Clear local data</string>
+    <string name="clear_local_android_data_confirm_negative">Cancel</string>
+    <string name="clear_local_android_data_status_idle">Local Android database is ready.</string>
+    <string name="clear_local_android_data_status_done">Local Android usage database has been cleared.</string>
+    <string name="clear_local_android_data_status_failed">Local Android database clear failed. Data remains unchanged.</string>
     <string name="android_room_storage_status">Local Room database stores Android sessions only. Server sync remains opt-in.</string>
 
     <string name="collection_visible_default">Collection is visible while tracking.</string>

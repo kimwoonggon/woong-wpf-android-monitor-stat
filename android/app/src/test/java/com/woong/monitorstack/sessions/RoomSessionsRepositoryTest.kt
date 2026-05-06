@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.data.local.MonitorDatabase
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -119,6 +121,75 @@ class RoomSessionsRepositoryTest {
     }
 
     @Test
+    fun loadSessionsWithoutExplicitLimitReturnsEverySessionInRange() {
+        val zoneId = ZoneId.of("Asia/Seoul")
+        val now = Instant.parse("2026-04-29T12:00:00Z")
+        repeat(60) { index ->
+            val startedAtUtcMillis = now.minusSeconds((index + 1L) * 60L).toEpochMilli()
+            database.focusSessionDao().insert(
+                focusSession(
+                    clientSessionId = "session-$index",
+                    packageName = "com.example.app$index",
+                    startedAtUtcMillis = startedAtUtcMillis,
+                    durationMs = 30_000
+                )
+            )
+        }
+        val repository = RoomSessionsRepository(
+            focusSessionDao = database.focusSessionDao(),
+            timezoneId = zoneId,
+            nowProvider = { now }
+        )
+
+        val rows = repository.loadSessions(SessionsPeriod.LastTwentyFourHours)
+
+        assertEquals(60, rows.size)
+    }
+
+    @Test
+    fun loadSessionsForCustomDateRangeReturnsOnlyOverlappingRows() {
+        val zoneId = ZoneId.of("Asia/Seoul")
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "before",
+                packageName = "com.before",
+                startedAtUtcMillis = localMillis("2026-04-19T10:00:00", zoneId),
+                durationMs = 60_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "inside",
+                packageName = "com.android.chrome",
+                startedAtUtcMillis = localMillis("2026-04-20T10:00:00", zoneId),
+                durationMs = 60_000
+            )
+        )
+        database.focusSessionDao().insert(
+            focusSession(
+                clientSessionId = "after",
+                packageName = "com.after",
+                startedAtUtcMillis = localMillis("2026-04-22T10:00:00", zoneId),
+                durationMs = 60_000
+            )
+        )
+        val repository = RoomSessionsRepository(
+            focusSessionDao = database.focusSessionDao(),
+            timezoneId = zoneId,
+            nowProvider = { Instant.parse("2026-04-29T12:00:00Z") }
+        )
+
+        val rows = repository.loadSessions(
+            SessionsPeriod.Custom(
+                from = LocalDate.of(2026, 4, 20),
+                to = LocalDate.of(2026, 4, 21)
+            )
+        )
+
+        assertEquals(listOf("Chrome"), rows.map { it.appName })
+    }
+
+    @Test
     fun loadAppDetailAggregatesSelectedPackageSessions() {
         database.focusSessionDao().insert(
             focusSession(
@@ -208,4 +279,7 @@ class RoomSessionsRepositoryTest {
             source = "android_usage_stats"
         )
     }
+
+    private fun localMillis(value: String, zoneId: ZoneId): Long =
+        LocalDateTime.parse(value).atZone(zoneId).toInstant().toEpochMilli()
 }

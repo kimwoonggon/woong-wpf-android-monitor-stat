@@ -17,6 +17,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -24,6 +25,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowAlertDialog
 import java.util.concurrent.FutureTask
 
 @RunWith(RobolectricTestRunner::class)
@@ -34,6 +36,7 @@ class SettingsFragmentManualSyncTest {
     private lateinit var registrationLauncher: RecordingDeviceRegistrationLauncher
     private lateinit var disconnectLauncher: RecordingDeviceDisconnectLauncher
     private lateinit var tokenStore: FakeAndroidSyncTokenStore
+    private lateinit var localDataResetter: RecordingLocalDataResetter
 
     @Before
     fun setUp() {
@@ -47,9 +50,11 @@ class SettingsFragmentManualSyncTest {
         launcher = RecordingManualSyncLauncher()
         registrationLauncher = RecordingDeviceRegistrationLauncher()
         disconnectLauncher = RecordingDeviceDisconnectLauncher()
+        localDataResetter = RecordingLocalDataResetter()
         SettingsFragment.manualSyncLauncherFactory = { launcher }
         SettingsFragment.deviceRegistrationLauncherFactory = { registrationLauncher }
         SettingsFragment.deviceDisconnectLauncherFactory = { disconnectLauncher }
+        SettingsFragment.localDataResetterFactory = { localDataResetter }
         SettingsFragment.usageAccessStatusReaderFactory = {
             FakeUsageAccessStatusReader(hasUsageAccess = false)
         }
@@ -64,6 +69,7 @@ class SettingsFragmentManualSyncTest {
             SettingsFragment.defaultDeviceRegistrationLauncherFactory()
         SettingsFragment.deviceDisconnectLauncherFactory =
             SettingsFragment.defaultDeviceDisconnectLauncherFactory()
+        SettingsFragment.localDataResetterFactory = SettingsFragment.defaultLocalDataResetterFactory()
         SettingsFragment.usageAccessStatusReaderFactory =
             SettingsFragment.defaultUsageAccessStatusReaderFactory()
     }
@@ -322,6 +328,25 @@ class SettingsFragmentManualSyncTest {
         backgroundCollectionSwitch.performClick()
 
         assertFalse(SharedPreferencesAndroidUsageCollectionSettings(context).isCollectionEnabled())
+    }
+
+    @Test
+    fun clearLocalDataButtonRequiresConfirmationAndShowsResetStatus() {
+        val activity = launchSettingsFragment()
+
+        activity.findViewById<Button>(R.id.clearLocalDataButton).performClick()
+
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        assertNotNull(dialog)
+        assertEquals(0, localDataResetter.resetCount)
+
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick()
+
+        assertEquals(1, localDataResetter.resetCount)
+        assertEquals(
+            "Local Android usage database has been cleared.",
+            activity.findViewById<TextView>(R.id.clearLocalDataStatusText).text.toString()
+        )
     }
 
     @Test
@@ -809,6 +834,15 @@ class SettingsFragmentManualSyncTest {
         private val hasUsageAccess: Boolean
     ) : SettingsFragment.UsageAccessStatusReader {
         override fun hasUsageAccess(packageName: String): Boolean = hasUsageAccess
+    }
+
+    private class RecordingLocalDataResetter : SettingsFragment.LocalDataResetter {
+        var resetCount = 0
+
+        override fun clearLocalAndroidData(callback: (Result<Unit>) -> Unit) {
+            resetCount += 1
+            callback(Result.success(Unit))
+        }
     }
 
     companion object {

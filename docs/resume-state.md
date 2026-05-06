@@ -5950,3 +5950,13 @@ Validation update:
 - Validation passed: `./gradlew.bat testDebugUnitTest`, `./gradlew.bat assembleDebug assembleRelease`, `./gradlew.bat connectedDebugAndroidTest`, and `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-android-app-switch-qa.ps1 -DeviceSerial emulator-5554 -SkipBuild`.
 - Fresh PASS evidence: `artifacts/android-app-switch-qa/latest/report.md`; screenshots include `dashboard-current-focus-after-chrome-return.png`, `dashboard-after-app-switch.png`, `sessions-after-app-switch.png`, and `dashboard-location-map.png`.
 - Privacy boundary unchanged: this remains app/package/time/location metadata only. No typed text, browser/page contents, screenshots of other apps, passwords, messages, form input, clipboard data, or global touch coordinates are collected.
+
+## 2026-05-06 Android Sessions/Report Range And Local Data Controls
+
+- Fixed the Sessions 50-row cap by removing the repository's implicit default limit. The Sessions screen now asks Room for every row overlapping the selected range instead of truncating after 50.
+- Added `SessionsPeriod.Custom` and a Sessions custom date-range panel with date-picker backed start/end fields. Report custom start/end fields now also open a date picker instead of relying on manual typed dates only.
+- Fixed Report daily trend correctness for sessions that cross local midnight: clipped session duration is split into local-day slices before daily buckets are built, so `dailyActivity.sum(durationMs)` matches `totalActiveMs`.
+- Added Settings local Android data reset with a confirmation dialog. The action clears the Android Room database only; it does not touch Windows data or server data, and the UI shows explicit success/failure status.
+- Background collection remains based on the existing visible WorkManager scheduler and Settings switch. The app can continue periodic metadata collection while not foregrounded when Usage Access and background collection are enabled; Android force-stop remains the user/OS hard stop.
+- Validation passed: `./gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sessions.RoomSessionsRepositoryTest" --tests "com.woong.monitorstack.summary.RoomReportRepositoryTest" --tests "com.woong.monitorstack.settings.SettingsFragmentManualSyncTest"`; full `./gradlew.bat testDebugUnitTest`; and `./gradlew.bat assembleDebug`.
+- Privacy boundary unchanged: app/package/time/location metadata only. No typed text, browser/page contents, screenshots of other apps, passwords, messages, form input, clipboard data, or global touch coordinates are collected.

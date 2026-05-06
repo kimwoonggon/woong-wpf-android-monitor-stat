@@ -25,10 +25,13 @@ class RoomReportRepository(
         )
             .filterNot { it.isIdle }
             .map {
+                val startedAtUtcMillis = maxOf(it.startedAtUtcMillis, range.from.toEpochMilli())
+                val endedAtUtcMillis = minOf(it.endedAtUtcMillis, range.to.toEpochMilli())
                 FilteredReportSession(
                     entity = it,
-                    startedAtUtcMillis = maxOf(it.startedAtUtcMillis, range.from.toEpochMilli()),
-                    durationMs = it.durationWithin(range)
+                    startedAtUtcMillis = startedAtUtcMillis,
+                    endedAtUtcMillis = endedAtUtcMillis,
+                    durationMs = (endedAtUtcMillis - startedAtUtcMillis).coerceAtLeast(0L)
                 )
             }
             .filter { it.durationMs > 0 }
@@ -63,12 +66,8 @@ class RoomReportRepository(
     }
 
     private fun List<FilteredReportSession>.dailyActivity(): List<ReportDailyActivity> {
-        return groupBy { filteredSession ->
-            Instant.ofEpochMilli(filteredSession.startedAtUtcMillis)
-                .atZone(timezoneId)
-                .toLocalDate()
-                .toString()
-        }
+        return flatMap { it.splitIntoLocalDaySlices(timezoneId) }
+            .groupBy { it.localDate }
             .map { entry ->
                 ReportDailyActivity(
                     localDate = entry.key,
@@ -76,6 +75,30 @@ class RoomReportRepository(
                 )
             }
             .sortedBy { it.localDate }
+    }
+
+    private fun FilteredReportSession.splitIntoLocalDaySlices(
+        zoneId: ZoneId
+    ): List<ReportDailySlice> {
+        val slices = mutableListOf<ReportDailySlice>()
+        var cursor = Instant.ofEpochMilli(startedAtUtcMillis)
+        val end = Instant.ofEpochMilli(endedAtUtcMillis)
+
+        while (cursor.isBefore(end)) {
+            val localDate = cursor.atZone(zoneId).toLocalDate()
+            val nextDayStart = localDate.plusDays(1).atStartOfDay(zoneId).toInstant()
+            val sliceEnd = minOf(nextDayStart, end)
+            val durationMs = sliceEnd.toEpochMilli() - cursor.toEpochMilli()
+            if (durationMs > 0L) {
+                slices += ReportDailySlice(
+                    localDate = localDate.toString(),
+                    durationMs = durationMs
+                )
+            }
+            cursor = sliceEnd
+        }
+
+        return slices
     }
 
     private fun List<FilteredReportSession>.topApps(): List<ReportTopApp> {
@@ -120,5 +143,11 @@ private data class ReportUtcRange(
 private data class FilteredReportSession(
     val entity: FocusSessionEntity,
     val startedAtUtcMillis: Long,
+    val endedAtUtcMillis: Long,
+    val durationMs: Long
+)
+
+private data class ReportDailySlice(
+    val localDate: String,
     val durationMs: Long
 )

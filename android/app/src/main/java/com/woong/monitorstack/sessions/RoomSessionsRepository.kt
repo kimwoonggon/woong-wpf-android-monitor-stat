@@ -5,6 +5,7 @@ import com.woong.monitorstack.data.local.FocusSessionEntity
 import com.woong.monitorstack.dashboard.DashboardActivityBucket
 import com.woong.monitorstack.display.AppDisplayNameFormatter
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -76,7 +77,7 @@ class RoomSessionsRepository(
     }
 
     companion object {
-        private const val DefaultLimit = 50
+        private const val DefaultLimit = Int.MAX_VALUE
         private val TimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 
@@ -93,9 +94,14 @@ class RoomSessionsRepository(
             SessionsPeriod.LastSixHours -> now.minusSeconds(6 * 60 * 60)
             SessionsPeriod.LastTwentyFourHours -> now.minusSeconds(24 * 60 * 60)
             SessionsPeriod.LastSevenDays -> now.minusSeconds(7 * 24 * 60 * 60)
+            is SessionsPeriod.Custom -> from.atStartOfDay(zoneId).toInstant()
+        }
+        val to = when (this) {
+            is SessionsPeriod.Custom -> to.plusDays(1).atStartOfDay(zoneId).toInstant()
+            else -> now
         }
 
-        return UtcRange(from = from, to = now)
+        return UtcRange(from = from, to = to)
     }
 
     private fun FocusSessionEntity.overlaps(range: UtcRange): Boolean {
@@ -131,12 +137,17 @@ class RoomSessionsRepository(
     }
 }
 
-enum class SessionsPeriod {
-    Today,
-    LastHour,
-    LastSixHours,
-    LastTwentyFourHours,
-    LastSevenDays
+sealed class SessionsPeriod {
+    data object Today : SessionsPeriod()
+    data object LastHour : SessionsPeriod()
+    data object LastSixHours : SessionsPeriod()
+    data object LastTwentyFourHours : SessionsPeriod()
+    data object LastSevenDays : SessionsPeriod()
+    data class Custom(val from: LocalDate, val to: LocalDate) : SessionsPeriod() {
+        init {
+            require(!to.isBefore(from)) { "Custom session range end date must be on or after start date." }
+        }
+    }
 }
 
 private data class UtcRange(

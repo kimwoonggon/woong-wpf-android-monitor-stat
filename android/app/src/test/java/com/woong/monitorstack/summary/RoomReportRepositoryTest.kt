@@ -151,6 +151,35 @@ class RoomReportRepositoryTest {
         assertEquals(listOf(60 * 60_000L), snapshot.dailyActivity.map { it.durationMs })
     }
 
+    @Test
+    fun loadCustomRangeSplitsSessionsAcrossLocalDaysSoTrendSumsMatchTotal() {
+        val dao = database.focusSessionDao()
+        dao.insert(session("midnight-span", "com.android.chrome", "2026-04-20T23:30:00", 90, false))
+        val repository = RoomReportRepository(
+            dao = dao,
+            timezoneId = timezoneId,
+            todayProvider = { LocalDate.of(2026, 4, 30) }
+        )
+
+        val snapshot = repository.load(
+            ReportPeriod.Custom(
+                from = LocalDate.of(2026, 4, 20),
+                to = LocalDate.of(2026, 4, 21)
+            )
+        )
+
+        assertEquals(90 * 60_000L, snapshot.totalActiveMs)
+        assertEquals(
+            listOf("2026-04-20", "2026-04-21"),
+            snapshot.dailyActivity.map { it.localDate }
+        )
+        assertEquals(
+            listOf(30 * 60_000L, 60 * 60_000L),
+            snapshot.dailyActivity.map { it.durationMs }
+        )
+        assertEquals(snapshot.totalActiveMs, snapshot.dailyActivity.sumOf { it.durationMs })
+    }
+
     private fun session(
         id: String,
         packageName: String,

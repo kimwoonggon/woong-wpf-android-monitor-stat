@@ -3216,3 +3216,21 @@ milestones below are finished.
 - [x] Validate with Android unit tests, Debug/Release builds, connected
   instrumentation tests, and real Chrome -> Woong app-switch QA artifacts at
   `artifacts/android-app-switch-qa/latest/report.md`.
+
+## 2026-05-06 Android Sessions/Report Range And Local Data Controls
+
+- [x] Add RED Android coverage proving the Sessions screen/repository no
+  longer silently caps selected-range results at 50 rows.
+- [x] Add `SessionsPeriod.Custom` and Sessions custom date range UI with
+  date-picker backed start/end fields.
+- [x] Add RED Report coverage for sessions spanning local midnight so daily
+  trend buckets sum exactly to the report total.
+- [x] Split Report active-time contributions across local days before building
+  the daily trend, while keeping top-app totals clipped to the selected range.
+- [x] Add Settings local Android data reset control with confirmation dialog
+  and explicit status text.
+- [x] Keep background collection privacy-safe through the existing visible
+  WorkManager scheduler and Settings background collection switch; force-stop
+  remains the Android OS/user-level hard stop.
+- [x] Validate with `./gradlew.bat testDebugUnitTest` and
+  `./gradlew.bat assembleDebug`.

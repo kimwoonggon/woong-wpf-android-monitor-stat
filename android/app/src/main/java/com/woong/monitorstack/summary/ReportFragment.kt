@@ -1,9 +1,11 @@
 package com.woong.monitorstack.summary
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -53,6 +55,13 @@ class ReportFragment : Fragment() {
         binding.reportCustomButton.setOnClickListener {
             binding.reportCustomRangePanel.visibility = View.VISIBLE
             binding.reportCustomRangeErrorText.visibility = View.GONE
+            ensureCustomDateDefaults()
+        }
+        binding.reportCustomStartDateEditText.setOnClickListener {
+            showDatePicker(binding.reportCustomStartDateEditText)
+        }
+        binding.reportCustomEndDateEditText.setOnClickListener {
+            showDatePicker(binding.reportCustomEndDateEditText)
         }
         binding.reportApplyCustomRangeButton.setOnClickListener {
             applyCustomRange()
@@ -83,6 +92,32 @@ class ReportFragment : Fragment() {
         } catch (_: IllegalArgumentException) {
             binding.reportCustomRangeErrorText.visibility = View.VISIBLE
         }
+    }
+
+    private fun ensureCustomDateDefaults() {
+        val today = LocalDate.now()
+        if (binding.reportCustomStartDateEditText.text.isNullOrBlank()) {
+            binding.reportCustomStartDateEditText.setText(today.minusDays(6).toString())
+        }
+        if (binding.reportCustomEndDateEditText.text.isNullOrBlank()) {
+            binding.reportCustomEndDateEditText.setText(today.toString())
+        }
+    }
+
+    private fun showDatePicker(target: EditText) {
+        val initialDate = runCatching {
+            LocalDate.parse(target.text.toString())
+        }.getOrDefault(LocalDate.now())
+
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                target.setText(LocalDate.of(year, month + 1, dayOfMonth).toString())
+            },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth
+        ).show()
     }
 
     private fun selectPeriodButton(selectedButton: MaterialButton) {

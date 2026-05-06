@@ -1,6 +1,8 @@
 package com.woong.monitorstack.settings
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -17,6 +19,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.woong.monitorstack.R
+import com.woong.monitorstack.data.local.MonitorDatabase
 import com.woong.monitorstack.databinding.FragmentSettingsBinding
 import com.woong.monitorstack.summary.NotificationPermissionController
 import com.woong.monitorstack.sync.AndroidSyncAuthenticationException
@@ -71,6 +74,7 @@ class SettingsFragment : Fragment() {
             fragmentBinding,
             SharedPreferencesAndroidSyncSettings(requireContext())
         )
+        renderLocalStorageSettings(fragmentBinding, localDataResetterFactory(requireContext()))
     }
 
     override fun onResume() {
@@ -323,6 +327,33 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private fun renderLocalStorageSettings(
+        binding: FragmentSettingsBinding,
+        localDataResetter: LocalDataResetter
+    ) {
+        binding.clearLocalDataStatusText.text =
+            getString(R.string.clear_local_android_data_status_idle)
+        binding.clearLocalDataButton.setOnClickListener {
+            val dialog = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.clear_local_android_data_confirm_title)
+                .setMessage(R.string.clear_local_android_data_confirm_message)
+                .setNegativeButton(R.string.clear_local_android_data_confirm_negative, null)
+                .setPositiveButton(R.string.clear_local_android_data_confirm_positive, null)
+                .show()
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                dialog.dismiss()
+                localDataResetter.clearLocalAndroidData { result ->
+                    val currentBinding = this.binding ?: return@clearLocalAndroidData
+                    currentBinding.clearLocalDataStatusText.text = if (result.isSuccess) {
+                        getString(R.string.clear_local_android_data_status_done)
+                    } else {
+                        getString(R.string.clear_local_android_data_status_failed)
+                    }
+                }
+            }
+        }
+    }
+
     private fun clearLocalSyncRegistration(
         settings: SharedPreferencesAndroidSyncSettings,
         binding: FragmentSettingsBinding
@@ -437,6 +468,29 @@ class SettingsFragment : Fragment() {
         fun hasUsageAccess(packageName: String): Boolean
     }
 
+    interface LocalDataResetter {
+        fun clearLocalAndroidData(callback: (Result<Unit>) -> Unit)
+    }
+
+    private class RoomLocalDataResetter(
+        context: Context
+    ) : LocalDataResetter {
+        private val appContext = context.applicationContext
+        private val mainHandler = Handler(Looper.getMainLooper())
+
+        override fun clearLocalAndroidData(callback: (Result<Unit>) -> Unit) {
+            Thread(
+                {
+                    val result = runCatching {
+                        MonitorDatabase.getInstance(appContext).clearAllTables()
+                    }
+                    mainHandler.post { callback(result) }
+                },
+                "AndroidLocalDataReset"
+            ).start()
+        }
+    }
+
     private class AndroidUsageAccessStatusReader(
         context: Context
     ) : UsageAccessStatusReader {
@@ -549,6 +603,10 @@ class SettingsFragment : Fragment() {
             AndroidUsageAccessStatusReader(it)
         }
 
+        fun defaultLocalDataResetterFactory(): (android.content.Context) -> LocalDataResetter = {
+            RoomLocalDataResetter(it)
+        }
+
         var manualSyncLauncherFactory: (android.content.Context) -> ManualSyncLauncher =
             defaultManualSyncLauncherFactory()
 
@@ -562,6 +620,9 @@ class SettingsFragment : Fragment() {
 
         var usageAccessStatusReaderFactory: (android.content.Context) -> UsageAccessStatusReader =
             defaultUsageAccessStatusReaderFactory()
+
+        var localDataResetterFactory: (android.content.Context) -> LocalDataResetter =
+            defaultLocalDataResetterFactory()
     }
 }
 
