@@ -347,6 +347,7 @@ class SettingsFragmentManualSyncTest {
             "Local Android usage database has been cleared.",
             activity.findViewById<TextView>(R.id.clearLocalDataStatusText).text.toString()
         )
+        assertEquals(1, localDataResetter.floorMarkCount)
     }
 
     @Test
@@ -838,10 +839,15 @@ class SettingsFragmentManualSyncTest {
 
     private class RecordingLocalDataResetter : SettingsFragment.LocalDataResetter {
         var resetCount = 0
+        var floorMarkCount = 0
 
         override fun clearLocalAndroidData(callback: (Result<Unit>) -> Unit) {
             resetCount += 1
             callback(Result.success(Unit))
+        }
+
+        override fun markCollectionFloorAtNow() {
+            floorMarkCount += 1
         }
     }
 

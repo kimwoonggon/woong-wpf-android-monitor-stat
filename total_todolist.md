@@ -3234,3 +3234,15 @@ milestones below are finished.
   remains the Android OS/user-level hard stop.
 - [x] Validate with `./gradlew.bat testDebugUnitTest` and
   `./gradlew.bat assembleDebug`.
+
+## 2026-05-06 Android Clear Data Reimport Regression
+
+- [x] Add RED coverage proving immediate Dashboard collection does not read
+  UsageStats before the local-data-reset timestamp.
+- [x] Add RED Settings coverage proving successful Clear local Android data
+  marks a new collection floor.
+- [x] Apply the collection floor to both immediate Dashboard collection and
+  periodic WorkManager collection so cleared historical UsageStats are not
+  silently re-imported into Room.
+- [x] Validate focused Android tests, full `testDebugUnitTest`, and
+  `assembleDebug`.

@@ -12,14 +12,17 @@ class CollectUsageWorker @JvmOverloads constructor(
     appContext: Context,
     workerParams: WorkerParameters,
     private val runner: UsageCollectionRunner = AndroidUsageCollectionRunner.create(appContext),
-    private val locationCollector: LocationContextCollector = LocationContextCollectionRunner.create(appContext)
+    private val locationCollector: LocationContextCollector = LocationContextCollectionRunner.create(appContext),
+    private val collectionFloor: UsageCollectionFloor =
+        SharedPreferencesUsageCollectionResetCheckpoint(appContext)
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
         val toUtcMillis = inputData.getLong(KEY_TO_UTC_MILLIS, System.currentTimeMillis())
-        val fromUtcMillis = inputData.getLong(
+        val requestedFromUtcMillis = inputData.getLong(
             KEY_FROM_UTC_MILLIS,
             toUtcMillis - DEFAULT_LOOKBACK_MS
         )
+        val fromUtcMillis = maxOf(requestedFromUtcMillis, collectionFloor.floorUtcMillis())
 
         if (toUtcMillis < fromUtcMillis) {
             return Result.failure()

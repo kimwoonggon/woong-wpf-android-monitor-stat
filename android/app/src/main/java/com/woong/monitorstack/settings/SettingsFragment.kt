@@ -27,6 +27,7 @@ import com.woong.monitorstack.sync.AndroidSyncClient
 import com.woong.monitorstack.sync.AndroidSyncWorker
 import com.woong.monitorstack.sync.SyncDeviceRegistrationRequest
 import com.woong.monitorstack.usage.AndroidUsageAccessPermissionReader
+import com.woong.monitorstack.usage.SharedPreferencesUsageCollectionResetCheckpoint
 import com.woong.monitorstack.usage.UsageAccessPermissionChecker
 import com.woong.monitorstack.usage.UsageAccessSettingsIntentFactory
 import com.google.android.material.button.MaterialButton
@@ -344,6 +345,9 @@ class SettingsFragment : Fragment() {
                 dialog.dismiss()
                 localDataResetter.clearLocalAndroidData { result ->
                     val currentBinding = this.binding ?: return@clearLocalAndroidData
+                    if (result.isSuccess) {
+                        localDataResetter.markCollectionFloorAtNow()
+                    }
                     currentBinding.clearLocalDataStatusText.text = if (result.isSuccess) {
                         getString(R.string.clear_local_android_data_status_done)
                     } else {
@@ -470,6 +474,8 @@ class SettingsFragment : Fragment() {
 
     interface LocalDataResetter {
         fun clearLocalAndroidData(callback: (Result<Unit>) -> Unit)
+
+        fun markCollectionFloorAtNow()
     }
 
     private class RoomLocalDataResetter(
@@ -488,6 +494,11 @@ class SettingsFragment : Fragment() {
                 },
                 "AndroidLocalDataReset"
             ).start()
+        }
+
+        override fun markCollectionFloorAtNow() {
+            SharedPreferencesUsageCollectionResetCheckpoint(appContext)
+                .markResetAt(System.currentTimeMillis())
         }
     }
 

@@ -5960,3 +5960,11 @@ Validation update:
 - Background collection remains based on the existing visible WorkManager scheduler and Settings switch. The app can continue periodic metadata collection while not foregrounded when Usage Access and background collection are enabled; Android force-stop remains the user/OS hard stop.
 - Validation passed: `./gradlew.bat testDebugUnitTest --tests "com.woong.monitorstack.sessions.RoomSessionsRepositoryTest" --tests "com.woong.monitorstack.summary.RoomReportRepositoryTest" --tests "com.woong.monitorstack.settings.SettingsFragmentManualSyncTest"`; full `./gradlew.bat testDebugUnitTest`; and `./gradlew.bat assembleDebug`.
 - Privacy boundary unchanged: app/package/time/location metadata only. No typed text, browser/page contents, screenshots of other apps, passwords, messages, form input, clipboard data, or global touch coordinates are collected.
+
+## 2026-05-06 Android Clear Data Reimport Regression
+
+- Fixed the issue where Settings -> Clear local Android data could appear not to clear Dashboard. Room was cleared, but returning to Dashboard immediately triggered UsageStats collection over the recent lookback window and re-imported old OS UsageStats rows.
+- Added `SharedPreferencesUsageCollectionResetCheckpoint` as a local collection floor. Successful clear-data now stores the reset timestamp.
+- Immediate Dashboard collection and periodic WorkManager collection now use `max(requestedFrom, resetFloor)` so old UsageStats before the reset timestamp are not pulled back into Room.
+- Validation passed: focused `AndroidRecentUsageCollectorTest`, `CollectUsageWorkerTest`, and `SettingsFragmentManualSyncTest`; full `./gradlew.bat testDebugUnitTest`; and `./gradlew.bat assembleDebug`.
+- Privacy boundary unchanged: this only changes metadata collection windowing. It does not collect typed text, browser/page contents, screenshots of other apps, passwords, messages, form input, clipboard data, or global touch coordinates.

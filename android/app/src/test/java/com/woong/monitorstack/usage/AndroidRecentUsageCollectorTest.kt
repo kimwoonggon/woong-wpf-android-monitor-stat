@@ -20,6 +20,22 @@ class AndroidRecentUsageCollectorTest {
         assertEquals(100_000L, runner.toUtcMillis)
     }
 
+    @Test
+    fun collectRecentUsageDoesNotReadBeforeResetCheckpoint() {
+        val runner = FakeUsageCollectionRunner()
+        val collector = RunnerBackedAndroidRecentUsageCollector(
+            runner = runner,
+            clock = { 100_000L },
+            lookbackMs = 30_000L,
+            collectionFloorProvider = { 95_000L }
+        )
+
+        collector.collectRecentUsage()
+
+        assertEquals(95_000L, runner.fromUtcMillis)
+        assertEquals(100_000L, runner.toUtcMillis)
+    }
+
     private class FakeUsageCollectionRunner : UsageCollectionRunner {
         var fromUtcMillis: Long? = null
             private set

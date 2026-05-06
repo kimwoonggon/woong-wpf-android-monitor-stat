@@ -105,6 +105,31 @@ class CollectUsageWorkerTest {
         )
     }
 
+    @Test
+    fun doWorkDoesNotCollectBeforeResetCheckpointFloor() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val runner = FakeUsageCollectionRunner(storedCount = 0)
+        val worker = TestListenableWorkerBuilder.from(context, CollectUsageWorker::class.java)
+            .setInputData(
+                workDataOf(
+                    CollectUsageWorker.KEY_FROM_UTC_MILLIS to 1_000L,
+                    CollectUsageWorker.KEY_TO_UTC_MILLIS to 10_000L
+                )
+            )
+            .setWorkerFactory(
+                FakeWorkerFactory(
+                    runner = runner,
+                    collectionFloor = FakeUsageCollectionFloor(8_000L)
+                )
+            )
+            .build()
+
+        worker.startWork().get()
+
+        assertEquals(8_000L, runner.fromUtcMillis)
+        assertEquals(10_000L, runner.toUtcMillis)
+    }
+
     private class FakeUsageCollectionRunner(
         private val storedCount: Int
     ) : UsageCollectionRunner {
@@ -135,7 +160,8 @@ class CollectUsageWorkerTest {
 
     private class FakeWorkerFactory(
         private val runner: UsageCollectionRunner,
-        private val locationCollector: LocationContextCollector = NoopLocationContextCollector
+        private val locationCollector: LocationContextCollector = NoopLocationContextCollector,
+        private val collectionFloor: UsageCollectionFloor = NoopUsageCollectionFloor
     ) : WorkerFactory() {
         override fun createWorker(
             appContext: Context,
@@ -143,10 +169,22 @@ class CollectUsageWorkerTest {
             workerParameters: WorkerParameters
         ): ListenableWorker? {
             return if (workerClassName == CollectUsageWorker::class.java.name) {
-                CollectUsageWorker(appContext, workerParameters, runner, locationCollector)
+                CollectUsageWorker(
+                    appContext,
+                    workerParameters,
+                    runner,
+                    locationCollector,
+                    collectionFloor
+                )
             } else {
                 null
             }
         }
+    }
+
+    private class FakeUsageCollectionFloor(
+        private val floorUtcMillis: Long
+    ) : UsageCollectionFloor {
+        override fun floorUtcMillis(): Long = floorUtcMillis
     }
 }
